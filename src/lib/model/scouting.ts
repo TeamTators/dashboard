@@ -1,6 +1,9 @@
 import { Struct, type StructData, type DataArr } from 'drizzle-struct/front-end';
 import { sse } from '../utils/sse';
 import { browser } from '$app/environment';
+import { attempt, attemptAsync } from 'ts-utils/check';
+import { z } from 'zod';
+import { Account } from './account';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -44,8 +47,8 @@ export namespace Scouting {
 			name: 'pit_sections',
 			structure: {
 				name: 'string',
-				multiple: 'boolean',
-				accountId: 'string'
+				order: 'number',
+				eventKey: 'string'
 			},
 			socket: sse,
 			browser
@@ -57,10 +60,9 @@ export namespace Scouting {
 		export const Groups = new Struct({
 			name: 'pit_groups',
 			structure: {
-				eventKey: 'string',
 				sectionId: 'string',
 				name: 'string',
-				accountId: 'string'
+				order: 'number'
 			},
 			socket: sse,
 			browser
@@ -69,28 +71,30 @@ export namespace Scouting {
 		export type GroupData = StructData<typeof Groups.data.structure>;
 		export type GroupArr = DataArr<typeof Groups.data.structure>;
 
-		export const Qustions = new Struct({
+		export const Questions = new Struct({
 			name: 'pit_questions',
 			structure: {
 				groupId: 'string',
 				question: 'string',
 				type: 'string',
-				accountId: 'string'
+				key: 'string',
+				order: 'number',
+				options: 'string'
 			},
 			socket: sse,
 			browser
 		});
 
-		export type QuestionData = StructData<typeof Qustions.data.structure>;
-		export type QuestionArr = DataArr<typeof Qustions.data.structure>;
+		export type QuestionData = StructData<typeof Questions.data.structure>;
+		export type QuestionArr = DataArr<typeof Questions.data.structure>;
 
 		export const Answers = new Struct({
 			name: 'pit_answers',
 			structure: {
 				questionId: 'string',
-				accountId: 'string',
-				value: 'string',
-				matchId: 'string'
+				answer: 'string',
+				team: 'number',
+				accountId: 'string'
 			},
 			socket: sse,
 			browser
@@ -98,5 +102,59 @@ export namespace Scouting {
 
 		export type AnswerData = StructData<typeof Answers.data.structure>;
 		export type AnswerArr = DataArr<typeof Answers.data.structure>;
+
+		export type Options = {};
+
+		export const parseOptions = (question: QuestionData) => {
+			return attempt(() => {
+				const options = question.data.options;
+				if (!options) throw new Error('No options key');
+				return z.array(z.string()).parse(JSON.parse(options));
+			});
+		};
+
+		export const parseAnswer = (answer: AnswerData) => {
+			return attempt(() => {
+				const value = answer.data.answer;
+				if (!value) throw new Error('No answer key');
+				return z.array(z.string()).parse(JSON.parse(value));
+			});
+		};
+
+		export const getAnswersFromGroup = (group: GroupData, questionIDs: string[]) => {
+			return Answers.query(
+				'from-group',
+				{
+					group: group.data.id
+				},
+				{
+					asStream: false,
+					satisfies: (d) => (d.data.questionId ? questionIDs.includes(d.data.questionId) : false)
+				}
+			);
+		};
+
+		export const answerQuestion = (
+			question: QuestionData,
+			answer: string[],
+			team: number,
+			account: Account.AccountData
+		) => {
+			return attemptAsync(async () => {
+				if (!question.data.id) throw new Error('Question ID not found');
+				const accountId = account.data.id;
+				if (!accountId) throw new Error('Account ID not found');
+				const res = (
+					await Answers.new({
+						questionId: question.data.id,
+						answer: JSON.stringify(answer),
+						team,
+						accountId
+					})
+				).unwrap();
+
+				if (!res.success) throw new Error(res.message || 'Failed to answer question');
+			});
+		};
 	}
 }
