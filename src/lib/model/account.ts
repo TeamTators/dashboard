@@ -86,6 +86,7 @@ export namespace Account {
 	};
 
 	export const getNotifs = (limit: number, offset: number) => {
+		return new DataArr(AccountNotification, []);
 		return AccountNotification.query(
 			'get-own-notifs',
 			{},

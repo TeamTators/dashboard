@@ -23,7 +23,7 @@ export class TBAEvent {
 	private static _events = new Map<string, TBAEvent>();
 	public static getEvents(year: number) {
 		return attemptAsync(async () => {
-			if (TBAEvent._events.size) return Array.from(TBAEvent._events);
+			if (TBAEvent._events.size) return Array.from(TBAEvent._events.values());
 			const events = (await get('/tba/events/' + year, z.array(EventSchema))).unwrap();
 			const e = events.map((e) => new TBAEvent(e));
 			TBAEvent._events = new Map(e.map((e) => [e.tba.key, e]));
