@@ -30,7 +30,7 @@ export const load = async (event) => {
 	}
 
 	return {
-		event: e,
-		team
+		event: e.value.tba,
+		team: team.tba
 	};
 };
