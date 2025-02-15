@@ -5,6 +5,7 @@
 	import { type FilterState } from '$lib/types/robot-display.js';
 	import { sleep } from 'ts-utils/sleep';
 	import { afterNavigate } from '$app/navigation';
+	import PitScoutingCard from '$lib/components/robot-display/pit-scouting/PitScoutingCard.svelte';
 
 	const { data = $bindable() } = $props();
 	const teams = $derived(data.teams);
@@ -198,7 +199,7 @@
 		</Card>
 		<Card card={pitScouting}>
 			{#snippet body()}
-				<p>This will be the pit scouting card</p>
+				<PitScoutingCard {team} {event} />
 			{/snippet}
 		</Card>
 		<Card card={matchViewer}>
