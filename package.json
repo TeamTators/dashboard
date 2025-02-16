@@ -119,22 +119,9 @@
 		"tatorscout": "github:TeamTators/tatorscout-utils",
 		"ts-utils": "github:tsaxking/global-ts-utilities",
 		"uuid": "^11.0.4",
+		"canvas": "git+https://github.com/tsaxking/canvas.git",
 		"vite-node": "^3.0.4",
 		"yaml": "^2.7.0",
 		"zod": "^3.24.1"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@sveltejs/kit",
-			"colors",
-			"drizzle-struct",
-			"esbuild",
-			"html-constructor",
-			"math",
-			"svelte-preprocess",
-			"ts-utils",
-			"utils",
-			"tatorscout"
-		]
 	}
 }

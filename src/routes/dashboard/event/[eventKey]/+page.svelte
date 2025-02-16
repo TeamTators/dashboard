@@ -2,10 +2,26 @@
 	import Card from '$lib/components/dashboard/Card.svelte';
 	import { Dashboard } from '$lib/model/dashboard';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
+	import { Navbar } from '$lib/model/navbar.js';
 	const { data = $bindable() } = $props();
 	const event = $derived(data.event);
 	const teams = $derived(data.teams);
 	const matches = $derived(data.matches);
+
+	$effect(() => {
+		Navbar.addSection({
+			name: `${event.name} Dashboard`,
+			priority: 1,
+			links: [
+				{
+					name: 'Matches',
+					href: `/dashboard/event/${event.key}/matches`,
+					icon: 'view_list',
+					type: 'material-icons'
+				}
+			]
+		});
+	});
 
 	const dashboard = $derived(
 		new Dashboard.Dashboard({

@@ -92,7 +92,8 @@ export class Event {
 					}).await()
 				)
 					.unwrap()
-					.map((d) => new Team(TeamSchema.parse(JSON.parse(d.data.data)), this));
+					.map((d) => new Team(TeamSchema.parse(JSON.parse(d.data.data)), this))
+					.sort((a, b) => a.tba.team_number - b.tba.team_number);
 			} else {
 				return (
 					await TBA.get<T[]>(`/event/${this.tba.key}/teams`, {
@@ -100,7 +101,8 @@ export class Event {
 					})
 				)
 					.unwrap()
-					.map((t) => new Team(t, this));
+					.map((t) => new Team(t, this))
+					.sort((a, b) => a.tba.team_number - b.tba.team_number);
 			}
 		});
 	}

@@ -1,6 +1,9 @@
 import { Struct, type StructData, type DataArr } from 'drizzle-struct/front-end';
 import { sse } from '../utils/sse';
 import { browser } from '$app/environment';
+import { attempt } from 'ts-utils/check';
+import { z } from 'zod';
+import { type TraceArray } from 'tatorscout/trace';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -41,6 +44,23 @@ export namespace Scouting {
 
 	export type TeamCommentsData = StructData<typeof TeamComments.data.structure>;
 	export type TeamCommentsArr = DataArr<typeof TeamComments.data.structure>;
+
+	export const getMatchScouting = (data: { eventKey: string; team: number }) => {
+		return MatchScouting.query('get-team-scouting', data, {
+			asStream: false,
+			satisfies: ({ data }) => {
+				return data.eventKey === data.eventKey && data.team === data.team;
+			}
+		});
+	};
+
+	export const parseTrace = (trace: string) => {
+		return attempt<TraceArray>(() => {
+			return z
+				.array(z.tuple([z.number(), z.number(), z.number(), z.string()]))
+				.parse(JSON.parse(trace)) as TraceArray;
+		});
+	};
 
 	export namespace PIT {
 		export const Sections = new Struct({

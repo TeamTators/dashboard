@@ -4,9 +4,26 @@
 	import { onMount } from 'svelte';
 	import { type TBAMatch } from 'tatorscout/tba';
 	import { dateTime } from 'ts-utils/clock';
+	import { Navbar } from '$lib/model/navbar.js';
 
 	const { data } = $props();
 	const matches = data.matches;
+	const event = data.event;
+
+	$effect(() => {
+		Navbar.addSection({
+			name: `${event.name} Dashboard`,
+			priority: 1,
+			links: [
+				{
+					name: `${event.key} Dashboard`,
+					href: `/dashboard/event/${event.key}`,
+					icon: 'event',
+					type: 'material-icons'
+				}
+			]
+		});
+	});
 
 	let matchScouting = $state(new DataArr(Scouting.MatchScouting, []));
 
