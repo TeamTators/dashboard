@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Modal from '$lib/components/bootstrap/Modal.svelte';
+	import type { Account } from '$lib/model/account.js';
 	import { confirm } from '$lib/utils/prompts.js';
+	import '$lib/defaults/mentor';
 
 	const { data } = $props();
 	const accounts = data.accounts;
 
 	const refresh = () => goto(`/dashboard/mentor/accounts`);
+	// let roleModal: Modal;
+	// let selectedAccount: Account.AccountData | undefined = $state(undefined);
 </script>
 
 <div class="table-responsive">
@@ -15,13 +20,14 @@
 				<td>Username</td>
 				<td>Name</td>
 				<td>Email</td>
-				<td>Roles</td>
+				<!-- <td>Roles</td> -->
 				<td>Actions</td>
 			</tr>
 		</thead>
 		<tbody>
 			{#each accounts as account}
-				<tr>
+				<tr 
+				>
 					<td>
 						<p
 							class:text-danger={!account.account.data.verified}
@@ -33,11 +39,11 @@
 					</td>
 					<td><p>{account.account.data.firstName} {account.account.data.lastName}</p></td>
 					<td><p>{account.account.data.email}</p></td>
-					<td>
+					<!-- <td>
 						{#each account.roles as role}
 							<span class="badge bg-primary">{role.data.name}</span>
 						{/each}
-					</td>
+					</td> -->
 					<td>
 						<div role="group" class="btn-group">
 							{#if account.account.data.verified}
@@ -92,3 +98,21 @@
 		</tbody>
 	</table>
 </div>
+<!-- 
+<Modal bind:this={roleModal}
+	title="Edit Roles"
+	size="lg"
+
+>
+{#snippet body()}
+	{#if selectedAccount}
+		Account modal
+	{:else}
+		<p>
+			Please select an account to edit roles.
+		</p>
+	{/if}
+{/snippet}
+{#snippet buttons()}
+{/snippet}
+</Modal> -->
