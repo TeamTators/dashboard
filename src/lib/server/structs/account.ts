@@ -264,14 +264,14 @@ export namespace Account {
 	export const newHash = (password: string) => {
 		return attempt(() => {
 			const salt = crypto.randomBytes(32).toString('hex');
-			const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
-			return { hash, salt };
+			const key = hash(password, salt).unwrap();
+			return { hash: key, salt };
 		});
 	};
 
 	export const hash = (password: string, salt: string) => {
 		return attempt(() => {
-			return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+			return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
 		});
 	};
 
@@ -459,6 +459,35 @@ export namespace Account {
 					verification: ''
 				})
 			).unwrap();
+		});
+	};
+
+	export const externalHash = (data: { user: string; pass: string }) => {
+		return attemptAsync(async () => {
+			if (!process.env.OLD_SERVER_HOST || !process.env.OLD_SERVER_API_KEY) {
+				throw new Error('Old server host or api key not found');
+			}
+
+			const res = await fetch(process.env.OLD_SERVER_HOST + '/account/test-hash', {
+				body: JSON.stringify(data),
+				method: 'GET',
+				headers: {
+					'X-Auth-Key': process.env.OLD_SERVER_API_KEY,
+					'Content-Type': 'application/json'
+				}
+			}).then((r) => r.json());
+
+			const { success, reason, error } = z
+				.object({
+					success: z.boolean(),
+					reason: z.string(),
+					error: z.boolean()
+				})
+				.parse(res);
+
+			if (error) terminal.error('External hash did not work', reason);
+
+			return success;
 		});
 	};
 }

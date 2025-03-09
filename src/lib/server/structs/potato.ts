@@ -176,4 +176,4 @@ export namespace Potato {
 	});
 }
 
-export const _potato = Potato.Friend;
+export const _potato = Potato.Friend.table;
