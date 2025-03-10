@@ -45,6 +45,8 @@ export namespace Scouting {
 		}
 	});
 
+	export type MatchScoutingData = typeof MatchScouting.sample;
+
 	MatchScouting.queryListen('from-team', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
 		const roles = (await Permissions.allAccountRoles(event.locals.account)).unwrap();
@@ -97,6 +99,16 @@ export namespace Scouting {
 			return MatchScouting.Generator(res);
 		});
 	};
+
+	export const getTeamScouting = (team: number, event: string)=>  {
+		return attemptAsync(async () => {
+			const res = await DB.select()
+				.from(MatchScouting.table)
+				.where(and(eq(MatchScouting.table.team, team), eq(MatchScouting.table.eventKey, event)));
+
+			return res.map((r) => MatchScouting.Generator(r));
+		});
+	}
 
 	export const TeamComments = new Struct({
 		name: 'team_comments',
