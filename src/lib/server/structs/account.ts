@@ -447,18 +447,6 @@ export namespace Account {
 
 	export const verify = async (account: AccountData) => {
 		return attemptAsync(async () => {
-			const universe = (await Universes.Universe.fromId('2122')).unwrap();
-			if (!universe) throw new Error('Universe not found');
-			(await Universes.addToUniverse(account, universe)).unwrap();
-			const scout = (
-				await Permissions.Role.fromProperty('name', 'Scout', { type: 'single' })
-			).unwrap();
-			if (!scout) throw new Error('Role not found');
-			(await Permissions.giveRole(account, scout)).unwrap();
-			// TODO: remove this for idaho in favor of real permissions
-			Admins.new({
-				accountId: account.id
-			});
 			return (
 				await account.update({
 					verified: true,
@@ -467,6 +455,24 @@ export namespace Account {
 			).unwrap();
 		});
 	};
+
+	Account.on('update', async ({ from, to }) => {
+		// account has been verified
+		if (from.verified === false && to.data.verified === true) {
+			const universe = (await Universes.Universe.fromId('2122')).unwrap();
+			if (!universe) throw new Error('Universe not found');
+			(await Universes.addToUniverse(to, universe)).unwrap();
+			const scout = (
+				await Permissions.Role.fromProperty('name', 'Scout', { type: 'single' })
+			).unwrap();
+			if (!scout) throw new Error('Role not found');
+			(await Permissions.giveRole(to, scout)).unwrap();
+			// TODO: remove this for idaho in favor of real permissions
+			Admins.new({
+				accountId: to.id
+			});
+		}
+	});
 
 	export const externalHash = (data: { user: string; pass: string }) => {
 		return attemptAsync(async () => {
