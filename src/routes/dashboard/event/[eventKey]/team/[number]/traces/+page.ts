@@ -8,9 +8,6 @@ export const load = (event) => {
 		event: e,
 		teams: event.data.teams.map((t) => new TBATeam(t, e)),
 		team: new TBATeam(event.data.team, e),
-		scouting: new DataArr(
-			Scouting.MatchScouting,
-			event.data.scouting.map((s) => Scouting.MatchScouting.Generator(s))
-		)
+		scouting: event.data.scouting.map((s) => Scouting.MatchScouting.Generator(s))
 	};
 };

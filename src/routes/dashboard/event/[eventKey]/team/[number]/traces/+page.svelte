@@ -118,21 +118,23 @@
 		</div>
 	</div>
 	<div class="row">
-		{#if $scoutingArr.length}
-			{#each $scoutingArr as scouting}
-				<div class="col-3">
-					<h3>
-						{scouting.data.compLevel}{scouting.data.matchNumber} - {scouting.data.eventKey}
-						<button type="button" class="btn" onclick={() => open(scouting)}>
-							<i class="material-icons">visibility</i>
-						</button>
-					</h3>
-					<Trace {scouting} {event} {focus} />
-				</div>
-			{/each}
-		{:else}
-			<p>No scouting data found for team {team.tba.team_number} at event {event.tba.name}</p>
-		{/if}
+		{#key scoutingArr}
+			{#if scoutingArr.length}
+				{#each scoutingArr as scouting}
+					<div class="col-3">
+						<h3>
+							{scouting.data.compLevel}{scouting.data.matchNumber} - {scouting.data.eventKey}
+							<button type="button" class="btn" onclick={() => open(scouting)}>
+								<i class="material-icons">visibility</i>
+							</button>
+						</h3>
+						<Trace {scouting} {event} {focus} />
+					</div>
+				{/each}
+			{:else}
+				<p>No scouting data found for team {team.tba.team_number} at event {event.tba.name}</p>
+			{/if}
+		{/key}
 	</div>
 </div>
 
