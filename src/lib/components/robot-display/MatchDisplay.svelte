@@ -39,6 +39,29 @@
 
 <div class="container-fluid">
 	{#if scouting}
+	<div class="row mb-3">
+		{#each match.tba.videos || [] as video}
+			<div class="col-md-6">
+				<div class="card h-100">
+					<div class="card-body p-1">
+						{#if video.type === 'youtube'}
+							<iframe
+								src="https://www.youtube.com/embed/{video.key}?autoplay=0&controls=1&loop=0&modestbranding=1&rel=0&showinfo=0&color=white&iv_load_policy=3&fs=1&disablekb=1&enablejsapi=1&origin=https%3A%2F%2Fwww.thebluealliance.com&widgetid=1"
+								frameborder="0"
+								title="YouTube video player"
+								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+								allowfullscreen
+								class="w-100 mb-0"
+								style="
+									height: 200px;
+								"
+							></iframe>
+						{/if}
+					</div>
+				</div>
+			</div>
+		{/each}
+	</div>
 		<div class="row mb-3">
 			<MatchComments {scouting} />
 		</div>
