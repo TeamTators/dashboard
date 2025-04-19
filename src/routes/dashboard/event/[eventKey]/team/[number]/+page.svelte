@@ -331,7 +331,7 @@
 	const checksSummary = new Dashboard.Card({
         name: 'Checks Summary',
         iconType: 'material-icons',
-        icon: 'summarize',
+        icon: 'check',
         id: 'checks_summary',
         size: {
             width: 4,
