@@ -83,14 +83,15 @@ export const postBuild = async () => {
 			})
 			.unwrap();
 
-		await Account.Admins.new(
-			{
-				accountId: res.id
-			},
-			{
-				static: true
-			}
-		).unwrap();
+		// As it sits right now, an admin account is created when the user is verified.
+		// await Account.Admins.new(
+		// 	{
+		// 		accountId: res.id
+		// 	},
+		// 	{
+		// 		static: true
+		// 	}
+		// ).unwrap();
 	}
 
 	backupCycle();
