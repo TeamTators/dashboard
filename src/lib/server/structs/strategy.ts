@@ -1,5 +1,9 @@
 import { integer, text } from 'drizzle-orm/pg-core';
 import { Struct, StructData, StructStream } from 'drizzle-struct/back-end';
+<<<<<<< HEAD
+=======
+import { createEntitlement } from '../utils/entitlements';
+>>>>>>> origin
 import { attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
@@ -14,6 +18,12 @@ export namespace Strategy {
 			strategyId: text('strategy_id').notNull(),
 			board: text('board').notNull(),
 			name: text('name').notNull()
+<<<<<<< HEAD
+=======
+		},
+		generators: {
+			universe: () => '2122'
+>>>>>>> origin
 		}
 	});
 
@@ -37,6 +47,12 @@ export namespace Strategy {
 			opponent2: integer('opponent2').notNull(),
 			opponent3: integer('opponent3').notNull()
 		},
+<<<<<<< HEAD
+=======
+		generators: {
+			universe: () => '2122'
+		},
+>>>>>>> origin
 		validators: {
 			alliance: (value) => ['red', 'blue', 'unknown'].includes(String(value))
 		}
@@ -45,7 +61,18 @@ export namespace Strategy {
 	Strategy.queryListen('from-match', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
 		if (!(await Account.isAdmin(event.locals.account).unwrap())) {
+<<<<<<< HEAD
 			return new Error('Not entitled');
+=======
+			if (
+				!(await Permissions.isEntitled(
+					await Permissions.allAccountRoles(event.locals.account).unwrap(),
+					'view-strategy'
+				))
+			) {
+				return new Error('Not entitled to view strategy');
+			}
+>>>>>>> origin
 		}
 
 		const parsed = z
@@ -60,6 +87,7 @@ export namespace Strategy {
 		const { eventKey, matchNumber, compLevel } = parsed.data;
 		const res = await getMatchStrategy(matchNumber, compLevel, eventKey);
 		if (res.isErr()) return new Error('Error getting strategy: ' + res.error.message);
+<<<<<<< HEAD
 		return res.value;
 		// const strategies = res.value;
 		// const stream = new StructStream(Strategy);
@@ -69,6 +97,16 @@ export namespace Strategy {
 		// 	}
 		// }, event.locals.session.data.latency);
 		// return stream;
+=======
+		const strategies = res.value;
+		const stream = new StructStream(Strategy);
+		setTimeout(() => {
+			for (const strategy of strategies) {
+				stream.add(strategy);
+			}
+		}, event.locals.session.data.latency);
+		return stream;
+>>>>>>> origin
 	});
 
 	Strategy.on('create', (strategy) => {
@@ -241,6 +279,7 @@ export namespace Strategy {
 			team2: integer('team2').notNull(),
 			team3: integer('team3').notNull(),
 			team4: integer('team4').notNull()
+<<<<<<< HEAD
 		}
 	});
 
@@ -250,6 +289,19 @@ export namespace Strategy {
 		permissions: ['whiteboards:read:*', 'strategy:read:*', 'alliances:read:*'],
 		group: 'Strategy',
 		description: 'View strategy information'
+=======
+		},
+		generators: {
+			universe: () => '2122'
+		}
+	});
+
+	createEntitlement({
+		name: 'view-strategy',
+		structs: [Whiteboards, Strategy, Alliances],
+		permissions: ['whiteboards:read:*', 'strategy:read:*', 'alliances:read:*'],
+		group: 'Strategy'
+>>>>>>> origin
 	});
 }
 

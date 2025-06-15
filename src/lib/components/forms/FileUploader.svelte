@@ -66,7 +66,7 @@
 			process: async (fieldName, file, _, load, error) => {
 				const f = new File([file], file.name, { type: file.type });
 
-				const res = await uploader.sendFile(f, fieldName);
+			const res = await uploader.sendFile(f, fieldName);
 
 				if (res.isOk()) {
 					res.value.on('load', (data) => {
@@ -99,6 +99,6 @@
 						error('Failed to load file.');
 					});
 			}
-		}}
-	/>
+	}}
+/>
 </div>

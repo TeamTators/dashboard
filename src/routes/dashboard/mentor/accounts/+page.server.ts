@@ -25,8 +25,12 @@ export const load = async (event) => {
 			accounts.map(async (account) => {
 				return {
 					account: account.safe(),
+<<<<<<< HEAD
 					// roles: (await Permissions.allAccountRoles(account)).unwrap().map((r) => r.safe()),
 					roles: [], // TODO: Fix this, it is not working with the new permissions system
+=======
+					roles: (await Permissions.allAccountRoles(account)).unwrap().map((r) => r.safe()),
+>>>>>>> origin
 					developer: (await Account.isDeveloper(account)).unwrap(),
 					admin: (await Account.isAdmin(account)).unwrap()
 				};

@@ -3,7 +3,11 @@ import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct/back-end';
 import { attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { z } from 'zod';
+<<<<<<< HEAD
 import { Permissions } from './permissions';
+=======
+import { createEntitlement } from '../utils/entitlements';
+>>>>>>> origin
 
 const { TBA_KEY } = process.env;
 if (!TBA_KEY) throw new Error('TBA_KEY not found in .env file');
@@ -16,6 +20,12 @@ export namespace TBA {
 		structure: {
 			url: text('url').notNull().unique(),
 			response: text('response').notNull()
+<<<<<<< HEAD
+=======
+		},
+		generators: {
+			universe: () => '2122'
+>>>>>>> origin
 		}
 	});
 
@@ -25,6 +35,12 @@ export namespace TBA {
 			year: integer('year').notNull(),
 			eventKey: text('event_key').notNull(),
 			data: text('data').notNull() // JSON Event Object
+<<<<<<< HEAD
+=======
+		},
+		generators: {
+			universe: () => '2122'
+>>>>>>> origin
 		}
 	});
 
@@ -49,6 +65,12 @@ export namespace TBA {
 			eventKey: text('event_key').notNull(),
 			teamKey: text('team_key').notNull(), // frcXXXX
 			data: text('data').notNull() // JSON Team Object
+<<<<<<< HEAD
+=======
+		},
+		generators: {
+			universe: () => '2122'
+>>>>>>> origin
 		}
 	});
 
@@ -58,6 +80,12 @@ export namespace TBA {
 			eventKey: text('event_key').notNull(),
 			matchKey: text('match_key').notNull(), // 2020casj_qf1m1
 			data: text('data').notNull() // JSON Match Object
+<<<<<<< HEAD
+=======
+		},
+		generators: {
+			universe: () => '2122'
+>>>>>>> origin
 		}
 	});
 
@@ -118,6 +146,7 @@ export namespace TBA {
 		});
 	};
 
+<<<<<<< HEAD
 	Permissions.createEntitlement({
 		name: 'create-custom-tba-responses',
 		structs: [Requests],
@@ -132,6 +161,20 @@ export namespace TBA {
 		permissions: [],
 		group: 'TBA',
 		description: 'Manage TBA data'
+=======
+	createEntitlement({
+		name: 'create-custom-tba-responses',
+		structs: [Requests],
+		permissions: ['*'],
+		group: 'TBA'
+	});
+	// Blank because it needs to be called customly
+	createEntitlement({
+		name: 'manage-tba',
+		structs: [],
+		permissions: [],
+		group: 'TBA'
+>>>>>>> origin
 	});
 }
 

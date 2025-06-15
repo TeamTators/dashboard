@@ -1,4 +1,5 @@
 import { expect, test, describe } from 'vitest';
+<<<<<<< HEAD
 import { DB } from '$lib/server/db';
 import { actionSummary } from '$lib/server/utils/action-summary';
 import { resolveAll } from 'ts-utils/check';
@@ -20,6 +21,16 @@ describe('Run action summary on 2025joh', async () => {
 			Scouting.PIT.Sections.build(DB)
 		])
 	).unwrap();
+=======
+import { openStructs } from '$lib/server/cli/struct';
+import { Struct } from 'drizzle-struct/back-end';
+import { DB } from '$lib/server/db';
+import { actionSummary } from '$lib/server/utils/action-summary';
+
+describe('Run action summary on 2025joh', async () => {
+	(await openStructs()).unwrap();
+	(await Struct.buildAll(DB)).unwrap();
+>>>>>>> origin
 	test('Action summary', async () => {
 		const res = await (await actionSummary('2025joh', ['cl1']).unwrap()).serialize();
 		expect(res.isOk()).toBe(true);
