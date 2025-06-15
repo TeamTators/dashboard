@@ -1,11 +1,7 @@
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct/back-end';
-<<<<<<< HEAD
 import { Permissions } from './permissions';
-=======
-import { createEntitlement } from '../utils/entitlements';
->>>>>>> origin
 
 export namespace Checklist {
 	export const Checklists = new Struct({
@@ -14,12 +10,6 @@ export namespace Checklist {
 			name: text('name').notNull(),
 			eventKey: text('event_key').notNull(),
 			description: text('description').notNull()
-<<<<<<< HEAD
-=======
-		},
-		generators: {
-			universe: () => '2122'
->>>>>>> origin
 		}
 	});
 
@@ -29,12 +19,6 @@ export namespace Checklist {
 			checklistId: text('checklist_id').notNull(),
 			question: text('question').notNull(),
 			interval: integer('interval').notNull() // number of matches between
-<<<<<<< HEAD
-=======
-		},
-		generators: {
-			universe: () => '2122'
->>>>>>> origin
 		}
 	});
 
@@ -43,12 +27,6 @@ export namespace Checklist {
 		structure: {
 			questionId: text('question_id').notNull(),
 			accountId: text('account_id').notNull()
-<<<<<<< HEAD
-=======
-		},
-		generators: {
-			universe: () => '2122'
->>>>>>> origin
 		}
 	});
 
@@ -58,20 +36,10 @@ export namespace Checklist {
 			accountId: text('account_id').notNull(),
 			questionId: text('question_id').notNull(),
 			matchId: text('match_id').notNull()
-<<<<<<< HEAD
 		}
 	});
 
 	Permissions.createEntitlement({
-=======
-		},
-		generators: {
-			universe: () => '2122'
-		}
-	});
-
-	createEntitlement({
->>>>>>> origin
 		name: 'view-checklist',
 		structs: [Checklists, Questions, Assignments, Answers],
 		permissions: [
@@ -80,12 +48,8 @@ export namespace Checklist {
 			'checklist_assignments:read:*',
 			'checklist_questions:read:*'
 		],
-<<<<<<< HEAD
 		group: 'Checklists',
 		description: 'View checklists and their answers'
-=======
-		group: 'Checklists'
->>>>>>> origin
 	});
 }
 

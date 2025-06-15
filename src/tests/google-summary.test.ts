@@ -1,6 +1,5 @@
 import { expect, test, describe } from 'vitest';
 import { summarize } from '$lib/server/utils/google-summary';
-<<<<<<< HEAD
 import { DB } from '$lib/server/db';
 import { resolveAll } from 'ts-utils/check';
 import { TBA } from '$lib/server/structs/TBA';
@@ -21,15 +20,6 @@ describe('Run google summary on 2025utwv', async () => {
 			Scouting.PIT.Sections.build(DB)
 		])
 	).unwrap();
-=======
-import { openStructs } from '$lib/server/cli/struct';
-import { Struct } from 'drizzle-struct/back-end';
-import { DB } from '$lib/server/db';
-
-describe('Run google summary on 2025utwv', async () => {
-	(await openStructs()).unwrap();
-	(await Struct.buildAll(DB)).unwrap();
->>>>>>> origin
 	test('Google summary', async () => {
 		const res = await (await summarize('2025utwv')).unwrap().serialize();
 		expect(res.isOk()).toBe(true);

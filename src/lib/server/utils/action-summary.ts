@@ -65,12 +65,7 @@ export const actionSummary = (eventKey: string, actions: Action[]) => {
 				const [, , , action] = point;
 				if (!action) return acc;
 
-<<<<<<< HEAD
 				if (['teleop', 'endgame'].includes(Trace.getSection(point)) && actions.includes(action)) {
-=======
-
-				if ((['teleop', 'endgame'].includes(Trace.getSection(point))) && actions.includes(action)) {
->>>>>>> origin
 					// console.log('Action found:', action, acc);
 					return acc + 1;
 				}
