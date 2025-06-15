@@ -28,7 +28,6 @@
 			//     created: 'string',
 			//     updated: 'string',
 			//     archived: false,
-			//     universes: 'string',
 			//     attributes: 'string',
 			//     lifetime: 0,
 			// })

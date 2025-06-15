@@ -512,8 +512,6 @@ export namespace Test {
 					});
 				};
 
-				// TODO: Attributes and universes
-
 				await connect();
 				await testNew();
 				await testReadAll();

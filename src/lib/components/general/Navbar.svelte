@@ -2,6 +2,8 @@
 	import SideNav from './SideNav.svelte';
 	import Notifications from './Notifications.svelte';
 	import { Account } from '$lib/model/account';
+	import { onMount } from 'svelte';
+	import Icon from '../potato/Icon.svelte';
 	interface Props {
 		title: string;
 	}
@@ -31,6 +33,7 @@
 			>
 		</div>
 		<div class="end d-flex align-items-center">
+			<Icon />
 			<div class="dropdown">
 				<button
 					class="btn dropdown-toggle px-2"

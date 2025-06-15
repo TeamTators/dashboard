@@ -5,6 +5,8 @@ import { Action, confirm, Folder, password, prompt } from './utils';
 import terminal from '../src/lib/server/utils/terminal';
 import { Logs } from '../src/lib/server/structs/log';
 import { attemptAsync } from 'ts-utils/check';
+import { Permissions } from '../structs/permissions';
+import backup from '../../../../scripts/backup';
 
 export const selectAccount = (filter?: (account: Account.AccountData) => boolean) => {
 	return attemptAsync(async () => {
@@ -31,6 +33,27 @@ export const selectAccount = (filter?: (account: Account.AccountData) => boolean
 };
 
 export default new Folder('Accounts', 'Edit accounts', '👤', [
+	new Action('Reset Verification', 'Resets all account verification status', '👤', async () => {
+		await backup('pre_verification');
+		await Permissions.RoleAccount.all({
+			type: 'stream'
+		}).pipe((a) => a.delete());
+
+		await Account.Admins.all({
+			type: 'stream'
+		}).pipe((a) => a.delete());
+
+		return await Account.Account.all({
+			type: 'stream'
+		}).pipe(async (a) => {
+			(
+				await a.update({
+					verified: false
+				})
+			).unwrap();
+			return Account.verify(a);
+		});
+	}),
 	new Action('List', 'List all accounts', '📋', async () => {
 		return (
 			await structActions.all(Account.Account as any, undefined, {
@@ -71,12 +94,7 @@ export default new Folder('Accounts', 'Edit accounts', '👤', [
 
 		if (!confirmed) return terminal.log('Cancelled');
 
-		(
-			await account.update({
-				verification: '',
-				verified: true
-			})
-		).unwrap();
+		(await Account.verify(account)).unwrap();
 
 		(
 			await Logs.log({

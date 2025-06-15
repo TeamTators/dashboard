@@ -52,6 +52,8 @@ jobs:
           echo "DB_PASS=postgres" >> .env
           echo "DB_NAME=postgres" >> .env
           echo "PUBLIC_APP_NAME=test" >> .env
+          echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
+          echo "PUBLIC_DO_POTATO=true" >> .env
           export $(cat .env | xargs)
 
       - name: Start database service

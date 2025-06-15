@@ -13,5 +13,5 @@ export async function GET(event) {
 			status: 500
 		});
 	}
-	return res.unwrap();
+	return res.value;
 }

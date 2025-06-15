@@ -1,8 +1,57 @@
 import { Struct } from 'drizzle-struct/back-end';
+import terminal from '$lib/server/utils/terminal';
+import { Permissions } from '$lib/server/structs/permissions';
+import type { Entitlement } from '$lib/types/entitlements';
+import backup, { BACKUP_DIR } from '../../../scripts/backup';
+import { sleepUntil } from 'ts-utils/sleep';
+import { dateTime } from 'ts-utils/clock';
+import fs from 'fs';
+import path from 'path';
 import { Account } from './structs/account';
-import terminal from './utils/terminal';
 
-const postBuild = async () => {
+const backupCycle = () => {
+	if (!process.env.BACKUP_INTERVAL) return;
+	const interval = parseInt(process.env.BACKUP_INTERVAL);
+	if (isNaN(interval)) return console.error('Invalid BACKUP_INTERVAL');
+
+	const max = parseInt(String(process.env.MAX_BACKUPS));
+	if (isNaN(max)) return console.error('Invalid MAX_BACKUPS');
+
+	const wait = (callback: () => void, ms: number) => {
+		if (ms > 1000 * 60 * 60 * 24) {
+			sleepUntil(callback, new Date(Date.now() + ms));
+		} else {
+			setTimeout(callback, ms);
+		}
+	};
+
+	const run = async () => {
+		terminal.log('Making backup');
+		await backup('automatic')
+			.then(() => console.log('Backup complete'))
+			.catch((e) => terminal.error('Error during backup', e));
+		console.log('Next backup at: ', dateTime(new Date(Date.now() + interval)));
+
+		// sort from oldest to newest
+		const backups = fs.readdirSync(BACKUP_DIR).sort((a, b) => {
+			const aTime = parseInt(a.split('-')[0]);
+			const bTime = parseInt(b.split('-')[0]);
+			return aTime - bTime;
+		});
+
+		// remove oldest backups
+		const toRemove = backups.slice(0, backups.length - max);
+		for (const file of toRemove) {
+			console.log('Removing backup:', file);
+			fs.unlinkSync(path.resolve(BACKUP_DIR, file));
+		}
+
+		wait(run, interval);
+	};
+	run();
+};
+
+export const postBuild = async () => {
 	const admin = await Account.Account.fromProperty(
 		'username',
 		process.env.ADMIN_USERNAME || 'admin',
@@ -34,15 +83,20 @@ const postBuild = async () => {
 			})
 			.unwrap();
 
-		await Account.Admins.new(
-			{
-				accountId: res.id
-			},
-			{
-				static: true
-			}
-		).unwrap();
+		// As it sits right now, an admin account is created when the user is verified.
+		// await Account.Admins.new(
+		// 	{
+		// 		accountId: res.id
+		// 	},
+		// 	{
+		// 		static: true
+		// 	}
+		// ).unwrap();
 	}
+
+	backupCycle();
+
+	// TODO: create default roles and permissions
 };
 
 {
