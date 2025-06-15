@@ -37,7 +37,6 @@ export const POST = async (event) => {
 		delete (safe.data as any).created;
 		delete (safe.data as any).updated;
 		delete (safe.data as any).archived;
-		// delete (event.data as any).universes;
 		delete (safe.data as any).attributes;
 		delete (safe.data as any).lifetime;
 		delete (safe.data as any).canUpdate;

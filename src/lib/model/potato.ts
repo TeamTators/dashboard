@@ -1,5 +1,5 @@
 import { Struct, type DataArr, type StructData } from 'drizzle-struct/front-end';
-import { sse } from '../utils/sse';
+import { sse } from '../services/sse';
 import { browser } from '$app/environment';
 
 export namespace Potato {

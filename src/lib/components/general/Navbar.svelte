@@ -3,6 +3,7 @@
 	import Notifications from './Notifications.svelte';
 	import { Account } from '$lib/model/account';
 	import { onMount } from 'svelte';
+	import Icon from '../potato/Icon.svelte';
 	interface Props {
 		title: string;
 	}
@@ -59,7 +60,7 @@
 					{/if}
 				</ul>
 			</div>
-			<!-- <button
+			<button
 				class="me-5 btn position-relative"
 				type="button"
 				data-bs-toggle="offcanvas"

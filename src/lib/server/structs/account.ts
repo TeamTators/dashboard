@@ -9,9 +9,9 @@ import type { Notification } from '$lib/types/notification';
 import { Session } from './session';
 import { sse } from '../services/sse';
 import { DataAction, PropertyAction } from 'drizzle-struct/types';
-// import { Universes } from './universe';
 import { Email } from './email';
 import terminal from '../utils/terminal';
+import { z } from 'zod';
 
 export namespace Account {
 	export const Account = new Struct({
@@ -383,27 +383,11 @@ export namespace Account {
 	Account.on('update', async ({ from, to }) => {
 		// account has been verified
 		if (from.verified === false && to.data.verified === true) {
-			const universe = (await Universes.Universe.fromId('2122')).unwrap();
-			if (!universe) throw new Error('Universe not found');
-			(await Universes.addToUniverse(to, universe)).unwrap();
-			const scout = (
-				await Permissions.Role.fromProperty('name', 'Scout', { type: 'single' })
-			).unwrap();
-			if (!scout) throw new Error('Role not found');
-			(await Permissions.giveRole(to, scout)).unwrap();
-
 			(await Admins.new({ accountId: to.id })).unwrap();
 		}
 
 		// account has been unverified
 		if (from.verified === true && to.data.verified === false) {
-			const universe = (await Universes.Universe.fromId('2122')).unwrap();
-			if (!universe) throw new Error('Universe not found');
-			(await Universes.removeFromUniverse(to, universe)).unwrap();
-			Permissions.RoleAccount.fromProperty('account', to.id, {
-				type: 'stream'
-			}).pipe((ra) => ra.delete());
-
 			(await Admins.fromProperty('accountId', to.id, { type: 'single' })).unwrap()?.delete();
 		}
 	});
