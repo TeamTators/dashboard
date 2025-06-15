@@ -50,37 +50,37 @@
 							</td>
 							<td><p>{account.account.data.firstName} {account.account.data.lastName}</p></td>
 							<td><p>{account.account.data.email}</p></td>
-							<td>
+							<!-- <td>
 								{#each account.roles as role}
 									<span
 										class="badge bg-{roleColors[role.data.name as keyof typeof roleColors]} me-2"
 										>{role.data.name}</span
 									>
 								{/each}
-							</td>
+							</td> -->
 							<td>
 								<div role="group" class="btn-group">
 									<button
 										type="button"
 										class="btn btn-primary"
 										onclick={async () => {
-											const rolesLeft = roles.filter(
-												(r) => !account.roles.find((ar) => ar.data.id === r.data.id)
-											);
-											const data = await select(
-												'Select a role',
-												rolesLeft.map((r) => r.data.name)
-											);
-											if (data) {
-												const role = roles.find((r) => r.data.name === data);
-												if (role) {
-													const roleId = role.data.id;
-													const accountId = account.account.data.id;
-													if (roleId && accountId) {
-														Permissions.grantRole(roleId, accountId).then(refresh);
-													}
-												}
-											}
+											// const rolesLeft = roles.filter(
+											// 	(r) => !account.roles.find((ar) => ar.data.id === r.data.id)
+											// );
+											// const data = await select(
+											// 	'Select a role',
+											// 	rolesLeft.map((r) => r.data.name)
+											// );
+											// if (data) {
+											// 	const role = roles.find((r) => r.data.name === data);
+											// 	if (role) {
+											// 		const roleId = role.data.id;
+											// 		const accountId = account.account.data.id;
+											// 		if (roleId && accountId) {
+											// 			Permissions.grantRole(roleId, accountId).then(refresh);
+											// 		}
+											// 	}
+											// }
 										}}
 									>
 										<i class="material-icons"> group_add </i>
@@ -89,20 +89,20 @@
 										type="button"
 										class="btn btn-warning"
 										onclick={async () => {
-											const data = await select(
-												'Select a role',
-												account.roles.map((r) => r.data.name)
-											);
-											if (data) {
-												const role = roles.find((r) => r.data.name === data);
-												if (role) {
-													const roleId = role.data.id;
-													const accountId = account.account.data.id;
-													if (roleId && accountId) {
-														Permissions.revokeRole(roleId, accountId).then(refresh);
-													}
-												}
-											}
+											// const data = await select(
+											// 	'Select a role',
+											// 	account.roles.map((r) => r.data.name)
+											// );
+											// if (data) {
+											// 	const role = roles.find((r) => r.data.name === data);
+											// 	if (role) {
+											// 		const roleId = role.data.id;
+											// 		const accountId = account.account.data.id;
+											// 		if (roleId && accountId) {
+											// 			Permissions.revokeRole(roleId, accountId).then(refresh);
+											// 		}
+											// 	}
+											// }
 										}}
 									>
 										<i class="material-icons"> group_remove </i>

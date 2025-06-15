@@ -4,12 +4,10 @@ import { Account } from './account';
 import { attemptAsync } from 'ts-utils/check';
 import { Scouting } from './scouting';
 import { FIRST } from './FIRST';
-import { eq } from 'drizzle-orm';
-import { createEntitlement } from '../utils/entitlements';
+import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import terminal from '../utils/terminal';
 import { Permissions } from './permissions';
-import { Universes } from './universe';
 import { DB } from '../db';
 
 export namespace Potato {
@@ -105,9 +103,6 @@ export namespace Potato {
 			speed: integer('speed').notNull().default(0),
 			health: integer('health').notNull().default(0),
 			mana: integer('mana').notNull().default(0)
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 	const randomStats = (level: number) => {
@@ -157,23 +152,7 @@ export namespace Potato {
 			};
 		}
 
-		const universe = (await Universes.Universe.fromId('2122')).unwrap();
-		if (!universe) {
-			return {
-				success: false,
-				message: 'Universe not found'
-			};
-		}
-
-		const roles = (
-			await Permissions.getUniverseAccountRoles(event.locals.account, universe)
-		).unwrap();
-		if (!Permissions.isEntitled(roles, 'edit-potato-level')) {
-			return {
-				success: false,
-				message: 'Unauthorized'
-			};
-		}
+		// TODO: Check permissions
 
 		const parsed = z
 			.object({
@@ -399,18 +378,20 @@ export namespace Potato {
 		});
 	};
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'view-potatoes',
 		structs: [Friend],
 		group: 'Potatoes',
-		permissions: ['potato_friend:read:*']
+		permissions: ['potato_friend:read:*'],
+		description: 'View all potatoes'
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'edit-potato-level',
 		structs: [Friend],
 		group: 'Potatoes',
-		permissions: ['potato_friend:update:level']
+		permissions: ['potato_friend:update:level'],
+		description: 'Edit the level of a potato'
 	});
 }
 

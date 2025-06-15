@@ -2,7 +2,6 @@ import { boolean } from 'drizzle-orm/pg-core';
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct, StructStream } from 'drizzle-struct/back-end';
-import { createEntitlement } from '../utils/entitlements';
 import { Permissions } from './permissions';
 import { z } from 'zod';
 import { DB } from '../db';
@@ -17,18 +16,14 @@ export namespace FIRST {
 			eventKey: text('event_key').notNull(),
 			picture: text('picture').notNull(),
 			accountId: text('account_id').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
 	TeamPictures.queryListen('from-event', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
-		const roles = (await Permissions.allAccountRoles(event.locals.account)).unwrap();
-		if (!Permissions.isEntitled(roles, 'view-tba-info')) return new Error('Not entitled');
 
-		const stream = new StructStream(TeamPictures);
+		// Check if the user has permission to view team pictures
+
 		const { team, eventKey } = z
 			.object({
 				team: z.number(),
@@ -36,17 +31,7 @@ export namespace FIRST {
 			})
 			.parse(data);
 
-		setTimeout(async () => {
-			const res = (await getTeamPictures(team, eventKey)).unwrap();
-
-			for (let i = 0; i < res.length; i++) {
-				stream.add(res[i]);
-			}
-
-			stream.end();
-		}, event.locals.session.data.latency);
-
-		return stream;
+		return getTeamPictures(team, eventKey).unwrap();
 	});
 
 	export const getTeamPictures = (team: number, eventKey: string) => {
@@ -67,9 +52,6 @@ export namespace FIRST {
 			eventKey: text('event_key').notNull(),
 			number: integer('number').notNull(),
 			compLevel: text('comp_level').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
@@ -88,24 +70,23 @@ export namespace FIRST {
 			blue2: integer('blue2').notNull(),
 			blue3: integer('blue3').notNull(),
 			blue4: integer('blue4').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'view-tba-info',
 		structs: [TeamPictures, Matches, CustomMatches],
 		group: 'FIRST',
-		permissions: ['team_pictures:read:*', 'matches:read:*', 'custom_matches:*:*']
+		permissions: ['team_pictures:read:*', 'matches:read:*', 'custom_matches:*:*'],
+		description: 'View FIRST team pictures and matches'
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'upload-pictures',
 		structs: [TeamPictures],
 		group: 'FIRST',
-		permissions: ['team_pictures:create']
+		permissions: ['team_pictures:create'],
+		description: 'Upload team pictures for FIRST events'
 	});
 }
 

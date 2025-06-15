@@ -4,7 +4,7 @@ import {
 	type DataArr,
 	type StructDataVersion
 } from 'drizzle-struct/front-end';
-import { sse } from '../utils/sse';
+import { sse } from '../services/sse';
 import { browser } from '$app/environment';
 import { attempt, attemptAsync } from 'ts-utils/check';
 import { z } from 'zod';

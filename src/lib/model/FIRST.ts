@@ -1,4 +1,4 @@
-import { sse } from '../utils/sse';
+import { sse } from '../services/sse';
 import { Struct, type StructData, type DataArr } from 'drizzle-struct/front-end';
 import { browser } from '$app/environment';
 

@@ -1,7 +1,7 @@
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct/back-end';
-import { createEntitlement } from '../utils/entitlements';
+import { Permissions } from './permissions';
 
 export namespace Checklist {
 	export const Checklists = new Struct({
@@ -10,9 +10,6 @@ export namespace Checklist {
 			name: text('name').notNull(),
 			eventKey: text('event_key').notNull(),
 			description: text('description').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
@@ -22,9 +19,6 @@ export namespace Checklist {
 			checklistId: text('checklist_id').notNull(),
 			question: text('question').notNull(),
 			interval: integer('interval').notNull() // number of matches between
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
@@ -33,9 +27,6 @@ export namespace Checklist {
 		structure: {
 			questionId: text('question_id').notNull(),
 			accountId: text('account_id').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
@@ -45,13 +36,10 @@ export namespace Checklist {
 			accountId: text('account_id').notNull(),
 			questionId: text('question_id').notNull(),
 			matchId: text('match_id').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'view-checklist',
 		structs: [Checklists, Questions, Assignments, Answers],
 		permissions: [
@@ -60,7 +48,8 @@ export namespace Checklist {
 			'checklist_assignments:read:*',
 			'checklist_questions:read:*'
 		],
-		group: 'Checklists'
+		group: 'Checklists',
+		description: 'View checklists and their answers'
 	});
 }
 

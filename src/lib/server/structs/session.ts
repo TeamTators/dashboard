@@ -55,7 +55,7 @@ export namespace Session {
 					})
 				).unwrap();
 
-				event.cookies.set('ssid:' + PUBLIC_DOMAIN, session.id, {
+				event.cookies.set(('ssid_' + PUBLIC_DOMAIN).replace(/./g, '_'), session.id, {
 					httpOnly: false,
 					domain: PUBLIC_DOMAIN ?? '',
 					path: '/',
@@ -94,20 +94,8 @@ export namespace Session {
 				})
 			).unwrap();
 
-			// const universes = (await Universes.getUniverses(account)).unwrap();
-
-			// for (let i = 0; i < universes.length; i++) {
-			// 	event.cookies.set(`universe-${i}`, universes[i].id, {
-			// 		httpOnly: true,
-			// 		domain: DOMAIN ?? '',
-			// 		path: '/',
-			// 		// expires: new Date(Date.now() + parseInt(SESSION_DURATION ?? '0'))
-			// 	});
-			// }
-
 			return {
 				session
-				// universes,
 			};
 		});
 	};
