@@ -130,6 +130,7 @@
 		"range-slider-input": "^2.4.4",
 		"redis": "^5.5.6",
 		"tatorscout": "github:TeamTators/tatorscout-utils",
+		"ts-utils": "github:tsaxking/ts-utils",
 		"vite-node": "^3.0.4",
 		"yaml": "^2.7.0",
 		"zod": "^3.24.1"
