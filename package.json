@@ -131,6 +131,7 @@
 		"redis": "^5.5.6",
 		"tatorscout": "github:TeamTators/tatorscout-utils",
 		"ts-utils": "github:tsaxking/global-ts-utilities",
+		"uuid": "^11.1.0",
 		"vite-node": "^3.0.4",
 		"yaml": "^2.7.0",
 		"zod": "^3.24.1"

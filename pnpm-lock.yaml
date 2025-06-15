@@ -167,6 +167,9 @@ importers:
       ts-utils:
         specifier: github:tsaxking/global-ts-utilities
         version: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/c93495ff64716c30e17b24cc890765a5e7cc560a(@types/node@22.15.31)(sass-embedded@1.89.2)
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       vite-node:
         specifier: ^3.0.4
         version: 3.2.3(@types/node@22.15.31)(sass-embedded@1.89.2)
