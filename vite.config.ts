@@ -16,6 +16,8 @@ export default defineConfig({
 		noExternal: ['node-html-parser']
 	},
 	server: {
-		port: Number(process.env.PORT) || 5173
+		port: Number(process.env.PORT) || 5173,
+		allowedHosts: ['kit.tatorscout.org'],
+		cors: false
 	}
 });

@@ -6,35 +6,25 @@ import { Struct } from 'drizzle-struct/back-end';
 import AdmZip from 'adm-zip';
 import { prompt } from '../cli/utils';
 import { toSnakeCase } from 'ts-utils/text';
-import { resolveAll } from 'ts-utils/check';
-import { Test } from '../src/lib/server/structs/testing';
 
 export const BACKUP_DIR = path.join(process.cwd(), 'backups');
 
-export default async () => {
+export default async (name?: string) => {
 	if (!fs.existsSync(BACKUP_DIR)) {
 		await fs.promises.mkdir(BACKUP_DIR, { recursive: true });
 	}
 
 	await openStructs().unwrap();
 	(await Struct.buildAll(DB)).unwrap();
-	resolveAll(
-		await Promise.all(
-			Array.from({ length: 100 }, (_) =>
-				Test.Test.new({
-					name: 'test',
-					age: parseInt((Math.random() * 100).toString())
-				})
-			)
-		)
-	).unwrap();
 
-	const name =
-		(
-			await prompt({
-				message: 'Enter the name of the backup'
-			})
-		).unwrap() || 'unnamed';
+	if (!name) {
+		name =
+			(
+				await prompt({
+					message: 'Enter the name of the backup'
+				})
+			).unwrap() || 'unnamed';
+	}
 
 	const promises: Promise<unknown>[] = [];
 

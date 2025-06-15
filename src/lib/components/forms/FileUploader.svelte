@@ -18,11 +18,12 @@
 		quality?: number;
 	}
 
-	const { multiple, uploader, message, quality = 100 }: Props = $props();
+	const { multiple, uploader, message, quality = 10 }: Props = $props();
 
 	const emitter = new EventEmitter<{
 		init: void;
 		addFile: FilePondFile;
+		upload: string;
 		error: Error;
 	}>();
 
@@ -65,35 +66,38 @@
 			process: async (fieldName, file, _, load, error) => {
 				const f = new File([file], file.name, { type: file.type });
 
-				const res = await uploader.sendFile(f, fieldName);
+			const res = await uploader.sendFile(f, fieldName);
 
-				if (res.isOk()) {
-					res.value.on('load', load);
-					res.value.on('error', error);
+			if (res.isOk()) {
+				res.value.on('load', (data) => {
+					load(data);
+					emitter.emit('upload', data);
+				});
+				res.value.on('error', error);
 
-					return res.value.abort;
-				} else {
-					console.error(res.error);
-					error('Failed to upload file');
-				}
-
-				return () => {};
-			},
-
-			load: (source, load, error, progress, abort) => {
-				fetch(`/static/uploads/${source}`)
-					.then((response) => {
-						if (!response.ok) throw new Error('Failed to load file');
-						return response.blob();
-					})
-					.then((blob) => {
-						load(blob);
-					})
-					.catch((err) => {
-						console.error(err);
-						error('Failed to load file.');
-					});
+				return res.value.abort;
+			} else {
+				console.error(res.error);
+				error('Failed to upload file');
+				emitter.emit('error', res.error);
 			}
-		}}
-	/>
-</div>
+
+			return () => {};
+		},
+
+		load: (source, load, error, progress, abort) => {
+			fetch(`/static/uploads/${source}`)
+				.then((response) => {
+					if (!response.ok) throw new Error('Failed to load file');
+					return response.blob();
+				})
+				.then((blob) => {
+					load(blob);
+				})
+				.catch((err) => {
+					console.error(err);
+					error('Failed to load file.');
+				});
+		}
+	}}
+/>

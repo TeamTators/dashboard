@@ -30,7 +30,8 @@ export namespace Session {
 			ip: text('ip').notNull(),
 			userAgent: text('user_agent').notNull(),
 			requests: integer('requests').notNull(),
-			prevUrl: text('prev_url').notNull()
+			prevUrl: text('prev_url').notNull(),
+			latency: integer('latency').notNull().default(0)
 		},
 		frontend: false
 	});
@@ -49,7 +50,8 @@ export namespace Session {
 						ip: '',
 						userAgent: '',
 						requests: 0,
-						prevUrl: ''
+						prevUrl: '',
+						latency: 0
 					})
 				).unwrap();
 

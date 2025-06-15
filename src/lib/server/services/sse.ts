@@ -183,9 +183,10 @@ export class SSE {
 
 			return new Response(stream, {
 				headers: {
-					'Cache-Control': 'no-store',
+					'Cache-Control': 'no-cache',
 					'Content-Type': 'text/event-stream',
-					Connection: 'keep-alive'
+					Connection: 'keep-alive',
+					'X-Accel-Buffering': 'no'
 				}
 			});
 		});

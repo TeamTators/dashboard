@@ -28,9 +28,8 @@
 		});
 	};
 
-	onResize();
-
 	onMount(() => {
+		onResize();
 		window.addEventListener('resize', onResize);
 		return () => window.removeEventListener('resize', onResize);
 	});
@@ -50,7 +49,7 @@
 	{/if}
 
 	<div
-		class="card animate__animated animate__fadeIn"
+		class="card animate__animated animate__fadeIn layer-2"
 		class:maximized={$card.maximized}
 		style="
 			grid-column: span {$card.width};
@@ -113,10 +112,6 @@
 {/if}
 
 <style>
-	/* .card {
-		transition: all 0.3s ease;
-	} */
-
 	.maximized {
 		position: fixed !important;
 		height: 80% !important;
@@ -139,6 +134,7 @@
 
 	.card-body {
 		height: 217px;
+		overflow: auto;
 	}
 
 	.maximized .card-body {

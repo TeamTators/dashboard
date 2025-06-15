@@ -11,13 +11,14 @@ import { sse } from '../services/sse';
 import { DataAction, PropertyAction } from 'drizzle-struct/types';
 // import { Universes } from './universe';
 import { Email } from './email';
+import terminal from '../utils/terminal';
 
 export namespace Account {
 	export const Account = new Struct({
 		name: 'account',
 		structure: {
 			username: text('username').notNull().unique(),
-			key: text('key').notNull().unique(),
+			key: text('key').notNull(),
 			salt: text('salt').notNull(),
 			firstName: text('first_name').notNull(),
 			lastName: text('last_name').notNull(),
@@ -179,14 +180,14 @@ export namespace Account {
 	export const newHash = (password: string) => {
 		return attempt(() => {
 			const salt = crypto.randomBytes(32).toString('hex');
-			const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
-			return { hash, salt };
+			const key = hash(password, salt).unwrap();
+			return { hash: key, salt };
 		});
 	};
 
 	export const hash = (password: string, salt: string) => {
 		return attempt(() => {
-			return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+			return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
 		});
 	};
 
@@ -365,6 +366,74 @@ export namespace Account {
 					link: ''
 				})
 			).unwrap();
+		});
+	};
+
+	export const verify = async (account: AccountData) => {
+		return attemptAsync(async () => {
+			return (
+				await account.update({
+					verified: true,
+					verification: ''
+				})
+			).unwrap();
+		});
+	};
+
+	Account.on('update', async ({ from, to }) => {
+		// account has been verified
+		if (from.verified === false && to.data.verified === true) {
+			const universe = (await Universes.Universe.fromId('2122')).unwrap();
+			if (!universe) throw new Error('Universe not found');
+			(await Universes.addToUniverse(to, universe)).unwrap();
+			const scout = (
+				await Permissions.Role.fromProperty('name', 'Scout', { type: 'single' })
+			).unwrap();
+			if (!scout) throw new Error('Role not found');
+			(await Permissions.giveRole(to, scout)).unwrap();
+
+			(await Admins.new({ accountId: to.id })).unwrap();
+		}
+
+		// account has been unverified
+		if (from.verified === true && to.data.verified === false) {
+			const universe = (await Universes.Universe.fromId('2122')).unwrap();
+			if (!universe) throw new Error('Universe not found');
+			(await Universes.removeFromUniverse(to, universe)).unwrap();
+			Permissions.RoleAccount.fromProperty('account', to.id, {
+				type: 'stream'
+			}).pipe((ra) => ra.delete());
+
+			(await Admins.fromProperty('accountId', to.id, { type: 'single' })).unwrap()?.delete();
+		}
+	});
+
+	export const externalHash = (data: { user: string; pass: string }) => {
+		return attemptAsync(async () => {
+			if (!process.env.OLD_SERVER_HOST || !process.env.OLD_SERVER_API_KEY) {
+				throw new Error('Old server host or api key not found');
+			}
+
+			const res = await fetch(process.env.OLD_SERVER_HOST + '/account/test-hash', {
+				body: JSON.stringify(data),
+				method: 'GET',
+				headers: {
+					'X-Auth-Key': process.env.OLD_SERVER_API_KEY,
+					'Content-Type': 'application/json'
+				}
+			}).then((r) => r.json());
+
+			const { success, reason, error } = z
+				.object({
+					success: z.boolean(),
+					reason: z.string(),
+					error: z.boolean()
+				})
+				.parse(res);
+
+			if (error) terminal.error('External hash did not work', reason);
+
+			return success;
 		});
 	};
 }
