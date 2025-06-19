@@ -107,7 +107,8 @@ export class Connection {
 	}
 
 	retryCached(now: number) {
-		for (const msg of this.cache) {
+		try {
+			for (const msg of this.cache) {
 			if (now - msg.date > 30000 || msg.retries >= 5) continue;
 			this.controller.enqueue(
 				`data: ${encode(JSON.stringify({ event: msg.event, data: msg.data, id: msg.id }))}\n\n`
@@ -116,6 +117,12 @@ export class Connection {
 		}
 
 		this.cache = this.cache.filter((e) => now - e.date < 30000 && e.id > this.index - 20);
+		} catch (error) {
+			console.error(`Error retrying cached messages for connection ${this.uuid}:`, error);
+			this.close();
+			this.sse.connections.delete(this.uuid);
+			this.emit('destroy');
+		}
 	}
 }
 
