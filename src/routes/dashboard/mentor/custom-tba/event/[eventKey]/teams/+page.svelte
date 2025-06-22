@@ -18,11 +18,13 @@
 			number: number;
 			tba?: TBATeam['tba'];
 		}[]
-	> = writable(
-		teams.map((t) => ({
-			number: t.tba.team_number,
-			tba: t.tba
-		}))
+	> = $derived(
+		writable(
+			teams.map((t) => ({
+				number: t.tba.team_number,
+				tba: t.tba
+			}))
+		)
 	);
 
 	const save = () => {
@@ -153,6 +155,7 @@
 		<div class="col">
 			<Grid
 				bind:this={grid}
+				rowNumbers={true}
 				opts={{
 					columnDefs: [
 						{
@@ -220,7 +223,7 @@
 					preventDefaultOnContextMenu: true
 				}}
 				data={updateTeams}
-				style="height: 400px;"
+				height={400}
 			/>
 		</div>
 	</div>

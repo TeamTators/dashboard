@@ -113,6 +113,7 @@
 		"filepond-plugin-image-preview": "^4.6.12",
 		"filepond-plugin-image-resize": "^2.0.10",
 		"filepond-plugin-image-transform": "^3.8.7",
+		"flatpickr": "^4.6.13",
 		"fuzzy-search": "^3.2.1",
 		"google-auth-library": "^9.15.1",
 		"googleapis": "^144.0.0",

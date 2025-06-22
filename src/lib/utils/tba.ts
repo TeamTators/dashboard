@@ -119,6 +119,25 @@ export class TBAEvent {
 			})
 		);
 	}
+
+	setMatches(
+		matches: {
+			number: number;
+			compLevel: 'qm' | 'qf' | 'sf' | 'f';
+			red: [number, number, number];
+			blue: [number, number, number];
+			time: number;
+		}[]
+	) {
+		return post(
+			'/tba/event/' + this.tba.key + '/matches',
+			matches,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
+	}
 }
 
 export class TBAMatch {

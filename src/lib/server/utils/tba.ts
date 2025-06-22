@@ -10,7 +10,8 @@ import {
 	teamsFromMatch,
 	MediaSchema,
 	Match2025Schema,
-	type TBAMatch2025
+	type TBAMatch2025,
+	type TBAMatch
 } from 'tatorscout/tba';
 import { attempt, attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { TBA } from '../structs/TBA';
@@ -258,6 +259,32 @@ export class Event {
 			const toRemove = currentTeams.filter((ct) => !foundKeys.has(ct.data.teamKey));
 
 			await Promise.all(toRemove.map((t) => t.delete().unwrap()));
+		});
+	}
+
+	setMatches(matches: TBAMatch[]) {
+		return attemptAsync(async () => {
+			if (!this.custom) throw new Error('Cannot set matches for a non-custom event');
+
+			// const current = await TBA.Matches.fromProperty('eventKey', this.tba.key, {
+			// 	type: 'all',
+			// });
+
+			await TBA.Matches.fromProperty('eventKey', this.tba.key, {
+				type: 'stream'
+			}).pipe((c) => c.delete().unwrap());
+
+			resolveAll(
+				await Promise.all(
+					matches.map((m) =>
+						TBA.Matches.new({
+							eventKey: this.tba.key,
+							matchKey: m.key,
+							data: JSON.stringify(m)
+						})
+					)
+				)
+			).unwrap();
 		});
 	}
 }
