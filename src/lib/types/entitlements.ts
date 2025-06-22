@@ -1,22 +1,22 @@
 export type Entitlement = 
-    'view-checklist'
-  | 'view-roles'
-  | 'view-strategy'
-  | 'manage-pit-scouting'
-  | 'view-pit-scouting'
+    'view-roles'
   | 'create-custom-tba-responses'
   | 'manage-tba'
   | 'view-potatoes'
-  | 'edit-potato-level'
-  | 'view-tba-info'
-  | 'manage-scouting'
   | 'upload-pictures'
-  | 'view-scouting';
+  | 'view-tba-info'
+  | 'edit-potato-level'
+  | 'view-pit-scouting'
+  | 'view-strategy'
+  | 'view-scouting'
+  | 'manage-pit-scouting'
+  | 'view-checklist'
+  | 'manage-scouting';
 	export type Group = 
-    'Checklists'
-  | 'Roles'
-  | 'Strategy'
-  | 'Scouting'
+    'Roles'
   | 'TBA'
   | 'Potatoes'
-  | 'FIRST';
+  | 'FIRST'
+  | 'Scouting'
+  | 'Strategy'
+  | 'Checklists';
