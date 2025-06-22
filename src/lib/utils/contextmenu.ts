@@ -7,13 +7,13 @@
  */
 export type ContextMenuOptions = (
 	| {
-		action: (e: MouseEvent) => void;
-		name: string;
-		icon: {
+			action: (e: MouseEvent) => void;
 			name: string;
-			type: 'fontawesome' | 'material-icons' | 'bootstrap' | 'material-symbols' | 'svg';
-		}
-	}
+			icon: {
+				name: string;
+				type: 'fontawesome' | 'material-icons' | 'bootstrap' | 'material-symbols' | 'svg';
+			};
+	  }
 	| null
 	| string
 )[];

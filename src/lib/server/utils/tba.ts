@@ -187,12 +187,7 @@ export class Event {
 		});
 	}
 
-	update(data: {
-		name: string;
-		startDate: Date;
-		endDate: Date;
-		year: number;
-	}) {
+	update(data: { name: string; startDate: Date; endDate: Date; year: number }) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot update a non-custom event');
 			if (this.custom && this.data) {
@@ -221,26 +216,32 @@ export class Event {
 
 			teams = Array.from(new Set(teams)).sort((a, b) => a - b);
 
-			const found = (await Promise.all(
-				teams.map(t => TBA.get(`/team/frc${t}`, {
-					updateThreshold: 1000 * 60 * 60 * 24,
-					force: false
-				}))
-			)).map(res => {
-				if (res.isErr()) {
-					return null;
-				}
-				return TeamSchema.parse(res.value);
-			}).filter(Boolean);
+			const found = (
+				await Promise.all(
+					teams.map((t) =>
+						TBA.get(`/team/frc${t}`, {
+							updateThreshold: 1000 * 60 * 60 * 24,
+							force: false
+						})
+					)
+				)
+			)
+				.map((res) => {
+					if (res.isErr()) {
+						return null;
+					}
+					return TeamSchema.parse(res.value);
+				})
+				.filter(Boolean);
 
 			// Remove all current teams
 			const currentTeams = await TBA.Teams.fromProperty('eventKey', this.tba.key, {
-				type: 'all',
+				type: 'all'
 			}).unwrap();
 
 			await Promise.all(
-				found.map(async t => {
-					if (currentTeams.some(ct => ct.data.teamKey === `frc${t.team_number}`)) {
+				found.map(async (t) => {
+					if (currentTeams.some((ct) => ct.data.teamKey === `frc${t.team_number}`)) {
 						return;
 					}
 					return TBA.Teams.new({
@@ -248,19 +249,15 @@ export class Event {
 						teamKey: `frc${t.team_number}`,
 						data: JSON.stringify(t)
 					}).unwrap();
-				}),
+				})
 			);
 
 			// Remove all teams not in the new list
-			const foundKeys = new Set(found.map(t => `frc${t.team_number}`));
+			const foundKeys = new Set(found.map((t) => `frc${t.team_number}`));
 
-			const toRemove = currentTeams.filter(
-				ct => !foundKeys.has(ct.data.teamKey)
-			);
+			const toRemove = currentTeams.filter((ct) => !foundKeys.has(ct.data.teamKey));
 
-			await Promise.all(
-				toRemove.map(t => t.delete().unwrap())
-			);
+			await Promise.all(toRemove.map((t) => t.delete().unwrap()));
 		});
 	}
 }

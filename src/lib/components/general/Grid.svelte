@@ -15,9 +15,12 @@
 		TextFilterModule,
 		NumberFilterModule,
 		RowApiModule,
-		NumberEditorModule ,
-		RenderApiModule ,
-		ScrollApiModule 
+		NumberEditorModule,
+		RenderApiModule,
+		ScrollApiModule,
+		SelectEditorModule,
+		TextEditorModule,
+		CustomEditorModule
 	} from 'ag-grid-community';
 	import { EventEmitter } from 'ts-utils/event-emitter';
 	import type { Readable } from 'svelte/store';
@@ -34,8 +37,11 @@
 		NumberFilterModule,
 		RowApiModule,
 		NumberEditorModule,
-		RenderApiModule ,
-		ScrollApiModule 
+		RenderApiModule,
+		ScrollApiModule,
+		SelectEditorModule,
+		TextEditorModule,
+		CustomEditorModule
 	]);
 
 	interface Props {
@@ -45,17 +51,12 @@
 		style?: string;
 	}
 
-	const {
-		filter,
-		opts,
-		data,
-		style,
-	}: Props = $props();
+	const { filter, opts, data, style }: Props = $props();
 
 	const em = new EventEmitter<{
-		'filter': T[];
-		'init': HTMLDivElement;
-		'ready': GridApi<T>;
+		filter: T[];
+		init: HTMLDivElement;
+		ready: GridApi<T>;
 	}>();
 
 	export const on = em.on.bind(em);
@@ -87,22 +88,25 @@
 		}
 		filterTimeout = setTimeout(() => {
 			grid.setGridOption('quickFilterText', filterText);
-			const nodes = grid.getRenderedNodes().map(n => n.data).filter(Boolean);
+			const nodes = grid
+				.getRenderedNodes()
+				.map((n) => n.data)
+				.filter(Boolean);
 			em.emit('filter', nodes);
 		}, 300);
 	};
 
 	onMount(() => {
 		em.emit('init', gridDiv); // Emit the init event with the grid container
-		const gridOptions: GridOptions = {
+		const gridOptions: GridOptions<T> = {
 			theme: darkTheme,
 			...opts,
-			rowData: $data,
+			rowData: $data
 		};
 		grid = createGrid(gridDiv, gridOptions); // Create the grid with custom options
 		em.emit('ready', grid); // Emit the ready event with the grid API
-	
-		return data.subscribe(r => {
+
+		return data.subscribe((r) => {
 			grid.setGridOption('rowData', r); // Set the row data from the provided store
 			onDataFilter();
 		});

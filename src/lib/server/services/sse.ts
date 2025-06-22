@@ -109,14 +109,14 @@ export class Connection {
 	retryCached(now: number) {
 		try {
 			for (const msg of this.cache) {
-			if (now - msg.date > 30000 || msg.retries >= 5) continue;
-			this.controller.enqueue(
-				`data: ${encode(JSON.stringify({ event: msg.event, data: msg.data, id: msg.id }))}\n\n`
-			);
-			msg.retries++;
-		}
+				if (now - msg.date > 30000 || msg.retries >= 5) continue;
+				this.controller.enqueue(
+					`data: ${encode(JSON.stringify({ event: msg.event, data: msg.data, id: msg.id }))}\n\n`
+				);
+				msg.retries++;
+			}
 
-		this.cache = this.cache.filter((e) => now - e.date < 30000 && e.id > this.index - 20);
+			this.cache = this.cache.filter((e) => now - e.date < 30000 && e.id > this.index - 20);
 		} catch (error) {
 			console.error(`Error retrying cached messages for connection ${this.uuid}:`, error);
 			this.close();

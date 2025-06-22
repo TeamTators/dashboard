@@ -8,9 +8,9 @@ export const load = async (event) => {
 
 	const events = await TBA.Events.all({ type: 'all' }).unwrap();
 	return {
-		events: events.map(e => ({
+		events: events.map((e) => ({
 			event: e.safe(),
-			data: EventSchema.parse(JSON.parse(e.data.data)),
-		})),
-	}
+			data: EventSchema.parse(JSON.parse(e.data.data))
+		}))
+	};
 };

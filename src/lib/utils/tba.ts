@@ -30,9 +30,9 @@ const post = <T>(url: string, data: unknown, parser: z.ZodType<T>) => {
 		cache: false,
 		expectStream: false,
 		body: data,
-		parser,
+		parser
 	});
-}
+};
 
 export class TBAEvent {
 	private static _events = new Map<string, TBAEvent>();
@@ -58,10 +58,14 @@ export class TBAEvent {
 	}
 
 	public static createEvent(data: z.infer<typeof EventSchema>) {
-		return post('/tba/event', data, z.object({
-			success: z.boolean(),
-			message: z.string(),
-		}));
+		return post(
+			'/tba/event',
+			data,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
 	}
 
 	constructor(public readonly tba: E) {}
@@ -95,17 +99,25 @@ export class TBAEvent {
 	}
 
 	update(data: z.infer<typeof EventSchema>) {
-		return post('/tba/event/' + this.tba.key, data, z.object({
-			success: z.boolean(),
-			message: z.string(),
-		}));
+		return post(
+			'/tba/event/' + this.tba.key,
+			data,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
 	}
 
 	setTeams(teams: number[]) {
-		return post('/tba/event/' + this.tba.key + '/teams', teams, z.object({
-			success: z.boolean(),
-			message: z.string(),
-		}));
+		return post(
+			'/tba/event/' + this.tba.key + '/teams',
+			teams,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
 	}
 }
 

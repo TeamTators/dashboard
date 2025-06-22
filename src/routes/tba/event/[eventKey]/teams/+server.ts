@@ -28,10 +28,13 @@ export const GET = async (event) => {
 
 export const POST = async (event) => {
 	if (!event.locals.account) {
-		return json({
-			success: false,
-			message: 'You must be signed in to create an event.'
-		}, { status: ServerCode.unauthorized });
+		return json(
+			{
+				success: false,
+				message: 'You must be signed in to create an event.'
+			},
+			{ status: ServerCode.unauthorized }
+		);
 	}
 
 	const data = await event.request.json();
@@ -39,31 +42,43 @@ export const POST = async (event) => {
 	const parsed = z.array(z.number()).safeParse(data);
 	if (!parsed.success) {
 		terminal.error('Invalid event data:', parsed.error);
-		return json({
-			success: false,
-			message: 'Invalid event data.'
-		}, { status: ServerCode.badRequest });
+		return json(
+			{
+				success: false,
+				message: 'Invalid event data.'
+			},
+			{ status: ServerCode.badRequest }
+		);
 	}
 	const e = await TBA.Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {
 		terminal.error(e.error);
-		return json({
-			success: false,
-			message: 'Event not found.'
-		}, { status: ServerCode.notFound });
+		return json(
+			{
+				success: false,
+				message: 'Event not found.'
+			},
+			{ status: ServerCode.notFound }
+		);
 	}
 
 	if (!e.value.custom) {
-		return json({
-			success: false,
-			message: 'This event is not a custom event. You cannot modify it.'
-		}, { status: ServerCode.forbidden });
+		return json(
+			{
+				success: false,
+				message: 'This event is not a custom event. You cannot modify it.'
+			},
+			{ status: ServerCode.forbidden }
+		);
 	}
 
 	e.value.setTeams(parsed.data);
 
-	return json({
-		success: true,
-		message: 'Teams updated successfully.'
-	}, { status: ServerCode.ok });
+	return json(
+		{
+			success: true,
+			message: 'Teams updated successfully.'
+		},
+		{ status: ServerCode.ok }
+	);
 };
