@@ -8,6 +8,15 @@ import { dateTime } from 'ts-utils/clock';
 import fs from 'fs';
 import path from 'path';
 import { Account } from './structs/account';
+import { Redis } from '$lib/server/services/redis';
+
+Redis.connect().then((res) => {
+	if (res.isErr()) {
+		terminal.error('Failed to connect to Redis', res.error);
+	} else {
+		terminal.log('Connected to Redis');
+	}
+});
 
 const backupCycle = () => {
 	if (!process.env.BACKUP_INTERVAL) return;
