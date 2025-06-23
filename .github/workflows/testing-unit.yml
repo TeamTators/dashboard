@@ -85,11 +85,6 @@ jobs:
           echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
           export $(cat .env | xargs)
 
-      - name: Start database service
-        run: |
-          cd dashboard
-          docker compose up -d
-
       - name: Build tba-webhooks
         run: |
           cd tba-webhooks
