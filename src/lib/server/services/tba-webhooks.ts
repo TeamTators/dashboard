@@ -147,9 +147,7 @@ export namespace TBAWebhooks {
         [key in keyof typeof messageSchemas]: z.infer<typeof messageSchemas[key]>;
     }>();
 
-    let service: Redis.ListeningService<any, any>;
-
-
+    let service: Redis.ListeningService<typeof messageSchemas, 'tba_webhooks_dev'>;
 
     export const on = em.on.bind(em);
     export const off = em.off.bind(em);
@@ -161,7 +159,7 @@ export namespace TBAWebhooks {
             messageSchemas
         );
 
-        service.on('upcomming_match', (data) => {
+        service.on('upcoming_match', (data) => {
             console.log('upcoming_match', data);
         });
     };

@@ -165,10 +165,40 @@ export namespace Redis {
 			};
 		}>();
 
-		public on = this.em.on.bind(this.em);
-		public once = this.em.once.bind(this.em);
-		public off = this.em.off.bind(this.em);
-		private emit = this.em.emit.bind(this.em);
+		public on = <K extends keyof Events>(
+		event: K,
+		listener: (payload: {
+			date: Date;
+			id: number;
+			data: z.infer<Events[K]>;
+		}) => void
+		) => this.em.on(event, listener);
+		public once = <K extends keyof Events>(
+		event: K,
+		listener: (payload: {
+			date: Date;	
+			id: number;
+			data: z.infer<Events[K]>;
+		}) => void
+		) => this.em.once(event, listener);
+		public off = <K extends keyof Events>(
+		event: K,
+		listener: (payload: {
+			date: Date;
+			id: number;
+			data: z.infer<Events[K]>;
+		}) => void
+		) => this.em.off(event, listener);
+		public emit = <K extends keyof Events>(
+			event: K,
+			payload: {
+				date: Date;
+				id: number;
+				data: z.infer<Events[K]>;
+			}
+		) => {
+			this.em.emit(event, payload);
+		};
 
 		constructor(
 			public readonly name: Name,
@@ -187,7 +217,7 @@ export namespace Redis {
 			}
 
 			_sub?.subscribe('channel:' + this.name, (message: string) => {
-					log(`[Redis:${this.name}] Received message:`, message);
+				log(`[Redis:${this.name}] Received message:`, message);
 				try {
 					const parsed = z
 						.object({
@@ -197,11 +227,14 @@ export namespace Redis {
 							id: z.number()
 						})
 						.parse(JSON.parse(message));
+					
+					log(`[Redis:${this.name}] Parsed message:`, parsed);
 
 					if (parsed.event in this.events) {
 						const event = parsed.event as keyof Events;
 						const dataSchema = this.events[event];
 						const data = dataSchema.parse(parsed.data);
+						log(`[Redis:${this.name}] Validated data:`, data);
 						this.emit(event, {
 							data,
 							date: parsed.date,
