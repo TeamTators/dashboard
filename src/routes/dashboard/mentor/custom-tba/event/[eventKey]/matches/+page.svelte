@@ -7,6 +7,7 @@
 	import { SearchSelectCellEditor } from '$lib/utils/ag-grid/search-select.js';
 	import {
 		type ICellRendererParams,
+		type RichCellEditorParams,
 		type ValueGetterParams,
 		type ValueSetterParams
 	} from 'ag-grid-community';
@@ -259,10 +260,17 @@
 								},
 								editable: true,
 								cellEditor: SearchSelectCellEditor,
-								cellEditorParams: {
-									values: allTeams,
+								cellEditorParams: (params: RichCellEditorParams<Row>) => ({
+									values: allTeams.filter((team) => {
+										// Exclude teams already selected in this row except for the current cell
+										const match = params.data;
+										const otherFields = (
+											['red1', 'red2', 'red3', 'blue1', 'blue2', 'blue3'] as (keyof Row)[]
+										).filter((f) => f !== field);
+										return !otherFields.some((f) => match?.[f] === team);
+									}),
 									defaultValue: '0'
-								},
+								}),
 								width: 75
 							})),
 							{
