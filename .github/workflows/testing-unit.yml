@@ -74,7 +74,9 @@ jobs:
           export $(cat .env | xargs)
 
       - name: Start database service
-        run: docker compose up -d
+        run: |
+          cd dashboard
+          docker compose up -d
 
       - name: Build tba-webhooks
         run: |
@@ -99,8 +101,12 @@ jobs:
           pnpm run db:push --strict --verbose --force
 
       - name: Run Vitest tests
-        run: npm run test:unit
+        run: |
+          cd dashboard
+          pnpm run test:unit
 
       - name: Stop database service
         if: always()
-        run: docker compose down
+        run: |
+          cd dashboard
+          docker compose down
