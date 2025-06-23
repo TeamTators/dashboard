@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import DatePicker from '$lib/components/general/DatePicker.svelte';
 	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
 	import { validate } from 'uuid';
@@ -254,11 +255,17 @@
 			<div class="col-md-6">
 				<div class="mb-3">
 					<label for="start-date-input" class="form-label">Start Date</label>
-					<input
+					<!-- <input
 						type="date"
 						class="form-control"
 						id="start-date-input"
 						bind:value={start_date}
+						oninput={validateEventDates}
+					/> -->
+					<DatePicker
+						bind:value={start_date}
+						id="start-date-input"
+						placeholder="Start Date"
 						oninput={validateEventDates}
 					/>
 				</div>
@@ -266,11 +273,17 @@
 			<div class="col-md-6">
 				<div class="mb-3">
 					<label for="end-date-input" class="form-label">End Date</label>
-					<input
+					<!-- <input
 						type="date"
 						class="form-control"
 						id="end-date-input"
 						bind:value={end_date}
+						oninput={validateEventDates}
+					/> -->
+					<DatePicker
+						bind:value={end_date}
+						id="end-date-input"
+						placeholder="End Date"
 						oninput={validateEventDates}
 					/>
 				</div>
