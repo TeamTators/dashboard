@@ -3,9 +3,7 @@ import { EventEmitter } from "ts-utils/event-emitter";
 import { z } from "zod";
 
 export namespace TBAWebhooks {
-    export const messageSchemas: {
-        [key: string]: z.ZodTypeAny;
-    } = {
+    export const messageSchemas = {
         'upcoming_match': z.object({
             event_key: z.string(),
             match_key: z.string(),
@@ -154,13 +152,9 @@ export namespace TBAWebhooks {
     export const once = em.once.bind(em);
 
     export const init = () => {
-        service = Redis.createListeningService(
+        return service = Redis.createListeningService(
             'tba_webhooks_dev', 
             messageSchemas
         );
-
-        service.on('upcoming_match', (data) => {
-            console.log('upcoming_match', data);
-        });
     };
 }
