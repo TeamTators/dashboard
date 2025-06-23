@@ -8,6 +8,20 @@ import { dateTime } from 'ts-utils/clock';
 import fs from 'fs';
 import path from 'path';
 import { Account } from './structs/account';
+import { Redis } from '$lib/server/services/redis';
+import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
+
+Redis.connect(String(process.env.REDIS_NAME)).then((res) => {
+	if (res.isErr()) {
+		terminal.error('Failed to connect to Redis', res.error);
+	} else {
+		terminal.log('Connected to Redis');
+	}
+});
+
+Redis.once('sub-connect', () => {
+	TBAWebhooks.init(String(process.env.LOCAL_TBA_WEBHOOK_REDIS_NAME));
+});
 
 const backupCycle = () => {
 	if (!process.env.BACKUP_INTERVAL) return;
