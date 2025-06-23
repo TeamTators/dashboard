@@ -54,7 +54,7 @@ jobs:
           echo "PUBLIC_APP_NAME=test" >> .env
           echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
           echo "PUBLIC_DO_POTATO=true" >> .env
-          echo "LOCAL_TBA_WEBHOOK_PATH=../tba-webhooks" >> .env
+          echo "LOCAL_TBA_WEBHOOK_PATH=./tba-webhooks" >> .env
           echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
           echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
           export $(cat .env | xargs)
@@ -67,17 +67,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: 'TeamTators/tba-webhooks'
-          path: ../tba-webhooks
+          path: ./tba-webhooks
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Build tba-webhooks
         run: |
-          cd ../tba-webhooks
+          cd ./tba-webhooks
           git checkout main
           git pull origin main
-          pnpm install
+          pnpm install --frozen-lockfile
           pnpm run build
-          cd ../dashboard
+          cd ..
 
       - name: Wait for database
         run: |
