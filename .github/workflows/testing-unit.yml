@@ -68,7 +68,7 @@ jobs:
         with:
           repository: 'TeamTators/tba-webhooks'
           path: ../tba-webhooks
-          token: {{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Build tba-webhooks
         run: |
