@@ -54,10 +54,23 @@ jobs:
           echo "PUBLIC_APP_NAME=test" >> .env
           echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
           echo "PUBLIC_DO_POTATO=true" >> .env
+          echo "LOCAL_TBA_WEBHOOK_PATH=../tba-webhooks" >> .env
+          echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
+          echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
           export $(cat .env | xargs)
 
       - name: Start database service
         run: docker compose up -d
+
+      - name: Clone the tba-webhooks repository
+        run: |
+          git clone git@github.com:TeamTators/tba-webhooks.git ../tba-webhooks
+          cd ../tba-webhooks
+          git checkout main
+          git pull origin main
+          pnpm install
+          pnpm run build
+          cd ../dashboard
 
       - name: Wait for database
         run: |

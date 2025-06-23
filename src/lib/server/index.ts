@@ -11,7 +11,7 @@ import { Account } from './structs/account';
 import { Redis } from '$lib/server/services/redis';
 import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
 
-Redis.connect().then((res) => {
+Redis.connect(String(process.env.REDIS_NAME)).then((res) => {
 	if (res.isErr()) {
 		terminal.error('Failed to connect to Redis', res.error);
 	} else {
@@ -20,8 +20,8 @@ Redis.connect().then((res) => {
 });
 
 Redis.once('sub-connect', () => {
-	TBAWebhooks.init();
-})
+	TBAWebhooks.init(String(process.env.LOCAL_TBA_WEBHOOK_REDIS_NAME));
+});
 
 const backupCycle = () => {
 	if (!process.env.BACKUP_INTERVAL) return;

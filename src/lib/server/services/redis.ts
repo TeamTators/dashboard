@@ -12,18 +12,18 @@ import { sleep } from 'ts-utils/sleep';
 
 const log = (...args: unknown[]) => {
 	if (String(process.env.ENVIRONMENT).includes('prod')) return;
-	console.log('[Redis]', ...args);
+	// console.log('[Redis]', ...args);
 };
 const error = (...args: unknown[]) => {
-	console.error('[Redis]', ...args);
+	// console.error('[Redis]', ...args);
 };
 const warn = (...args: unknown[]) => {
 	if (String(process.env.ENVIRONMENT).includes('prod')) return;
-	console.warn('[Redis]', ...args);
+	// console.warn('[Redis]', ...args);
 };
 
 export namespace Redis {
-	export const REDIS_NAME = process.env.REDIS_NAME || 'default';
+	export let REDIS_NAME = 'default';
 	let messageId = -1;
 	export const clientId = uuid();
 	// export const _sub = createClient();
@@ -32,7 +32,11 @@ export namespace Redis {
 	export let _pub: ReturnType<typeof createClient> | undefined;
 	export let _queue: ReturnType<typeof createClient> | undefined;
 
-	export const connect = (): ResultPromise<void> => {
+	export const connect = (name: string): ResultPromise<void> => {
+		REDIS_NAME = name;
+		if (REDIS_NAME.includes(':')) {
+			throw new Error(`Redis name "${REDIS_NAME}" cannot contain a colon (:) character.`);
+		}
 		return attemptAsync(async () => {
 			if (_sub?.isOpen && _pub?.isOpen && _sub?.isReady && _pub?.isReady) {
 				return; // Already connected
@@ -40,7 +44,6 @@ export namespace Redis {
 			_sub = createClient();
 			_pub = createClient();
 			_queue = createClient();
-
 
 			_sub.on('error', (error: Error) => {
 				globalEmitter.emit('sub-error', error);
@@ -138,19 +141,14 @@ export namespace Redis {
 		});
 	};
 
-	type RedisMessage<
-		T extends Record<string, z.ZodType>
-	> = {
+	type RedisMessage<T extends Record<string, z.ZodType>> = {
 		event: keyof T;
 		data: z.infer<T[keyof T]>;
 		date: Date;
 		id: number;
 	};
 
-	export class ListeningService<
-		Events extends Record<string, z.ZodType>,
-		Name extends string
-	> {
+	export class ListeningService<Events extends Record<string, z.ZodType>, Name extends string> {
 		public static services = new Map<string, ListeningService<any, any>>();
 
 		private readonly em = new EventEmitter<{
@@ -162,28 +160,16 @@ export namespace Redis {
 		}>();
 
 		public on = <K extends keyof Events>(
-		event: K,
-		listener: (payload: {
-			date: Date;
-			id: number;
-			data: z.infer<Events[K]>;
-		}) => void
+			event: K,
+			listener: (payload: { date: Date; id: number; data: z.infer<Events[K]> }) => void
 		) => this.em.on(event, listener);
 		public once = <K extends keyof Events>(
-		event: K,
-		listener: (payload: {
-			date: Date;	
-			id: number;
-			data: z.infer<Events[K]>;
-		}) => void
+			event: K,
+			listener: (payload: { date: Date; id: number; data: z.infer<Events[K]> }) => void
 		) => this.em.once(event, listener);
 		public off = <K extends keyof Events>(
-		event: K,
-		listener: (payload: {
-			date: Date;
-			id: number;
-			data: z.infer<Events[K]>;
-		}) => void
+			event: K,
+			listener: (payload: { date: Date; id: number; data: z.infer<Events[K]> }) => void
 		) => this.em.off(event, listener);
 		public emit = <K extends keyof Events>(
 			event: K,
@@ -212,36 +198,38 @@ export namespace Redis {
 				throw new Error(`Redis is not connected. Please call Redis.connect() first.`);
 			}
 
-			_sub?.subscribe('channel:' + this.name, (message: string) => {
-				log(`[Redis:${this.name}] Received message:`, message);
-				try {
-					const parsed = z
-						.object({
-							event: z.string(),
-							data: z.unknown(),
-							date: z.string().transform((v) => new Date(v)),
-							id: z.number()
-						})
-						.parse(JSON.parse(message));
-					
-					log(`[Redis:${this.name}] Parsed message:`, parsed);
+			_sub
+				?.subscribe('channel:' + this.name, (message: string) => {
+					log(`[Redis:${this.name}] Received message:`, message);
+					try {
+						const parsed = z
+							.object({
+								event: z.string(),
+								data: z.unknown(),
+								date: z.string().transform((v) => new Date(v)),
+								id: z.number()
+							})
+							.parse(JSON.parse(message));
 
-					if (parsed.event in this.events) {
-						const event = parsed.event as keyof Events;
-						const dataSchema = this.events[event];
-						const data = dataSchema.parse(parsed.data);
-						log(`[Redis:${this.name}] Validated data:`, data);
-						this.emit(event, {
-							data,
-							date: parsed.date,
-							id: parsed.id
-						});
+						log(`[Redis:${this.name}] Parsed message:`, parsed);
+
+						if (parsed.event in this.events) {
+							const event = parsed.event as keyof Events;
+							const dataSchema = this.events[event];
+							const data = dataSchema.parse(parsed.data);
+							log(`[Redis:${this.name}] Validated data:`, data);
+							this.emit(event, {
+								data,
+								date: parsed.date,
+								id: parsed.id
+							});
+						}
+					} catch (e) {
+						error(`[Redis:${this.name}] Error parsing message for service:`, e);
 					}
-				} catch (e) {
-					error(`[Redis:${this.name}] Error parsing message for service:`, e);
-				}
-			}).then((data) => log(`Subscribed to channel "${this.name}"`))
-			.catch((e) => error(`Failed to subscribe to channel "${this.name}":`, e));
+				})
+				.then((data) => log(`Subscribed to channel "${this.name}"`))
+				.catch((e) => error(`Failed to subscribe to channel "${this.name}":`, e));
 
 			ListeningService.services.set(this.name, this);
 		}
@@ -260,7 +248,9 @@ export namespace Redis {
 			throw new Error(`Service name "${name}" cannot contain a colon (:) character.`);
 		}
 		if (name === REDIS_NAME) {
-			throw new Error(`Service name "${name}" cannot be the same as the Redis instance name "${REDIS_NAME}".`);
+			throw new Error(
+				`Service name "${name}" cannot be the same as the Redis instance name "${REDIS_NAME}".`
+			);
 		}
 		if (ListeningService.services.has(name)) {
 			const s = ListeningService.services.get(name);
