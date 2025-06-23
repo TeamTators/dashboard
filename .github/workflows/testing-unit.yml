@@ -62,9 +62,16 @@ jobs:
       - name: Start database service
         run: docker compose up -d
 
+
       - name: Clone the tba-webhooks repository
+        uses: actions/checkout@v3
+        with:
+          repository: 'TeamTators/tba-webhooks'
+          path: ../tba-webhooks
+          token: {{ secrets.GH_TOKEN }}
+
+      - name: Build tba-webhooks
         run: |
-          git clone git@github.com:TeamTators/tba-webhooks.git ../tba-webhooks
           cd ../tba-webhooks
           git checkout main
           git pull origin main
