@@ -38,45 +38,45 @@ jobs:
         with:
           version: 9
 
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: v22.12.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: v22.12.0
 
 
-      # - name: Install dependencies
-      #   run: |
-      #     cd dashboard
-      #     echo "Installing dependencies..."
-      #     pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: |
+          cd dashboard
+          echo "Installing dependencies..."
+          pnpm install --frozen-lockfile
 
-      # - name: Set up Docker Compose
-      #   run: |
-      #     cd dashboard
-      #     docker compose version || sudo curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ./docker-compose.yml
-      #     sudo chmod +x ./docker-compose.yml
+      - name: Set up Docker Compose
+        run: |
+          cd dashboard
+          docker compose version || sudo curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ./docker-compose.yml
+          sudo chmod +x ./docker-compose.yml
 
-      # - name: Load .env variables
-      #   run: |
-      #     cd dashboard
-      #     touch .env
-      #     echo "DB_HOST=localhost" >> .env
-      #     echo "DB_PORT=5432" >> .env
-      #     echo "DB_USER=postgres" >> .env
-      #     echo "DB_PASS=postgres" >> .env
-      #     echo "DB_NAME=postgres" >> .env
-      #     echo "PUBLIC_APP_NAME=test" >> .env
-      #     echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
-      #     echo "PUBLIC_DO_POTATO=true" >> .env
-      #     echo "LOCAL_TBA_WEBHOOK_PATH=./tba-webhooks" >> .env
-      #     echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
-      #     echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
-      #     export $(cat .env | xargs)
+      - name: Load .env variables
+        run: |
+          cd dashboard
+          touch .env
+          echo "DB_HOST=localhost" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_USER=postgres" >> .env
+          echo "DB_PASS=postgres" >> .env
+          echo "DB_NAME=postgres" >> .env
+          echo "PUBLIC_APP_NAME=test" >> .env
+          echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
+          echo "PUBLIC_DO_POTATO=true" >> .env
+          echo "LOCAL_TBA_WEBHOOK_PATH=./tba-webhooks" >> .env
+          echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
+          echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
+          export $(cat .env | xargs)
 
-      # - name: Start database service
-      #   run: |
-      #     cd dashboard
-      #     docker compose up -d
+      - name: Start database service
+        run: |
+          cd dashboard
+          docker compose up -d
 
       - name: Build tba-webhooks
         run: |
@@ -84,26 +84,26 @@ jobs:
           ls
           pnpm i
 
-      # - name: Wait for database
-      #   run: |
-      #     until docker exec $(docker ps -q -f name=db) pg_isready -U postgres; do
-      #       echo "Waiting for database..."
-      #       sleep 2
-      #     done
+      - name: Wait for database
+        run: |
+          until docker exec $(docker ps -q -f name=db) pg_isready -U postgres; do
+            echo "Waiting for database..."
+            sleep 2
+          done
 
-      # - name: Run migrations
-      #   run: |
-      #     cd dashboard
-      #     pnpm run db:migrate
-      #     pnpm run db:push --strict --verbose --force
+      - name: Run migrations
+        run: |
+          cd dashboard
+          pnpm run db:migrate
+          pnpm run db:push --strict --verbose --force
 
-      # - name: Run Vitest tests
-      #   run: |
-      #     cd dashboard
-      #     pnpm run test:unit
+      - name: Run Vitest tests
+        run: |
+          cd dashboard
+          pnpm run test:unit
 
-      # - name: Stop database service
-      #   if: always()
-      #   run: |
-      #     cd dashboard
-      #     docker compose down
+      - name: Stop database service
+        if: always()
+        run: |
+          cd dashboard
+          docker compose down
