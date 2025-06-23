@@ -43,22 +43,22 @@ jobs:
         with:
           node-version: v22.12.0
 
-        
-      - name: Move into dashboard directory
-        run: cd dashboard
 
       - name: Install dependencies
         run: |
+          cd dashboard
           echo "Installing dependencies..."
           pnpm install --frozen-lockfile
 
       - name: Set up Docker Compose
         run: |
+          cd dashboard
           docker compose version || sudo curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ./docker-compose.yml
           sudo chmod +x ./docker-compose.yml
 
       - name: Load .env variables
         run: |
+          cd dashboard
           touch .env
           echo "DB_HOST=localhost" >> .env
           echo "DB_PORT=5432" >> .env
@@ -94,6 +94,7 @@ jobs:
 
       - name: Run migrations
         run: |
+          cd dashboard
           pnpm run db:migrate
           pnpm run db:push --strict --verbose --force
 
