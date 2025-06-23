@@ -80,12 +80,11 @@ jobs:
 
       - name: Build tba-webhooks
         run: |
-          cd ../tba-webhooks
+          cd tba-webhooks
           git checkout main
           git pull origin main
           pnpm install --frozen-lockfile
           pnpm run build
-          cd ../dashboard
 
       - name: Wait for database
         run: |
