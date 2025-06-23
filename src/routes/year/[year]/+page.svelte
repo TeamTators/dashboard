@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Card from '$lib/components/bootstrap/Card.svelte';
+	import { date } from 'ts-utils/clock';
 	const { data } = $props();
 	const events = data.events;
 </script>
@@ -12,7 +13,7 @@
 					<div class="card bg-primary">
 						<div class="card-body">
 							<h5 class="card-title">{event.name}</h5>
-							<p class="card-text">{event.start_date} - {event.end_date}</p>
+							<p class="card-text">{date(event.start_date)} - {date(event.end_date)}</p>
 						</div>
 					</div>
 				</a>
