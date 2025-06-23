@@ -72,6 +72,7 @@ jobs:
         run: |
           cd dashboard
           touch .env
+          echo "REDIS_NAME=svelte-kit" >> .env
           echo "DB_HOST=localhost" >> .env
           echo "DB_PORT=5432" >> .env
           echo "DB_USER=postgres" >> .env
@@ -83,6 +84,7 @@ jobs:
           echo "LOCAL_TBA_WEBHOOK_PATH=../tba-webhooks" >> .env
           echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
           echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
+          echo "LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks" >> .env
           export $(cat .env | xargs)
 
       - name: Build tba-webhooks
