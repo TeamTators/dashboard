@@ -91,13 +91,6 @@ jobs:
           ls
           pnpm i
 
-      - name: Wait for database
-        run: |
-          until docker exec $(docker ps -q -f name=db) pg_isready -U postgres; do
-            echo "Waiting for database..."
-            sleep 2
-          done
-
       - name: Run migrations
         run: |
           cd dashboard
