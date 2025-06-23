@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { Account } from './structs/account';
 import { Redis } from '$lib/server/services/redis';
+import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
 
 Redis.connect().then((res) => {
 	if (res.isErr()) {
@@ -17,6 +18,10 @@ Redis.connect().then((res) => {
 		terminal.log('Connected to Redis');
 	}
 });
+
+Redis.once('sub-connect', () => {
+	TBAWebhooks.init();
+})
 
 const backupCycle = () => {
 	if (!process.env.BACKUP_INTERVAL) return;
