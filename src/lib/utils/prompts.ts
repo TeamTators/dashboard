@@ -113,8 +113,8 @@ export const prompt = async (message: string, config?: PromptConfig) => {
 						text: 'Cancel',
 						color: 'secondary',
 						onClick: () => {
-							res(null);
 							modal.hide();
+							res(null);
 						}
 					},
 					{
@@ -176,8 +176,8 @@ export const select = async <T>(message: string, options: T[], config?: SelectCo
 						text: 'Cancel',
 						color: 'secondary',
 						onClick: () => {
-							res(null);
 							modal.hide();
+							res(null);
 						}
 					},
 					{
@@ -307,8 +307,8 @@ export const alert = async (message: string, config?: AlertConfig) => {
 					text: 'Ok',
 					color: 'primary',
 					onClick: () => {
-						res();
 						modal.hide();
+						res();
 					}
 				})
 			}
@@ -359,8 +359,8 @@ export const colorPicker = async (message: string, config?: ColorPickerConfig) =
 						text: 'Cancel',
 						color: 'secondary',
 						onClick: () => {
-							res(null);
 							modal.hide();
+							res(null);
 						}
 					},
 					{

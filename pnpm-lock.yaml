@@ -18,7 +18,7 @@ importers:
         specifier: ^6.7.2
         version: 6.7.2
       '@inquirer/prompts':
-        specifier: ^7.3.1
+        specifier: ^7.2.1
         version: 7.5.3(@types/node@22.15.31)
       '@neoxia-js/nodemailer-sendgrid-transport':
         specifier: ^0.1.1
@@ -32,6 +32,9 @@ importers:
       '@oslojs/encoding':
         specifier: ^1.1.0
         version: 1.1.0
+      '@rajesh896/broprint.js':
+        specifier: ^2.1.1
+        version: 2.1.1
       '@trpc/client':
         specifier: 11.0.0-rc.682
         version: 11.0.0-rc.682(@trpc/server@11.0.0-rc.682(typescript@5.8.3))(typescript@5.8.3)
@@ -41,9 +44,6 @@ importers:
       '@types/adm-zip':
         specifier: ^0.5.7
         version: 0.5.7
-      '@types/chart.js':
-        specifier: ^2.9.41
-        version: 2.9.41
       '@types/proper-lockfile':
         specifier: ^4.1.4
         version: 4.1.4
@@ -66,14 +66,11 @@ importers:
         specifier: ^5.4.1
         version: 5.4.1
       chart.js:
-        specifier: ^4.4.8
+        specifier: ^4.5.0
         version: 4.5.0
       check-password-strength:
         specifier: ^2.0.10
         version: 2.0.10
-      cli-progress:
-        specifier: ^3.12.0
-        version: 3.12.0
       cli-table:
         specifier: ^0.3.11
         version: 0.3.11
@@ -84,11 +81,11 @@ importers:
         specifier: ^16.4.7
         version: 16.5.0
       drizzle-orm:
-        specifier: ^0.38.4
+        specifier: ^0.38.3
         version: 0.38.4(@types/pg@8.15.4)(@types/react@19.1.8)(pg@8.16.0)(postgres@3.4.7)(react@19.1.0)
       drizzle-struct:
         specifier: github:tsaxking/drizzle-struct
-        version: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/e0a909ac5cc8a21e8059f524ce35e9cd9eb3c387(@types/node@22.15.31)(@types/pg@8.15.4)(@types/react@19.1.8)(react@19.1.0)(sass-embedded@1.89.2)
+        version: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/367e266187f87695baa314943725680465398843(@types/node@22.15.31)(@types/pg@8.15.4)(@types/react@19.1.8)(react@19.1.0)(sass-embedded@1.89.2)
       drizzle-zod:
         specifier: ^0.6.1
         version: 0.6.1(drizzle-orm@0.38.4(@types/pg@8.15.4)(@types/react@19.1.8)(pg@8.16.0)(postgres@3.4.7)(react@19.1.0))(zod@3.25.64)
@@ -120,7 +117,7 @@ importers:
         specifier: ^3.2.1
         version: 3.2.1
       google-auth-library:
-        specifier: ^9.15.1
+        specifier: ^9.15.0
         version: 9.15.1
       googleapis:
         specifier: ^144.0.0
@@ -134,9 +131,15 @@ importers:
       http-status-codes:
         specifier: ^2.3.0
         version: 2.3.0
+      ignore:
+        specifier: ^7.0.5
+        version: 7.0.5
       jsoneditor:
         specifier: ^10.1.3
         version: 10.2.0
+      markdown-it:
+        specifier: ^14.1.0
+        version: 14.1.0
       math:
         specifier: github:tsaxking/calculations
         version: https://codeload.github.com/tsaxking/calculations/tar.gz/6f735b3ade72c81393ee5f07db93647c3d4fff91
@@ -167,14 +170,11 @@ importers:
       svelte-filepond:
         specifier: ^0.2.2
         version: 0.2.2(filepond@4.32.8)
-      tatorscout:
-        specifier: github:TeamTators/tatorscout-utils
-        version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a45a03a057954ce017044772065d52e113a8da72(@types/node@22.15.31)(sass-embedded@1.89.2)
       ts-utils:
         specifier: github:tsaxking/global-ts-utilities
         version: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/c93495ff64716c30e17b24cc890765a5e7cc560a(@types/node@22.15.31)(sass-embedded@1.89.2)
       uuid:
-        specifier: ^11.1.0
+        specifier: ^11.0.4
         version: 11.1.0
       vite-node:
         specifier: ^3.0.4
@@ -187,43 +187,40 @@ importers:
         version: 3.25.64
     devDependencies:
       '@chromatic-com/storybook':
-        specifier: ^3.2.4
+        specifier: ^3.2.3
         version: 3.2.6(react@19.1.0)(storybook@8.6.14(prettier@3.5.3))
       '@eslint/compat':
-        specifier: ^1.2.6
+        specifier: ^1.2.4
         version: 1.3.0(eslint@9.29.0)
-      '@faker-js/faker':
-        specifier: ^9.6.0
-        version: 9.8.0
       '@playwright/test':
-        specifier: ^1.50.1
+        specifier: ^1.49.1
         version: 1.53.0
       '@storybook/addon-essentials':
-        specifier: ^8.5.3
+        specifier: ^8.4.7
         version: 8.6.14(@types/react@19.1.8)(storybook@8.6.14(prettier@3.5.3))
       '@storybook/addon-interactions':
-        specifier: ^8.5.3
+        specifier: ^8.4.7
         version: 8.6.14(storybook@8.6.14(prettier@3.5.3))
       '@storybook/addon-svelte-csf':
         specifier: 5.0.0-next.21
         version: 5.0.0-next.21(@storybook/svelte@8.6.14(storybook@8.6.14(prettier@3.5.3))(svelte@5.34.3))(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2)))(storybook@8.6.14(prettier@3.5.3))(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2))
       '@storybook/blocks':
-        specifier: ^8.5.3
+        specifier: ^8.4.7
         version: 8.6.14(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.14(prettier@3.5.3))
       '@storybook/svelte':
-        specifier: ^8.5.3
+        specifier: ^8.4.7
         version: 8.6.14(storybook@8.6.14(prettier@3.5.3))(svelte@5.34.3)
       '@storybook/sveltekit':
-        specifier: ^8.5.3
+        specifier: ^8.4.7
         version: 8.6.14(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2)))(postcss-load-config@3.1.4(postcss@8.5.5)(ts-node@10.9.2(@types/node@22.15.31)(typescript@5.8.3)))(postcss@8.5.5)(storybook@8.6.14(prettier@3.5.3))(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2))
       '@storybook/test':
-        specifier: ^8.5.3
+        specifier: ^8.4.7
         version: 8.6.14(storybook@8.6.14(prettier@3.5.3))
       '@sveltejs/adapter-node':
-        specifier: ^5.2.12
+        specifier: ^5.2.11
         version: 5.2.12(@sveltejs/kit@2.21.5(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2)))(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2)))
       '@sveltejs/kit':
-        specifier: ^2.17.1
+        specifier: ^2.15.1
         version: 2.21.5(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2)))(svelte@5.34.3)(vite@5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^4.0.4
@@ -237,9 +234,6 @@ importers:
       '@types/busboy':
         specifier: ^1.5.4
         version: 1.5.4
-      '@types/cli-progress':
-        specifier: ^3.11.6
-        version: 3.11.6
       '@types/cli-table':
         specifier: ^0.3.4
         version: 0.3.4
@@ -253,7 +247,7 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1
       '@types/node':
-        specifier: ^22.13.1
+        specifier: ^22.10.4
         version: 22.15.31
       '@types/nodemailer':
         specifier: ^6.4.17
@@ -268,10 +262,10 @@ importers:
         specifier: ^9.1.2
         version: 9.1.2
       drizzle-kit:
-        specifier: ^0.30.4
+        specifier: ^0.30.1
         version: 0.30.6
       eslint:
-        specifier: ^9.19.0
+        specifier: ^9.17.0
         version: 9.29.0
       eslint-config-prettier:
         specifier: ^9.1.0
@@ -289,34 +283,34 @@ importers:
         specifier: ^3.4.2
         version: 3.5.3
       prettier-plugin-svelte:
-        specifier: ^3.3.3
+        specifier: ^3.3.2
         version: 3.4.0(prettier@3.5.3)(svelte@5.34.3)
       sass-embedded:
-        specifier: ^1.83.4
+        specifier: ^1.83.0
         version: 1.89.2
       storybook:
-        specifier: ^8.5.3
+        specifier: ^8.4.7
         version: 8.6.14(prettier@3.5.3)
       svelte:
-        specifier: ^5.19.9
+        specifier: ^5.16.1
         version: 5.34.3
       svelte-check:
-        specifier: ^4.1.4
+        specifier: ^4.1.1
         version: 4.2.1(picomatch@4.0.2)(svelte@5.34.3)(typescript@5.8.3)
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.15.31)(typescript@5.8.3)
       typescript:
-        specifier: ^5.7.3
+        specifier: ^5.7.2
         version: 5.8.3
       typescript-eslint:
-        specifier: ^8.23.0
+        specifier: ^8.19.0
         version: 8.34.0(eslint@9.29.0)(typescript@5.8.3)
       vite:
-        specifier: ^5.4.14
+        specifier: ^5.4.11
         version: 5.4.19(@types/node@22.15.31)(sass-embedded@1.89.2)
       vitest:
-        specifier: ^2.1.9
+        specifier: ^2.1.8
         version: 2.1.9(@types/node@22.15.31)(sass-embedded@1.89.2)
 
 packages:
@@ -986,10 +980,6 @@ packages:
     resolution: {integrity: sha512-4SaFZCNfJqvk/kenHpI8xvN42DMaoycy4PzKc5otHxRswww1kAt82OlBuwRVLofCACCTZEcla2Ydxv8scMXaTg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@faker-js/faker@9.8.0':
-    resolution: {integrity: sha512-U9wpuSrJC93jZBxx/Qq2wPjCuYISBueyVUGK7qqdmj7r/nxaxwW8AQDCLeRO7wZnjj94sh3p246cAYjUKuqgfg==}
-    engines: {node: '>=18.0.0', npm: '>=9.0.0'}
-
   '@fortawesome/fontawesome-free@6.7.2':
     resolution: {integrity: sha512-JUOtgFW6k9u4Y+xeIaEiLr3+cjoUPiAuLXoyKOJSia6Duzb7pq+A76P9ZdPDoAoxHdHzq6gE9/jKBGXlZT8FbA==}
     engines: {node: '>=6'}
@@ -1319,6 +1309,10 @@ packages:
 
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
+
+  '@rajesh896/broprint.js@2.1.1':
+    resolution: {integrity: sha512-34L0SFrOLHWAhF4ZU7QS32zItGOKdu3BY0DmMwoW6zekLuJWSuCIK07Xzgyy2AqCCUByd2VHMr2wbHousid+qg==}
+    hasBin: true
 
   '@redis/bloom@5.5.6':
     resolution: {integrity: sha512-bNR3mxkwtfuCxNOzfV8B3R5zA1LiN57EH6zK4jVBIgzMzliNuReZXBFGnXvsi80/SYohajn78YdpYI+XNpqL+A==}
@@ -1779,12 +1773,6 @@ packages:
 
   '@types/chai@5.2.2':
     resolution: {integrity: sha512-8kB30R7Hwqf40JPiKhVzodJs2Qc1ZJ5zuT3uzw5Hq/dhNCl3G3l83jfpdI1e20BP348+fV7VIL/+FxaXkqBmWg==}
-
-  '@types/chart.js@2.9.41':
-    resolution: {integrity: sha512-3dvkDvueckY83UyUXtJMalYoH6faOLkWQoaTlJgB4Djde3oORmNP0Jw85HtzTuXyliUHcdp704s0mZFQKio/KQ==}
-
-  '@types/cli-progress@3.11.6':
-    resolution: {integrity: sha512-cE3+jb9WRlu+uOSAugewNpITJDt1VF8dHOopPO4IABFc3SXYL5WE/+PTz/FCdZRRfIujiWW3n3aMbv1eIGVRWA==}
 
   '@types/cli-table@0.3.4':
     resolution: {integrity: sha512-GsALrTL69mlwbAw/MHF1IPTadSLZQnsxe7a80G8l4inN/iEXCOcVeT/S7aRc6hbhqzL9qZ314kHPDQnQ3ev+HA==}
@@ -2280,10 +2268,6 @@ packages:
     resolution: {integrity: sha512-EJUDT7nDVFDvaQgAo2G/PJvxmp1o/c6iXLbswsBbUFXi1Nr+AjA2cKmfbKDMjMvzEe75g3P6JkaDDAKk96A85A==}
     engines: {node: '>= 4.0'}
 
-  cli-progress@3.12.0:
-    resolution: {integrity: sha512-tRkV3HJ1ASwm19THiiLIXLO7Im7wlTuKnvkYaTkyoAPefqjNg7W7DHKUlGRxy9vxDvbyCYQkQozvptuMkGCg8A==}
-    engines: {node: '>=4'}
-
   cli-table@0.3.11:
     resolution: {integrity: sha512-IqLQi4lO0nIB4tcdTpN4LCB9FI3uqrJZK7RC515EnhZ6qBaglkIgICb1wjeAqpdoOabm1+SuQtkXIPdYC93jhQ==}
     engines: {node: '>= 0.2.0'}
@@ -2638,8 +2622,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/e0a909ac5cc8a21e8059f524ce35e9cd9eb3c387:
-    resolution: {tarball: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/e0a909ac5cc8a21e8059f524ce35e9cd9eb3c387}
+  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/367e266187f87695baa314943725680465398843:
+    resolution: {tarball: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/367e266187f87695baa314943725680465398843}
     version: 1.0.0
 
   drizzle-zod@0.6.1:
@@ -2769,12 +2753,6 @@ packages:
     engines: {node: '>=12'}
     peerDependencies:
       eslint: '>=6.0.0'
-
-  eslint-config-prettier@10.1.5:
-    resolution: {integrity: sha512-zc1UmCpNltmVY34vuLRV61r1K27sWuX39E+uyUnY8xS2Bex88VV9cugG+UZbRSRGtGyFboj+D8JODyme1plMpw==}
-    hasBin: true
-    peerDependencies:
-      eslint: '>=7.0.0'
 
   eslint-config-prettier@9.1.0:
     resolution: {integrity: sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==}
@@ -3417,6 +3395,9 @@ packages:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
     engines: {node: '>=10'}
 
+  linkify-it@5.0.0:
+    resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
+
   locate-character@3.0.0:
     resolution: {integrity: sha512-SW13ws7BjaeJ6p7Q6CO2nchbYEc3X3J6WrmTTDto7yMPqVSZTUyY5Tjbid+Ab8gLnATtygYtiDIJGQRRn2ZOiA==}
 
@@ -3455,6 +3436,10 @@ packages:
   map-or-similar@1.5.0:
     resolution: {integrity: sha512-0aF7ZmVon1igznGI4VS30yugpduQW3y3GkcgGJOp7d8x8QrizhigUxjI/m2UojsXXto+jLAH3KSz+xOJTiORjg==}
 
+  markdown-it@14.1.0:
+    resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
+    hasBin: true
+
   material-icons@1.13.14:
     resolution: {integrity: sha512-kZOfc7xCC0rAT8Q3DQixYAeT+tBqZnxkseQtp2bxBxz7q5pMAC+wmit7vJn1g/l7wRU+HEPq23gER4iPjGs5Cg==}
 
@@ -3473,6 +3458,9 @@ packages:
     resolution: {integrity: sha512-Y4ab+vLvTJS88196Scb/RFNaHMHVSWw6CwfsgWIQP8f42D57iDII0/qABSu530V4pkv8s6T2nx3ds0MC1VwFLA==}
     peerDependencies:
       svelte: ^3.56.0 || ^4.0.0 || ^5.0.0-next.120
+
+  mdurl@2.0.0:
+    resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
@@ -3657,9 +3645,6 @@ packages:
   mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
-
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -3987,6 +3972,10 @@ packages:
 
   proxy-from-env@1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+
+  punycode.js@2.3.1:
+    resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
+    engines: {node: '>=6'}
 
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -4495,10 +4484,6 @@ packages:
     resolution: {integrity: sha512-GTt8rSKje5FilG+wEdfCkOcLL7LWqpMlr2c3LRuKt/YXxcJ52aGSbGBAdI4L3aaqfrBt6y711El53ItyH1NWzg==}
     engines: {node: '>=16.0.0'}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a45a03a057954ce017044772065d52e113a8da72:
-    resolution: {tarball: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a45a03a057954ce017044772065d52e113a8da72}
-    version: 1.0.0
-
   text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
 
@@ -4627,6 +4612,9 @@ packages:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  uc.micro@2.1.0:
+    resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
   uglify-js@3.19.3:
     resolution: {integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==}
@@ -5324,8 +5312,6 @@ snapshots:
       '@eslint/core': 0.15.0
       levn: 0.4.1
 
-  '@faker-js/faker@9.8.0': {}
-
   '@fortawesome/fontawesome-free@6.7.2': {}
 
   '@humanfs/core@0.19.1': {}
@@ -5621,6 +5607,8 @@ snapshots:
   '@polka/url@1.0.0-next.29': {}
 
   '@popperjs/core@2.11.8': {}
+
+  '@rajesh896/broprint.js@2.1.1': {}
 
   '@redis/bloom@5.5.6(@redis/client@5.5.6)':
     dependencies:
@@ -6162,14 +6150,6 @@ snapshots:
   '@types/chai@5.2.2':
     dependencies:
       '@types/deep-eql': 4.0.2
-
-  '@types/chart.js@2.9.41':
-    dependencies:
-      moment: 2.30.1
-
-  '@types/cli-progress@3.11.6':
-    dependencies:
-      '@types/node': 22.15.31
 
   '@types/cli-table@0.3.4': {}
 
@@ -6765,10 +6745,6 @@ snapshots:
     dependencies:
       source-map: 0.6.1
 
-  cli-progress@3.12.0:
-    dependencies:
-      string-width: 4.2.3
-
   cli-table@0.3.11:
     dependencies:
       colors: 1.0.3
@@ -6998,7 +6974,7 @@ snapshots:
       postgres: 3.4.7
       react: 19.1.0
 
-  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/e0a909ac5cc8a21e8059f524ce35e9cd9eb3c387(@types/node@22.15.31)(@types/pg@8.15.4)(@types/react@19.1.8)(react@19.1.0)(sass-embedded@1.89.2):
+  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/367e266187f87695baa314943725680465398843(@types/node@22.15.31)(@types/pg@8.15.4)(@types/react@19.1.8)(react@19.1.0)(sass-embedded@1.89.2):
     dependencies:
       '@eslint/compat': 1.3.0(eslint@9.29.0)
       '@msgpack/msgpack': 3.0.0-beta3
@@ -7274,10 +7250,6 @@ snapshots:
     dependencies:
       eslint: 9.29.0
       semver: 7.7.2
-
-  eslint-config-prettier@10.1.5(eslint@9.29.0):
-    dependencies:
-      eslint: 9.29.0
 
   eslint-config-prettier@9.1.0(eslint@9.29.0):
     dependencies:
@@ -8130,6 +8102,10 @@ snapshots:
 
   lilconfig@2.1.0: {}
 
+  linkify-it@5.0.0:
+    dependencies:
+      uc.micro: 2.1.0
+
   locate-character@3.0.0: {}
 
   locate-path@6.0.0:
@@ -8160,6 +8136,15 @@ snapshots:
 
   map-or-similar@1.5.0: {}
 
+  markdown-it@14.1.0:
+    dependencies:
+      argparse: 2.0.1
+      entities: 4.5.0
+      linkify-it: 5.0.0
+      mdurl: 2.0.0
+      punycode.js: 2.3.1
+      uc.micro: 2.1.0
+
   material-icons@1.13.14: {}
 
   math-intrinsics@1.1.0: {}
@@ -8177,6 +8162,8 @@ snapshots:
       prismjs: 1.30.0
       svelte: 5.34.3
       vfile-message: 2.0.4
+
+  mdurl@2.0.0: {}
 
   media-typer@0.3.0: {}
 
@@ -8536,8 +8523,6 @@ snapshots:
     dependencies:
       minimist: 1.2.8
 
-  moment@2.30.1: {}
-
   mri@1.2.0: {}
 
   mrmime@2.0.1: {}
@@ -8809,6 +8794,8 @@ snapshots:
       ipaddr.js: 1.9.1
 
   proxy-from-env@1.1.0: {}
+
+  punycode.js@2.3.1: {}
 
   punycode@2.3.1: {}
 
@@ -9341,42 +9328,6 @@ snapshots:
 
   sync-message-port@1.1.3: {}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a45a03a057954ce017044772065d52e113a8da72(@types/node@22.15.31)(sass-embedded@1.89.2):
-    dependencies:
-      '@eslint/compat': 1.3.0(eslint@9.29.0)
-      eslint: 9.29.0
-      eslint-config-prettier: 10.1.5(eslint@9.29.0)
-      eslint-plugin-svelte: 2.46.1(eslint@9.29.0)(svelte@5.34.3)(ts-node@10.9.2(@types/node@22.15.31)(typescript@5.8.3))
-      math: https://codeload.github.com/tsaxking/calculations/tar.gz/6f735b3ade72c81393ee5f07db93647c3d4fff91
-      prettier: 3.5.3
-      prettier-plugin-svelte: 3.4.0(prettier@3.5.3)(svelte@5.34.3)
-      svelte: 5.34.3
-      ts-node: 10.9.2(@types/node@22.15.31)(typescript@5.8.3)
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/c93495ff64716c30e17b24cc890765a5e7cc560a(@types/node@22.15.31)(sass-embedded@1.89.2)
-      typescript: 5.8.3
-      uuid: 11.1.0
-      zod: 3.25.64
-    transitivePeerDependencies:
-      - '@edge-runtime/vm'
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/debug'
-      - '@types/node'
-      - '@vitest/browser'
-      - '@vitest/ui'
-      - happy-dom
-      - jiti
-      - jsdom
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
   text-table@0.2.0: {}
 
   tiny-invariant@1.3.3: {}
@@ -9498,6 +9449,8 @@ snapshots:
       - supports-color
 
   typescript@5.8.3: {}
+
+  uc.micro@2.1.0: {}
 
   uglify-js@3.19.3: {}
 

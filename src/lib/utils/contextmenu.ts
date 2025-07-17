@@ -1,3 +1,5 @@
+import { type Icon } from '../types/icons';
+
 /**
  * Options for the context menu
  * @date 3/8/2024 - 6:59:48 AM
@@ -9,10 +11,7 @@ export type ContextMenuOptions = (
 	| {
 			action: (e: MouseEvent) => void;
 			name: string;
-			icon: {
-				name: string;
-				type: 'fontawesome' | 'material-icons' | 'bootstrap' | 'material-symbols' | 'svg';
-			};
+			icon: Icon;
 	  }
 	| null
 	| string
@@ -49,7 +48,7 @@ export const contextmenu = (
 	event: MouseEvent | PointerEvent,
 	config: {
 		options: ContextMenuOptions;
-		width?: string;
+		width?: `${number}${'px' | 'rem' | 'em' | '%'}`; // Default width is 200px
 	}
 ) => {
 	event.preventDefault();
@@ -57,7 +56,7 @@ export const contextmenu = (
 
 	const el = create('div');
 	el.style.width = width;
-	el.classList.add('shadow', 'border-0', 'contextmenu', 'rounded');
+	el.classList.add('shadow', 'border-0', 'contextmenu', 'rounded', 'layer-3');
 	el.style.position = 'fixed';
 	el.style.zIndex = '1000';
 	const body = create('div');
@@ -93,6 +92,7 @@ export const contextmenu = (
 				'p-2',
 				'rounded-0'
 			);
+			button.type = 'button';
 			const icon = create('span');
 			switch (o.icon.type) {
 				case 'bootstrap':

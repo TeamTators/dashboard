@@ -2,6 +2,7 @@ import { attemptAsync } from 'ts-utils/check';
 import { sse } from '$lib/services/sse';
 import { Struct, StructData, SingleWritable, DataArr } from 'drizzle-struct/front-end';
 import { browser } from '$app/environment';
+import { z } from 'zod';
 
 export namespace Account {
 	export const Account = new Struct({
@@ -14,7 +15,8 @@ export namespace Account {
 			lastName: 'string',
 			email: 'string',
 			picture: 'string',
-			verified: 'boolean'
+			verified: 'boolean',
+			lastLogin: 'string'
 			// verification: 'string'
 		},
 		socket: sse,
@@ -31,6 +33,7 @@ export namespace Account {
 			title: 'string',
 			severity: 'string',
 			message: 'string',
+			iconType: 'string',
 			icon: 'string',
 			link: 'string',
 			read: 'boolean'
@@ -58,7 +61,6 @@ export namespace Account {
 			updated: '0',
 			created: '0',
 			archived: false,
-			universe: '',
 			attributes: '[]',
 			lifetime: 0,
 			canUpdate: false
@@ -99,5 +101,9 @@ export namespace Account {
 				satisfies: () => false
 			}
 		);
+	};
+
+	export const usernameExists = (username: string) => {
+		return Account.send('username-exists', { username }, z.boolean());
 	};
 }
