@@ -12,12 +12,10 @@
 		answers: DataArr<typeof Scouting.PIT.Answers.data.structure>;
 	}
 
-	const props: Props = $props();
-	const question = props.question;
-	const team = $derived(props.team);
+	const { question, team, answers }: Props = $props();
 
 	let answer: Scouting.PIT.AnswerData | undefined = $state(
-		props.answers.data.find((a) => a.data.questionId === question.data.id && a.data.team === team)
+		answers.data.find((a) => a.data.questionId === question.data.id && a.data.team === team)
 	);
 
 	const value = writable<string[]>([]);

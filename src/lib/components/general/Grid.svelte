@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { onMount } from 'svelte';
 	import {
 		createGrid,
@@ -13,8 +13,19 @@
 		RowAutoHeightModule,
 		ColumnAutoSizeModule,
 		TextFilterModule,
-		NumberFilterModule
+		NumberFilterModule,
+		RowApiModule,
+		NumberEditorModule,
+		RenderApiModule,
+		ScrollApiModule,
+		SelectEditorModule,
+		TextEditorModule,
+		CustomEditorModule,
+		CellStyleModule,
+		DateEditorModule
 	} from 'ag-grid-community';
+	import { EventEmitter } from 'ts-utils/event-emitter';
+	import type { Readable } from 'svelte/store';
 
 	// Register AG Grid Modules
 	ModuleRegistry.registerModules([
@@ -25,90 +36,129 @@
 		RowAutoHeightModule,
 		ColumnAutoSizeModule,
 		TextFilterModule,
-		NumberFilterModule
+		NumberFilterModule,
+		RowApiModule,
+		NumberEditorModule,
+		RenderApiModule,
+		ScrollApiModule,
+		SelectEditorModule,
+		TextEditorModule,
+		CustomEditorModule,
+		CellStyleModule,
+		DateEditorModule
 	]);
 
-	interface Props<T extends Record<string, unknown> = Record<string, unknown>> {
-		columnDefs: {
-			headerName: string;
-			field: keyof T;
-		}[];
-		rowData: T[];
-		gridClasses: string;
-		filterEnable: boolean;
-		filterClasses: string;
-		additionalOptions?: Partial<GridOptions>;
+	interface Props {
+		filter?: boolean;
+		opts: Omit<GridOptions<T>, 'rowData'>;
+		data: Readable<T[]>;
+		style?: string;
+		rowNumbers?: boolean;
+		layer?: number;
+		height: number | `${number}${'px' | 'vh' | 'rem' | 'em' | '%'}` | 'auto';
 	}
 
-	let {
-		columnDefs,
-		rowData,
-		gridClasses,
-		filterEnable,
-		filterClasses,
-		additionalOptions = {}
-	}: Props = $props();
+	const { filter, opts, data, style, rowNumbers = false, layer = 1, height }: Props = $props();
+
+	const em = new EventEmitter<{
+		filter: T[];
+		init: HTMLDivElement;
+		ready: GridApi<T>;
+	}>();
+
+	export const on = em.on.bind(em);
+	export const off = em.off.bind(em);
+
+	export const getGrid = () => grid;
 
 	// Create a custom dark theme using Theming API
 	const darkTheme = themeQuartz.withParams({
-		backgroundColor: '#212529',
+		backgroundColor: `var(--layer-${layer})`,
 		browserColorScheme: 'dark',
 		chromeBackgroundColor: {
 			ref: 'foregroundColor',
 			mix: 0.07,
 			onto: 'backgroundColor'
 		},
-		foregroundColor: '#FFF',
+		foregroundColor: `var(--text-layer-${layer})`,
 		headerFontSize: 14
 	});
 
 	let gridDiv: HTMLDivElement;
-	let grid: GridApi;
+	let grid: GridApi<T>;
 	let filterText: string = $state('');
+	let filterTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	const onFilterTextBoxChanged = () => {
-		grid.setGridOption('quickFilterText', filterText);
+	const onDataFilter = () => {
+		if (filterTimeout) {
+			clearTimeout(filterTimeout);
+		}
+		filterTimeout = setTimeout(() => {
+			grid.setGridOption('quickFilterText', filterText);
+			const nodes = grid
+				.getRenderedNodes()
+				.map((n) => n.data)
+				.filter(Boolean);
+			em.emit('filter', nodes);
+		}, 300);
 	};
 
 	onMount(() => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const gridOptions: GridOptions<any> = {
-			theme: darkTheme, // Apply custom dark theme
-			columnDefs,
-			rowData,
-			defaultColDef: {
-				sortable: true,
-				flex: 1,
-				filter: true,
-				autoHeight: true,
-				wrapText: true
-			},
-			pagination: true,
-			paginationPageSize: 10,
-			paginationPageSizeSelector: [10, 20, 50],
-			...additionalOptions
-
-			// autoSizeStrategy: {
-			// 	type: 'fitGridWidth'
-			// }
-			// paginationAutoPageSize: true
-		};
-
-		if (gridDiv) {
-			grid = createGrid(gridDiv, gridOptions); // Create the grid with custom options
+		if (!opts.columnDefs) {
+			throw new Error('Column definitions are required');
 		}
+		em.emit('init', gridDiv); // Emit the init event with the grid container
+		const gridOptions: GridOptions<T> = {
+			theme: darkTheme,
+			...opts,
+			rowData: $data,
+			columnDefs: [
+				...(rowNumbers
+					? [
+							{
+								headerName: '',
+								valueGetter: 'node.rowIndex + 1',
+								width: 50,
+								suppressMovable: true,
+								cellClass: 'text-center',
+								cellStyle: {
+									backgroundColor: 'var(--ag-chrome-background-color)'
+								}
+							}
+						]
+					: []),
+				...opts.columnDefs
+			]
+		};
+		grid = createGrid(gridDiv, gridOptions); // Create the grid with custom options
+		em.emit('ready', grid); // Emit the ready event with the grid API
+
+		return data.subscribe((r) => {
+			grid.setGridOption('rowData', r); // Set the row data from the provided store
+			onDataFilter();
+		});
 	});
 </script>
 
 <!-- Grid Container -->
-<div class="filter-container">
-	<input
-		type="text"
-		id="filter-text-box"
-		class="form-control me-2"
-		placeholder="Filter..."
-		oninput={onFilterTextBoxChanged}
-		bind:value={filterText}
-	/>
-</div>
-<div bind:this={gridDiv} class="w-100 h-100"></div>
+{#if filter}
+	<div class="col-md-8">
+		<div class="filter-container">
+			<input
+				type="text"
+				id="filter-text-box"
+				class="form-control me-2"
+				placeholder="Filter..."
+				oninput={onDataFilter}
+				bind:value={filterText}
+			/>
+		</div>
+	</div>
+{/if}
+<div
+	bind:this={gridDiv}
+	style={`
+		${style};
+		height: ${typeof height === 'number' ? `${height}px` : height};
+	`}
+></div>

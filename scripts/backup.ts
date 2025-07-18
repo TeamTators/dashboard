@@ -1,10 +1,10 @@
 import path from 'path';
 import fs from 'fs';
-import { openStructs } from '../src/lib/server/cli/struct';
+import { openStructs } from '../cli/struct';
 import { DB } from '../src/lib/server/db';
 import { Struct } from 'drizzle-struct/back-end';
 import AdmZip from 'adm-zip';
-import { prompt } from '../src/lib/server/cli/utils';
+import { prompt } from '../cli/utils';
 import { toSnakeCase } from 'ts-utils/text';
 
 export const BACKUP_DIR = path.join(process.cwd(), 'backups');
@@ -14,16 +14,8 @@ export default async (name?: string) => {
 		await fs.promises.mkdir(BACKUP_DIR, { recursive: true });
 	}
 
-	try {
-		(await openStructs()).unwrap();
-		(await Struct.buildAll(DB)).unwrap();
-	} catch (error) {
-		if (error instanceof Error) {
-			if (!error.message.includes('already been built')) {
-				throw error;
-			}
-		}
-	}
+	await openStructs().unwrap();
+	(await Struct.buildAll(DB)).unwrap();
 
 	if (!name) {
 		name =

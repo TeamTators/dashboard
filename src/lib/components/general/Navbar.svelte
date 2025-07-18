@@ -60,40 +60,7 @@
 					{/if}
 				</ul>
 			</div>
-			<div class="dropdown">
-				<button
-					class="btn dropdown-toggle"
-					type="button"
-					data-bs-toggle="dropdown"
-					aria-expanded="false"
-				>
-					<i class="material-icons">menu</i>
-				</button>
-				<ul
-					class="dropdown-menu"
-					style="
-					position: fixed;
-					top: 52px;
-					left: calc(100% - 160px);
-					width:	min-content;
-				"
-				>
-					<li>
-						<a class="dropdown-item" aria-current="page" href="/">Home</a>
-					</li>
-					<li>
-						<a class="dropdown-item ws-nowrap" aria-current="page" href="/dashboard/mentor"
-							>Mentors</a
-						>
-					</li>
-					<li>
-						<a class="dropdown-item ws-nowrap" aria-current="page" href="https://app.tatorscout.org"
-							>Remote App</a
-						>
-					</li>
-				</ul>
-			</div>
-			<!-- <button
+			<button
 				class="me-5 btn position-relative"
 				type="button"
 				data-bs-toggle="offcanvas"
@@ -107,10 +74,10 @@
 						<span class="visually-hidden">unread messages</span>
 					</span>
 				{/if}
-			</button> -->
+			</button>
 		</div>
 	</div>
 </nav>
 <SideNav id="pages" />
 
-<!-- <Notifications bind:notifs /> -->
+<Notifications bind:notifs />

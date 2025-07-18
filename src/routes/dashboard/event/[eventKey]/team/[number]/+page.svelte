@@ -627,7 +627,7 @@
 			</Card>
 			<Card card={radarChart}>
 				{#snippet body()}
-					<RadarChart {team} {scouting} />
+					<RadarChart {teams} {scouting} />
 				{/snippet}
 			</Card>
 		{/key}

@@ -17,11 +17,20 @@ import {
 } from 'tatorscout/tba';
 import { z } from 'zod';
 
-const get = <T>(url: string, parser: z.ZodType<T>) => {
+export const get = <T>(url: string, parser: z.ZodType<T>) => {
 	return Requests.get(url, {
 		cache: true,
 		expectStream: false,
 		parser: parser
+	});
+};
+
+const post = <T>(url: string, data: unknown, parser: z.ZodType<T>) => {
+	return Requests.post(url, {
+		cache: false,
+		expectStream: false,
+		body: data,
+		parser
 	});
 };
 
@@ -46,6 +55,17 @@ export class TBAEvent {
 			const event = (await get('/tba/event/' + eventKey + `?force=${force}`, EventSchema)).unwrap();
 			return new TBAEvent(event);
 		});
+	}
+
+	public static createEvent(data: z.infer<typeof EventSchema>) {
+		return post(
+			'/tba/event',
+			data,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
 	}
 
 	constructor(public readonly tba: E) {}
@@ -76,6 +96,47 @@ export class TBAEvent {
 			this._teams = t;
 			return t;
 		});
+	}
+
+	update(data: z.infer<typeof EventSchema>) {
+		return post(
+			'/tba/event/' + this.tba.key,
+			data,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
+	}
+
+	setTeams(teams: number[]) {
+		return post(
+			'/tba/event/' + this.tba.key + '/teams',
+			teams,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
+	}
+
+	setMatches(
+		matches: {
+			number: number;
+			compLevel: 'qm' | 'qf' | 'sf' | 'f';
+			red: [number, number, number];
+			blue: [number, number, number];
+			time: number;
+		}[]
+	) {
+		return post(
+			'/tba/event/' + this.tba.key + '/matches',
+			matches,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
 	}
 }
 

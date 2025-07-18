@@ -1,6 +1,5 @@
 import { integer, text } from 'drizzle-orm/pg-core';
 import { Struct, StructData, StructStream } from 'drizzle-struct/back-end';
-import { createEntitlement } from '../utils/entitlements';
 import { attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
@@ -15,9 +14,6 @@ export namespace Strategy {
 			strategyId: text('strategy_id').notNull(),
 			board: text('board').notNull(),
 			name: text('name').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
@@ -41,9 +37,6 @@ export namespace Strategy {
 			opponent2: integer('opponent2').notNull(),
 			opponent3: integer('opponent3').notNull()
 		},
-		generators: {
-			universe: () => '2122'
-		},
 		validators: {
 			alliance: (value) => ['red', 'blue', 'unknown'].includes(String(value))
 		}
@@ -52,14 +45,7 @@ export namespace Strategy {
 	Strategy.queryListen('from-match', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
 		if (!(await Account.isAdmin(event.locals.account).unwrap())) {
-			if (
-				!(await Permissions.isEntitled(
-					await Permissions.allAccountRoles(event.locals.account).unwrap(),
-					'view-strategy'
-				))
-			) {
-				return new Error('Not entitled to view strategy');
-			}
+			return new Error('Not entitled');
 		}
 
 		const parsed = z
@@ -74,14 +60,15 @@ export namespace Strategy {
 		const { eventKey, matchNumber, compLevel } = parsed.data;
 		const res = await getMatchStrategy(matchNumber, compLevel, eventKey);
 		if (res.isErr()) return new Error('Error getting strategy: ' + res.error.message);
-		const strategies = res.value;
-		const stream = new StructStream(Strategy);
-		setTimeout(() => {
-			for (const strategy of strategies) {
-				stream.add(strategy);
-			}
-		}, event.locals.session.data.latency);
-		return stream;
+		return res.value;
+		// const strategies = res.value;
+		// const stream = new StructStream(Strategy);
+		// setTimeout(() => {
+		// 	for (const strategy of strategies) {
+		// 		stream.add(strategy);
+		// 	}
+		// }, event.locals.session.data.latency);
+		// return stream;
 	});
 
 	Strategy.on('create', (strategy) => {
@@ -254,17 +241,15 @@ export namespace Strategy {
 			team2: integer('team2').notNull(),
 			team3: integer('team3').notNull(),
 			team4: integer('team4').notNull()
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'view-strategy',
 		structs: [Whiteboards, Strategy, Alliances],
 		permissions: ['whiteboards:read:*', 'strategy:read:*', 'alliances:read:*'],
-		group: 'Strategy'
+		group: 'Strategy',
+		description: 'View strategy information'
 	});
 }
 

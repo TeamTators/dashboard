@@ -1,16 +1,12 @@
-import { attemptAsync, resolveAll } from 'ts-utils/check';
+import { attemptAsync } from 'ts-utils/check';
 import { Event, Team } from './tba';
 import { z } from 'zod';
 import { Scouting } from '../structs/scouting';
-import { $Math } from 'ts-utils/math';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 import terminal from './terminal';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
-import { fail, type RequestEvent } from '@sveltejs/kit';
-import { ServerCode } from 'ts-utils/status';
-import { matchesGlob } from 'path';
-import e from 'express';
+import { type RequestEvent } from '@sveltejs/kit';
 import { teamsFromMatch } from 'tatorscout/tba';
 
 export const auth = (event: RequestEvent) => {

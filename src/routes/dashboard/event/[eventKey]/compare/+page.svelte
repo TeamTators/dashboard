@@ -7,11 +7,13 @@
 	import { onMount } from 'svelte';
 	import { Dashboard } from '$lib/model/dashboard.js';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
+	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 
 	const { data } = $props();
 	const event = $derived(data.event);
 	const selectedTeams = $derived(data.selectedTeams);
 	const teams = $derived(data.teams);
+	const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
 	const matches = $derived(data.matches);
 
@@ -41,19 +43,20 @@
 	const dashboard = $derived(
 		new Dashboard.Dashboard({
 			name: event.tba.name + ' Team Comparison',
-			cards: teams.map(
-				(t) =>
-					new Dashboard.Card({
-						name: t.tba.team_number + ' | ' + t.tba.nickname,
-						id: t.tba.team_number.toString(),
-						icon: 'mdi:robot',
-						size: {
-							width: 1,
-							height: 1
-						},
-						iconType: 'material-icons'
-					})
-			),
+			cards: [],
+			// teams.map(
+			// 	(t) =>
+			// 		new Dashboard.Card({
+			// 			name: t.tba.team_number + ' | ' + t.tba.nickname,
+			// 			id: t.tba.team_number.toString(),
+			// 			icon: 'mdi:robot',
+			// 			size: {
+			// 				width: 1,
+			// 				height: 1
+			// 			},
+			// 			iconType: 'material-icons'
+			// 		})
+			// ),
 			id: 'event-dashboard'
 		})
 	);
@@ -133,7 +136,7 @@
 				</div>
 				<div class="row mb-3">
 					{#key selectedTeams}
-						{#each selectedTeams as team, i}
+						{#each selectedTeams as team, i  }
 							<div class="col-md-4 mb-3">
 								<div class="card layer-2">
 									<div class="card-body">
@@ -161,6 +164,19 @@
 								</div>
 							</div>
 						{/each}
+						<div class="col-md-4 mb-3">
+							<div class="card layer-2">
+								<div class="card-body">
+									<h5 class="card-title">Radar Chart</h5>
+									<div style="height: 300px;">
+										<RadarChart 
+										{teamScouting} 
+										{scouting}
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
 					{/key}
 				</div>
 			</div>

@@ -32,7 +32,7 @@ export const actions = {
 		let account: Account.AccountData | undefined;
 
 		ACCOUNT: {
-			const user = await Account.Account.fromProperty('username', res.data.username, {
+			const user = await Account.Account.fromProperty('username', res.data.username.toLowerCase(), {
 				type: 'single'
 			});
 			if (user.isErr()) {
@@ -44,7 +44,7 @@ export const actions = {
 			account = user.value;
 			if (account) break ACCOUNT;
 
-			const email = await Account.Account.fromProperty('email', res.data.username, {
+			const email = await Account.Account.fromProperty('email', res.data.username.toLowerCase(), {
 				type: 'single'
 			});
 			if (email.isErr()) {

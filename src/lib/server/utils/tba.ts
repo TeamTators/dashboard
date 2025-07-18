@@ -10,9 +10,10 @@ import {
 	teamsFromMatch,
 	MediaSchema,
 	Match2025Schema,
-	type TBAMatch2025
+	type TBAMatch2025,
+	type TBAMatch
 } from 'tatorscout/tba';
-import { attempt, attemptAsync, type Result } from 'ts-utils/check';
+import { attempt, attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { TBA } from '../structs/TBA';
 import { StructData } from 'drizzle-struct/back-end';
 import { z } from 'zod';
@@ -184,6 +185,106 @@ export class Event {
 				// ].map(e => e.delete()))).unwrap();
 				(await this.data.delete()).unwrap();
 			} else throw new Error('Cannot delete a non-custom event');
+		});
+	}
+
+	update(data: { name: string; startDate: Date; endDate: Date; year: number }) {
+		return attemptAsync(async () => {
+			if (!this.custom) throw new Error('Cannot update a non-custom event');
+			if (this.custom && this.data) {
+				const tbaObj: E = {
+					...this.tba,
+					name: data.name,
+					start_date: data.startDate.toISOString(),
+					end_date: data.endDate.toISOString(),
+					year: data.year
+				};
+
+				return (
+					await this.data.update({
+						data: JSON.stringify(tbaObj)
+					})
+				).unwrap();
+			} else {
+				throw new Error('Cannot update a non-custom event');
+			}
+		});
+	}
+
+	setTeams(teams: number[]) {
+		return attemptAsync(async () => {
+			if (!this.custom) throw new Error('Cannot set teams for a non-custom event');
+
+			teams = Array.from(new Set(teams)).sort((a, b) => a - b);
+
+			const found = (
+				await Promise.all(
+					teams.map((t) =>
+						TBA.get(`/team/frc${t}`, {
+							updateThreshold: 1000 * 60 * 60 * 24,
+							force: false
+						})
+					)
+				)
+			)
+				.map((res) => {
+					if (res.isErr()) {
+						return null;
+					}
+					return TeamSchema.parse(res.value);
+				})
+				.filter(Boolean);
+
+			// Remove all current teams
+			const currentTeams = await TBA.Teams.fromProperty('eventKey', this.tba.key, {
+				type: 'all'
+			}).unwrap();
+
+			await Promise.all(
+				found.map(async (t) => {
+					if (currentTeams.some((ct) => ct.data.teamKey === `frc${t.team_number}`)) {
+						return;
+					}
+					return TBA.Teams.new({
+						eventKey: this.tba.key,
+						teamKey: `frc${t.team_number}`,
+						data: JSON.stringify(t)
+					}).unwrap();
+				})
+			);
+
+			// Remove all teams not in the new list
+			const foundKeys = new Set(found.map((t) => `frc${t.team_number}`));
+
+			const toRemove = currentTeams.filter((ct) => !foundKeys.has(ct.data.teamKey));
+
+			await Promise.all(toRemove.map((t) => t.delete().unwrap()));
+		});
+	}
+
+	setMatches(matches: TBAMatch[]) {
+		return attemptAsync(async () => {
+			if (!this.custom) throw new Error('Cannot set matches for a non-custom event');
+
+			// const current = await TBA.Matches.fromProperty('eventKey', this.tba.key, {
+			// 	type: 'all',
+			// });
+
+			await TBA.Matches.fromProperty('eventKey', this.tba.key, {
+				type: 'stream'
+			}).pipe((c) => c.delete().unwrap());
+
+			resolveAll(
+				await Promise.all(
+					matches.map((m) =>
+						TBA.Matches.new({
+							eventKey: this.tba.key,
+							matchKey: m.key,
+							data: JSON.stringify(m)
+						})
+					)
+				)
+			).unwrap();
 		});
 	}
 }
