@@ -75,17 +75,17 @@
 					{
 						headerName: 'Comment',
 						field: 'data.comment',
-						filter: 'agTextColumnFilter',
+						filter: 'agTextColumnFilter'
 					},
 					{
 						headerName: 'Account',
 						field: 'data.scoutUsername',
-						filter: 'agTextColumnFilter',
+						filter: 'agTextColumnFilter'
 					},
 					{
 						headerName: 'Type',
 						field: 'data.type',
-						filter: 'agTextColumnFilter',
+						filter: 'agTextColumnFilter'
 					}
 				]
 			}}

@@ -2,6 +2,8 @@ import { Account } from './account';
 import { Struct, StructData, DataArr } from 'drizzle-struct/front-end';
 import { sse } from '$lib/services/sse';
 import { browser } from '$app/environment';
+import { attemptAsync } from 'ts-utils/check';
+import { z } from 'zod';
 
 export namespace Permissions {
 	export const Role = new Struct({
@@ -52,7 +54,7 @@ export namespace Permissions {
 		structure: {
 			role: 'string',
 			entitlement: 'string',
-			target: 'string',
+			targetAttribute: 'string',
 			reason: 'string'
 		},
 		socket: sse,
@@ -63,11 +65,11 @@ export namespace Permissions {
 	export type RoleRulesetDataArr = DataArr<typeof RoleRuleset.data.structure>;
 
 	export const AccountRuleset = new Struct({
-		name: 'account_ruleset',
+		name: 'account_rulesets',
 		structure: {
 			account: 'string',
 			entitlement: 'string',
-			target: 'string',
+			targetAttribute: 'string',
 			reason: 'string'
 		},
 		socket: sse,
@@ -104,6 +106,16 @@ export namespace Permissions {
 
 	export const getEntitlements = () => {
 		return Entitlement.all(false);
+	};
+
+	export const getEntitlementGroups = () => {
+		return attemptAsync(async () => {
+			const groups = new Set<string>();
+			await Entitlement.all(true).pipe((e) => {
+				if (e.data.group) groups.add(e.data.group);
+			});
+			return Array.from(groups);
+		});
 	};
 
 	export const grantRolePermission = (
@@ -150,6 +162,32 @@ export namespace Permissions {
 			account: account.data.id,
 			entitlement: entitlement.data.name,
 			targetAttribute
+		});
+	};
+
+	export const searchRoles = (
+		searchKey: string,
+		config: {
+			offset: number;
+			limit: number;
+		}
+	) => {
+		return attemptAsync(async () => {
+			const res = await Role.send(
+				'search',
+				{
+					searchKey,
+					offset: config.offset,
+					limit: config.limit
+				},
+				z.array(
+					Role.getZodSchema({
+						optionals: Object.keys(Role.data.structure)
+					})
+				)
+			).unwrap();
+
+			return res.map((r) => Role.Generator(r));
 		});
 	};
 }

@@ -64,7 +64,7 @@ class SSE {
 			const source = new EventSource(`/sse/init/${this.uuid}`);
 
 			const onConnect = () => {
-				// console.log(`SSE connection established: ${this.uuid}`);
+				console.log(`SSE connection established: ${this.uuid}`);
 				this.emit('connect', undefined);
 				this.reconnectAttempt = 0; // reset backoff on successful connect
 			};
@@ -182,12 +182,19 @@ class SSE {
 
 	public waitForConnection(timeout: number) {
 		return new Promise<void>((res, rej) => {
+			let settled = false;
+			if (!this.isDisconnected) {
+				return res();
+			}
 			this.once('connect', () => {
-				// console.log(`SSE connection established: ${this.uuid}`);
+				if (settled) return;
+				settled = true;
+				clearTimeout(t);
 				res();
 			});
-
-			setTimeout(() => {
+			const t = setTimeout(() => {
+				if (settled) return;
+				settled = true;
 				rej(new Error(`SSE connection timed out after ${timeout}ms`));
 			}, timeout);
 		});

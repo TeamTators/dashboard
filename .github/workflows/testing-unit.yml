@@ -2,10 +2,10 @@ name: Unit Tests
 
 on:
   workflow_call:
-    secrets:
-      GH_TOKEN:
-        description: 'GitHub Token'
-        required: true
+    # secrets:
+    #   GH_TOKEN:
+    #     description: 'GitHub Token'
+    #     required: true
   push:
     branches:
       - '*'
@@ -54,11 +54,10 @@ jobs:
         with:
           node-version: v22.12.0
 
-
-      - name: Install dependencies
+      - name: Install dashboard dependencies
         run: |
           cd dashboard
-          echo "Installing dependencies..."
+          echo "Installing dashboard dependencies..."
           pnpm install --frozen-lockfile
 
       - name: Clone the tba-webhooks repository
@@ -70,19 +69,19 @@ jobs:
           cd tba-webhooks
           echo "Installing tba-webhooks dependencies..."
           pnpm install --frozen-lockfile
-          
-      - name: Create env variables for tba webhooks
+
+      - name: Create .env file for tba-webhooks
         run: |
           cd tba-webhooks
           touch .env
           echo "PORT=5555" >> .env
-          echo TBA_SECRET="webhook_secret" >> .env
+          echo "TBA_SECRET=webhook_secret" >> .env
+          echo "REDIS_NAME=tba_webhook" >> .env
 
-      - name: Load .env variables
+      - name: Create .env file for dashboard
         run: |
           cd dashboard
           touch .env
-          echo "REDIS_NAME=svelte-kit" >> .env
           echo "DB_HOST=localhost" >> .env
           echo "DB_PORT=5432" >> .env
           echo "DB_USER=postgres" >> .env
@@ -95,14 +94,7 @@ jobs:
           echo "LOCAL_TBA_WEBHOOK_PATH=../tba-webhooks" >> .env
           echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
           echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
-          echo "LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks" >> .env
-          export $(cat .env | xargs)
-
-      - name: Build tba-webhooks
-        run: |
-          cd tba-webhooks
-          ls
-          pnpm i
+          echo "LOCAL_TBA_WEBHOOK_REDIS_NAME=tba_webhook" >> .env
 
       - name: Run migrations
         run: |

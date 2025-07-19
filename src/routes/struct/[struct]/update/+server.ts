@@ -4,11 +4,20 @@ import { Permissions } from '$lib/server/structs/permissions.js';
 import { Struct } from 'drizzle-struct/back-end';
 import { PropertyAction } from 'drizzle-struct/types';
 import { z } from 'zod';
+import terminal from '$lib/server/utils/terminal';
+import { Account } from '$lib/server/structs/account.js';
 
 export const POST = async (event) => {
 	if (event.params.struct !== 'test') {
 		if (!event.locals.account) return Errors.noAccount();
 	}
+
+	let isAdmin = false;
+	if (event.locals.account) {
+		// only will enter if not test struct
+		isAdmin = await Account.isAdmin(event.locals.account).unwrapOr(false);
+	}
+
 	const struct = Struct.structs.get(event.params.struct);
 	if (!struct) return Errors.noStruct(event.params.struct);
 
@@ -17,6 +26,7 @@ export const POST = async (event) => {
 	}
 
 	const body = await event.request.json();
+	const date = new Date(Number(event.request.headers.get('X-Date')) || Date.now());
 
 	const safe = z
 		.object({
@@ -37,10 +47,15 @@ export const POST = async (event) => {
 		delete (safe.data as any).created;
 		delete (safe.data as any).updated;
 		delete (safe.data as any).archived;
+		// delete (event.data as any).universes;
 		delete (safe.data as any).attributes;
 		delete (safe.data as any).lifetime;
 		delete (safe.data as any).canUpdate;
 		delete (safe.data as any).universe;
+
+		for (const key of struct.data.safes || []) {
+			delete (safe.data as any)[key];
+		}
 
 		if (struct.data.safes !== undefined) {
 			for (const key of Object.keys(safe.data as object)) {
@@ -73,7 +88,8 @@ export const POST = async (event) => {
 		return Errors.noAccount(); // Should not happen due to the check above, but just in case and for type safety
 	}
 
-	{
+	BLOCKS: {
+		if (isAdmin) break BLOCKS;
 		const blocks = struct.blocks.get(PropertyAction.Update);
 		if (blocks) {
 			for (const block of blocks) {
@@ -108,6 +124,12 @@ export const POST = async (event) => {
 		if (Object.prototype.hasOwnProperty.call(parsedData, key)) {
 			(toUpdate as any)[key] = parsedData[key];
 		}
+	}
+
+	if (date.getTime() < targetData.value.updated.getTime()) {
+		terminal.warn(
+			`The data you are trying to update is outdated. Please refresh and try again. Current: ${targetData.value.updated.toISOString()}, Your: ${date.toISOString()}`
+		);
 	}
 
 	const res = await targetData.value.update(toUpdate);

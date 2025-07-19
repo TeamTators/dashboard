@@ -4,10 +4,6 @@ import { Session } from '../structs/session';
 import { encode } from 'ts-utils/text';
 import { EventEmitter, SimpleEventEmitter } from 'ts-utils/event-emitter';
 import type { Notification } from '$lib/types/notification';
-import { Struct, type Blank, StructData } from 'drizzle-struct/back-end';
-import { Account } from '../structs/account';
-import { Permissions } from '../structs/permissions';
-import { PropertyAction } from 'drizzle-struct/types';
 
 type Stream = ReadableStreamDefaultController<string>;
 
@@ -90,9 +86,10 @@ export class Connection {
 
 	close() {
 		return attempt(() => {
+			this.cache = []; // empty cache once closed
 			// console.log('Closing connection', this.uuid);
 			// clearInterval(this.interval);
-			// this.send('close', null);
+			this.send('close', null);
 			this.emit('close');
 			this.controller.close();
 		});
@@ -107,7 +104,7 @@ export class Connection {
 	}
 
 	retryCached(now: number) {
-		try {
+		return attempt(() => {
 			for (const msg of this.cache) {
 				if (now - msg.date > 30000 || msg.retries >= 5) continue;
 				this.controller.enqueue(
@@ -117,12 +114,13 @@ export class Connection {
 			}
 
 			this.cache = this.cache.filter((e) => now - e.date < 30000 && e.id > this.index - 20);
-		} catch (error) {
-			console.error(`Error retrying cached messages for connection ${this.uuid}:`, error);
-			this.close();
-			this.sse.connections.delete(this.uuid);
-			this.emit('destroy');
-		}
+		});
+	}
+
+	ping() {
+		this.lastPing = Date.now();
+		// console.log(`Ping received for connection ${this.uuid}`);
+		this.send('ping', null);
 	}
 }
 
@@ -157,7 +155,7 @@ export class SSE {
 				}
 
 				// Send ping and retry unacked messages
-				connection.send('ping', null);
+				connection.ping();
 				connection.retryCached(now);
 			});
 		}, 10000);
@@ -227,6 +225,7 @@ export class SSE {
 
 		const connection = new Connection(uuid, session, this, controller);
 		this.connections.set(uuid, connection);
+		connection.ping();
 		// console.log(this.connections);
 		return connection;
 	}
@@ -247,73 +246,3 @@ export class SSE {
 }
 
 export const sse = new SSE();
-
-export const createStructService = (struct: Struct<Blank, string>) => {
-	if (struct.data.frontend === false) return;
-	// Permission handling
-	const emitToConnections = async (
-		event: string,
-		data: StructData<typeof struct.data.structure, typeof struct.data.name>
-	) => {
-		// console.log(sse);
-		sse.each(async (connection) => {
-			if (struct.name === 'test') {
-				// terminal.log('Emitting: ', data.data);
-				connection.send(`struct:${struct.name}`, {
-					event,
-					data: data.data
-				});
-				return;
-			}
-			const session = await connection.getSession();
-			if (session.isErr()) return console.error(session.error);
-			const s = session.value;
-			if (!s) return;
-
-			const account = await Session.getAccount(s);
-			if (account.isErr()) return console.error(account.error);
-			const a = account.value;
-			if (!a) return;
-
-			if ((await Account.isAdmin(account.value)).unwrap()) {
-				connection.send(`struct:${struct.name}`, {
-					event,
-					data: data.safe()
-				});
-				return;
-			}
-
-			const res = await Permissions.filterPropertyActionFromAccount(a, [data], PropertyAction.Read);
-			if (res.isErr()) return console.error(res.error);
-			const [result] = res.value;
-			connection.send(`struct:${struct.name}`, {
-				event,
-				data: result
-			});
-		});
-	};
-
-	if (!struct.frontend) return;
-
-	struct.on('create', (data) => {
-		emitToConnections('create', data);
-	});
-
-	struct.on('update', (data) => {
-		emitToConnections('update', data.to);
-	});
-
-	struct.on('archive', (data) => {
-		emitToConnections('archive', data);
-	});
-
-	struct.on('delete', (data) => {
-		emitToConnections('delete', data);
-	});
-
-	struct.on('restore', (data) => {
-		emitToConnections('restore', data);
-	});
-
-	struct.emit('build');
-};

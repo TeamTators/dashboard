@@ -10,8 +10,10 @@ export default (event: TBAEvent) => {
 			{
 				name: 'Summary',
 				href: '/dashboard/event/' + event.key,
-				icon: 'event',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'event'
+				}
 			}
 		],
 		priority: 0
@@ -24,14 +26,18 @@ export default (event: TBAEvent) => {
 			{
 				name: 'Matches',
 				href: `/dashboard/event/${event.key}/matches`,
-				icon: 'view_list',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'view_list'
+				}
 			},
 			{
 				name: 'Archived Matches',
 				href: `/dashboard/event/${event.key}/archived-matches`,
-				icon: 'archive',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'archive'
+				}
 			}
 		]
 	});
@@ -43,14 +49,18 @@ export default (event: TBAEvent) => {
 			{
 				name: 'Pit Scouting',
 				href: '/dashboard/event/' + event.key + '/pit-scouting',
-				icon: 'question_answer',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'question_answer'
+				}
 			},
 			{
 				name: 'Edit Pit Scouting',
 				href: '/dashboard/event/' + event.key + '/edit-pit-scouting',
-				icon: 'edit',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'edit'
+				}
 			}
 		]
 	});
@@ -62,26 +72,34 @@ export default (event: TBAEvent) => {
 			{
 				name: 'Team Compare',
 				href: `/dashboard/event/${event.key}/compare`,
-				icon: 'compare',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'compare'
+				}
 			},
 			{
 				name: 'Strategy',
 				href: 'https://docs.google.com/presentation/d/1kwopP8dvpRW90R5VY4jQy9Rx5XiZPmFtyoY_8qw5628/edit?usp=sharing',
-				icon: 'assessment',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'assessment'
+				}
 			},
 			{
 				name: 'Checklist',
 				href: `/dashboard/event/${event.key}/checklist`,
-				icon: 'list',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'list'
+				}
 			},
 			{
 				name: 'Drive Team',
 				href: `/dashboard/event/${event.key}/drive-team`,
-				icon: 'people',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'people'
+				}
 			}
 		]
 	});
@@ -93,14 +111,18 @@ export default (event: TBAEvent) => {
 			{
 				name: 'Potato Leaderboard',
 				href: '/dashboard/potato',
-				icon: 'leaderboard',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'leaderboard'
+				}
 			},
 			{
 				name: 'Potato Logs',
 				href: '/dashboard/potato/logs',
-				icon: 'history',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'history'
+				}
 			}
 		]
 	});

@@ -46,12 +46,14 @@
 					new Dashboard.Card({
 						name: t.tba.team_number + ' | ' + t.tba.nickname,
 						id: t.tba.team_number.toString(),
-						icon: 'mdi:robot',
+						icon: {
+							type: 'material-icons',
+							name: 'android'
+						},
 						size: {
 							width: 1,
 							height: 1
-						},
-						iconType: 'material-icons'
+						}
 					})
 			),
 			id: 'event-dashboard'

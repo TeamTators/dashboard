@@ -9,8 +9,9 @@ import type { Notification } from '$lib/types/notification';
 import { Session } from './session';
 import { sse } from '../services/sse';
 import { DataAction, PropertyAction } from 'drizzle-struct/types';
+// import { Universes } from './universe';
 import { Email } from './email';
-import terminal from '../utils/terminal';
+import type { Icon } from '$lib/types/icons';
 import { z } from 'zod';
 
 export namespace Account {
@@ -18,14 +19,15 @@ export namespace Account {
 		name: 'account',
 		structure: {
 			username: text('username').notNull().unique(),
-			key: text('key').notNull(),
+			key: text('key').notNull().unique(),
 			salt: text('salt').notNull(),
 			firstName: text('first_name').notNull(),
 			lastName: text('last_name').notNull(),
 			email: text('email').notNull().unique(),
 			picture: text('picture').notNull(),
 			verified: boolean('verified').notNull(),
-			verification: text('verification').notNull()
+			verification: text('verification').notNull(),
+			lastLogin: text('last_login').notNull().default('')
 		},
 		generators: {
 			id: () => (uuid() + uuid() + uuid() + uuid()).replace(/-/g, '')
@@ -40,6 +42,24 @@ export namespace Account {
 			return new Error('Not logged in');
 		}
 		return account.safe();
+	});
+
+	Account.sendListen('username-exists', async (event, data) => {
+		const parsed = z
+			.object({
+				username: z.string().min(1)
+			})
+			.safeParse(data);
+
+		if (!parsed.success) {
+			throw new Error('Invalid data recieved');
+		}
+
+		const account = await Account.fromProperty('username', parsed.data.username, {
+			type: 'count'
+		}).unwrap();
+
+		return account > 0;
 	});
 
 	Account.on('delete', async (a) => {
@@ -66,6 +86,13 @@ export namespace Account {
 			accountId: text('account_id').notNull().unique()
 		}
 	});
+
+	export const verify = (account: AccountData) => {
+		return account.update({
+			verified: true,
+			verification: ''
+		});
+	};
 
 	export const isAdmin = (account: AccountData) => {
 		return attemptAsync(async () => {
@@ -125,6 +152,7 @@ export namespace Account {
 			severity: text('severity').notNull(),
 			message: text('message').notNull(),
 			icon: text('icon').notNull(),
+			iconType: text('icon_type').notNull(),
 			link: text('link').notNull(),
 			read: boolean('read').notNull()
 		}
@@ -180,14 +208,14 @@ export namespace Account {
 	export const newHash = (password: string) => {
 		return attempt(() => {
 			const salt = crypto.randomBytes(32).toString('hex');
-			const key = hash(password, salt).unwrap();
-			return { hash: key, salt };
+			const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+			return { hash, salt };
 		});
 	};
 
 	export const hash = (password: string, salt: string) => {
 		return attempt(() => {
-			return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+			return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
 		});
 	};
 
@@ -217,7 +245,8 @@ export namespace Account {
 						salt: hash.salt,
 						verified: false,
 						verification: verificationId,
-						picture: '/'
+						picture: '/',
+						lastLogin: ''
 					},
 					{
 						static: config?.canUpdate
@@ -261,7 +290,7 @@ export namespace Account {
 	export const sendAccountNotif = (
 		accountId: string,
 		notif: Notification & {
-			icon: string;
+			icon: Icon;
 			link: string;
 		}
 	) => {
@@ -271,7 +300,8 @@ export namespace Account {
 			severity: notif.severity,
 			message: notif.message,
 			accountId: accountId,
-			icon: notif.icon,
+			icon: notif.icon.name,
+			iconType: notif.icon.type,
 			link: notif.link,
 			read: false
 		});
@@ -314,7 +344,8 @@ export namespace Account {
 					salt: '',
 					verified: false,
 					verification: verificationId,
-					picture
+					picture,
+					lastLogin: ''
 				})
 			).unwrap();
 		});
@@ -362,62 +393,13 @@ export namespace Account {
 					title: 'Password Reset Request',
 					message: 'A password reset link has been sent to your email',
 					severity: 'warning',
-					icon: 'info',
+					icon: {
+						name: 'lock',
+						type: 'material-icons'
+					},
 					link: ''
 				})
 			).unwrap();
-		});
-	};
-
-	export const verify = async (account: AccountData) => {
-		return attemptAsync(async () => {
-			return (
-				await account.update({
-					verified: true,
-					verification: ''
-				})
-			).unwrap();
-		});
-	};
-
-	Account.on('update', async ({ from, to }) => {
-		// account has been verified
-		if (from.verified === false && to.data.verified === true) {
-			(await Admins.new({ accountId: to.id })).unwrap();
-		}
-
-		// account has been unverified
-		if (from.verified === true && to.data.verified === false) {
-			(await Admins.fromProperty('accountId', to.id, { type: 'single' })).unwrap()?.delete();
-		}
-	});
-
-	export const externalHash = (data: { user: string; pass: string }) => {
-		return attemptAsync(async () => {
-			if (!process.env.OLD_SERVER_HOST || !process.env.OLD_SERVER_API_KEY) {
-				throw new Error('Old server host or api key not found');
-			}
-
-			const res = await fetch(process.env.OLD_SERVER_HOST + '/account/test-hash', {
-				body: JSON.stringify(data),
-				method: 'GET',
-				headers: {
-					'X-Auth-Key': process.env.OLD_SERVER_API_KEY,
-					'Content-Type': 'application/json'
-				}
-			}).then((r) => r.json());
-
-			const { success, reason, error } = z
-				.object({
-					success: z.boolean(),
-					reason: z.string(),
-					error: z.boolean()
-				})
-				.parse(res);
-
-			if (error) terminal.error('External hash did not work', reason);
-
-			return success;
 		});
 	};
 }

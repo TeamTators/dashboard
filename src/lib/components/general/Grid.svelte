@@ -1,4 +1,6 @@
 <script lang="ts" generics="T">
+	/* eslint-disable @typescript-eslint/no-explicit-any */
+
 	import { onMount } from 'svelte';
 	import {
 		createGrid,
@@ -8,57 +10,66 @@
 		themeQuartz,
 		PaginationModule,
 		type GridApi,
-		QuickFilterModule,
+		type Module,
 		ValidationModule,
-		RowAutoHeightModule,
-		ColumnAutoSizeModule,
-		TextFilterModule,
-		NumberFilterModule,
 		RowApiModule,
-		NumberEditorModule,
+		QuickFilterModule,
+		RowSelectionModule,
 		RenderApiModule,
-		ScrollApiModule,
-		SelectEditorModule,
-		TextEditorModule,
-		CustomEditorModule,
+		EventApiModule,
+		RowStyleModule,
 		CellStyleModule,
-		DateEditorModule
+		type ValueGetterParams,
+		type ICellRendererParams
 	} from 'ag-grid-community';
 	import { EventEmitter } from 'ts-utils/event-emitter';
 	import type { Readable } from 'svelte/store';
-
-	// Register AG Grid Modules
-	ModuleRegistry.registerModules([
-		ClientSideRowModelModule,
-		PaginationModule,
-		QuickFilterModule,
-		ValidationModule,
-		RowAutoHeightModule,
-		ColumnAutoSizeModule,
-		TextFilterModule,
-		NumberFilterModule,
-		RowApiModule,
-		NumberEditorModule,
-		RenderApiModule,
-		ScrollApiModule,
-		SelectEditorModule,
-		TextEditorModule,
-		CustomEditorModule,
-		CellStyleModule,
-		DateEditorModule
-	]);
+	import {
+		CheckBoxSelectRenderer,
+		HeaderCheckboxRenderer
+	} from '$lib/utils/ag-grid/checkbox-select';
 
 	interface Props {
 		filter?: boolean;
 		opts: Omit<GridOptions<T>, 'rowData'>;
 		data: Readable<T[]>;
 		style?: string;
-		rowNumbers?: boolean;
+		rowNumbers?:
+			| boolean
+			| {
+					start: number;
+			  };
 		layer?: number;
-		height: number | `${number}${'px' | 'vh' | 'rem' | 'em' | '%'}` | 'auto';
+		height: string | number;
+		modules?: Module[];
+		multiSelect?: boolean;
 	}
 
-	const { filter, opts, data, style, rowNumbers = false, layer = 1, height }: Props = $props();
+	const {
+		filter,
+		opts,
+		data,
+		style,
+		rowNumbers = false,
+		layer = 1,
+		height,
+		modules = [],
+		multiSelect = false
+	}: Props = $props();
+
+	ModuleRegistry.registerModules([
+		...modules,
+		ClientSideRowModelModule,
+		PaginationModule,
+		ValidationModule,
+		RowApiModule,
+		QuickFilterModule,
+		RowSelectionModule,
+		RenderApiModule,
+		EventApiModule,
+		RowStyleModule,
+		CellStyleModule
+	]);
 
 	const em = new EventEmitter<{
 		filter: T[];
@@ -70,6 +81,25 @@
 	export const off = em.off.bind(em);
 
 	export const getGrid = () => grid;
+
+	export const getSelection = (): T[] => {
+		if (!grid) return [];
+		const selected: T[] = [];
+
+		grid.forEachNode((node) => {
+			if ((node as any).checkboxSelected) {
+				if (node.data) selected.push(node.data);
+			}
+		});
+
+		return selected;
+	};
+
+	export const rerender = () => {
+		if (grid) {
+			grid.refreshCells();
+		}
+	};
 
 	// Create a custom dark theme using Theming API
 	const darkTheme = themeQuartz.withParams({
@@ -117,18 +147,50 @@
 					? [
 							{
 								headerName: '',
-								valueGetter: 'node.rowIndex + 1',
+								valueGetter: (params: ValueGetterParams<T>) => {
+									if (typeof rowNumbers === 'object') {
+										return rowNumbers.start + (params.node?.rowIndex || 0);
+									} else {
+										return (params.node?.rowIndex || 0) + 1;
+									}
+								},
 								width: 50,
 								suppressMovable: true,
 								cellClass: 'text-center',
 								cellStyle: {
 									backgroundColor: 'var(--ag-chrome-background-color)'
+								},
+								cellRenderer: (params: ICellRendererParams<T>) => {
+									const div = document.createElement('div');
+									div.innerText = String(params.value);
+									div.style.cursor = 'pointer';
+
+									div.onclick = () => {
+										const node = params.node as any;
+										node.checkboxSelected = !node.checkboxSelected;
+										params.api.refreshCells({ rowNodes: [params.node], force: true });
+										params.api.refreshHeader();
+									};
+
+									return div;
 								}
 							}
 						]
 					: []),
+				...(multiSelect
+					? [
+							{
+								width: 50,
+								cellRenderer: CheckBoxSelectRenderer,
+								headerComponent: HeaderCheckboxRenderer
+							}
+						]
+					: []),
 				...opts.columnDefs
-			]
+			],
+			getRowClass: (params) => {
+				return (params.node as any).checkboxSelected ? 'row-checked' : '';
+			}
 		};
 		grid = createGrid(gridDiv, gridOptions); // Create the grid with custom options
 		em.emit('ready', grid); // Emit the ready event with the grid API

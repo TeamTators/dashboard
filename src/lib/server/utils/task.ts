@@ -20,7 +20,7 @@ export const runTask = (...args: string[]) => {
 
 export const runTs = async (file: string, fn: string, ...params: unknown[]) => {
 	return attemptAsync(async () => {
-		const fullpath = path.resolve(process.cwd(), file);
+		const fullpath = path.join(process.cwd(), file);
 
 		const mod = await import(url.pathToFileURL(fullpath).href);
 		const func = mod[fn];

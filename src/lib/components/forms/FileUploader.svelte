@@ -18,12 +18,11 @@
 		quality?: number;
 	}
 
-	const { multiple, uploader, message, quality = 10 }: Props = $props();
+	const { multiple, uploader, message, quality = 100 }: Props = $props();
 
 	const emitter = new EventEmitter<{
 		init: void;
 		addFile: FilePondFile;
-		upload: string;
 		error: Error;
 	}>();
 
@@ -69,17 +68,13 @@
 				const res = await uploader.sendFile(f, fieldName);
 
 				if (res.isOk()) {
-					res.value.on('load', (data) => {
-						load(data);
-						emitter.emit('upload', data);
-					});
+					res.value.on('load', load);
 					res.value.on('error', error);
 
 					return res.value.abort;
 				} else {
 					console.error(res.error);
 					error('Failed to upload file');
-					emitter.emit('error', res.error);
 				}
 
 				return () => {};

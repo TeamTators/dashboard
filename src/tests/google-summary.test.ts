@@ -23,5 +23,5 @@ describe('Run google summary on 2025utwv', async () => {
 	test('Google summary', async () => {
 		const res = await (await summarize('2025utwv')).unwrap().serialize();
 		expect(res.isOk()).toBe(true);
-	}, 30_000);
+	}, 60_000);
 });

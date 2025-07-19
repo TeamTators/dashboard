@@ -252,7 +252,42 @@ otherwise dates will not work.
 			).unwrap();
 			return selectDataPipe(struct, data, next, options);
 		}),
+	// fromUniverse: async <T extends Struct>(
+	// 	struct: T,
+	// 	next?: Next,
+	// 	options?: {
+	// 		omit?: (keyof (T['data']['structure'] & typeof globalCols))[];
+	// 	}
+	// ) =>
+	// 	attemptAsync(async () => {
+	// 		const universes = (
+	// 			await Universes.Universe.all({
+	// 				type: 'stream'
+	// 			}).await()
+	// 		).unwrap();
+	// 		const res = (
+	// 			await select({
+	// 				message: 'Select a universe',
+	// 				options: universes.map((u) => ({
+	// 					name: u.data.name,
+	// 					value: u
+	// 				}))
+	// 			})
+	// 		).unwrap();
 
+	// 		if (!res) {
+	// 			return doNext('No universe selected', undefined, next);
+	// 		}
+
+	// 		const data = (
+	// 			await struct
+	// 				.fromProperty('universe', res.id, {
+	// 					type: 'stream'
+	// 				})
+	// 				.await()
+	// 		).unwrap();
+	// 		return selectDataPipe(struct, data, next, options);
+	// 	}),
 	archived: async <T extends Struct>(
 		struct: T,
 		next?: Next,
@@ -534,6 +569,46 @@ export const dataActions = {
 
 			return doNext('Attributes set', undefined, next);
 		}),
+	// setUniverse: async (data: StructData, next?: Next) =>
+	// 	attemptAsync(async () => {
+	// 		const universes = (
+	// 			await Universes.Universe.all({
+	// 				type: 'stream'
+	// 			}).await()
+	// 		).unwrap();
+	// 		const res = (
+	// 			await select({
+	// 				message: 'Select universes',
+	// 				options: universes.map((u) => ({
+	// 					name: u.data.name,
+	// 					value: u
+	// 				}))
+	// 			})
+	// 		).unwrap();
+
+	// 		if (!res) {
+	// 			return doNext('No universe selected', undefined, next);
+	// 		}
+
+	// 		const res2 = await data.setUniverse(res.id);
+
+	// 		if (res2.isErr()) {
+	// 			terminal.error(res2.error);
+	// 			return doNext('Failed to set universes', res2.error, next);
+	// 		}
+
+	// 		(
+	// 			await Logs.log({
+	// 				dataId: String(data.id),
+	// 				struct: data.struct.name,
+	// 				accountId: 'CLI',
+	// 				type: 'set-universe',
+	// 				message: 'Universes set from cli'
+	// 			})
+	// 		).unwrap();
+
+	// 		return doNext('Universes set', undefined, next);
+	// 	}),
 	viewLogs: async <T extends StructData>(data: T, next?: Next) =>
 		attemptAsync(async () => {
 			const logs = (
