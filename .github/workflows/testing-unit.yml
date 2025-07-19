@@ -68,6 +68,23 @@ jobs:
           echo "Installing dependencies..."
           pnpm install --frozen-lockfile
 
+      - name: Clone the tba-webhooks repository
+        run: |
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
+
+      - name: Install tba-webhooks dependencies
+        run: |
+          cd tba-webhooks
+          echo "Installing tba-webhooks dependencies..."
+          pnpm install --frozen-lockfile
+          
+      - name: Create env variables for tba webhooks
+        run: |
+          cd tba-webhooks
+          touch .env
+          echo "PORT=5555" >> .env
+          echo TBA_SECRET="webhook_secret" >> .env
+
       - name: Load .env variables
         run: |
           cd dashboard
