@@ -44,11 +44,14 @@
 		"@storybook/addon-essentials": "^8.4.7",
 		"@storybook/addon-interactions": "^8.4.7",
 		"@storybook/addon-svelte-csf": "5.0.0-next.21",
+		"@faker-js/faker": "^9.6.0",
+		"@types/cli-progress": "^3.11.6",
 		"@storybook/blocks": "^8.4.7",
 		"@storybook/svelte": "^8.4.7",
 		"@storybook/sveltekit": "^8.4.7",
 		"@storybook/test": "^8.4.7",
 		"@sveltejs/adapter-node": "^5.2.11",
+		"@types/chart.js": "^2.9.41",
 		"@sveltejs/kit": "^2.15.1",
 		"@sveltejs/vite-plugin-svelte": "^4.0.4",
 		"@total-typescript/ts-reset": "^0.6.1",
@@ -98,6 +101,7 @@
 		"adm-zip": "^0.5.16",
 		"ag-grid-community": "^33.1.1",
 		"bootstrap": "^5.3.3",
+		"cli-progress": "^3.12.0",
 		"busboy": "^1.6.0",
 		"canvas": "git+https://github.com/tsaxking/canvas.git",
 		"chalk": "^5.4.1",
@@ -107,6 +111,7 @@
 		"colors": "git+https://github.com/tsaxking/colors.git",
 		"dotenv": "^16.4.7",
 		"drizzle-orm": "^0.38.3",
+		"tatorscout": "github:TeamTators/tatorscout-utils",
 		"drizzle-struct": "github:tsaxking/drizzle-struct",
 		"drizzle-zod": "^0.6.1",
 		"express": "^5.1.0",
@@ -156,7 +161,8 @@
 			"ts-utils",
 			"html-constructor",
 			"redis-service",
-			"canvas"
+			"canvas",
+			"tatorscout"
 		]
 	}
 }
