@@ -94,9 +94,9 @@ export namespace Potato {
 			level: integer('level').notNull(),
 			name: text('name').notNull(),
 			lastClicked: text('last_clicked').notNull(),
-			icon: text('preffered_icon').notNull().default(''),
-			color: text('preffered_color').notNull().default(''),
-			background: text('preffered_background').notNull().default(''),
+			icon: text('icon').notNull().default(''),
+			color: text('color').notNull().default(''),
+			background: text('background').notNull().default(''),
 
 			attack: integer('attack').notNull().default(0),
 			defense: integer('defense').notNull().default(0),
@@ -276,7 +276,10 @@ export namespace Potato {
 					severity: 'success',
 					title: 'Your potato has reached a new phase',
 					message: `Your potato is now a ${nowPhase} (${Levels[nowPhase]})`,
-					icon: '',
+					icon: {
+						type: 'material-icons',
+						name: 'emoji_food_beverage'
+					},
 					link: ''
 				});
 			}
