@@ -63,7 +63,7 @@ jobs:
 
       - name: Clone the tba-webhooks repository
         run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/TeamTators/tba-webhooks.git __tba-webhooks
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
 
       - name: Install tba-webhooks dependencies
         run: |
