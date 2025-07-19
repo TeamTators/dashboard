@@ -8,6 +8,8 @@ import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
 import { type RequestEvent } from '@sveltejs/kit';
 import { teamsFromMatch } from 'tatorscout/tba';
+import Piscina from 'piscina';
+import path from 'path';
 
 export const auth = (event: RequestEvent) => {
 	// const key = event.request.headers.get('X-Auth-Key');
@@ -500,29 +502,56 @@ export class Table {
 		return attemptAsync(async () => {
 			const event = (await Event.getEvent(this.eventKey)).unwrap();
 			const teams = (await event.getTeams()).unwrap();
-			return [
-				this.columns.map((c) => c.name),
-				...(await Promise.all(
-					teams.map(async (t) => {
-						return Promise.all(
-							this.columns.map(async (c) => {
-								try {
-									const res = await c.fn(t);
-									if (typeof res === 'number') return res.toFixed(2);
-									if (typeof res === 'string' && !isNaN(Number(res))) return Number(res).toFixed(2);
-									return res;
-								} catch (error) {
-									terminal.error(
-										'Error serializing column',
-										JSON.stringify({ column: c.name, error })
-									);
-									return 'Error';
-								}
-							})
-						);
-					})
-				))
-			];
+			const start = Date.now();
+			// const results = [
+			// 	this.columns.map((c) => c.name),
+			// 	...(await Promise.all(
+			// 		teams.map(async (t) => {
+			// 			return Promise.all(
+			// 				this.columns.map(async (c) => {
+			// 					try {
+			// 						const res = await c.fn(t);
+			// 						if (typeof res === 'number') return res.toFixed(2);
+			// 						if (typeof res === 'string' && !isNaN(Number(res))) return Number(res).toFixed(2);
+			// 						return res;
+			// 					} catch (error) {
+			// 						terminal.error(
+			// 							'Error serializing column',
+			// 							JSON.stringify({ column: c.name, error })
+			// 						);
+			// 						return 'Error';
+			// 					}
+			// 				})
+			// 			);
+			// 		})
+			// 	))
+			// ];
+
+			// split teams into sets of 10
+			const teamSets: Team[][] = [];
+			for (let i = 0; i < teams.length; i += 10) {
+				teamSets.push(teams.slice(i, i + 10));
+			}
+			const piscina = new Piscina({
+				filename: path.join(process.cwd(), './src/lib/server/utils/google-summary-thread.ts'),
+				name: 'generateSummary',
+				maxThreads: 4,
+			});
+			
+
+			const results = await Promise.all(
+				teamSets.map(ts => piscina.run({ table: this, teams: ts }))
+			);
+
+			results.unshift(
+				this.columns.map((c) => c.name)
+			);
+
+			console.log(
+				`Generated summary for ${teams.length} teams in ${Date.now() - start}ms`
+			);
+
+			return results.flat();
 		});
 	}
 }
