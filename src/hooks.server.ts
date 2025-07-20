@@ -1,16 +1,8 @@
 import { Account } from '$lib/server/structs/account';
 import { Session } from '$lib/server/structs/session';
 import { Analytics } from '$lib/server/structs/analytics';
-import '$lib/server/structs/email';
 import '$lib/server/structs/permissions';
 import '$lib/server/structs/log';
-import '$lib/server/structs/FIRST';
-import '$lib/server/structs/checklist';
-import '$lib/server/structs/limiting';
-import '$lib/server/structs/potato';
-import '$lib/server/structs/scouting';
-import '$lib/server/structs/strategy';
-import '$lib/server/structs/TBA';
 import { type Handle } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import { env } from '$env/dynamic/private';
