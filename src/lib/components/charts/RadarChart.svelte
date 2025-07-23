@@ -1,15 +1,15 @@
-<script lang="ts">
+  <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Scouting } from '$lib/model/scouting';
 	import Chart from 'chart.js/auto';
 
 	interface Props {
-		teams: TBATeam[];
+		team: TBATeam;
 		scouting: Scouting.MatchScoutingArr;
 	}
 
-	const { teams, scouting }: Props = $props();
+	const { team, scouting }: Props = $props();
 
 	let cl1 = $state(0);
 	let cl2 = $state(0);
@@ -21,22 +21,19 @@
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
 
-	const dataset = teams.map((team, i) => {
-	return {
-		label: String(team.tba.team_number),
-		data: [ cl1, cl2, cl3, cl4, brg, prc],
-		backgroundColor: `rgba(255, 99, 132, 0.2)`,
-		borderColor: `rgba(255, 99, 132, 1)`,
-	};
-});
-
-
 	onMount(() => {
 		chartInstance = new Chart(chartCanvas, {
 			type: 'radar',
 			data: {
 				labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Barge', 'Processor'],
-				datasets: dataset
+				datasets: [
+					{
+						label: String(team.tba.team_number),
+						data: [cl1, cl2, cl3, cl4, brg, prc],
+						backgroundColor: 'rgba(255, 99, 132, 0.2)',
+						borderColor: 'rgba(255, 99, 132, 1)'
+					}
+				]
 			},
 			options: {
 				scales: {
