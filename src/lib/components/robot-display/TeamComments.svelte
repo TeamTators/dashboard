@@ -6,8 +6,9 @@
 	import type { INumberFilterParams, ITextFilterParams } from 'ag-grid-community';
 	import { onMount } from 'svelte';
 	import { Account } from '$lib/model/account';
-	import { prompt } from '$lib/utils/prompts';
+	import { alert, prompt } from '$lib/utils/prompts';
 	import { writable, type Writable } from 'svelte/store';
+	import { contextmenu } from '$lib/utils/contextmenu';
 
 	interface Props {
 		team: number;
@@ -27,11 +28,7 @@
 		}[]
 	> = $state(writable([]));
 
-	let render = $state(0);
-
 	onMount(() => {
-		render++;
-
 		return comments.subscribe((data) => {
 			commentProxy.set(
 				data.map((c) => {
@@ -44,8 +41,6 @@
 					};
 				})
 			);
-			// Yes, this is a hack. I don't want to do the right way when this works.
-			render++;
 		});
 	});
 
@@ -65,9 +60,6 @@
 			type: 'general',
 			accountId: String(self.get().data.id)
 		})
-			.then(() => {
-				render++;
-			})
 			.catch((e) => {
 				console.error(e);
 				alert('Failed to add comment');
@@ -80,37 +72,55 @@
 		<i class="material-icons">add</i>
 		Add Comment
 	</button>
-	{#key render}
-		<Grid
-			rowNumbers={true}
-			opts={{
-				columnDefs: [
+	<Grid
+		rowNumbers={true}
+		opts={{
+			columnDefs: [
+				{
+					headerName: 'Comment',
+					field: 'comment',
+					filter: 'agTextColumnFilter'
+				},
+				{
+					headerName: 'Account',
+					field: 'scoutUsername',
+					filter: 'agTextColumnFilter'
+				},
+				{
+					headerName: 'Type',
+					field: 'type',
+					filter: 'agTextColumnFilter'
+				},
+				{
+					headerName: 'Match',
+					field: 'match',
+					filter: 'agNumberColumnFilter'
+				}
+			],
+			onCellContextMenu: (e) => {
+				contextmenu(
+					e.event as PointerEvent,
 					{
-						headerName: 'Comment',
-						field: 'comment',
-						filter: 'agTextColumnFilter'
-					},
-					{
-						headerName: 'Account',
-						field: 'scoutUsername',
-						filter: 'agTextColumnFilter'
-					},
-					{
-						headerName: 'Type',
-						field: 'type',
-						filter: 'agTextColumnFilter'
-					},
-					{
-						headerName: 'Match',
-						field: 'match',
-						filter: 'agNumberColumnFilter'
+						options: [
+							'String',
+							{
+								name: 'Test', 
+								action: () => alert('This worked!'),
+								icon: {
+									type: 'material-icons',
+									name: 'layers'
+								}
+							}
+						],
+						width: '150px',
 					}
-				]
-			}}
-			height={400}
-			data={commentProxy}
-		/>
-	{/key}
+				);
+			},
+			preventDefaultOnContextMenu: true
+		}}
+		height={400}
+		data={commentProxy}
+	/>
 </div>
 
 <style>
