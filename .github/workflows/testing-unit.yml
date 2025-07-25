@@ -54,7 +54,7 @@ jobs:
         with:
           node-version: v22.12.0
 
-      - name: Install dashboard dependencies
+      - name: Install dependencies
         run: |
           cd dashboard
           echo "Installing dashboard dependencies..."

@@ -11,6 +11,7 @@ import '$lib/server/structs/potato';
 import '$lib/server/structs/scouting';
 import '$lib/server/structs/strategy';
 import '$lib/server/structs/TBA';
+import '$lib/server/structs/potato';
 import { type Handle } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import { env } from '$env/dynamic/private';
