@@ -18,7 +18,6 @@
 	onMount(() => {
 		matches = Scouting.getArchivedMatches(team.tba.team_number, event.tba.key);
 
-		return matches.subscribe(console.log);
 	});
 </script>
 
