@@ -21,11 +21,11 @@
 			match: string;
 		}[]
 	> = $derived(writable(comments.map(c => {
-		return {comment: c, match: 'unknown'};
+		return {
+			comment: c, 
+			match: scouting.find((s) => s.data.id === c.data.matchScoutingId)?.data.matchNumber? || 'unknown'};
 	})));
 
-	onMount(() => {
-	});
 </script>
 
 {#if comments.length > 0}
