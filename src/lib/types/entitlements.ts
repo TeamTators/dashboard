@@ -1,7 +1,4 @@
 export type Entitlement = 
-    'view-roles'
-  | 'create-custom-tba-responses'
-  | 'manage-tba';
+    'view-roles';
 	export type Group = 
-    'Roles'
-  | 'TBA';
+    'Roles';
