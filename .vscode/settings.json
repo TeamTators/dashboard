@@ -1,11 +1,11 @@
 {
 	"colorMyText.configurations": [
 		{
-			"paths": ["*.html", "*.mjml"],
+			"paths": ["*.html", "*.mjml", "*.md"],
 			"rules": [
 				{
 					"patterns": [
-						// all data in {{ }}
+						// all data in {{ }}, but not including the {{ }}
 						"\\{\\{ [^}]+\\}\\}"
 					],
 					"color": "BrightGreen"
@@ -38,6 +38,19 @@
 					"color": "Green"
 				}
 			]
+		},
+		{
+			"paths": ["*.pages"],
+			"rules": [
+				{
+					"patterns": [
+						// everything after # is a comment
+						"#.*"
+					],
+					"color": "Green"
+				}
+			]
 		}
-	]
+	],
+	"liveServer.settings.port": 5501
 }
