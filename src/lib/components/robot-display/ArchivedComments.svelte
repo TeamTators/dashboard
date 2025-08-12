@@ -10,22 +10,28 @@
 		team: number;
 		event: string;
 		comments: Scouting.TeamCommentsData[];
-		scouting: Scouting.MatchScoutingData[];
+		scouting: {
+			id: string;
+			matchNumber: number;
+			compLevel: string;
+		}[];
 	}
 
 	const { team, event, comments , scouting }: Props = $props();
 
-	let commentProxy: Writable<
+	const commentProxy: Writable<
 		{
 			comment: Scouting.TeamCommentsData;
 			match: string;
 		}[]
 	> = $derived(writable(comments.map(c => {
+		const match =  scouting.find((s) => s.id === c.data.matchScoutingId);
+		const matchStr = match ? `${match.compLevel}${match.matchNumber}` : 'unknown';
 		return {
 			comment: c, 
-			match: scouting.find((s) => s.data.id === c.data.matchScoutingId)?.data.matchNumber? || 'unknown'};
+			match: matchStr,
+		};
 	})));
-
 </script>
 
 {#if comments.length > 0}

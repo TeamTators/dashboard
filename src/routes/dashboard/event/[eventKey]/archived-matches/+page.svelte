@@ -7,8 +7,6 @@
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
 	const teams = $derived(data.teams.map((t) => new TBATeam(t, event)));
-	const comments = $derived(data.comments.map(c=>Scouting.TeamComments.Generator(c)));
-	const scouting = $derived(data.comments.map(c=>Scouting.MatchScouting.Generator(c)));
 
 	$effect(() => nav(event.tba));
 </script>
@@ -29,7 +27,6 @@
 				<h3>{team.tba.team_number} {team.tba.nickname}</h3>
 			</div>
 			<ArchivedMatches {team} {event} />
-			<ArchivedComments team={team.tba.team_number} event={event.tba.key} comments={comments.filter(c => c.data.team === team.tba.team_number)} {scouting} />
 		</div>
 	{/each}
 </div>
