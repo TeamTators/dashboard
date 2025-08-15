@@ -85,8 +85,8 @@ describe('TBA Webhook', async () => {
 
 	it('Should fail the request if the secret is invalid', async () => {
 		const messageData = {
-			"doesn't": 'matter',
-		}
+			"doesn't": 'matter'
+		};
 		const res = await send(messageData, 'invalid_secret');
 		expect(res.status).toBe(403);
 	});

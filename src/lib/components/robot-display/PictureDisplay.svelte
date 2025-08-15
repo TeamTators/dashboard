@@ -35,11 +35,11 @@
 			);
 		});
 
-		const off = uploadComponent.on('upload', (file) => {
+		const off = uploadComponent.on('addFile', (file) => {
 			FIRST.TeamPictures.new({
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
-				picture: file,
+				picture: file.id,
 				accountId: Account.getSelf().get().data.id || ''
 			});
 		});

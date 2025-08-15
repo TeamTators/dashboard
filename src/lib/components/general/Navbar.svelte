@@ -2,8 +2,6 @@
 	import SideNav from './SideNav.svelte';
 	import Notifications from './Notifications.svelte';
 	import { Account } from '$lib/model/account';
-	import { onMount } from 'svelte';
-	import Icon from '../potato/Icon.svelte';
 	interface Props {
 		title: string;
 	}
@@ -33,7 +31,6 @@
 			>
 		</div>
 		<div class="end d-flex align-items-center">
-			<Icon />
 			<div class="dropdown">
 				<button
 					class="btn dropdown-toggle px-2"
@@ -44,7 +41,7 @@
 					<i class="material-icons">account_circle</i>
 				</button>
 				<ul
-					class="dropdown-menu"
+					class="dropdown-menu animate__animated animate__fadeInDown animate__faster"
 					style="
 					position: fixed;
 					top: 52px;
@@ -55,7 +52,6 @@
 					{#if $self.data.username === 'guest'}
 						<li><a class="dropdown-item" href="/account/sign-in">Sign In</a></li>
 					{:else}
-						<!-- <li><a class="dropdown-item" href="/account/profile">Profile</a></li> -->
 						<li><a class="dropdown-item" href="/account/sign-out">Sign Out</a></li>
 					{/if}
 				</ul>

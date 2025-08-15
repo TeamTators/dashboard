@@ -88,17 +88,17 @@
 					{
 						headerName: 'Comment',
 						field: 'comment',
-						filter: 'agTextColumnFilter',
+						filter: 'agTextColumnFilter'
 					},
 					{
 						headerName: 'Account',
 						field: 'scoutUsername',
-						filter: 'agTextColumnFilter',
+						filter: 'agTextColumnFilter'
 					},
 					{
 						headerName: 'Type',
 						field: 'type',
-						filter: 'agTextColumnFilter',
+						filter: 'agTextColumnFilter'
 					},
 					{
 						headerName: 'Match',

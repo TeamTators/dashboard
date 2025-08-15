@@ -292,7 +292,7 @@ export namespace Scouting {
 	export const TeamComments = new Struct({
 		name: 'team_comments',
 		structure: {
-			matchScoutingId: text('match_Scouting_id').notNull(),
+			matchScoutingId: text('match_scouting_id').notNull(),
 			accountId: text('account_id').notNull(),
 			team: integer('team').notNull(),
 			comment: text('comment').notNull(),

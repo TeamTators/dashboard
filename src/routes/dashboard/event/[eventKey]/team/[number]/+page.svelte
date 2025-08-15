@@ -41,8 +41,10 @@
 
 	const summary = new Dashboard.Card({
 		name: 'Event Summary',
-		iconType: 'material-icons',
-		icon: 'summarize',
+		icon: {
+			type: 'material-icons',
+			name: 'summarize'
+		},
 		id: 'event_summary',
 		size: {
 			width: 2,
@@ -68,8 +70,10 @@
 
 	const picturesCard = new Dashboard.Card({
 		name: 'Pictures',
-		iconType: 'material-icons',
-		icon: 'image',
+		icon: {
+			type: 'material-icons',
+			name: 'image'
+		},
 		id: 'pictures',
 		size: {
 			width: 4,
@@ -95,8 +99,10 @@
 
 	const commentsCard = new Dashboard.Card({
 		name: 'Comments',
-		iconType: 'material-icons',
-		icon: 'chat',
+		icon: {
+			type: 'material-icons',
+			name: 'chat'
+		},
 		id: 'comments',
 		size: {
 			width: 4,
@@ -122,8 +128,10 @@
 
 	const pitScouting = new Dashboard.Card({
 		name: 'Pit Scouting',
-		iconType: 'material-icons',
-		icon: 'question_answer',
+		icon: {
+			type: 'material-icons',
+			name: 'question_answer'
+		},
 		id: 'pit_scouting',
 		size: {
 			width: 2,
@@ -149,8 +157,10 @@
 
 	const matchViewer = new Dashboard.Card({
 		name: 'Matches',
-		iconType: 'material-icons',
-		icon: 'preview',
+		icon: {
+			type: 'material-icons',
+			name: 'preview'
+		},
 		id: 'matches',
 		size: {
 			width: 4,
@@ -180,8 +190,10 @@
 
 	const progress = new Dashboard.Card({
 		name: 'Progress',
-		iconType: 'material-icons',
-		icon: 'trending_up',
+		icon: {
+			type: 'material-icons',
+			name: 'trending_up'
+		},
 		id: 'progress',
 		size: {
 			width: 4,
@@ -211,8 +223,10 @@
 
 	const eventStats = new Dashboard.Card({
 		name: 'Event Stats',
-		iconType: 'material-icons',
-		icon: 'trending_up',
+		icon: {
+			type: 'material-icons',
+			name: 'trending_up'
+		},
 		id: 'event_stats',
 		size: {
 			width: 4,
@@ -242,8 +256,10 @@
 
 	const averageContributionsTable = new Dashboard.Card({
 		name: 'Average Contribution',
-		iconType: 'material-icons',
-		icon: 'all_inclusive',
+		icon: {
+			type: 'material-icons',
+			name: 'all_inclusive'
+		},
 		id: 'average_contributions_table',
 		size: {
 			width: 2,
@@ -273,8 +289,10 @@
 
 	const averageContributionsPie = new Dashboard.Card({
 		name: 'Average Contribution',
-		iconType: 'material-icons',
-		icon: 'all_inclusive',
+		icon: {
+			type: 'material-icons',
+			name: 'all_inclusive'
+		},
 		id: 'average_contributions_pie',
 		size: {
 			width: 2,
@@ -304,8 +322,10 @@
 
 	const scoutSummary = new Dashboard.Card({
 		name: 'Scout Summary',
-		iconType: 'material-icons',
-		icon: 'summarize',
+		icon: {
+			type: 'material-icons',
+			name: 'summarize'
+		},
 		id: 'scout_summary',
 		size: {
 			width: 2,
@@ -331,8 +351,10 @@
 
 	const checksSummary = new Dashboard.Card({
 		name: 'Checks Summary',
-		iconType: 'material-icons',
-		icon: 'summarize',
+		icon: {
+			type: 'material-icons',
+			name: 'summarize'
+		},
 		id: 'checks_summary',
 		size: {
 			width: 4,

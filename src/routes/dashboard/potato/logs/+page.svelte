@@ -10,14 +10,18 @@
 			{
 				name: 'Home',
 				href: '/',
-				icon: 'home',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'home'
+				}
 			},
 			{
 				name: 'Leaderboard',
 				href: '/dashboard/potato',
-				icon: 'leaderboard',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'leaderboard'
+				}
 			}
 		],
 		priority: 0

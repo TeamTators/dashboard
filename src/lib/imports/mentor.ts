@@ -7,14 +7,18 @@ export default () => {
 			{
 				name: 'Accounts',
 				href: '/dashboard/mentor/accounts',
-				icon: 'contacts',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'contacts'
+				}
 			},
 			{
 				name: 'Custom TBA',
 				href: '/dashboard/mentor/custom-tba',
-				icon: 'auto_awesome_mosaic',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'auto_awesome_mosaic'
+				}
 			}
 		],
 		priority: 0

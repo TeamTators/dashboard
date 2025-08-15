@@ -1,4 +1,4 @@
-import { Folder, Action } from './utils';
+import { Folder } from './utils';
 
 export default new Folder(
 	'Server Controller',
