@@ -7,8 +7,15 @@ Hello and welcome to the documentation for this project! I am still working on i
 - [Documentation](#documentation)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
+    - [Install Dependencies](#install-dependencies)
+    - [Recommended vscode Extensions](#recommended-vscode-extensions)
   - [Structure](#structure)
   - [Usage](#usage)
+    - [Set up](#set-up)
+    - [Database](#database)
+    - [Development](#development)
+    - [Production](#production)
+    - [Testing](#testing)
   - [Contributing](#contributing)
   - [License](#license)
   - [Contact](#contact)
@@ -75,6 +82,7 @@ This requires node v22.12.0 or higher. Go ahead and run this script and it will 
 - `mjml/` - Email templates using MJML
 - `src/` - [Source code](./src/index.md)
 - `static/` - Static files
+- `scripts/` - [CLI Scripts](./scripts/index.md)
 
 ## Usage
 
@@ -144,11 +152,3 @@ View [License](./license.md) for full terms and conditions
 ## Contact
 
 If you have any questions, feel free to contact me via email at [taylor.reese.king@gmail.com](mailto:taylor.reese.king@gmail.com) or open an issue on GitHub.
-
-This directory contains:
-
-- [.git](.git/index.md)
-- [.github](.github/index.md)
-- [cli](cli/index.md)
-- [scripts](scripts/index.md)
-- [src](src/index.md)

@@ -40,47 +40,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          path: dashboard
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10.13.1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: v22.12.0
 
-      - name: Install dashboard dependencies
+      - name: Install dependencies
         run: |
-          cd dashboard
-          echo "Installing dashboard dependencies..."
+          echo "Installing dependencies..."
           pnpm install --frozen-lockfile
 
-      - name: Clone the tba-webhooks repository
+      - name: Load .env variables
         run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
-
-      - name: Install tba-webhooks dependencies
-        run: |
-          cd tba-webhooks
-          echo "Installing tba-webhooks dependencies..."
-          pnpm install --frozen-lockfile
-
-      - name: Create .env file for tba-webhooks
-        run: |
-          cd tba-webhooks
-          touch .env
-          echo "PORT=5555" >> .env
-          echo "TBA_SECRET=webhook_secret" >> .env
-          echo "REDIS_NAME=tba_webhook" >> .env
-
-      - name: Create .env file for dashboard
-        run: |
-          cd dashboard
           touch .env
           echo "DB_HOST=localhost" >> .env
           echo "DB_PORT=5432" >> .env
@@ -89,20 +66,12 @@ jobs:
           echo "DB_NAME=postgres" >> .env
           echo "PUBLIC_APP_NAME=test" >> .env
           echo "REDIS_NAME=some_name" >> .env
-          echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
-          echo "PUBLIC_DO_POTATO=true" >> .env
-          echo "LOCAL_TBA_WEBHOOK_PATH=../tba-webhooks" >> .env
-          echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
-          echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
-          echo "LOCAL_TBA_WEBHOOK_REDIS_NAME=tba_webhook" >> .env
+          export $(cat .env | xargs)
 
       - name: Run migrations
         run: |
-          cd dashboard
           pnpm run db:migrate
           pnpm run db:push --strict --verbose --force
 
       - name: Run Vitest tests
-        run: |
-          cd dashboard
-          pnpm run test:unit
+        run: npm run test:unit
