@@ -23,7 +23,8 @@
 	> = $derived(writable(comments.map(c => {
 		return {
 			comment: c, 
-			match: scouting.find((s) => s.data.id === c.data.matchScoutingId)?.data.matchNumber? || 'unknown'};
+			match: String(scouting.find((s) => s.data.id === c.data.matchScoutingId)?.data.matchNumber ?? 'unknown')
+		};
 	})));
 
 </script>
