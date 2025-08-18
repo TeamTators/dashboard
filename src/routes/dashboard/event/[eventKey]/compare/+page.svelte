@@ -8,12 +8,13 @@
 	import { Dashboard } from '$lib/model/dashboard.js';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
+	import Chart from 'chart.js/auto';
 
 	const { data } = $props();
 	const event = $derived(data.event);
 	const selectedTeams = $derived(data.selectedTeams);
 	const teams = $derived(data.teams);
-	const scouting = $derived(data.scouting);
+	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
 	const matches = $derived(data.matches);
 
@@ -22,6 +23,18 @@
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
 	let view: 'progress' | 'stats' = $state('progress');
+
+	let chartCanvas: HTMLCanvasElement;
+	let chartInstance: Chart;
+	
+	const dataset = teams.map((team, i) => {
+		return {
+			label: String(team.tba.team_number),
+			data: [ 1,2,3,4,5,6 ],
+			backgroundColor: `rgba(255, 99, 132, 0.2)`,
+			borderColor: `rgba(255, 99, 132, 1)`,
+		};
+	});
 
 	$effect(() => {
 		if (!view) return; // On view set
@@ -38,6 +51,30 @@
 	onMount(() => {
 		const search = new URLSearchParams(location.search);
 		view = (search.get('view') as 'progress' | 'stats') || 'progress';
+
+		chartInstance = new Chart(chartCanvas, {
+			type: 'radar',
+			data: {
+				labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Barge', 'Processor'],
+				datasets: dataset
+			},
+			options: {
+				scales: {
+					r: {
+						grid: {
+							color: 'rgba(60, 60, 60, 1)'
+						},
+						angleLines: {
+							color: 'rgba(60, 60, 60, 1)'
+						},
+						ticks: {
+							color: 'rgba(102, 102, 102, 1)',
+							backdropColor: 'rgba(0, 0, 0, 0)'
+						}
+					}
+				}
+			}
+		});
 	});
 
 	const dashboard = $derived(
@@ -169,10 +206,11 @@
 								<div class="card-body">
 									<h5 class="card-title">Radar Chart</h5>
 									<div style="height: 300px;">
-										<RadarChart 
+										<canvas bind:this={chartCanvas} style="height: 400px;"></canvas>
+										<!-- <RadarChart
 										{teamScouting} 
 										{scouting}
-										/>
+										/>-->
 									</div>
 								</div>
 							</div>
