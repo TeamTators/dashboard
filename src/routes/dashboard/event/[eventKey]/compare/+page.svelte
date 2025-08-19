@@ -9,10 +9,12 @@
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
 	import Chart from 'chart.js/auto';
 	import { Scouting } from '$lib/model/scouting';
+	import { writable, get } from 'svelte/store';
+	import { TBATeam } from '$lib/utils/tba.js';
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = $derived(data.selectedTeams);
+	const selectedTeams = $derived(writable(data.selectedTeams));
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
@@ -37,8 +39,10 @@
 		{ border: 'rgba(199, 199, 199, 1)', background: 'rgba(199, 199, 199, 0.2)' }
 	];
 
+	const sort = (a: TBATeam, b: TBATeam): number => a.tba.team_number - b.tba.team_number;
+
 	const dataset = $derived(
-		selectedTeams.map((team, i) => {
+		$selectedTeams.map((team, i) => {
 			const color = colors[i % colors.length];
 			const scoutingData = teamScouting[i];
 			const contribution = Scouting.averageContributions(scoutingData.data) || 
@@ -118,19 +122,6 @@
 		new Dashboard.Dashboard({
 			name: event.tba.name + ' Team Comparison',
 			cards: [],
-			// teams.map(
-			// 	(t) =>
-			// 		new Dashboard.Card({
-			// 			name: t.tba.team_number + ' | ' + t.tba.nickname,
-			// 			id: t.tba.team_number.toString(),
-			// 			icon: 'mdi:robot',
-			// 			size: {
-			// 				width: 1,
-			// 				height: 1
-			// 			},
-			// 			iconType: 'material-icons'
-			// 		})
-			// ),
 			id: 'event-dashboard'
 		})
 	);
@@ -147,21 +138,16 @@
 							class="btn-check"
 							id="btn-check-{team.tba.team_number}"
 							autocomplete="off"
-							checked={!!selectedTeams.find((t) => t.tba.team_number === team.tba.team_number)}
+							checked={!!$selectedTeams.find((t) => t.tba.team_number === team.tba.team_number)}
 							onchange={(event) => {
 								if (event.currentTarget.checked) {
-									selectedTeams.push(team);
+									selectedTeams.set([...get(selectedTeams), team].sort(sort));
 								} else {
-									selectedTeams.splice(
-										selectedTeams.findIndex((t) => t.tba.team_number === team.tba.team_number),
-										1
-									);
+									selectedTeams.set(get(selectedTeams).filter(t => t !== team).sort(sort));
 								}
 
-								selectedTeams.sort((a, b) => a.tba.team_number - b.tba.team_number);
-
 								const search = new URLSearchParams(location.search);
-								search.set('teams', selectedTeams.map((t) => t.tba.team_number).join(','));
+								search.set('teams', get(selectedTeams).map((t) => t.tba.team_number).join(','));
 								goto(`${location.pathname}?${search.toString()}`);
 							}}
 						/>
@@ -223,36 +209,34 @@
 							</div>
 						</div>
 					</div>
-					{#key selectedTeams}
-						{#each selectedTeams as team, i}
-							<div class="col-md-4 mb-3">
-								<div class="card layer-2">
-									<div class="card-body">
-										<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
-										<div style="height: 300px;">
-											{#if view === 'progress'}
-												<Progress
-													{team}
-													{event}
-													bind:staticY
-													scouting={teamScouting[i]}
-													{matches}
-												/>
-											{:else}
-												<TeamEventStats
-													{team}
-													{event}
-													bind:staticY
-													scouting={teamScouting[i]}
-													{matches}
-												/>
-											{/if}
-										</div>
+					{#each $selectedTeams as team, i}
+						<div class="col-md-4 mb-3">
+							<div class="card layer-2">
+								<div class="card-body">
+									<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
+									<div style="height: 300px;">
+										{#if view === 'progress'}
+											<Progress
+												{team}
+												{event}
+												bind:staticY
+												scouting={teamScouting[i]}
+												{matches}
+											/>
+										{:else}
+											<TeamEventStats
+												{team}
+												{event}
+												bind:staticY
+												scouting={teamScouting[i]}
+												{matches}
+											/>
+										{/if}
 									</div>
 								</div>
 							</div>
-						{/each}
-					{/key}
+						</div>
+					{/each}
 				</div>
 			</div>
 		</div>
