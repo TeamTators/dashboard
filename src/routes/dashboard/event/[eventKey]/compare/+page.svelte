@@ -14,7 +14,7 @@
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = $derived(writable(data.selectedTeams));
+	const selectedTeams = writable(data.selectedTeams);
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
@@ -41,34 +41,15 @@
 
 	const sort = (a: TBATeam, b: TBATeam): number => a.tba.team_number - b.tba.team_number;
 
-	const dataset = $derived(
-		$selectedTeams.map((team, i) => {
-			const color = colors[i % colors.length];
-			const scoutingData = teamScouting[i];
-			const contribution = Scouting.averageContributions(scoutingData.data) || 
-			{
-				cl1: 0, cl2: 0, cl3: 0, cl4: 0, brg: 0, prc: 0
-			};
-
-			return {
-				label: String(team.tba.team_number),
-				data: [
-					contribution.cl1,
-					contribution.cl2,
-					contribution.cl3,
-					contribution.cl4,
-					contribution.brg,
-					contribution.prc
-			],
-				backgroundColor: color.background,
-				borderColor: color.border,
-				borderWidth: 1,
-				pointBackgroundColor: color.background,
-				pointBorderColor: color.border
-			};
-		})
-	);
-
+	const dataset: {
+		label: string;
+		data: number[];
+		backgroundColor: string;
+		borderColor: string;
+		borderWidth: number;
+		pointBackgroundColor: string;
+		pointBorderColor: string;
+	}[] = $derived([]);
 
 	$effect(() => {
 		if (!view) return; // On view set
@@ -116,6 +97,43 @@
 				}
 			}
 		});
+
+		const unsub = selectedTeams.subscribe((st) =>
+			st.map((team, i) => {
+				const color = colors[i % colors.length];
+				const scoutingData = teamScouting[i];
+				const contribution = Scouting.averageContributions(scoutingData.data) || {
+					cl1: 0,
+					cl2: 0,
+					cl3: 0,
+					cl4: 0,
+					brg: 0,
+					prc: 0
+				};
+
+				return {
+					label: String(team.tba.team_number),
+					data: [
+						contribution.cl1,
+						contribution.cl2,
+						contribution.cl3,
+						contribution.cl4,
+						contribution.brg,
+						contribution.prc
+					],
+					backgroundColor: color.background,
+					borderColor: color.border,
+					borderWidth: 1,
+					pointBackgroundColor: color.background,
+					pointBorderColor: color.border
+				};
+			})
+		);
+
+		return () => {
+			unsub();
+			chartInstance.destroy();
+		};
 	});
 
 	const dashboard = $derived(
@@ -143,11 +161,20 @@
 								if (event.currentTarget.checked) {
 									selectedTeams.set([...get(selectedTeams), team].sort(sort));
 								} else {
-									selectedTeams.set(get(selectedTeams).filter(t => t !== team).sort(sort));
+									selectedTeams.set(
+										get(selectedTeams)
+											.filter((t) => t !== team)
+											.sort(sort)
+									);
 								}
 
 								const search = new URLSearchParams(location.search);
-								search.set('teams', get(selectedTeams).map((t) => t.tba.team_number).join(','));
+								search.set(
+									'teams',
+									get(selectedTeams)
+										.map((t) => t.tba.team_number)
+										.join(',')
+								);
 								goto(`${location.pathname}?${search.toString()}`);
 							}}
 						/>
@@ -216,13 +243,7 @@
 									<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
 									<div style="height: 300px;">
 										{#if view === 'progress'}
-											<Progress
-												{team}
-												{event}
-												bind:staticY
-												scouting={teamScouting[i]}
-												{matches}
-											/>
+											<Progress {team} {event} bind:staticY scouting={teamScouting[i]} {matches} />
 										{:else}
 											<TeamEventStats
 												{team}
