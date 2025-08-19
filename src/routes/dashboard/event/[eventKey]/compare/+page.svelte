@@ -33,18 +33,17 @@
 	const colors: {
 		border: string;
 		background: string;
-	}[] = 
-		[
-			new Color(255, 99, 132),
-			new Color(54, 162, 235),
-			new Color(75, 192, 192),
-			new Color(153, 102, 255),
-			new Color(255, 159, 64),
-			new Color(199, 199, 199),
-		].map((c) => ({
-			border: c.clone().setAlpha(1).toString('rgba'),
-			background: c.clone().setAlpha(0.2).toString('rgba'),
-		}));
+	}[] = [
+		new Color(255, 99, 132),
+		new Color(54, 162, 235),
+		new Color(75, 192, 192),
+		new Color(153, 102, 255),
+		new Color(255, 159, 64),
+		new Color(199, 199, 199)
+	].map((c) => ({
+		border: c.clone().setAlpha(1).toString('rgba'),
+		background: c.clone().setAlpha(0.2).toString('rgba')
+	}));
 
 	const sort = (a: TBATeam, b: TBATeam): number => a.tba.team_number - b.tba.team_number;
 
@@ -109,6 +108,24 @@
 			st.map((team, i) => {
 				const color = colors[i % colors.length];
 				const scoutingData = teamScouting[i];
+				if (!scoutingData) {
+					return {
+						label: String(team.tba.team_number),
+						data: [
+							0,
+							0,
+							0,
+							0,
+							0,
+							0
+						],
+						backgroundColor: color.background,
+						borderColor: color.border,
+						borderWidth: 1,
+						pointBackgroundColor: color.background,
+						pointBorderColor: color.border
+					}
+				}
 				const contribution = Scouting.averageContributions(scoutingData.data) || {
 					cl1: 0,
 					cl2: 0,
@@ -249,7 +266,8 @@
 								<div class="card-body">
 									<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
 									<div style="height: 300px;">
-										{#if view === 'progress'}
+										{#if teamScouting[i]}
+																				{#if view === 'progress'}
 											<Progress {team} {event} bind:staticY scouting={teamScouting[i]} {matches} />
 										{:else}
 											<TeamEventStats
@@ -259,6 +277,9 @@
 												scouting={teamScouting[i]}
 												{matches}
 											/>
+										{/if}
+										{:else}
+											No data found :(
 										{/if}
 									</div>
 								</div>
