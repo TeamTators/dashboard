@@ -41,7 +41,7 @@
 		selectedTeams.map((team, i) => {
 			const color = colors[i % colors.length];
 			const scoutingData = teamScouting[i];
-			const contribution = Scouting.averageContributions(scoutingData) || 
+			const contribution = Scouting.averageContributions(scoutingData.data) || 
 			{
 				cl1: 0, cl2: 0, cl3: 0, cl4: 0, brg: 0, prc: 0
 			};
