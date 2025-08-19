@@ -1,4 +1,4 @@
-  <script lang="ts">
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Scouting } from '$lib/model/scouting';

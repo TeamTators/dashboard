@@ -7,8 +7,8 @@
 	import { onMount } from 'svelte';
 	import { Dashboard } from '$lib/model/dashboard.js';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
-	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import Chart from 'chart.js/auto';
+	import { Scouting } from '$lib/model/scouting';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -26,15 +26,45 @@
 
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
-	
-	const dataset = teams.map((team, i) => {
-		return {
-			label: String(team.tba.team_number),
-			data: [ 1,2,3,4,5,6 ],
-			backgroundColor: `rgba(255, 99, 132, 0.2)`,
-			borderColor: `rgba(255, 99, 132, 1)`,
-		};
-	});
+
+	const colors = [
+		{ border: 'rgba(255, 99, 132, 1)', background: 'rgba(255, 99, 132, 0.2)' },
+		{ border: 'rgba(54, 162, 235, 1)', background: 'rgba(54, 162, 235, 0.2)' },
+		{ border: 'rgba(255, 206, 86, 1)', background: 'rgba(255, 206, 86, 0.2)' },
+		{ border: 'rgba(75, 192, 192, 1)', background: 'rgba(75, 192, 192, 0.2)' },
+		{ border: 'rgba(153, 102, 255, 1)', background: 'rgba(153, 102, 255, 0.2)' },
+		{ border: 'rgba(255, 159, 64, 1)', background: 'rgba(255, 159, 64, 0.2)' },
+		{ border: 'rgba(199, 199, 199, 1)', background: 'rgba(199, 199, 199, 0.2)' }
+	];
+
+	const dataset = $derived(
+		selectedTeams.map((team, i) => {
+			const color = colors[i % colors.length];
+			const scoutingData = teamScouting[i];
+			const contribution = Scouting.averageContributions(scoutingData) || 
+			{
+				cl1: 0, cl2: 0, cl3: 0, cl4: 0, brg: 0, prc: 0
+			};
+
+			return {
+				label: String(team.tba.team_number),
+				data: [
+					contribution.cl1,
+					contribution.cl2,
+					contribution.cl3,
+					contribution.cl4,
+					contribution.brg,
+					contribution.prc
+			],
+				backgroundColor: color.background,
+				borderColor: color.border,
+				borderWidth: 1,
+				pointBackgroundColor: color.background,
+				pointBorderColor: color.border
+			};
+		})
+	);
+
 
 	$effect(() => {
 		if (!view) return; // On view set
@@ -59,6 +89,13 @@
 				datasets: dataset
 			},
 			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						position: 'right'
+					}
+				},
 				scales: {
 					r: {
 						grid: {
@@ -172,8 +209,22 @@
 					</div>
 				</div>
 				<div class="row mb-3">
+					<div class="col-md-4 mb-3">
+						<div class="card layer-2">
+							<div class="card-body">
+								<h5 class="card-title">Radar Chart</h5>
+								<div style="height: 300px;">
+									<canvas bind:this={chartCanvas} style="height: 400px;"></canvas>
+									<!-- <RadarChart
+										{teamScouting} 
+										{scouting}
+										/>-->
+								</div>
+							</div>
+						</div>
+					</div>
 					{#key selectedTeams}
-						{#each selectedTeams as team, i  }
+						{#each selectedTeams as team, i}
 							<div class="col-md-4 mb-3">
 								<div class="card layer-2">
 									<div class="card-body">
@@ -201,20 +252,6 @@
 								</div>
 							</div>
 						{/each}
-						<div class="col-md-4 mb-3">
-							<div class="card layer-2">
-								<div class="card-body">
-									<h5 class="card-title">Radar Chart</h5>
-									<div style="height: 300px;">
-										<canvas bind:this={chartCanvas} style="height: 400px;"></canvas>
-										<!-- <RadarChart
-										{teamScouting} 
-										{scouting}
-										/>-->
-									</div>
-								</div>
-							</div>
-						</div>
 					{/key}
 				</div>
 			</div>
