@@ -49,7 +49,7 @@
 		borderWidth: number;
 		pointBackgroundColor: string;
 		pointBorderColor: string;
-	}[] = $derived([]);
+	}[] = $state([]);
 
 	$effect(() => {
 		if (!view) return; // On view set
