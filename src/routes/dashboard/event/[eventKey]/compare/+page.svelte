@@ -12,7 +12,6 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
-	import { Gradient } from 'colors/gradient';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -31,14 +30,10 @@
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
 
-	const colors = [
-		// { border: 'rgba(255, 99, 132, 1)', background: 'rgba(255, 99, 132, 0.2)' },
-		// { border: 'rgba(54, 162, 235, 1)', background: 'rgba(54, 162, 235, 0.2)' },
-		// { border: 'rgba(255, 206, 86, 1)', background: 'rgba(255, 206, 86, 0.2)' },
-		// { border: 'rgba(75, 192, 192, 1)', background: 'rgba(75, 192, 192, 0.2)' },
-		// { border: 'rgba(153, 102, 255, 1)', background: 'rgba(153, 102, 255, 0.2)' },
-		// { border: 'rgba(255, 159, 64, 1)', background: 'rgba(255, 159, 64, 0.2)' },
-		// { border: 'rgba(199, 199, 199, 1)', background: 'rgba(199, 199, 199, 0.2)' }
+	const colors: {
+		border: string;
+		background: string;
+	}[] = 
 		[
 			new Color(255, 99, 132),
 			new Color(54, 162, 235),
@@ -49,8 +44,7 @@
 		].map((c) => ({
 			border: c.clone().setAlpha(1).toString('rgba'),
 			background: c.clone().setAlpha(0.2).toString('rgba'),
-		}))
-	];
+		}));
 
 	const sort = (a: TBATeam, b: TBATeam): number => a.tba.team_number - b.tba.team_number;
 
