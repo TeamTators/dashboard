@@ -7,6 +7,7 @@
 	import { onMount } from 'svelte';
 	import { Account } from '$lib/model/account';
 	import { prompt } from '$lib/utils/prompts';
+	import { writable, type Writable } from 'svelte/store';
 
 	interface Props {
 		team: number;
@@ -17,69 +18,14 @@
 
 	const { team, event, comments, scouting }: Props = $props();
 
-	let commentProxy: {
-		comment: string;
-		scoutUsername: string;
-		type: string;
-		match: string;
-	}[] = $state([]);
-
-	const accountFilterParams: ITextFilterParams = {
-		filterOptions: ['contains', 'notContains'],
-		textFormatter: (r) => {
-			if (r == null) return null;
-
-			return r.toLowerCase();
-		},
-		debounceMs: 200,
-		maxNumConditions: 1
-	};
-
-	const typeFilterparams: ITextFilterParams = {
-		textFormatter: (r) => {
-			if (r == null) return null;
-
-			return r.toLowerCase();
-		},
-		debounceMs: 200,
-		maxNumConditions: 1
-	};
-
-	const commentFilterParams: ITextFilterParams = {
-		textFormatter: (r) => {
-			if (r == null) return null;
-
-			return r.toLowerCase();
-		},
-		debounceMs: 200,
-		maxNumConditions: 1
-	};
-
-	const columns = [
+	let commentProxy: Writable<
 		{
-			headerName: 'Comment',
-			field: 'comment',
-			filter: 'agTextColumnFilter',
-			filterParams: commentFilterParams
-		},
-		{
-			headerName: 'Account',
-			field: 'scoutUsername',
-			filter: 'agTextColumnFilter',
-			filterParams: accountFilterParams
-		},
-		{
-			headerName: 'Type',
-			field: 'type',
-			filter: 'agTextColumnFilter',
-			filterParams: typeFilterparams
-		},
-		{
-			headerName: 'Match',
-			field: 'match',
-			filter: 'agNumberColumnFilter'
-		}
-	];
+			comment: string;
+			scoutUsername: string;
+			type: string;
+			match: string;
+		}[]
+	> = $state(writable([]));
 
 	let render = $state(0);
 
@@ -87,15 +33,17 @@
 		render++;
 
 		return comments.subscribe((data) => {
-			commentProxy = data.map((c) => {
-				const match = scouting.data.find((s) => s.data.id === c.data.matchScoutingId);
-				return {
-					comment: String(c.data.comment),
-					scoutUsername: String(c.data.scoutUsername),
-					type: String(c.data.type),
-					match: match ? `${match.data.compLevel}${match.data.matchNumber}` : 'unknown'
-				};
-			});
+			commentProxy.set(
+				data.map((c) => {
+					const match = scouting.data.find((s) => s.data.id === c.data.matchScoutingId);
+					return {
+						comment: String(c.data.comment),
+						scoutUsername: String(c.data.scoutUsername),
+						type: String(c.data.type),
+						match: match ? `${match.data.compLevel}${match.data.matchNumber}` : 'unknown'
+					};
+				})
+			);
 			// Yes, this is a hack. I don't want to do the right way when this works.
 			render++;
 		});
@@ -105,7 +53,7 @@
 
 	const comment = async () => {
 		const c = await prompt('Enter a comment', {
-			multiline: true,
+			multiline: true
 		});
 		if (!c) return;
 		Scouting.TeamComments.new({
@@ -116,27 +64,51 @@
 			team: Number(team),
 			type: 'general',
 			accountId: String(self.get().data.id)
-		}).then(() => {
-			render++;
-		}).catch((e) => {
-			console.error(e);
-			alert('Failed to add comment');
-		});
+		})
+			.then(() => {
+				render++;
+			})
+			.catch((e) => {
+				console.error(e);
+				alert('Failed to add comment');
+			});
 	};
 </script>
 
 <div class="h-85 w-100">
-	<button type="button" class="btn btn-primary" onclick={comment} >
+	<button type="button" class="btn btn-primary" onclick={comment}>
 		<i class="material-icons">add</i>
 		Add Comment
 	</button>
 	{#key render}
 		<Grid
-			columnDefs={columns}
-			rowData={commentProxy}
-			gridClasses="table table-striped"
-			filterEnable={true}
-			filterClasses=""
+			rowNumbers={true}
+			opts={{
+				columnDefs: [
+					{
+						headerName: 'Comment',
+						field: 'comment',
+						filter: 'agTextColumnFilter'
+					},
+					{
+						headerName: 'Account',
+						field: 'scoutUsername',
+						filter: 'agTextColumnFilter'
+					},
+					{
+						headerName: 'Type',
+						field: 'type',
+						filter: 'agTextColumnFilter'
+					},
+					{
+						headerName: 'Match',
+						field: 'match',
+						filter: 'agNumberColumnFilter'
+					}
+				]
+			}}
+			height={400}
+			data={commentProxy}
 		/>
 	{/key}
 </div>

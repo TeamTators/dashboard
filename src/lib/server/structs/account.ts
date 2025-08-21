@@ -1,5 +1,5 @@
-import { boolean, text, timestamp } from 'drizzle-orm/pg-core';
-import { Struct, StructStream, type Blank } from 'drizzle-struct/back-end';
+import { boolean, text } from 'drizzle-orm/pg-core';
+import { Struct } from 'drizzle-struct/back-end';
 import { uuid } from '../utils/uuid';
 import { attempt, attemptAsync } from 'ts-utils/check';
 import crypto from 'crypto';
@@ -7,83 +7,32 @@ import { DB } from '../db';
 import { sql, eq } from 'drizzle-orm';
 import type { Notification } from '$lib/types/notification';
 import { Session } from './session';
-import { sse } from '../utils/sse';
+import { sse } from '../services/sse';
 import { DataAction, PropertyAction } from 'drizzle-struct/types';
-import { z } from 'zod';
-import { Universes } from './universe';
-import { Permissions } from './permissions';
+// import { Universes } from './universe';
 import { Email } from './email';
-import terminal from '../utils/terminal';
+import type { Icon } from '$lib/types/icons';
+import { z } from 'zod';
 
 export namespace Account {
 	export const Account = new Struct({
 		name: 'account',
 		structure: {
 			username: text('username').notNull().unique(),
-			key: text('key').notNull(),
+			key: text('key').notNull().unique(),
 			salt: text('salt').notNull(),
 			firstName: text('first_name').notNull(),
 			lastName: text('last_name').notNull(),
 			email: text('email').notNull().unique(),
 			picture: text('picture').notNull(),
 			verified: boolean('verified').notNull(),
-			verification: text('verification').notNull()
+			verification: text('verification').notNull(),
+			lastLogin: text('last_login').notNull().default('')
 		},
 		generators: {
 			id: () => (uuid() + uuid() + uuid() + uuid()).replace(/-/g, '')
 		},
 		safes: ['key', 'salt', 'verification']
-	});
-
-	// Account.on('create', async (account) => {
-	// 	const source = account.metadata.get('source');
-	// 	if (source === 'migration') return console.log('Migration account, skipping email');
-	// 	const verification = account.data.verification;
-	// 	const link = await Email.createLink('/admin/verifiy/' + verification);
-	// 	if (link.isErr()) return terminal.error(link.error);
-	// 	const admins = await getAdmins();
-	// 	if (admins.isErr()) return terminal.error(admins.error);
-	// 	const res = await Email.send({
-	// 		type: 'new-user',
-	// 		data: {
-	// 			verification: link.value,
-	// 			username: account.data.username
-	// 		},
-	// 		subject: `New User Registered ${account.data.username}`,
-	// 		to: admins.value.map((a) => a.data.email)
-	// 	});
-
-	// 	if (res.isErr()) return terminal.error(res.error);
-	// });
-
-	Account.queryListen('universe-members', async (event, data) => {
-		const session = (await Session.getSession(event)).unwrap();
-		const account = (await Session.getAccount(session)).unwrap();
-
-		if (!account) {
-			throw new Error('Not logged in');
-		}
-
-		const universeId = z
-			.object({
-				universe: z.string()
-			})
-			.parse(data).universe;
-
-		const universe = (await Universes.Universe.fromId(universeId)).unwrap();
-		if (!universe) throw new Error('Universe not found');
-
-		const members = (await Universes.getMembers(universe)).unwrap();
-		if (!members.find((m) => m.data.id == account.data.id)) {
-			throw new Error('Not a member of this universe, cannot read members');
-		}
-		const stream = new StructStream(Account);
-		setTimeout(() => {
-			for (let i = 0; i < members.length; i++) {
-				stream.add(members[i]);
-			}
-		});
-		return stream;
 	});
 
 	Account.sendListen('self', async (event) => {
@@ -95,58 +44,40 @@ export namespace Account {
 		return account.safe();
 	});
 
-	Account.queryListen('role-members', async (event, data) => {
-		const session = (await Session.getSession(event)).unwrap();
-		const account = (await Session.getAccount(session)).unwrap();
-
-		if (!account) {
-			return new Error('Not logged in');
-		}
-
-		const roleId = z
+	Account.sendListen('username-exists', async (event, data) => {
+		const parsed = z
 			.object({
-				role: z.string()
+				username: z.string().min(1)
 			})
-			.parse(data).role;
+			.safeParse(data);
 
-		const role = (await Permissions.Role.fromId(roleId)).unwrap();
-		if (!role) throw new Error('Role not found');
-
-		const stream = () => {
-			const s = new StructStream(Account);
-
-			setTimeout(async () => {
-				const members = (await Permissions.usersFromRole(role)).unwrap();
-
-				for (let i = 0; i < members.length; i++) {
-					s.add(members[i]);
-				}
-			});
-
-			return s;
-		};
-
-		if ((await isAdmin(account)).unwrap()) return stream();
-
-		const universe = (await Universes.Universe.fromId(role.data.universe)).unwrap();
-		if (!universe) return new Error('Universe not found');
-
-		const roles = (await Permissions.getUniverseAccountRoles(account, universe)).unwrap();
-
-		if (!Permissions.isEntitled(roles, 'view-roles', 'manage-roles')) {
-			return new Error('Not entitled to view role members');
+		if (!parsed.success) {
+			throw new Error('Invalid data recieved');
 		}
 
-		return stream();
+		const account = await Account.fromProperty('username', parsed.data.username, {
+			type: 'count'
+		}).unwrap();
+
+		return account > 0;
 	});
 
 	Account.on('delete', async (a) => {
 		Admins.fromProperty('accountId', a.id, {
 			type: 'stream'
 		}).pipe((a) => a.delete());
-		Permissions.RoleAccount.fromProperty('account', a.id, { type: 'stream' }).pipe((a) =>
-			a.delete()
-		);
+		Developers.fromProperty('accountId', a.id, {
+			type: 'stream'
+		}).pipe((a) => a.delete());
+		AccountNotification.fromProperty('accountId', a.id, {
+			type: 'stream'
+		}).pipe((a) => a.delete());
+		Settings.fromProperty('accountId', a.id, {
+			type: 'stream'
+		}).pipe((a) => a.delete());
+		PasswordReset.fromProperty('accountId', a.id, {
+			type: 'stream'
+		}).pipe((a) => a.delete());
 	});
 
 	export const Admins = new Struct({
@@ -155,6 +86,13 @@ export namespace Account {
 			accountId: text('account_id').notNull().unique()
 		}
 	});
+
+	export const verify = (account: AccountData) => {
+		return account.update({
+			verified: true,
+			verification: ''
+		});
+	};
 
 	export const isAdmin = (account: AccountData) => {
 		return attemptAsync(async () => {
@@ -214,6 +152,7 @@ export namespace Account {
 			severity: text('severity').notNull(),
 			message: text('message').notNull(),
 			icon: text('icon').notNull(),
+			iconType: text('icon_type').notNull(),
 			link: text('link').notNull(),
 			read: boolean('read').notNull()
 		}
@@ -221,7 +160,7 @@ export namespace Account {
 
 	AccountNotification.bypass(DataAction.Delete, (a, b) => a.id === b?.accountId);
 	AccountNotification.bypass(PropertyAction.Update, (a, b) => a.id === b?.accountId);
-
+	AccountNotification.bypass(PropertyAction.Read, (a, b) => a.id === b?.accountId);
 	AccountNotification.queryListen('get-own-notifs', async (event) => {
 		const session = (await Session.getSession(event)).unwrap();
 		const account = (await Session.getAccount(session)).unwrap();
@@ -269,39 +208,50 @@ export namespace Account {
 	export const newHash = (password: string) => {
 		return attempt(() => {
 			const salt = crypto.randomBytes(32).toString('hex');
-			const key = hash(password, salt).unwrap();
-			return { hash: key, salt };
+			const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+			return { hash, salt };
 		});
 	};
 
 	export const hash = (password: string, salt: string) => {
 		return attempt(() => {
-			return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+			return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
 		});
 	};
 
-	export const createAccount = async (data: {
-		username: string;
-		email: string;
-		firstName: string;
-		lastName: string;
-		password: string;
-	}) => {
+	export const createAccount = (
+		data: {
+			username: string;
+			email: string;
+			firstName: string;
+			lastName: string;
+			password: string;
+		},
+		config?: {
+			canUpdate?: boolean;
+		}
+	) => {
 		return attemptAsync(async () => {
 			const hash = newHash(data.password).unwrap();
 			const verificationId = uuid();
 			const account = (
-				await Account.new({
-					username: data.username,
-					email: data.email,
-					firstName: data.firstName,
-					lastName: data.lastName,
-					key: hash.hash,
-					salt: hash.salt,
-					verified: false,
-					verification: verificationId,
-					picture: '/'
-				})
+				await Account.new(
+					{
+						username: data.username,
+						email: data.email,
+						firstName: data.firstName,
+						lastName: data.lastName,
+						key: hash.hash,
+						salt: hash.salt,
+						verified: false,
+						verification: verificationId,
+						picture: '/',
+						lastLogin: ''
+					},
+					{
+						static: config?.canUpdate
+					}
+				)
 			).unwrap();
 
 			// send verification email
@@ -310,7 +260,7 @@ export namespace Account {
 		});
 	};
 
-	export const searchAccounts = async (
+	export const searchAccounts = (
 		query: string,
 		config: {
 			type: 'array';
@@ -329,7 +279,7 @@ export namespace Account {
 		});
 	};
 
-	export const notifyPopup = async (accountId: string, notification: Notification) => {
+	export const notifyPopup = (accountId: string, notification: Notification) => {
 		return attemptAsync(async () => {
 			Session.Session.fromProperty('accountId', accountId, {
 				type: 'stream'
@@ -340,7 +290,7 @@ export namespace Account {
 	export const sendAccountNotif = (
 		accountId: string,
 		notif: Notification & {
-			icon: string;
+			icon: Icon;
 			link: string;
 		}
 	) => {
@@ -350,7 +300,8 @@ export namespace Account {
 			severity: notif.severity,
 			message: notif.message,
 			accountId: accountId,
-			icon: notif.icon,
+			icon: notif.icon.name,
+			iconType: notif.icon.type,
 			link: notif.link,
 			read: false
 		});
@@ -393,19 +344,20 @@ export namespace Account {
 					salt: '',
 					verified: false,
 					verification: verificationId,
-					picture
+					picture,
+					lastLogin: ''
 				})
 			).unwrap();
 		});
 	};
 
-	export const getSettings = async (accountId: string) => {
+	export const getSettings = (accountId: string) => {
 		return Settings.fromProperty('accountId', accountId, {
 			type: 'stream'
 		}).await();
 	};
 
-	export const requestPasswordReset = async (account: AccountData) => {
+	export const requestPasswordReset = (account: AccountData) => {
 		return attemptAsync(async () => {
 			PasswordReset.fromProperty('accountId', account.id, {
 				type: 'stream'
@@ -441,78 +393,13 @@ export namespace Account {
 					title: 'Password Reset Request',
 					message: 'A password reset link has been sent to your email',
 					severity: 'warning',
-					icon: 'info',
+					icon: {
+						name: 'lock',
+						type: 'material-icons'
+					},
 					link: ''
 				})
 			).unwrap();
-		});
-	};
-
-	export const verify = async (account: AccountData) => {
-		return attemptAsync(async () => {
-			return (
-				await account.update({
-					verified: true,
-					verification: ''
-				})
-			).unwrap();
-		});
-	};
-
-	Account.on('update', async ({ from, to }) => {
-		// account has been verified
-		if (from.verified === false && to.data.verified === true) {
-			const universe = (await Universes.Universe.fromId('2122')).unwrap();
-			if (!universe) throw new Error('Universe not found');
-			(await Universes.addToUniverse(to, universe)).unwrap();
-			const scout = (
-				await Permissions.Role.fromProperty('name', 'Scout', { type: 'single' })
-			).unwrap();
-			if (!scout) throw new Error('Role not found');
-			(await Permissions.giveRole(to, scout)).unwrap();
-
-			(await Admins.new({ accountId: to.id })).unwrap();
-		}
-
-		// account has been unverified
-		if (from.verified === true && to.data.verified === false) {
-			const universe = (await Universes.Universe.fromId('2122')).unwrap();
-			if (!universe) throw new Error('Universe not found');
-			(await Universes.removeFromUniverse(to, universe)).unwrap();
-			Permissions.RoleAccount.fromProperty('account', to.id, {
-				type: 'stream'
-			}).pipe((ra) => ra.delete());
-
-			(await Admins.fromProperty('accountId', to.id, { type: 'single' })).unwrap()?.delete();
-		}
-	});
-
-	export const externalHash = (data: { user: string; pass: string }) => {
-		return attemptAsync(async () => {
-			if (!process.env.OLD_SERVER_HOST || !process.env.OLD_SERVER_API_KEY) {
-				throw new Error('Old server host or api key not found');
-			}
-
-			const res = await fetch(process.env.OLD_SERVER_HOST + '/account/test-hash', {
-				body: JSON.stringify(data),
-				method: 'GET',
-				headers: {
-					'X-Auth-Key': process.env.OLD_SERVER_API_KEY,
-					'Content-Type': 'application/json'
-				}
-			}).then((r) => r.json());
-
-			const { success, reason, error } = z
-				.object({
-					success: z.boolean(),
-					reason: z.string(),
-					error: z.boolean()
-				})
-				.parse(res);
-
-			if (error) terminal.error('External hash did not work', reason);
-
-			return success;
 		});
 	};
 }

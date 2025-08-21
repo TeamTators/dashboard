@@ -4,7 +4,7 @@ import {
 	type DataArr,
 	type StructDataVersion
 } from 'drizzle-struct/front-end';
-import { sse } from '../utils/sse';
+import { sse } from '../services/sse';
 import { browser } from '$app/environment';
 import { attempt, attemptAsync } from 'ts-utils/check';
 import { z } from 'zod';
@@ -33,7 +33,7 @@ export namespace Scouting {
 			scoutUsername: 'string',
 			alliance: 'string',
 			year: 'number',
-			sliders: 'string',
+			sliders: 'string'
 		},
 		socket: sse,
 		browser
@@ -130,6 +130,68 @@ export namespace Scouting {
 
 			return 0;
 		});
+	};
+
+	export interface Contribution {
+		cl1: number;
+		cl2: number;
+		cl3: number;
+		cl4: number;
+		brg: number;
+		prc: number;
+		shc: number;
+		dpc: number;
+		prk: number;
+	}
+
+	export const averageContributions = (data: MatchScoutingData[]): Contribution => {
+		return attempt(() => {
+			const coralCounts = data.map((d) => {
+				const trace = TraceSchema.parse(JSON.parse(d.data.trace || '[]'));
+
+				const actionObj = trace.reduce(
+					(acc, curr) => {
+						if (!curr[3]) return acc;
+						if (['cl1', 'cl2', 'cl3', 'cl4', 'brg', 'prc', 'shc', 'dpc', 'prk'].includes(curr[3])) {
+							acc[curr[3]] = (acc[curr[3]] || 0) + 1;
+						}
+						return acc;
+					},
+					{} as Record<string, number>
+				);
+
+				console.log('trace', trace);
+
+				return actionObj;
+			});
+
+			const totalActions = coralCounts.reduce(
+				(acc, curr) => {
+					Object.entries(curr).forEach(([key, value]) => {
+						acc[key] = (acc[key] || 0) + value;
+					});
+					return acc;
+				},
+				{} as Record<string, number>
+			);
+
+			const count = coralCounts.length;
+			const averages = Object.fromEntries(
+				Object.entries(totalActions).map(([key, value]) => [key, value / count])
+			);
+
+			return {
+				cl1: averages.cl1 || 0,
+				cl2: averages.cl2 || 0,
+				cl3: averages.cl3 || 0,
+				cl4: averages.cl4 || 0,
+				brg: averages.brg || 0,
+				prc: averages.prc || 0,
+				shc: averages.shc || 0,
+				dpc: averages.dpc || 0,
+				prk: averages.prk || 0
+			};
+		}).unwrap();
 	};
 
 	export const averageSecondsNotMoving = (data: MatchScoutingData[]) => {

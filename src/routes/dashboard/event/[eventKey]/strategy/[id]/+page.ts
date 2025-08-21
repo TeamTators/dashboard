@@ -16,12 +16,30 @@ export const load = (event) => {
 		partners: event.data.partners.map((p) => Strategy.Partners.Generator(p)),
 		opponents: event.data.opponents.map((o) => Strategy.Opponents.Generator(o)),
 		scouting: {
-			partner1: new DataArr(Scouting.MatchScouting, event.data.scouting.partner1.map(s => Scouting.MatchScouting.Generator(s))),
-			partner2: new DataArr(Scouting.MatchScouting, event.data.scouting.partner2.map(s => Scouting.MatchScouting.Generator(s))),
-			partner3: new DataArr(Scouting.MatchScouting, event.data.scouting.partner3.map(s => Scouting.MatchScouting.Generator(s))),
-			opponent1: new DataArr(Scouting.MatchScouting, event.data.scouting.opponent1.map(s => Scouting.MatchScouting.Generator(s))),
-			opponent2: new DataArr(Scouting.MatchScouting, event.data.scouting.opponent2.map(s => Scouting.MatchScouting.Generator(s))),
-			opponent3: new DataArr(Scouting.MatchScouting, event.data.scouting.opponent3.map(s => Scouting.MatchScouting.Generator(s)))
+			partner1: new DataArr(
+				Scouting.MatchScouting,
+				event.data.scouting.partner1.map((s) => Scouting.MatchScouting.Generator(s))
+			),
+			partner2: new DataArr(
+				Scouting.MatchScouting,
+				event.data.scouting.partner2.map((s) => Scouting.MatchScouting.Generator(s))
+			),
+			partner3: new DataArr(
+				Scouting.MatchScouting,
+				event.data.scouting.partner3.map((s) => Scouting.MatchScouting.Generator(s))
+			),
+			opponent1: new DataArr(
+				Scouting.MatchScouting,
+				event.data.scouting.opponent1.map((s) => Scouting.MatchScouting.Generator(s))
+			),
+			opponent2: new DataArr(
+				Scouting.MatchScouting,
+				event.data.scouting.opponent2.map((s) => Scouting.MatchScouting.Generator(s))
+			),
+			opponent3: new DataArr(
+				Scouting.MatchScouting,
+				event.data.scouting.opponent3.map((s) => Scouting.MatchScouting.Generator(s))
+			)
 		}
 	};
 };

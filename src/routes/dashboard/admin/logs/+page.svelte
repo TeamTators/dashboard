@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { copy } from '$lib/utils/clipboard.js';
 	import { dateTime } from 'ts-utils/clock';
-	import { capitalize, fromCamelCase, fromSnakeCase, abbreviate } from 'ts-utils/text';
+	import { capitalize, fromSnakeCase, abbreviate } from 'ts-utils/text';
 	import nav from '$lib/imports/admin';
 
 	nav();
@@ -20,8 +20,8 @@
 	const count = $derived(data.count);
 	const total = $derived(data.total);
 
-	$inspect(logs);
-	$inspect(structs);
+	// $inspect(logs);
+	// $inspect(structs);
 
 	const search = (config: {
 		accountId: string | undefined | null;
@@ -44,6 +44,10 @@
 		goto(`/dashboard/admin/logs?${sp.toString()}`);
 	};
 </script>
+
+<svelte:head>
+	<title>Admin Logs</title>
+</svelte:head>
 
 <div class="container">
 	<div class="row mb-3">

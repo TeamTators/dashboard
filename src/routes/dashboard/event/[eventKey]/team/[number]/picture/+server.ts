@@ -4,16 +4,19 @@ import path from 'path';
 import { Permissions } from '$lib/server/structs/permissions';
 import { ServerCode } from 'ts-utils/status';
 import { Logs } from '$lib/server/structs/log.js';
+import { Account } from '$lib/server/structs/account.js';
 
 const UPLOAD_DIR = path.resolve(process.cwd(), './static/uploads');
 
 export async function POST(event) {
 	console.log('Received POST request to upload files');
 	if (!event.locals.account) throw fail(ServerCode.unauthorized);
-	const roles = await Permissions.allAccountRoles(event.locals.account);
-	if (roles.isErr()) throw fail(ServerCode.internalServerError);
-	if (!Permissions.isEntitled(roles.value, 'view-tba-info')) throw fail(ServerCode.forbidden);
-	console.log('User has permission to upload files');
+
+	if (!(await Account.isAdmin(event.locals.account))) {
+		throw fail(ServerCode.forbidden, {
+			message: 'You do not have permission to upload files.'
+		});
+	}
 
 	const request = event.request;
 	const formData = await request.formData();

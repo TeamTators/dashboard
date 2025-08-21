@@ -1,11 +1,13 @@
 import { FIRST } from '$lib/server/structs/FIRST.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
+import { Account } from '$lib/server/structs/account.js';
 import { and, eq } from 'drizzle-orm';
 import * as TBA from '$lib/server/utils/tba';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
 import terminal from '$lib/server/utils/terminal';
+import { resolveAll } from 'ts-utils/check';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
@@ -70,6 +72,39 @@ export const load = async (event) => {
 		throw fail(ServerCode.internalServerError);
 	}
 
+	const accounts: Record<string, string> = Object.fromEntries(
+		(
+			await Promise.all(
+				scouting.value.map(async (s) => [
+					s.data.id,
+					// s.data.scoutUsername
+					(await Account.Account.fromId(s.data.scoutId)).unwrap()?.data.username
+				])
+			)
+		).filter((a) => a[1] !== undefined)
+	);
+
+	const checks: Record<string, string[]> = {};
+	for (const s of scouting.value) {
+		try {
+			const parsedChecks = JSON.parse(s.data.checks);
+
+			if (Array.isArray(parsedChecks) && parsedChecks.every((item) => typeof item === 'string')) {
+				const key = s.data.eventKey + s.data.matchNumber;
+
+				if (!checks[key]) {
+					checks[key] = parsedChecks;
+				} else {
+					checks[key] = Array.from(new Set([...checks[key], ...parsedChecks]));
+				}
+			}
+		} catch {
+			// Skip if JSON.parse fails
+		}
+	}
+
+	// console.log(accounts);
+
 	return {
 		team: team.tba,
 		teams: teams.value.map((t) => t.tba),
@@ -85,6 +120,8 @@ export const load = async (event) => {
 			.map((a) => a.account)
 			.filter(Boolean)
 			.map((a) => a.safe()),
-		matches: matches.value.map((m) => m.tba)
+		matches: matches.value.map((m) => m.tba),
+		scoutingAccounts: accounts,
+		checksSum: checks
 	};
 };

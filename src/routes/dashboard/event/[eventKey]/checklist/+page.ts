@@ -14,7 +14,7 @@ export const load = (event) => {
 					d.left.map((q) => Scouting.PIT.Questions.Generator(q))
 				),
 				uploaded: d.uploaded,
-				tbaPictures: d.tba,
+				tbaPictures: d.tba
 			};
 		})
 	};

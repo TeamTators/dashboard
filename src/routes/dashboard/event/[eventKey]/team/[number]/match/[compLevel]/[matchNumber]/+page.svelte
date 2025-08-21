@@ -15,6 +15,7 @@
 	const team = $derived(data.team);
 	// const teams = $derived(data.teams);
 	const scouting = $derived(data.scouting);
+	const account = $derived(data.account);
 
 	$effect(() => nav(event.tba));
 
@@ -83,7 +84,7 @@
 	<div class="row">
 		{#key scouting}
 			{#if scouting}
-				<MatchDisplay {scouting} {team} {event} {match} strategies={$strategies} />
+				<MatchDisplay {scouting} {team} {event} {match} strategies={$strategies} scout={account} />
 			{:else}
 				<MatchDisplayNoScout {match} {team} {event} strategies={$strategies} />
 			{/if}

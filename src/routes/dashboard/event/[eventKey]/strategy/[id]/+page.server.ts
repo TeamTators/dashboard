@@ -20,15 +20,16 @@ export const load = async (event) => {
 	const teams = await e.getTeams().unwrap();
 	const matches = await e.getMatches().unwrap();
 
-
-	const [p1, p2, p3, o1, o2, o3] = resolveAll(await Promise.all([
-		Scouting.getTeamScouting(strategy.data.partner1, event.params.eventKey),
-		Scouting.getTeamScouting(strategy.data.partner2, event.params.eventKey),
-		Scouting.getTeamScouting(strategy.data.partner3, event.params.eventKey),
-		Scouting.getTeamScouting(strategy.data.opponent1, event.params.eventKey),
-		Scouting.getTeamScouting(strategy.data.opponent2, event.params.eventKey),
-		Scouting.getTeamScouting(strategy.data.opponent3, event.params.eventKey)
-	])).unwrap();
+	const [p1, p2, p3, o1, o2, o3] = resolveAll(
+		await Promise.all([
+			Scouting.getTeamScouting(strategy.data.partner1, event.params.eventKey),
+			Scouting.getTeamScouting(strategy.data.partner2, event.params.eventKey),
+			Scouting.getTeamScouting(strategy.data.partner3, event.params.eventKey),
+			Scouting.getTeamScouting(strategy.data.opponent1, event.params.eventKey),
+			Scouting.getTeamScouting(strategy.data.opponent2, event.params.eventKey),
+			Scouting.getTeamScouting(strategy.data.opponent3, event.params.eventKey)
+		])
+	).unwrap();
 
 	return {
 		strategy: info.strategy.safe(),
@@ -38,12 +39,12 @@ export const load = async (event) => {
 		teams: teams.map((t) => t.tba),
 		matches: matches.map((m) => m.tba),
 		scouting: {
-			partner1: p1.map(s => s.safe()),
-			partner2: p2.map(s => s.safe()),
-			partner3: p3.map(s => s.safe()),
-			opponent1: o1.map(s => s.safe()),
-			opponent2: o2.map(s => s.safe()),
-			opponent3: o3.map(s => s.safe())
+			partner1: p1.map((s) => s.safe()),
+			partner2: p2.map((s) => s.safe()),
+			partner3: p3.map((s) => s.safe()),
+			opponent1: o1.map((s) => s.safe()),
+			opponent2: o2.map((s) => s.safe()),
+			opponent3: o3.map((s) => s.safe())
 		}
 	};
 };

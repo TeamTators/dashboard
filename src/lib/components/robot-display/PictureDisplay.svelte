@@ -40,7 +40,7 @@
 			FIRST.TeamPictures.new({
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
-				picture: file,
+				picture: file.id,
 				accountId: Account.getSelf().get().data.id || ''
 			});
 		});

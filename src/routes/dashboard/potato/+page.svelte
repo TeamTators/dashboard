@@ -30,14 +30,18 @@
 			{
 				name: 'Home',
 				href: '/',
-				icon: 'home',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'home'
+				}
 			},
 			{
 				name: 'Logs',
 				href: '/dashboard/potato/logs',
-				icon: 'history',
-				type: 'material-icons'
+				icon: {
+					type: 'material-icons',
+					name: 'history'
+				}
 			}
 		],
 		priority: 0

@@ -21,9 +21,10 @@
 	<div class="row mb-3">
 		{#each checklist as item}
 			<div class="col">
-				<h4
-					class:text-danger={item.tbaPictures + item.uploaded === 0}
-				>{item.team.tba.team_number} {item.team.tba.nickname}</h4>
+				<h4 class:text-danger={item.tbaPictures + item.uploaded === 0}>
+					{item.team.tba.team_number}
+					{item.team.tba.nickname}
+				</h4>
 				<ul class="list">
 					<li class="list-group-item">
 						TBA: {item.tbaPictures}
@@ -35,7 +36,7 @@
 			</div>
 		{/each}
 	</div>
-	<hr>
+	<hr />
 	<div class="row mb-3">
 		<div class="col">
 			<h4>Pit Scouting</h4>

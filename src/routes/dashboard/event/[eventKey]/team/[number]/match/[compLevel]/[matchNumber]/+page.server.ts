@@ -5,6 +5,7 @@ import * as TBA from '$lib/server/utils/tba';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
+import { Account } from '$lib/server/structs/account.js';
 import terminal from '$lib/server/utils/terminal.js';
 
 export const load = async (event) => {
@@ -68,12 +69,22 @@ export const load = async (event) => {
 		});
 	}
 
+	const account = await Account.Account.fromId(scouting.value?.data.scoutId || '');
+
+	if (account.isErr()) {
+		terminal.error('Failed to get account', account.error);
+		throw fail(ServerCode.internalServerError, {
+			message: 'Failed to get account'
+		});
+	}
+
 	return {
 		team: team.tba,
 		teams: teams.value.map((t) => t.tba),
 		event: e.value.tba,
 		match: match.tba,
 		matches: matches.value.map((m) => m.tba),
-		scouting: scouting.value?.safe()
+		scouting: scouting.value?.safe(),
+		account: account.value?.data.username
 	};
 };

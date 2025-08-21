@@ -2,7 +2,6 @@ import { boolean } from 'drizzle-orm/pg-core';
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct, StructStream } from 'drizzle-struct/back-end';
-import { createEntitlement } from '../utils/entitlements';
 import { z } from 'zod';
 import { attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
@@ -32,14 +31,11 @@ export namespace Scouting {
 			scoutUsername: text('scout_username').notNull(),
 			alliance: text('alliance').notNull(),
 			year: integer('year').notNull().default(0),
-			sliders: text('sliders').notNull().default('{}'),
+			sliders: text('sliders').notNull().default('{}')
 		},
 		versionHistory: {
 			type: 'versions',
 			amount: 3
-		},
-		generators: {
-			universe: () => '2122'
 		},
 		validators: {
 			// trace: (trace) =>
@@ -54,9 +50,7 @@ export namespace Scouting {
 	MatchScouting.queryListen('from-team', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
 		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			const roles = (await Permissions.allAccountRoles(event.locals.account)).unwrap();
-			if (!(await Permissions.isEntitled(roles, 'view-scouting')).unwrap())
-				return new Error('Not entitled');
+			return new Error('Not entitled');
 		}
 
 		const { team, eventKey } = z
@@ -92,9 +86,7 @@ export namespace Scouting {
 	MatchScouting.queryListen('archived-matches', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
 		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			const roles = (await Permissions.allAccountRoles(event.locals.account)).unwrap();
-			if (!(await Permissions.isEntitled(roles, 'manage-scouting')).unwrap())
-				return new Error('Not entitled');
+			return new Error('Not entitled');
 		}
 
 		const { team, eventKey } = z
@@ -130,9 +122,7 @@ export namespace Scouting {
 	MatchScouting.queryListen('pre-scouting', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
 		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			const roles = (await Permissions.allAccountRoles(event.locals.account)).unwrap();
-			if (!(await Permissions.isEntitled(roles, 'view-scouting')).unwrap())
-				return new Error('Not entitled');
+			return new Error('Not entitled');
 		}
 
 		const { team, year } = z
@@ -172,12 +162,10 @@ export namespace Scouting {
 				message: 'Not logged in'
 			};
 		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			const roles = (await Permissions.allAccountRoles(event.locals.account)).unwrap();
-			if (!(await Permissions.isEntitled(roles, 'manage-scouting')).unwrap())
-				return {
-					success: false,
-					message: 'Not entitled'
-				};
+			return {
+				success: false,
+				message: 'Not entitled'
+			};
 		}
 
 		const parsed = z
@@ -304,7 +292,7 @@ export namespace Scouting {
 	export const TeamComments = new Struct({
 		name: 'team_comments',
 		structure: {
-			matchScoutingId: text('match_Scouting_id').notNull(),
+			matchScoutingId: text('match_scouting_id').notNull(),
 			accountId: text('account_id').notNull(),
 			team: integer('team').notNull(),
 			comment: text('comment').notNull(),
@@ -315,17 +303,12 @@ export namespace Scouting {
 		versionHistory: {
 			type: 'versions',
 			amount: 3
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 
 	TeamComments.queryListen('from-event', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
-		const roles = (await Permissions.allAccountRoles(event.locals.account)).unwrap();
-		if (!(await Permissions.isEntitled(roles, 'view-scouting')).unwrap())
-			return new Error('Not entitled');
+		return new Error('Not entitled');
 
 		const { eventKey, team } = z
 			.object({
@@ -351,18 +334,20 @@ export namespace Scouting {
 		return stream;
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'view-scouting',
 		structs: [MatchScouting, TeamComments],
 		permissions: ['match_scouting:read:*', 'team_comments:read:*'],
-		group: 'Scouting'
+		group: 'Scouting',
+		description: 'View match scouting and team comments'
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'manage-scouting',
 		structs: [MatchScouting, TeamComments],
 		permissions: ['match_scouting:*:*', 'team_comments:*:*'],
-		group: 'Scouting'
+		group: 'Scouting',
+		description: 'Manage match scouting and team comments'
 	});
 
 	export namespace PIT {
@@ -376,9 +361,6 @@ export namespace Scouting {
 			versionHistory: {
 				type: 'versions',
 				amount: 3
-			},
-			generators: {
-				universe: () => '2122'
 			}
 		});
 		export type SectionData = typeof Sections.sample;
@@ -399,9 +381,6 @@ export namespace Scouting {
 			versionHistory: {
 				type: 'versions',
 				amount: 3
-			},
-			generators: {
-				universe: () => '2122'
 			}
 		});
 
@@ -427,9 +406,6 @@ export namespace Scouting {
 			versionHistory: {
 				type: 'versions',
 				amount: 3
-			},
-			generators: {
-				universe: () => '2122'
 			},
 			validators: {
 				options: (data) => {
@@ -463,9 +439,6 @@ export namespace Scouting {
 				type: 'versions',
 				amount: 3
 			},
-			generators: {
-				universe: () => '2122'
-			},
 			validators: {
 				answer: (data) => {
 					if (typeof data !== 'string') return false;
@@ -477,14 +450,12 @@ export namespace Scouting {
 		export type AnswerData = typeof Answers.sample;
 
 		Answers.queryListen('from-group', async (event, data) => {
-			const session = (await Session.getSession(event)).unwrap();
-			const account = (await Session.getAccount(session)).unwrap();
+			const account = event.locals.account;
 			if (!account) throw new Error('Not logged in');
 
-			const roles = (await Permissions.allAccountRoles(account)).unwrap();
-
-			if (!Permissions.isEntitled(roles, 'view-pit-scouting', 'manage-pit-scouting'))
+			if (!(await Account.isAdmin(account))) {
 				throw new Error('Not entitled');
+			}
 
 			const { group } = z
 				.object({
@@ -615,14 +586,7 @@ export namespace Scouting {
 				};
 			}
 
-			const roles = (await Permissions.allAccountRoles(account)).unwrap();
-			if (!Permissions.isEntitled(roles, 'manage-pit-scouting')) {
-				terminal.error('Not entitled');
-				return {
-					success: false,
-					message: 'Not entitled'
-				};
-			}
+			if (!(await Account.isAdmin(account))) throw new Error('Not entitled');
 
 			const parsed = z
 				.object({
@@ -663,14 +627,8 @@ export namespace Scouting {
 					message: 'Not logged in'
 				};
 			}
-			const roles = (await Permissions.allAccountRoles(account)).unwrap();
-			if (!Permissions.isEntitled(roles, 'manage-pit-scouting')) {
-				terminal.error('Not entitled');
-				return {
-					success: false,
-					message: 'Not entitled'
-				};
-			}
+
+			if (!(await Account.isAdmin(account))) throw new Error('Not entitled');
 
 			const parsed = z
 				.object({
@@ -1144,9 +1102,9 @@ export namespace Scouting {
 
 				return res.map((r) => Answers.Generator(r.pit_answers));
 			});
-		}
+		};
 
-		createEntitlement({
+		Permissions.createEntitlement({
 			name: 'view-pit-scouting',
 			structs: [Sections, Groups, Questions, Answers],
 			permissions: [
@@ -1155,14 +1113,16 @@ export namespace Scouting {
 				'pit_questions:read:*',
 				'pit_answers:*:*'
 			],
-			group: 'Scouting'
+			group: 'Scouting',
+			description: 'View PIT scouting data'
 		});
 
-		createEntitlement({
+		Permissions.createEntitlement({
 			name: 'manage-pit-scouting',
 			structs: [Sections, Groups, Questions, Answers],
 			permissions: ['*'],
-			group: 'Scouting'
+			group: 'Scouting',
+			description: 'Manage PIT scouting data'
 		});
 	}
 }

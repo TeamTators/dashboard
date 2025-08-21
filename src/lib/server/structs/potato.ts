@@ -4,12 +4,10 @@ import { Account } from './account';
 import { attemptAsync } from 'ts-utils/check';
 import { Scouting } from './scouting';
 import { FIRST } from './FIRST';
-import { eq } from 'drizzle-orm';
-import { createEntitlement } from '../utils/entitlements';
+import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import terminal from '../utils/terminal';
 import { Permissions } from './permissions';
-import { Universes } from './universe';
 import { DB } from '../db';
 
 export namespace Potato {
@@ -96,18 +94,15 @@ export namespace Potato {
 			level: integer('level').notNull(),
 			name: text('name').notNull(),
 			lastClicked: text('last_clicked').notNull(),
-			icon: text('preffered_icon').notNull().default(''),
-			color: text('preffered_color').notNull().default(''),
-			background: text('preffered_background').notNull().default(''),
+			icon: text('icon').notNull().default(''),
+			color: text('color').notNull().default(''),
+			background: text('background').notNull().default(''),
 
 			attack: integer('attack').notNull().default(0),
 			defense: integer('defense').notNull().default(0),
 			speed: integer('speed').notNull().default(0),
 			health: integer('health').notNull().default(0),
 			mana: integer('mana').notNull().default(0)
-		},
-		generators: {
-			universe: () => '2122'
 		}
 	});
 	const randomStats = (level: number) => {
@@ -157,23 +152,7 @@ export namespace Potato {
 			};
 		}
 
-		const universe = (await Universes.Universe.fromId('2122')).unwrap();
-		if (!universe) {
-			return {
-				success: false,
-				message: 'Universe not found'
-			};
-		}
-
-		const roles = (
-			await Permissions.getUniverseAccountRoles(event.locals.account, universe)
-		).unwrap();
-		if (!Permissions.isEntitled(roles, 'edit-potato-level')) {
-			return {
-				success: false,
-				message: 'Unauthorized'
-			};
-		}
+		// TODO: Check permissions
 
 		const parsed = z
 			.object({
@@ -297,7 +276,10 @@ export namespace Potato {
 					severity: 'success',
 					title: 'Your potato has reached a new phase',
 					message: `Your potato is now a ${nowPhase} (${Levels[nowPhase]})`,
-					icon: '',
+					icon: {
+						type: 'material-icons',
+						name: 'emoji_food_beverage'
+					},
 					link: ''
 				});
 			}
@@ -399,18 +381,20 @@ export namespace Potato {
 		});
 	};
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'view-potatoes',
 		structs: [Friend],
 		group: 'Potatoes',
-		permissions: ['potato_friend:read:*']
+		permissions: ['potato_friend:read:*'],
+		description: 'View all potatoes'
 	});
 
-	createEntitlement({
+	Permissions.createEntitlement({
 		name: 'edit-potato-level',
 		structs: [Friend],
 		group: 'Potatoes',
-		permissions: ['potato_friend:update:level']
+		permissions: ['potato_friend:update:level'],
+		description: 'Edit the level of a potato'
 	});
 }
 

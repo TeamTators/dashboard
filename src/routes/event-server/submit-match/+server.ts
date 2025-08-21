@@ -37,11 +37,14 @@ export const POST = async (event) => {
 			alliance: z.union([z.literal('red'), z.literal('blue'), z.literal(null)]),
 			group: z.number().int(),
 			remote: z.boolean(),
-			sliders: z.record(z.string(), z.object({
-				value: z.number().int().min(0).max(5),
-				text: z.string(),
-				color: z.string(),
-			})),
+			sliders: z.record(
+				z.string(),
+				z.object({
+					value: z.number().int().min(0).max(5),
+					text: z.string(),
+					color: z.string()
+				})
+			)
 		})
 		.safeParse(body);
 
@@ -66,7 +69,7 @@ export const POST = async (event) => {
 		alliance,
 		group,
 		remote,
-		sliders,
+		sliders
 	} = parsed.data;
 
 	const year = Number(/(\d+)/.exec(eventKey)?.[1]);

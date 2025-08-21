@@ -105,14 +105,30 @@
 		window.addEventListener('resize', onresize);
 		setTimeout(renderMaxHeight);
 
-		const p1 = listen(scouting.partner1, (sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.partner1);
-		const p2 = listen(scouting.partner2, (sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.partner2);
-		const p3 = listen(scouting.partner3, (sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.partner3);
-		const o1 = listen(scouting.opponent1, (sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent1);
-		const o2 = listen(scouting.opponent2, (sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent2);
-		const o3 = listen(scouting.opponent3, (sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent3);
-
-
+		const p1 = listen(
+			scouting.partner1,
+			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.partner1
+		);
+		const p2 = listen(
+			scouting.partner2,
+			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.partner2
+		);
+		const p3 = listen(
+			scouting.partner3,
+			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.partner3
+		);
+		const o1 = listen(
+			scouting.opponent1,
+			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent1
+		);
+		const o2 = listen(
+			scouting.opponent2,
+			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent2
+		);
+		const o3 = listen(
+			scouting.opponent3,
+			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent3
+		);
 
 		return () => {
 			window.removeEventListener('resize', onresize);
@@ -304,7 +320,12 @@
 	</div>
 {/snippet}
 
-{#snippet partner(team: number, data: Strategy.PartnerData, position: TeamPosition, scouting: Scouting.MatchScoutingArr)}
+{#snippet partner(
+	team: number,
+	data: Strategy.PartnerData,
+	position: TeamPosition,
+	scouting: Scouting.MatchScoutingArr
+)}
 	<div class="card layer-1 mb-3 grid-item max-height-item">
 		<div class="card-body">
 			<div class="container-fluid">
@@ -353,7 +374,7 @@
 								matches={matches.filter((match) => teamsFromMatch(match.tba).includes(team))}
 								{event}
 								{scouting}
-								bind:staticY={staticY}
+								bind:staticY
 							/>
 						</div>
 					</div>
@@ -363,7 +384,12 @@
 	</div>
 {/snippet}
 
-{#snippet opponent(team: number, data: Strategy.OpponentData, position: TeamPosition, scouting: Scouting.MatchScoutingArr)}
+{#snippet opponent(
+	team: number,
+	data: Strategy.OpponentData,
+	position: TeamPosition,
+	scouting: Scouting.MatchScoutingArr
+)}
 	<div class="card layer-1 mb-3 grid-item max-height-item">
 		<div class="card-body">
 			<div class="container-fluid">
@@ -397,7 +423,7 @@
 								matches={matches.filter((match) => teamsFromMatch(match.tba).includes(team))}
 								{event}
 								{scouting}
-								bind:staticY={staticY}
+								bind:staticY
 							/>
 						</div>
 					</div>

@@ -1,9 +1,9 @@
 import { auth } from '$lib/server/utils/google-summary.js';
 
 export const GET = (event) => {
-	console.log('webhook ping event');
-	auth(event);
-	console.log('Success!');
+	// console.log('webhook ping event');
+	// auth(event);
+	// console.log('Success!');
 	return new Response(
 		JSON.stringify({
 			status: 'success',

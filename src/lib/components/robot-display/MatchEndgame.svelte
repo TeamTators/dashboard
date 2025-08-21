@@ -36,6 +36,7 @@
 		return `${highlightClass} ${statusClass}`.trim();
 	};
 </script>
+
 <div>
 	<h5 class="text-center">Endgame</h5>
 	<table class="table table-bordered">

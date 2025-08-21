@@ -3,6 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import { Scouting } from '$lib/server/structs/scouting';
 import terminal from '$lib/server/utils/terminal';
+import { Account } from '$lib/server/structs/account';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
@@ -47,11 +48,24 @@ export const load = async (event) => {
 		});
 	}
 
+	const accounts: Record<string, string> = Object.fromEntries(
+		(
+			await Promise.all(
+				scouting.value.map(async (s) => [
+					s.data.id,
+					// s.data.scoutUsername
+					(await Account.Account.fromId(s.data.scoutId)).unwrap()?.data.username
+				])
+			)
+		).filter((a) => a[1] !== undefined)
+	);
+
 	return {
 		event: e.value.tba,
 		team: team.tba,
 		teams: teams.value.map((t) => t.tba),
 		scouting: scouting.value.map((s) => s.safe()),
-		matches: matches.value.map((m) => m.tba)
+		matches: matches.value.map((m) => m.tba),
+		scoutingAccounts: accounts
 	};
 };

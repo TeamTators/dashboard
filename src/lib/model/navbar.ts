@@ -1,12 +1,13 @@
-import { writable, type Writable } from 'svelte/store';
+import type { Icon } from '$lib/types/icons';
+import { type Writable } from 'svelte/store';
 
 export namespace Navbar {
 	type Section = {
 		name: string;
 		priority: number;
 		links: {
-			icon: string;
-			type: 'material-icons' | 'font-awesome' | 'material-symbols' | 'bootstrap' | 'custom';
+			icon: Icon;
+			// type: 'material-icons' | 'font-awesome' | 'material-symbols' | 'bootstrap' | 'custom';
 			name: string;
 			href: string;
 		}[];

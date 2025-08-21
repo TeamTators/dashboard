@@ -13,9 +13,13 @@
 	import MatchTable from '$lib/components/robot-display/MatchTable.svelte';
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
+	import AverageContributions from '$lib/components/robot-display/AverageContributions.svelte';
+	import AverageContributionsPie from '$lib/components/charts/AverageContributionsPie.svelte';
 	import type { DataArr, Blank, StructData } from 'drizzle-struct/front-end';
 	import { onMount } from 'svelte';
 	import { listen } from '$lib/utils/struct-listener';
+	import ScoutSummary from '$lib/components/robot-display/ScoutSummary.svelte';
+	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -30,12 +34,16 @@
 	const pictures = $derived(data.pictures);
 	const answerAccounts = $derived(data.answerAccounts);
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
+	const scoutingAccounts = $derived(data.scoutingAccounts);
+	const checksSum = $derived(data.checksSum);
 	$effect(() => nav(event.tba));
 
 	const summary = new Dashboard.Card({
 		name: 'Event Summary',
-		iconType: 'material-icons',
-		icon: 'summarize',
+		icon: {
+			type: 'material-icons',
+			name: 'summarize'
+		},
 		id: 'event_summary',
 		size: {
 			width: 2,
@@ -50,20 +58,21 @@
 			},
 			sm: {
 				width: 5,
-				height: 1,
+				height: 1
 			},
 			xs: {
 				width: 12,
-				height: 1,
+				height: 1
 			}
 		}
 	});
 
-
 	const picturesCard = new Dashboard.Card({
 		name: 'Pictures',
-		iconType: 'material-icons',
-		icon: 'image',
+		icon: {
+			type: 'material-icons',
+			name: 'image'
+		},
 		id: 'pictures',
 		size: {
 			width: 4,
@@ -78,19 +87,21 @@
 			},
 			sm: {
 				width: 7,
-				height: 1,
+				height: 1
 			},
 			xs: {
 				width: 12,
-				height: 1,
+				height: 1
 			}
 		}
 	});
 
 	const commentsCard = new Dashboard.Card({
 		name: 'Comments',
-		iconType: 'material-icons',
-		icon: 'chat',
+		icon: {
+			type: 'material-icons',
+			name: 'chat'
+		},
 		id: 'comments',
 		size: {
 			width: 4,
@@ -109,15 +120,17 @@
 			},
 			xs: {
 				width: 12,
-				height: 1,
+				height: 1
 			}
 		}
 	});
 
 	const pitScouting = new Dashboard.Card({
 		name: 'Pit Scouting',
-		iconType: 'material-icons',
-		icon: 'question_answer',
+		icon: {
+			type: 'material-icons',
+			name: 'question_answer'
+		},
 		id: 'pit_scouting',
 		size: {
 			width: 2,
@@ -136,25 +149,31 @@
 			},
 			xs: {
 				width: 12,
-				height: 1,
+				height: 1
 			}
 		}
 	});
 
 	const matchViewer = new Dashboard.Card({
 		name: 'Matches',
-		iconType: 'material-icons',
-		icon: 'preview',
+		icon: {
+			type: 'material-icons',
+			name: 'preview'
+		},
 		id: 'matches',
 		size: {
 			width: 4,
 			height: 1,
+			xl: {
+				width: 6,
+				height: 1
+			},
 			lg: {
 				width: 6,
 				height: 1
 			},
 			md: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			sm: {
@@ -163,25 +182,31 @@
 			},
 			xs: {
 				width: 12,
-				height: 1,
+				height: 1
 			}
 		}
 	});
 
 	const progress = new Dashboard.Card({
 		name: 'Progress',
-		iconType: 'material-icons',
-		icon: 'trending_up',
+		icon: {
+			type: 'material-icons',
+			name: 'trending_up'
+		},
 		id: 'progress',
 		size: {
 			width: 4,
 			height: 1,
+			xl: {
+				width: 6,
+				height: 1
+			},
 			lg: {
 				width: 6,
 				height: 1
 			},
 			md: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			sm: {
@@ -190,16 +215,146 @@
 			},
 			xs: {
 				width: 12,
-				height: 1,
+				height: 1
 			}
 		}
 	});
 
 	const eventStats = new Dashboard.Card({
 		name: 'Event Stats',
-		iconType: 'material-icons',
-		icon: 'trending_up',
+		icon: {
+			type: 'material-icons',
+			name: 'trending_up'
+		},
 		id: 'event_stats',
+		size: {
+			width: 4,
+			height: 1,
+			xl: {
+				width: 6,
+				height: 1
+			},
+			lg: {
+				width: 6,
+				height: 1
+			},
+			md: {
+				width: 12,
+				height: 1
+			},
+			sm: {
+				width: 6,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
+	const averageContributionsTable = new Dashboard.Card({
+		name: 'Average Contribution',
+		icon: {
+			type: 'material-icons',
+			name: 'all_inclusive'
+		},
+		id: 'average_contributions_table',
+		size: {
+			width: 2,
+			height: 1,
+			xl: {
+				width: 3,
+				height: 1
+			},
+			lg: {
+				width: 3,
+				height: 1
+			},
+			md: {
+				width: 6,
+				height: 1
+			},
+			sm: {
+				width: 4,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
+	const averageContributionsPie = new Dashboard.Card({
+		name: 'Average Contribution',
+		icon: {
+			type: 'material-icons',
+			name: 'all_inclusive'
+		},
+		id: 'average_contributions_pie',
+		size: {
+			width: 2,
+			height: 1,
+			xl: {
+				width: 3,
+				height: 1
+			},
+			lg: {
+				width: 3,
+				height: 1
+			},
+			md: {
+				width: 6,
+				height: 1
+			},
+			sm: {
+				width: 4,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
+	const scoutSummary = new Dashboard.Card({
+		name: 'Scout Summary',
+		icon: {
+			type: 'material-icons',
+			name: 'summarize'
+		},
+		id: 'scout_summary',
+		size: {
+			width: 2,
+			height: 1,
+			lg: {
+				width: 4,
+				height: 1
+			},
+			md: {
+				width: 4,
+				height: 1
+			},
+			sm: {
+				width: 4,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
+	const checksSummary = new Dashboard.Card({
+		name: 'Checks Summary',
+		icon: {
+			type: 'material-icons',
+			name: 'summarize'
+		},
+		id: 'checks_summary',
 		size: {
 			width: 4,
 			height: 1,
@@ -217,13 +372,11 @@
 			},
 			xs: {
 				width: 12,
-				height: 1,
+				height: 1
 			}
 		}
 	});
 
-
-	
 	// const actionHeatmap = new Dashboard.Card({
 	// 	name: 'Action Heatmap',
 	// 	iconType: 'material-icons',
@@ -245,7 +398,9 @@
 				pitScouting,
 				matchViewer,
 				progress,
-				eventStats
+				eventStats,
+				scoutSummary,
+				checksSummary
 			],
 			id: 'robot-display'
 		})
@@ -262,7 +417,8 @@
 				pitScouting,
 				matchViewer,
 				progress,
-				eventStats
+				eventStats,
+				checksSummary
 			],
 			id: 'robot-display'
 		});
@@ -434,12 +590,32 @@
 			</Card>
 			<Card card={progress}>
 				{#snippet body()}
-					<Progress {team} {event} {scouting} {matches} />
+					<Progress {team} {event} {scouting} {matches} defaultView={'points'} />
 				{/snippet}
 			</Card>
 			<Card card={eventStats}>
 				{#snippet body()}
 					<TeamEventStats {team} {event} {scouting} {matches} />
+				{/snippet}
+			</Card>
+			<Card card={averageContributionsTable}>
+				{#snippet body()}
+					<AverageContributions {team} {event} {scouting} {matches} />
+				{/snippet}
+			</Card>
+			<Card card={averageContributionsPie}>
+				{#snippet body()}
+					<AverageContributionsPie {team} {event} {scouting} {matches} />
+				{/snippet}
+			</Card>
+			<Card card={scoutSummary}>
+				{#snippet body()}
+					<ScoutSummary scouts={scoutingAccounts} />
+				{/snippet}
+			</Card>
+			<Card card={checksSummary}>
+				{#snippet body()}
+					<ChecksSummary checks={checksSum} />
 				{/snippet}
 			</Card>
 		{/key}
