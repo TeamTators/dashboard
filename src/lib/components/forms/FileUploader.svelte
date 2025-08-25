@@ -1,16 +1,18 @@
 <script lang="ts">
 	import Uppy from '@uppy/core';
-	import { Dashboard } from '@uppy/svelte';
+	import Dashboard from '@uppy/svelte/dashboard';
 	import XHRUpload from '@uppy/xhr-upload';
 	import ImageEditor from '@uppy/image-editor';
 	import Compressor from '@uppy/compressor';
+	import { onMount } from 'svelte';
+
 	// import GoldenRetriever from '@uppy/golden-retriever';
 	import { EventEmitter } from 'ts-utils/event-emitter';
 	import { z } from 'zod';
 
-	import '@uppy/core/dist/style.min.css';
-	import '@uppy/dashboard/dist/style.min.css';
-	import '@uppy/image-editor/dist/style.min.css';
+	import '@uppy/core/css/style.min.css';
+	import '@uppy/dashboard/css/style.min.css';
+	import '@uppy/image-editor/css/style.min.css';
 	import { error } from '@sveltejs/kit';
 	import Modal from '../bootstrap/Modal.svelte';
 
@@ -19,16 +21,48 @@
 		error: string;
 	}>();
 
+	// listen to the 'load' event for the picture to be received
 	export const on = emitter.on.bind(emitter);
 
+	type sources = Array<
+		'local' | 'webcam'
+		// the rest of these require Companion. won't enable these until we have that running
+		// | 'url'
+		// | 'gdrive'
+		// | 'dropbox'
+		// | 'instagram'
+		// | 'facebook'
+		// | 'onedrive'
+		// | 'box'
+	>;
+
 	interface Props {
-		multiple: boolean; // this doesn't actually do anything, i'm unsure how to handle this server-side
-		message: string; // this is also not used, but I am unsure what its purpose is.
+		multiple?: boolean;
+		message?: string;
 		endpoint: string;
-		buttonText: string;
+		allowedSources?: sources;
 	}
 
-	const { multiple, message, endpoint, buttonText = 'Upload Files' }: Props = $props();
+	const {
+		multiple = true,
+		message = 'Upload Files',
+		endpoint,
+		allowedSources = ['local', 'webcam']
+	}: Props = $props();
+
+	export async function sourcePlugins(uppy: Uppy, allowedSources: sources): Promise<void> {
+		if (allowedSources.includes('webcam')) {
+			const { default: Webcam } = await import('@uppy/webcam');
+			await import('@uppy/webcam/css/style.min.css');
+			uppy.use(Webcam);
+		}
+
+		if (allowedSources.includes('url')) {
+			const { default: Url } = await import('@uppy/url');
+			await import('@uppy/url/css/style.min.css');
+			uppy.use(Url, { companionUrl: 'https://your-companion.com' });
+		}
+	}
 
 	let uppy = new Uppy({ debug: true })
 		.use(XHRUpload, {
@@ -54,9 +88,6 @@
 			}
 		})
 		.use(Compressor)
-		// golden retriever lets things get temporarily stored in local storage, that way you can upload something on sketchy internet and if it fails halfway through, it will auto recover.
-		// has a 5mb limit by default. I'm going to leave this commented out for now because it doesn't like SSR and I'm not sure it's actually a good idea. if someone uploads 15 5mb images that's a lot to cache
-		// .use(GoldenRetriever)
 		.use(ImageEditor);
 
 	let modal: Modal;
@@ -64,10 +95,10 @@
 
 <button type="button" class="btn btn-primary" onclick={() => modal.show()}>
 	<i class="material-icons">add</i>
-	{buttonText}
+	{message}
 </button>
 
-<Modal title={buttonText} size="lg" bind:this={modal}>
+<Modal title={message} size="lg" bind:this={modal}>
 	{#snippet body()}
 		<div class="container-fluid">
 			<Dashboard
@@ -76,7 +107,6 @@
 					theme: 'dark',
 					proudlyDisplayPoweredByUppy: false,
 					inline: true,
-					showProgressDetails: true,
 					// height: 600,
 					autoOpen: 'imageEditor'
 				}}

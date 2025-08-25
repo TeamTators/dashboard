@@ -23,6 +23,8 @@ export async function POST({ request }) {
 	// Save the file
 	await fs.writeFile(filePath, buffer);
 
+	console.log(`Saved file to ${filePath}`);
+
 	return json({ fileId });
 }
 
@@ -32,6 +34,7 @@ export async function GET({ params }) {
 
 	try {
 		const file = await fs.readFile(filePath);
+		console.log('Serving file:', filePath);
 		return new Response(file, {
 			headers: {
 				'Content-Type': 'application/octet-stream',

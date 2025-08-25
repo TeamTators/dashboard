@@ -37,6 +37,7 @@
 		});
 
 		const off = uploadComponent.on('load', (file) => {
+			console.log('image uploaded');
 			FIRST.TeamPictures.new({
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
