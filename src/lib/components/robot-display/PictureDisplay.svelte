@@ -9,7 +9,9 @@
 	import { FileUploader } from '$lib/utils/files';
 	import { Account } from '$lib/model/account';
 	import { TBATeam, TBAEvent } from '$lib/utils/tba';
-
+	import Webcam from '@uppy/webcam';
+	import ImageEditor from '@uppy/image-editor';
+	import Compressor from '@uppy/compressor';
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
@@ -23,6 +25,10 @@
 	let uploadComponent: FileUploaderComponent;
 
 	onMount(() => {
+		uploadComponent.uppy.use(Webcam);
+		uploadComponent.uppy.use(ImageEditor);
+		uploadComponent.uppy.use(Compressor);
+
 		team.getMedia().then((m) => {
 			if (m.isErr()) return console.error(m.error);
 			pictures.push(
@@ -57,7 +63,7 @@
 			<FileUploaderComponent
 				multiple={true}
 				message="Upload Pictures"
-				allowedFileTypes={['image/*']}
+				usage="images"
 				endpoint={`/upload`}
 				bind:this={uploadComponent}
 			/>
