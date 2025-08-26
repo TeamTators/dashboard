@@ -50,7 +50,7 @@
 	onMount(async () => {
 		uppy = await withDynamicSources(
 			new Uppy({
-				debug: true,
+				debug: false,
 				allowMultipleUploads: multiple,
 				restrictions: { allowedFileTypes }
 			}).use(XHRUpload, {

@@ -88,5 +88,3 @@ export class FileUploader extends EventEmitter<{
 		return result;
 	}
 }
-
-export const fileUploader = new FileUploader();
