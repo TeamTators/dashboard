@@ -1,35 +1,37 @@
-import type { RequestHandler } from '@sveltejs/kit';
-import fs from 'fs';
+import { json, error, fail } from '@sveltejs/kit';
+import fs from 'fs/promises';
 import path from 'path';
+import { Permissions } from '$lib/server/structs/permissions';
+import { ServerCode } from 'ts-utils/status';
+import { Logs } from '$lib/server/structs/log.js';
+import { Account } from '$lib/server/structs/account.js';
+import { FileUploader } from '$lib/services/file-upload';
 
-const UPLOAD_DIR = path.resolve('static/uploads'); // Store files in the `static/uploads` folder
+const UPLOAD_DIR = path.resolve(process.cwd(), './static/uploads');
+const fileUploader = new FileUploader(UPLOAD_DIR);
 
-export const POST: RequestHandler = async ({ request }) => {
+export async function POST(event) {
+	console.log('Received POST request to upload files');
+
+	const request = event.request;
 	const formData = await request.formData();
 	const file = formData.get('file'); // Assuming 'files[]' is the field name used
-	console.log('File:', file);
+
+	await fs.mkdir(UPLOAD_DIR, { recursive: true });
 
 	if (file instanceof File) {
-		const arrayBuffer = await file.arrayBuffer();
-		const buffer = Buffer.from(arrayBuffer);
-		const storageKey = `TEST-${Date.now()}-${file.name}`;
-		const uploadPath = path.join(UPLOAD_DIR, storageKey);
-		fs.writeFileSync(uploadPath, buffer);
-		console.log(`Saved file to ${uploadPath}`);
+		if (!event.locals.account) {
+			throw fail(ServerCode.unauthorized);
+		}
+		try {
+			const result = await fileUploader.receiveFile(file, event.locals.account);
+			console.log(`File uploaded successfully: ${result.url}`);
+			return json(result);
+		} catch (err) {
+			console.error(`Error uploading file: ${err instanceof Error ? err.message : String(err)}`);
+			return json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+		}
+	} else {
+		return json({ error: 'Invalid file uploaded' }, { status: 400 });
 	}
-
-	return new Response(
-		JSON.stringify({
-			uploadedFiles:
-				file && file instanceof File
-					? [
-							{
-								name: file.name,
-								url: path.join(UPLOAD_DIR, `${Date.now()}-${file.name}`)
-							}
-						]
-					: []
-		}),
-		{ headers: { 'Content-Type': 'application/json' } }
-	);
-};
+}

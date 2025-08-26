@@ -37,7 +37,6 @@
 		});
 
 		const off = uploadComponent.on('load', (file) => {
-			console.log('image uploaded');
 			FIRST.TeamPictures.new({
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
@@ -57,9 +56,9 @@
 		<div class="col-12 col-md-4 order-1 order-md-2 p-2 h-auto h-md-75">
 			<FileUploaderComponent
 				multiple={true}
-				message="Upload a picture"
-				endpoint={`/dashboard/event/${event.tba.key}/team/${team.tba.team_number}/picture`}
-				buttonText="Upload Picture"
+				message="Upload Pictures"
+				allowedFileTypes={['image/*']}
+				endpoint={`/upload`}
 				bind:this={uploadComponent}
 			/>
 		</div>

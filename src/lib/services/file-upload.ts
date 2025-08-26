@@ -5,18 +5,16 @@ import { ServerCode } from 'ts-utils/status';
 import { json, error, fail } from '@sveltejs/kit';
 import { EventEmitter } from 'ts-utils/event-emitter';
 
-const uploadType: 'xhr' | 's3' | 'tus' = 'xhr'; // s3 could be AWS S3, GCP buckets, minIO, etc. tus.io is designed for resumable uploads and is first class in Uppy
-// s3 has overhead. going to do XHR uploads only, for now. potentially we run Tus in a separate container and just use that.
-// s3 shines with large files. if we need to store big things, we should use that in the future.
-const usage: 'picture' | 'document' | 'other' = 'picture';
-const UPLOAD_DIR = path.resolve('static/uploads'); // Store files in the `static/uploads` folder
-
-class FileUploader extends EventEmitter<{
+// xhr only for now
+export class FileUploader extends EventEmitter<{
 	load: string;
 	error: string;
 }> {
-	constructor() {
+	uploadDir: string;
+
+	constructor(uploadDir: string) {
 		super();
+		this.uploadDir = uploadDir;
 	}
 
 	/**
@@ -40,18 +38,18 @@ class FileUploader extends EventEmitter<{
 		}
 
 		if (!(await Account.isAdmin(account))) {
-			this.emit('error', 'You do not have permission to upload files.');
+			// this.emit('error', 'You do not have permission to upload files.');
 			throw fail(ServerCode.forbidden, {
 				message: 'You do not have permission to upload files.'
 			});
 		}
 
-		await fs.mkdir(UPLOAD_DIR, { recursive: true });
+		await fs.mkdir(this.uploadDir, { recursive: true });
 
 		const arrayBuffer = await file.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
 		const fileId = `${Date.now()}-${file.name}`;
-		const filePath = path.join(UPLOAD_DIR, fileId);
+		const filePath = path.join(this.uploadDir, fileId);
 
 		await fs.writeFile(filePath, buffer);
 		console.log(`Saved file to ${filePath}`);

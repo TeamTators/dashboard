@@ -47,6 +47,12 @@ importers:
       '@types/proper-lockfile':
         specifier: ^4.1.4
         version: 4.1.4
+      '@uppy/audio':
+        specifier: ^3.0.0
+        version: 3.0.0(@uppy/core@5.0.0)
+      '@uppy/box':
+        specifier: ^4.0.0
+        version: 4.0.0(@uppy/core@5.0.0)
       '@uppy/compressor':
         specifier: ^3.0.0
         version: 3.0.0(@uppy/core@5.0.0)
@@ -59,12 +65,30 @@ importers:
       '@uppy/drop-target':
         specifier: ^4.0.0
         version: 4.0.0(@uppy/core@5.0.0)
+      '@uppy/dropbox':
+        specifier: ^5.0.0
+        version: 5.0.0(@uppy/core@5.0.0)
+      '@uppy/facebook':
+        specifier: ^5.0.0
+        version: 5.0.0(@uppy/core@5.0.0)
+      '@uppy/file-input':
+        specifier: ^4.2.2
+        version: 4.2.2(@uppy/core@5.0.0)
       '@uppy/golden-retriever':
+        specifier: ^5.0.0
+        version: 5.0.0(@uppy/core@5.0.0)
+      '@uppy/google-drive':
         specifier: ^5.0.0
         version: 5.0.0(@uppy/core@5.0.0)
       '@uppy/image-editor':
         specifier: ^4.0.0
         version: 4.0.0(@uppy/core@5.0.0)
+      '@uppy/instagram':
+        specifier: ^5.0.0
+        version: 5.0.0(@uppy/core@5.0.0)
+      '@uppy/onedrive':
+        specifier: ^5.0.0
+        version: 5.0.0(@uppy/core@5.0.0)
       '@uppy/screen-capture':
         specifier: ^5.0.0
         version: 5.0.0(@uppy/core@5.0.0)
@@ -2039,6 +2063,11 @@ packages:
     peerDependencies:
       '@uppy/core': ^5.0.0
 
+  '@uppy/file-input@4.2.2':
+    resolution: {integrity: sha512-tQklK5C1slZWQlMQYQPBJuhfs0e5w1sRb0VwYMt8P297rB1BUcyOjkVH79DAYHkkgXo9aQKUiZSuVoN89tlLjQ==}
+    peerDependencies:
+      '@uppy/core': ^4.5.2
+
   '@uppy/golden-retriever@5.0.0':
     resolution: {integrity: sha512-/dneIZ+NIBe+d+3LNsO41otA3c8tN+9YmK7hH4tNsK4EAqEuOtjBSO44IsZW3rRDxG69eN4CJ06jXRtKo3SKig==}
     peerDependencies:
@@ -2106,6 +2135,9 @@ packages:
     resolution: {integrity: sha512-82LBkkKwgUVhPSngfYY+aFLQjb5tnOc4IlqXSZoXV1XPb8Lsxd++gwg5EiOxQyNojJGTWPyZL1bPWn7qI5VNag==}
     peerDependencies:
       '@uppy/core': ^5.0.0
+
+  '@uppy/utils@6.2.2':
+    resolution: {integrity: sha512-9mYJtbcngv2HOJIECkyfmdXTI5dW/ObCyvWP1Iti3E5bKtsa4sMmbx5Yh/tGCj8k/lBNhfvWyZuYnvnjmzNLSQ==}
 
   '@uppy/utils@7.0.0':
     resolution: {integrity: sha512-SJjFZ6PoxekfjXjsf9aPvMkinAkNmnpXELwYUlKglI0GYmLQwWmNtrjoBLHOmzS1UcI2Jeq0MOw0GaeipVppEA==}
@@ -6835,6 +6867,12 @@ snapshots:
       '@uppy/utils': 7.0.0
       preact: 10.27.1
 
+  '@uppy/file-input@4.2.2(@uppy/core@5.0.0)':
+    dependencies:
+      '@uppy/core': 5.0.0
+      '@uppy/utils': 6.2.2
+      preact: 10.27.1
+
   '@uppy/golden-retriever@5.0.0(@uppy/core@5.0.0)':
     dependencies:
       '@uppy/core': 5.0.0
@@ -6933,6 +6971,11 @@ snapshots:
       '@uppy/utils': 7.0.0
       nanoid: 5.1.5
       preact: 10.26.5
+
+  '@uppy/utils@6.2.2':
+    dependencies:
+      lodash: 4.17.21
+      preact: 10.27.1
 
   '@uppy/utils@7.0.0':
     dependencies:
