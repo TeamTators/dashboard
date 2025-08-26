@@ -21,13 +21,19 @@
 	// listen to the 'load' event for the picture to be received
 	export const on = emitter.on.bind(emitter);
 
-	type UppyPlugin = {
-		new (
+	type PluginArr = {
+		Plugin: new (
 			uppy: Uppy<Meta, Record<string, never>>,
 			opts?: PluginOpts
-		): BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
-		prototype: BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
-	};
+		) => BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
+		PluginOpts: {};
+	}[];
+
+	// const plugins: PluginArr = [
+	// 	{ Plugin: Webcam, PluginOpts: { modes: ['picture'] } },
+	// 	{ Plugin: ImageEditor, PluginOpts: { quality: 0.9, cropperOptions: { viewMode: 1 } } },
+	// 	{ Plugin: Compressor, PluginOpts: { quality: 0.8 } }
+	// ];
 
 	interface Props {
 		multiple?: boolean;
@@ -35,7 +41,7 @@
 		endpoint: string;
 		usage: 'images' | 'general';
 		allowLocal?: boolean;
-		plugins: UppyPlugin[];
+		plugins: PluginArr;
 	}
 
 	const {
@@ -55,7 +61,7 @@
 		restrictions: { allowedFileTypes }
 	});
 
-	plugins.forEach((p) => uppy.use(p));
+	plugins.forEach((p) => uppy.use(p.Plugin, p.PluginOpts));
 
 	uppy.use(XHRUpload, {
 		endpoint,

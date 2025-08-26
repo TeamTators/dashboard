@@ -1,4 +1,4 @@
-<script lang="ts" generics="T">
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { FIRST } from '$lib/model/FIRST';
 	import FileUploaderComponent from '../forms/FileUploader.svelte';
@@ -20,23 +20,18 @@
 	const { team, event, teamPictures }: Props = $props();
 	let uploadComponent: FileUploaderComponent;
 
-	type UppyPlugin = {
-		new (
+	type PluginArr = {
+		Plugin: new (
 			uppy: Uppy<Meta, Record<string, never>>,
 			opts?: PluginOpts
-		): BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
-		prototype: BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
-	};
-
-	type OmitFirstArg<T> = T extends [any, ...infer U] ? U : never;
-	type options = OmitFirstArg<ConstructorParameters<T>>;
-
-	type PluginArr = { UppyPlugin: UppyPlugin; PluginOpts: PluginOpts }[];
+		) => BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
+		PluginOpts: {};
+	}[];
 
 	const plugins: PluginArr = [
-		{ UppyPlugin: Webcam, PluginOpts: { modes: ['picture'] } },
-		{ UppyPlugin: ImageEditor, PluginOpts: { quality: 0.9, cropperOptions: { viewMode: 1 } } },
-		{ UppyPlugin: Compressor, PluginOpts: { quality: 0.8 } }
+		{ Plugin: Webcam, PluginOpts: { modes: ['picture'] } },
+		{ Plugin: ImageEditor, PluginOpts: { quality: 0.9, cropperOptions: { viewMode: 1 } } },
+		{ Plugin: Compressor, PluginOpts: { quality: 0.8 } }
 	];
 
 	onMount(() => {
