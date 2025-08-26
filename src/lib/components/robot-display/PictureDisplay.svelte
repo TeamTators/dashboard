@@ -1,17 +1,13 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { onMount } from 'svelte';
-	import * as TBA from '$lib/utils/tba';
-	import { Scouting } from '$lib/model/scouting';
 	import { FIRST } from '$lib/model/FIRST';
-	import { DataArr } from 'drizzle-struct/front-end';
-	import { loadFiles } from '$lib/utils/downloads';
 	import FileUploaderComponent from '../forms/FileUploader.svelte';
-	import { FileUploader } from '$lib/utils/files';
 	import { Account } from '$lib/model/account';
 	import { TBATeam, TBAEvent } from '$lib/utils/tba';
 	import Webcam from '@uppy/webcam';
 	import ImageEditor from '@uppy/image-editor';
 	import Compressor from '@uppy/compressor';
+	import type { BasePlugin, Body, Meta, PluginOpts, Uppy } from '@uppy/core';
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
@@ -24,11 +20,26 @@
 	const { team, event, teamPictures }: Props = $props();
 	let uploadComponent: FileUploaderComponent;
 
-	onMount(() => {
-		uploadComponent.uppy.use(Webcam);
-		uploadComponent.uppy.use(ImageEditor);
-		uploadComponent.uppy.use(Compressor);
+	type UppyPlugin = {
+		new (
+			uppy: Uppy<Meta, Record<string, never>>,
+			opts?: PluginOpts
+		): BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
+		prototype: BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
+	};
 
+	type OmitFirstArg<T> = T extends [any, ...infer U] ? U : never;
+	type options = OmitFirstArg<ConstructorParameters<T>>;
+
+	type PluginArr = { UppyPlugin: UppyPlugin; PluginOpts: PluginOpts }[];
+
+	const plugins: PluginArr = [
+		{ UppyPlugin: Webcam, PluginOpts: { modes: ['picture'] } },
+		{ UppyPlugin: ImageEditor, PluginOpts: { quality: 0.9, cropperOptions: { viewMode: 1 } } },
+		{ UppyPlugin: Compressor, PluginOpts: { quality: 0.8 } }
+	];
+
+	onMount(() => {
 		team.getMedia().then((m) => {
 			if (m.isErr()) return console.error(m.error);
 			pictures.push(
@@ -64,6 +75,7 @@
 				multiple={true}
 				message="Upload Pictures"
 				usage="images"
+				{plugins}
 				endpoint={`/upload`}
 				bind:this={uploadComponent}
 			/>

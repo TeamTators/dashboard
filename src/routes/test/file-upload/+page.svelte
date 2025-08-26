@@ -10,6 +10,6 @@
 <FileUploaderComponent
 	multiple={true}
 	message="Drag and drop your files or click here to browse"
-	allowedFileTypes={['image/*']}
+	usage="images"
 	endpoint="/test/upload"
 />

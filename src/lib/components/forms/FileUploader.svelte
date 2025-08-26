@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Uppy from '@uppy/core';
+	import type { BasePlugin, Body, Meta, PluginOpts } from '@uppy/core';
 	import Dashboard from '@uppy/svelte/dashboard';
 	import XHRUpload from '@uppy/xhr-upload';
 	import { EventEmitter } from 'ts-utils/event-emitter';
@@ -10,6 +11,7 @@
 	import '@uppy/image-editor/css/style.min.css';
 	import { error } from '@sveltejs/kit';
 	import Modal from '../bootstrap/Modal.svelte';
+	import Webcam from '@uppy/webcam';
 
 	const emitter = new EventEmitter<{
 		load: string;
@@ -19,12 +21,21 @@
 	// listen to the 'load' event for the picture to be received
 	export const on = emitter.on.bind(emitter);
 
+	type UppyPlugin = {
+		new (
+			uppy: Uppy<Meta, Record<string, never>>,
+			opts?: PluginOpts
+		): BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
+		prototype: BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
+	};
+
 	interface Props {
 		multiple?: boolean;
 		message?: string;
 		endpoint: string;
 		usage: 'images' | 'general';
 		allowLocal?: boolean;
+		plugins: UppyPlugin[];
 	}
 
 	const {
@@ -32,16 +43,21 @@
 		message = 'Upload Files',
 		endpoint,
 		usage = 'images',
-		allowLocal = true
+		allowLocal = true,
+		plugins
 	}: Props = $props();
 
 	const allowedFileTypes = usage === 'images' ? ['image/*'] : ['*'];
 
-	export const uppy = new Uppy({
+	const uppy = new Uppy({
 		debug: false,
 		allowMultipleUploads: multiple,
 		restrictions: { allowedFileTypes }
-	}).use(XHRUpload, {
+	});
+
+	plugins.forEach((p) => uppy.use(p));
+
+	uppy.use(XHRUpload, {
 		endpoint,
 		onAfterResponse(xhr) {
 			console.log(xhr.responseText);
