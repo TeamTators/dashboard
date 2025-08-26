@@ -2,7 +2,7 @@
 	import '$lib/model/account';
 	import '$lib/model/analytics';
 	import '$lib/model/permissions';
-	import { Struct } from 'drizzle-struct/front-end';
+	import { Struct } from '$lib/services/struct';
 	import { capitalize, fromSnakeCase } from 'ts-utils/text';
 
 	const structs = $state(Array.from(Struct.structs));
@@ -17,9 +17,14 @@
 </svelte:head>
 
 <div class="container layer-1">
-	<div class="row mb-3">
+	<div class="row">
 		{#each structs as [name]}
-			<div class="col-md-3">
+			<div
+				class="col-md-3"
+				style="
+				padding: 10px;
+			"
+			>
 				<a href="/dashboard/admin/data/{name}" class="text-reset text-decoration-none">
 					<div
 						class="card layer-2"
@@ -27,8 +32,8 @@
                         height: 100px;
                     "
 					>
-						<div class="card-body">
-							<h5 class="card-title">
+						<div class="card-body d-flex justify-content-center align-items-center">
+							<h5 class="card-title text-center">
 								{capitalize(fromSnakeCase(name))}
 							</h5>
 						</div>
