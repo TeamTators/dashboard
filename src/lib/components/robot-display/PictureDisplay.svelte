@@ -24,8 +24,8 @@
 		Plugin: new (
 			uppy: Uppy<Meta, Record<string, never>>,
 			opts?: PluginOpts
-		) => BasePlugin<PluginOpts, Meta, Record<string, never>, Record<string, unknown>>;
-		PluginOpts: {};
+		) => BasePlugin<any, Meta, Record<string, never>, Record<string, unknown>>;
+		PluginOpts: Record<string, unknown>;
 	}[];
 
 	const plugins: PluginArr = [
