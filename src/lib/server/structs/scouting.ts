@@ -306,6 +306,19 @@ export namespace Scouting {
 		}
 	});
 
+	export const archivedCommentsFromEvent= (eventKey:string) => {
+		return attemptAsync (async () => {
+			const res = await DB.select().from(TeamComments.table).where(
+				and
+				(
+					eq(TeamComments.table.archived, true),
+					eq(TeamComments.table.eventKey, eventKey)
+				)
+			);
+			return res.map(c => TeamComments.Generator(c));
+		});
+	}
+
 	TeamComments.queryListen('from-event', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
 		return new Error('Not entitled');
