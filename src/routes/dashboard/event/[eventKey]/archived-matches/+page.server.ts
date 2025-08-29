@@ -9,7 +9,7 @@ export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const e = await TBA.Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {
-		throw redirect(ServerCode.temporaryRedirect, `/404?url${event.url.href}`);
+		throw fail(404);
 	}
 
 	const [teams, matches] = await Promise.all([e.value.getTeams(), e.value.getMatches()]);
@@ -18,13 +18,15 @@ export const load = async (event) => {
 	if (matches.isErr()) throw fail(ServerCode.internalServerError);
 
 	const res = await Scouting.archivedCommentsFromEvent(event.params.eventKey).unwrap();
-	const scouting = await Scouting.MatchScouting.fromProperty('eventKey', event.params.eventKey, {type: 'all'}).unwrap();
+	const scouting = await Scouting.MatchScouting.fromProperty('eventKey', event.params.eventKey, {
+		type: 'all'
+	}).unwrap();
 
 	return {
 		event: e.value.tba,
 		teams: teams.value.map((t) => t.tba),
 		matches: matches.value.map((m) => m.tba),
-		comments: res.map(c => c.safe()),
-		scouting: scouting.map(s => s.safe())
+		comments: res.map((c) => c.safe()),
+		scouting: scouting.map((s) => s.safe())
 	};
 };

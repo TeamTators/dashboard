@@ -1,7 +1,7 @@
 import { FIRST } from '$lib/server/structs/FIRST.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Event } from '$lib/server/utils/tba.js';
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
 export const load = async (event) => {
@@ -18,12 +18,12 @@ export const load = async (event) => {
 
 	const s = sections[parseInt(section)];
 
-	if (!s) throw redirect(ServerCode.permanentRedirect, `/status/404?url=${event.url.href}`);
+	if (!s) throw fail(404);
 
 	const e = (await Event.getEvent(eventKey)).unwrap();
 	const teams = (await e.getTeams()).unwrap();
 	const team = teams.find((t) => t.tba.team_number === parseInt(event.params.team));
-	if (!team) throw redirect(ServerCode.permanentRedirect, `/status/404?url=${event.url.href}`);
+	if (!team) throw fail(404);
 
 	const info = (
 		await Scouting.PIT.getScoutingInfoFromSection(parseInt(event.params.team), s)

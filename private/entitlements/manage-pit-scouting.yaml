@@ -5,6 +5,6 @@ structs:
   - pit_questions
   - pit_answers
 permissions:
-  - "*"
+  - '*'
 pages: []
 group: Scouting

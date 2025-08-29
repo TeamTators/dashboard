@@ -23,7 +23,7 @@ export const load = async (event) => {
 
 	const s = sections[parseInt(section)];
 
-	if (!s) throw redirect(ServerCode.permanentRedirect, `/status/404?url=${event.url.href}`);
+	if (!s) throw fail(404);
 
 	return {
 		section: s.safe(),

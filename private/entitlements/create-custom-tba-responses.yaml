@@ -2,6 +2,6 @@ name: create-custom-tba-responses
 structs:
   - tba_requests
 permissions:
-  - "*"
+  - '*'
 pages: []
 group: TBA
