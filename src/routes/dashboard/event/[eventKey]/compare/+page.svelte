@@ -111,20 +111,13 @@
 				if (!scoutingData) {
 					return {
 						label: String(team.tba.team_number),
-						data: [
-							0,
-							0,
-							0,
-							0,
-							0,
-							0
-						],
+						data: [0, 0, 0, 0, 0, 0],
 						backgroundColor: color.background,
 						borderColor: color.border,
 						borderWidth: 1,
 						pointBackgroundColor: color.background,
 						pointBorderColor: color.border
-					}
+					};
 				}
 				const contribution = Scouting.averageContributions(scoutingData.data) || {
 					cl1: 0,
@@ -267,17 +260,23 @@
 									<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
 									<div style="height: 300px;">
 										{#if teamScouting[i]}
-																				{#if view === 'progress'}
-											<Progress {team} {event} bind:staticY scouting={teamScouting[i]} {matches} />
-										{:else}
-											<TeamEventStats
-												{team}
-												{event}
-												bind:staticY
-												scouting={teamScouting[i]}
-												{matches}
-											/>
-										{/if}
+											{#if view === 'progress'}
+												<Progress
+													{team}
+													{event}
+													bind:staticY
+													scouting={teamScouting[i]}
+													{matches}
+												/>
+											{:else}
+												<TeamEventStats
+													{team}
+													{event}
+													bind:staticY
+													scouting={teamScouting[i]}
+													{matches}
+												/>
+											{/if}
 										{:else}
 											No data found :(
 										{/if}

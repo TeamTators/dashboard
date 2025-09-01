@@ -353,7 +353,7 @@
 		name: 'Checks Summary',
 		icon: {
 			type: 'material-icons',
-			name: 'summarize'
+			name: 'check'
 		},
 		id: 'checks_summary',
 		size: {
@@ -379,8 +379,10 @@
 	});
 	const radarChart = new Dashboard.Card({
 		name: 'Radar Chart',
-		iconType: 'material-icons',
-		icon: 'summarize',
+		icon: {
+			type: 'material-icons',
+			name: 'hexagon'
+		},
 		id: 'radar_chart',
 		size: {
 			width: 4,
@@ -649,7 +651,7 @@
 			</Card>
 			<Card card={radarChart}>
 				{#snippet body()}
-					<RadarChart {teams} {scouting} />
+					<RadarChart {team} {scouting} />
 				{/snippet}
 			</Card>
 		{/key}
