@@ -1,6 +1,12 @@
 <script lang="ts">
-	import { Chart } from 'chart.js';
+	import { Chart, registerables } from 'chart.js';
 	import { onMount } from 'svelte';
+
+	try {
+		Chart.register(...registerables);
+	} catch {
+		//
+	}
 
 	interface Props {
 		datasets: {

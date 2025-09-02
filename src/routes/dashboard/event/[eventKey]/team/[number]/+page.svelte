@@ -20,6 +20,7 @@
 	import { listen } from '$lib/utils/struct-listener';
 	import ScoutSummary from '$lib/components/robot-display/ScoutSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
+	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -352,9 +353,37 @@
 		name: 'Checks Summary',
 		icon: {
 			type: 'material-icons',
-			name: 'summarize'
+			name: 'check'
 		},
 		id: 'checks_summary',
+		size: {
+			width: 4,
+			height: 1,
+			lg: {
+				width: 6,
+				height: 1
+			},
+			md: {
+				width: 6,
+				height: 1
+			},
+			sm: {
+				width: 6,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+	const radarChart = new Dashboard.Card({
+		name: 'Radar Chart',
+		icon: {
+			type: 'material-icons',
+			name: 'hexagon'
+		},
+		id: 'radar_chart',
 		size: {
 			width: 4,
 			height: 1,
@@ -400,7 +429,8 @@
 				progress,
 				eventStats,
 				scoutSummary,
-				checksSummary
+				checksSummary,
+				radarChart
 			],
 			id: 'robot-display'
 		})
@@ -418,7 +448,8 @@
 				matchViewer,
 				progress,
 				eventStats,
-				checksSummary
+				checksSummary,
+				radarChart
 			],
 			id: 'robot-display'
 		});
@@ -616,6 +647,11 @@
 			<Card card={checksSummary}>
 				{#snippet body()}
 					<ChecksSummary checks={checksSum} />
+				{/snippet}
+			</Card>
+			<Card card={radarChart}>
+				{#snippet body()}
+					<RadarChart {team} {scouting} />
 				{/snippet}
 			</Card>
 		{/key}
