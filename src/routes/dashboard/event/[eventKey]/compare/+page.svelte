@@ -89,6 +89,8 @@
 				},
 				scales: {
 					r: {
+						min: 0,
+						max: 10,
 						grid: {
 							color: 'rgba(60, 60, 60, 1)'
 						},
