@@ -2,6 +2,8 @@
 	import { confirm, select, alert } from '$lib/utils/prompts.js';
 	import { Permissions } from '$lib/model/permissions';
 	import { capitalize, fromSnakeCase } from 'ts-utils/text';
+	import { Potato } from '$lib/model/potato.js';
+	import { except } from 'drizzle-orm/mysql-core';
 
 	const { data } = $props();
 	const accounts = $derived(data.accounts);
@@ -164,6 +166,29 @@
 										<i class="material-icons"> delete </i>
 									</button>
 								</div>
+							</td>
+							<td>
+								<button
+										class="btn btn-warning"
+										onclick={async () => {
+											const score = await prompt(`How much potato score are you adding/subtracting from ${account.account.data.username}?`);
+											if (!score) return;
+											if (!account.account.data.id) return;
+											const res = await Potato.giveLevels(account.account.data.id, parseInt(score));
+											if (res.isOk()) {
+												if (res.value.success) {
+													alert(`${account.account.data.username}'s potato score has sucessfully been changed by ${score}.`)
+												}
+												if (!res.value.success) {
+													alert(`${account.account.data.username}'s potato could not be changed: ${res.value.message}`);
+												}
+											} else {
+												console.error(res.error);
+											}
+										}}
+									>
+										<i class="material-icons"> edit </i>
+									</button>
 							</td>
 						</tr>
 					{/each}
