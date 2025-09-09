@@ -169,6 +169,15 @@ export const summarize = async (eventKey: string) => {
 			return array.reduce((a, b) => a + b, 0) / array.length;
 		};
 
+		const standardDeviation = (array: number[]): number => {
+			if (array.length === 0) return 0;
+			if (array.length === 1) return 0;
+			const avg = average(array);
+			const squaredDifferences = array.map(value => Math.pow(value - avg, 2));
+			const avgSquaredDiff = average(squaredDifferences);
+			return Math.sqrt(avgSquaredDiff);
+		};
+
 		const yearBreakdown = Trace.score.yearBreakdown[2025];
 
 		const t = new Table(eventKey);
@@ -221,6 +230,10 @@ export const summarize = async (eventKey: string) => {
 			const scores = await getScores(t);
 			return average(scores.traceScore.map((s) => s.total));
 		});
+		t.column('Score Contribution Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.total));
+		});
 		t.column('Max Score Contribution', async (t) => {
 			const scores = await getScores(t);
 			return Math.max(...scores.traceScore.map((s) => s.total));
@@ -228,6 +241,10 @@ export const summarize = async (eventKey: string) => {
 		t.column('Average Auto Score', async (t) => {
 			const scores = await getScores(t);
 			return average(scores.traceScore.map((s) => s.auto.total));
+		});
+		t.column('Auto Score Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.total));
 		});
 		t.column('Max Auto Score', async (t) => {
 			const scores = await getScores(t);
@@ -237,9 +254,17 @@ export const summarize = async (eventKey: string) => {
 			const scores = await getScores(t);
 			return average(scores.traceScore.map((s) => s.teleop.total));
 		});
+		t.column('Teleop Score Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.teleop.total));
+		});
 		t.column('Average Endgame Score', async (t) => {
 			const scores = await getScores(t);
 			return average(scores.endgame.map((s) => s.dpc + s.shc + s.park));
+		});
+		t.column('Endgame Score Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.endgame.map((s) => s.dpc + s.shc + s.park));
 		});
 		t.column('Max Endgame Score', async (t) => {
 			const scores = await getScores(t);
@@ -268,6 +293,30 @@ export const summarize = async (eventKey: string) => {
 		t.column('Average Barge Points Per Match', async (t) => {
 			const scores = await getScores(t);
 			return average(scores.traceScore.map((s) => s.auto.brg + s.teleop.brg));
+		});
+		t.column('Coral L1 Points Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.cl1 + s.teleop.cl1));
+		});
+		t.column('Coral L2 Points Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.cl2 + s.teleop.cl2));
+		});
+		t.column('Coral L3 Points Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.cl3 + s.teleop.cl3));
+		});
+		t.column('Coral L4 Points Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.cl4 + s.teleop.cl4));
+		});
+		t.column('Processor Points Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.prc + s.teleop.prc));
+		});
+		t.column('Barge Points Standard Deviation', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.brg + s.teleop.brg));
 		});
 		t.column('Average Coral L1 Placed Per Match', async (t) => {
 			const scores = await getScores(t);
@@ -414,6 +463,10 @@ export const summarize = async (eventKey: string) => {
 			const scores = await getScoresWithoutDefense(t);
 			return average(scores.traceScore.map((s) => s.total));
 		});
+		t.column('Score Contribution Without Defense Standard Deviation', async (t) => {
+			const scores = await getScoresWithoutDefense(t);
+			return standardDeviation(scores.traceScore.map((s) => s.total));
+		});
 		t.column('Max Score Contribution Without Defense', async (t) => {
 			const scores = await getScoresWithoutDefense(t);
 			return Math.max(...scores.traceScore.map((s) => s.total));
@@ -422,6 +475,10 @@ export const summarize = async (eventKey: string) => {
 			const scores = await getScoresWithoutDefense(t);
 			return average(scores.traceScore.map((s) => s.auto.total));
 		});
+		t.column('Auto Score Without Defense Standard Deviation', async (t) => {
+			const scores = await getScoresWithoutDefense(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.total));
+		});
 		t.column('Max Auto Score Without Defense', async (t) => {
 			const scores = await getScoresWithoutDefense(t);
 			return Math.max(...scores.traceScore.map((s) => s.auto.total));
@@ -429,6 +486,10 @@ export const summarize = async (eventKey: string) => {
 		t.column('Average Teleop Score Without Defense', async (t) => {
 			const scores = await getScoresWithoutDefense(t);
 			return average(scores.traceScore.map((s) => s.teleop.total));
+		});
+		t.column('Teleop Score Without Defense Standard Deviation', async (t) => {
+			const scores = await getScoresWithoutDefense(t);
+			return standardDeviation(scores.traceScore.map((s) => s.teleop.total));
 		});
 		t.column('Average Coral L1 Points Per Match Without Defense', async (t) => {
 			const scores = await getScoresWithoutDefense(t);
