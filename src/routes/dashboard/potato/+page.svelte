@@ -7,6 +7,7 @@
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import type { Account } from '$lib/model/account.js';
+	import { alert, prompt } from '$lib/utils/prompts.js';
 	const { data } = $props();
 	const rankings = writable(
 		data.rankings.sort((a, b) => Number(b.potato.data.level) - Number(a.potato.data.level))
@@ -101,6 +102,65 @@
 		</td>
 		<td class="text-{color}">{data.potato.data.name}</td>
 		<td class="text-{color}">{data.potato.data.level}</td>
+		<td>
+			<button
+				type="button"
+				class="btn btn-warning"
+				onclick={async () => {
+					const score = await prompt(
+						`How much potato score are you adding to ${data.account?.data.username}? Their current potato score is ${data.potato.data.level}. (use - for subtracting)`
+					);
+					if (!score) return;
+					if (!data.account?.data.id) return;
+					const res = await Potato.giveLevels(data.account.data.id, parseInt(score));
+					if (res.isOk()) {
+						if (res.value.success) {
+							alert(
+								`${data.account?.data.username}'s potato score has sucessfully been changed by ${score}.`
+							);
+						}
+						if (!res.value.success) {
+							alert(
+								`${data.account?.data.username}'s potato could not be changed: ${res.value.message}`
+							);
+						}
+					} else {
+						console.error(res.error);
+					}
+				}}
+			>
+				<i class="material-icons"> edit </i>
+			</button>
+			<button
+				type="button"
+				class="btn btn-danger"
+				onclick={async () => {
+					const score = await prompt(
+						`What are you setting ${data.account?.data.username}'s potato score to? Their current potato score is ${data.potato.data.level}.`
+					);
+					if (!score) return;
+					if (!data.account?.data.id) return;
+					if (!data.potato.data.level) return;
+					const res = await Potato.giveLevels(data.account.data.id, parseInt(score)-data.potato.data.level);
+					if (res.isOk()) {
+						if (res.value.success) {
+							alert(
+								`${data.account?.data.username}'s potato score has sucessfully been to ${score}.`
+							);
+						}
+						if (!res.value.success) {
+							alert(
+								`${data.account?.data.username}'s potato could not be changed: ${res.value.message}`
+							);
+						}
+					} else {
+						console.error(res.error);
+					}
+				}}
+			>
+				<i class="material-icons"> build </i>
+			</button>
+		</td>
 	</tr>
 {/snippet}
 
@@ -131,7 +191,7 @@
 			<table class="table table-striped">
 				<tbody>
 					<tr>
-						<td colspan="4" class="text-muted text-center">
+						<td colspan="5" class="text-muted text-center">
 							<h4>Top 3</h4>
 						</td>
 					</tr>
@@ -146,7 +206,7 @@
 					{/if}
 					{#if rest.length}
 						<tr>
-							<td colspan="4" class="text-muted text-center">
+							<td colspan="5" class="text-muted text-center">
 								<h4>Growing Potatoes</h4>
 							</td>
 						</tr>
