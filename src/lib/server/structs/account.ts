@@ -19,7 +19,7 @@ export namespace Account {
 		name: 'account',
 		structure: {
 			username: text('username').notNull().unique(),
-			key: text('key').notNull().unique(),
+			key: text('key').notNull(),
 			salt: text('salt').notNull(),
 			firstName: text('first_name').notNull(),
 			lastName: text('last_name').notNull(),
