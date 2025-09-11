@@ -5,8 +5,6 @@ import { z } from 'zod';
 import { passwordStrength } from 'check-password-strength';
 import { OAuth2Client } from 'google-auth-library';
 import { SECRET_OAUTH2_CLIENT_ID, SECRET_OAUTH2_CLIENT_SECRET } from '$env/static/private';
-import terminal from '$lib/server/utils/terminal.js';
-import { Logs } from '$lib/server/structs/log.js';
 
 // const log = (...args: unknown[]) => console.log('[oauth/sign-up]', ...args);
 
@@ -16,8 +14,8 @@ export const actions = {
 
 		const username = z.string().min(3).max(20).safeParse(data.get('username'));
 		const email = z.string().email().safeParse(data.get('email'));
-		const firstName = z.string().min(3).max(20).safeParse(data.get('firstName'));
-		const lastName = z.string().min(3).max(20).safeParse(data.get('lastName'));
+		const firstName = z.string().min(1).max(20).safeParse(data.get('firstName'));
+		const lastName = z.string().min(1).max(20).safeParse(data.get('lastName'));
 		const password = z.string().min(8).max(20).safeParse(data.get('password'));
 		const confirmPassword = z.string().min(8).max(20).safeParse(data.get('confirmPassword'));
 
@@ -118,28 +116,20 @@ export const actions = {
 		}
 
 		const account = await Account.createAccount({
-			username: username.data.toLowerCase(),
-			email: email.data.toLowerCase(),
+			username: username.data,
+			email: email.data,
 			firstName: firstName.data,
 			lastName: lastName.data,
 			password: password.data
 		});
 
 		if (account.isErr()) {
-			terminal.error(account.error);
+			console.error(account.error);
 			return fail(ServerCode.internalServerError, {
 				message: 'Failed to create account',
 				error: 'Failed to create account'
 			});
 		}
-
-		Logs.log({
-			type: 'create',
-			struct: Account.Account.name,
-			dataId: account.value.id,
-			accountId: account.value.id,
-			message: `${account.value.data.username} created an account`
-		});
 
 		return {
 			message: 'Account created',
@@ -148,10 +138,15 @@ export const actions = {
 		};
 	},
 	OAuth2: async () => {
+		const domain = String(process.env.PUBLIC_DOMAIN).includes('localhost')
+			? `${process.env.PUBLIC_DOMAIN}:${process.env.PORT}`
+			: process.env.PUBLIC_DOMAIN;
+		const protocol = process.env.HTTPS === 'true' ? 'https://' : 'http://';
+		const redirectUri = `${protocol}${domain}/oauth/sign-up`;
 		const client = new OAuth2Client({
 			clientSecret: SECRET_OAUTH2_CLIENT_SECRET,
 			clientId: SECRET_OAUTH2_CLIENT_ID,
-			redirectUri: 'http://localhost:5173/oauth/sign-up'
+			redirectUri
 		});
 		// log(client);
 		const authorizeUrl = client.generateAuthUrl({
