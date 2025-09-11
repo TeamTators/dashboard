@@ -20,7 +20,8 @@ export default defineConfig({
 		host: '0.0.0.0',
 		allowedHosts: [
 			'dev.tsaxking.com',
-			'tatorscout.org'
+			'tatorscout.org',
+			'dev.tatorscout.org',
 		]
 	}
 });
