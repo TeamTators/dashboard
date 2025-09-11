@@ -102,11 +102,13 @@
 			Match Schedule for {event.name}
 		</h1>
 		<p class="text-muted">
-			Highlight teams from a match by selecting the checkbox next to it.
-			<br />
-			Click on a team number to view the match scouting page for that team in that match.
-			<br />
 			Matches with team 2122 are outlined in purple.
+			<br>
+			Click on a team number to view the match scouting page for that team in that match.
+			<br>
+			Teams in a red bubble have not been scouted yet for that match, while teams in a green bubble have been scouted.
+			<br>
+			Highlight teams in all of their matches from a specific match by selecting the checkbox next to it.
 		</p>
 	</div>
 	<div class="row">
