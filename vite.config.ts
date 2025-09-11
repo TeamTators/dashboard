@@ -18,10 +18,6 @@ export default defineConfig({
 	server: {
 		port: Number(process.env.PORT) || 5173,
 		host: '0.0.0.0',
-		allowedHosts: [
-			'dev.tsaxking.com',
-			'tatorscout.org',
-			'dev.tatorscout.org',
-		]
+		allowedHosts: ['dev.tsaxking.com', 'tatorscout.org', 'dev.tatorscout.org']
 	}
 });

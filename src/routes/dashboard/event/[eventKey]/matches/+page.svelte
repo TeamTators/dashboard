@@ -19,9 +19,7 @@
 		return Number(teamKey.substring(3));
 	};
 
-	const inSelected = (
-		teamKey: string,
-	) => {
+	const inSelected = (teamKey: string) => {
 		for (const match of selectedMatches) {
 			if (
 				match.alliances.red.team_keys.includes(teamKey) ||
@@ -47,8 +45,11 @@
 	};
 
 	const has2122 = (match: TBAMatch) => {
-		return match.alliances.red.team_keys.includes('frc2122') || match.alliances.blue.team_keys.includes('frc2122');
-	}
+		return (
+			match.alliances.red.team_keys.includes('frc2122') ||
+			match.alliances.blue.team_keys.includes('frc2122')
+		);
+	};
 
 	onMount(() => {
 		const add = (scouting: Scouting.MatchScoutingData) => {
@@ -72,19 +73,9 @@
 	});
 </script>
 
-<style>
-	.highlight {
-		background-color: rgba(255, 255, 0, 0.5) !important;
-	}
-
-	.has-2122 {
-		border: 2px solid purple;
-	}
-</style>
-
 {#snippet teamLink(teamKey: string, color: 'red' | 'blue', match: TBAMatch)}
-	<td 
-		class:table-danger={color === 'red'} 
+	<td
+		class:table-danger={color === 'red'}
 		class:table-primary={color === 'blue'}
 		class:highlight={inSelected(teamKey)}
 	>
@@ -112,9 +103,9 @@
 		</h1>
 		<p class="text-muted">
 			Highlight teams from a match by selecting the checkbox next to it.
-			<br>
+			<br />
 			Click on a team number to view the match scouting page for that team in that match.
-			<br>
+			<br />
 			Matches with team 2122 are outlined in purple.
 		</p>
 	</div>
@@ -123,21 +114,27 @@
 			<table class="table table-striped">
 				<tbody>
 					{#each matches as match}
-						<tr
-							class:has-2122={has2122(match)}
-						>
+						<tr class:has-2122={has2122(match)}>
 							<td>
-								<input type="checkbox" name="" id="match-check-{match.match_number}" onchange={(event) => {
-									const checked = event.currentTarget.checked;
-									if (checked) {
-										selectedMatches = Array.from(new Set([...selectedMatches, match]));
-									} else {
-										selectedMatches = selectedMatches.filter(m => !(
-											m.match_number === match.match_number &&
-											m.comp_level === match.comp_level
-										));
-									}
-								}}>
+								<input
+									type="checkbox"
+									name=""
+									id="match-check-{match.match_number}"
+									onchange={(event) => {
+										const checked = event.currentTarget.checked;
+										if (checked) {
+											selectedMatches = Array.from(new Set([...selectedMatches, match]));
+										} else {
+											selectedMatches = selectedMatches.filter(
+												(m) =>
+													!(
+														m.match_number === match.match_number &&
+														m.comp_level === match.comp_level
+													)
+											);
+										}
+									}}
+								/>
 							</td>
 							<td>
 								{match.match_number}
@@ -161,3 +158,13 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	.highlight {
+		background-color: rgba(255, 255, 0, 0.5) !important;
+	}
+
+	.has-2122 {
+		border: 2px solid purple;
+	}
+</style>
