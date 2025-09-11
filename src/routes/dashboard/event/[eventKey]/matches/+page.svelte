@@ -118,12 +118,19 @@
 							<td>
 								<input
 									type="checkbox"
-									name=""
+									name="match-check-{match.match_number}"
 									id="match-check-{match.match_number}"
 									onchange={(event) => {
 										const checked = event.currentTarget.checked;
 										if (checked) {
-											selectedMatches = Array.from(new Set([...selectedMatches, match]));
+											selectedMatches = [...selectedMatches, match].filter(
+												(m, i, arr) =>
+													arr.findIndex(
+														(x) =>
+															x.match_number === m.match_number &&
+															x.comp_level === m.comp_level
+													) === i
+											);
 										} else {
 											selectedMatches = selectedMatches.filter(
 												(m) =>
