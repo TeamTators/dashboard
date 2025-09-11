@@ -106,6 +106,18 @@
 {/snippet}
 
 <div class="container">
+	<div class="row mb-3">
+		<h1>
+			Match Schedule for {event.name}
+		</h1>
+		<p class="text-muted">
+			Highlight teams from a match by selecting the checkbox next to it.
+			<br>
+			Click on a team number to view the match scouting page for that team in that match.
+			<br>
+			Matches with team 2122 are outlined in purple.
+		</p>
+	</div>
 	<div class="row">
 		<div class="table-responsive">
 			<table class="table table-striped">
