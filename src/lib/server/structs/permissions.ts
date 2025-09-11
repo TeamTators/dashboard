@@ -46,7 +46,7 @@ export namespace Permissions {
 		structure: {
 			name: text('name').notNull(),
 			description: text('description').notNull(),
-			parent: text('parent').notNull() // Parent role for hierarchy. A parent role can manage its child roles.
+			parent: text('parent').notNull().default('') // Parent role for hierarchy. A parent role can manage its child roles.
 		}
 	});
 
