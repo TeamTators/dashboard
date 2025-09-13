@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FIRST } from '$lib/model/FIRST';
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import Grid from '../general/Grid.svelte';
 	import type { INumberFilterParams, ITextFilterParams } from 'ag-grid-community';
 	import { onMount } from 'svelte';
