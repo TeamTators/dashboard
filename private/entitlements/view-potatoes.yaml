@@ -1,0 +1,7 @@
+name: view-potatoes
+structs:
+  - potato_friend
+permissions:
+  - potato_friend:read:*
+pages: []
+group: Potatoes
