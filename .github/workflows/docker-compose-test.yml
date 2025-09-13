@@ -47,6 +47,7 @@ jobs:
           TBA_KEY=${{ secrets.TBA_KEY }}
           LOCAL_TBA_WEBHOOK_PORT=4000
           LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks
+          PUBLIC_DO_POTATO=true
           EOF
 
           # .env for local app (host values)
@@ -70,6 +71,7 @@ jobs:
           TBA_KEY=${{ secrets.TBA_KEY }}
           LOCAL_TBA_WEBHOOK_PORT=4000
           LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks
+          PUBLIC_DO_POTATO=true
           EOF
 
       - name: Setup Node.js
