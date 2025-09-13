@@ -157,8 +157,11 @@ export namespace TBAWebhooks {
 	export const off = em.off.bind(em);
 	export const once = em.once.bind(em);
 
-	export const init = () => {
-		const name = str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true);
-		return redis.createListener(name, messageSchemas);
+	export const init = (
+		name: string
+	) => {
+		const service = redis.createListener(name, messageSchemas);
+		service.init().unwrap();
+		return service;
 	};
 }
