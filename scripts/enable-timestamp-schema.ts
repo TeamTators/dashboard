@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sql } from 'drizzle-orm';
 import { DB } from '../src/lib/server/db';
 import { z } from 'zod';
@@ -13,7 +14,7 @@ const updateTable = async (tableName: string) => {
 	`);
 
 	// Depending on your DB driver, check rows property
-	const columnRows = Array.isArray(columns) ? columns : (columns.rows ?? []);
+	const columnRows = Array.isArray(columns) ? columns : ((columns as any).rows ?? []);
 	const isVersionTable = columnRows.some((c: any) => c.column_name === 'vh_created');
 
 	// Drop and re-add the timestamp columns
@@ -47,7 +48,7 @@ const updateTable = async (tableName: string) => {
 			LIMIT ${BATCH_SIZE} OFFSET ${offset};
 		`);
 
-		const typedRows = Array.isArray(rows) ? rows : (rows.rows ?? []);
+		const typedRows = Array.isArray(rows) ? rows : ((rows as any).rows ?? []);
 		if (typedRows.length === 0) break;
 
 		for (const row of typedRows) {
@@ -80,7 +81,7 @@ export default async () => {
 
 	const typed = z
 		.array(z.object({ table_name: z.string() }))
-		.parse(Array.isArray(result) ? result : (result.rows ?? []));
+		.parse(Array.isArray(result) ? result : ((result as any).rows ?? []));
 
 	for (const t of typed) {
 		await updateTable(t.table_name);
