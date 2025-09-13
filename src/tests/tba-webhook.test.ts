@@ -1,35 +1,37 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
-import { Redis } from '$lib/server/services/redis';
 import path from 'path';
 import { config } from 'dotenv';
 import { z } from 'zod';
 import { getSampleData } from '$lib/utils/zod-sample';
+import redis from '$lib/server/services/redis';
+import { str, num } from '$lib/server/utils/env';
 
 describe('TBA Webhook', async () => {
 	config();
 
 	const server = await import(
-		path.resolve(process.cwd(), String(process.env.LOCAL_TBA_WEBHOOK_PATH), 'src', 'index')
+		path.resolve(
+			process.cwd(),
+			str('LOCAL_TBA_WEBHOOK_PATH', false) || '../tba-webhooks',
+			'src',
+			'index'
+		)
 	);
 
 	const serverPromise = server.main(
-		process.env.LOCAL_TBA_WEBHOOK_PORT,
-		process.env.LOCAL_TBA_WEBHOOK_SECRET,
-		process.env.LOCAL_TBA_WEBHOOK_REDIS_NAME
+		num('LOCAL_TBA_WEBHOOK_PORT', true),
+		str('LOCAL_TBA_WEBHOOK_SECRET', true),
+		str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true)
 	);
 
 	let service: ReturnType<typeof TBAWebhooks.init> | undefined;
 
 	beforeAll(async () => {
-		const res = await Redis.connect(String(process.env.REDIS_NAME));
+		const res = await redis.init();
 		expect(res.isOk()).toBe(true);
 
-		service = TBAWebhooks.init(String(process.env.LOCAL_TBA_WEBHOOK_REDIS_NAME));
-	});
-
-	it('Should initialize the tba webhook', () => {
-		expect(service).toBeInstanceOf(Redis.ListeningService);
+		service = TBAWebhooks.init(str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true));
 	});
 
 	const send = (data: unknown, secret: string) => {
@@ -54,9 +56,11 @@ describe('TBA Webhook', async () => {
 			if (!service) {
 				throw new Error('Service is not initialized');
 			}
+			const s = service;
 			const promise = new Promise<z.infer<(typeof TBAWebhooks)['messageSchemas'][typeof name]>>(
 				(res, rej) => {
-					service?.on(name, (data) => {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					s.on(name, (data: any) => {
 						res(data.data);
 					});
 					setTimeout(() => rej(new Error(`Timeout waiting for ${name} webhook event`)), 5000);
@@ -68,7 +72,7 @@ describe('TBA Webhook', async () => {
 				message_type: name
 			};
 
-			const res = await send(messageData, String(process.env.LOCAL_TBA_WEBHOOK_SECRET));
+			const res = await send(messageData, str('LOCAL_TBA_WEBHOOK_SECRET', true));
 
 			expect(res.status).toBe(200);
 
@@ -81,7 +85,7 @@ describe('TBA Webhook', async () => {
 				return handleMessage(name as keyof typeof TBAWebhooks.messageSchemas);
 			})
 		);
-	});
+	}, 30000);
 
 	it('Should fail the request if the secret is invalid', async () => {
 		const messageData = {

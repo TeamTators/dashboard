@@ -157,9 +157,7 @@
 			<Grid
 				bind:this={grid}
 				rowNumbers={true}
-				modules={[
-					NumberEditorModule
-				]}
+				modules={[NumberEditorModule]}
 				opts={{
 					columnDefs: [
 						{

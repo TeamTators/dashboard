@@ -350,7 +350,8 @@ export namespace Scouting {
 		structs: [MatchScouting, TeamComments],
 		permissions: ['match_scouting:read:*', 'team_comments:read:*'],
 		group: 'Scouting',
-		description: 'View match scouting and team comments'
+		description: 'View match scouting and team comments',
+		features: []
 	});
 
 	Permissions.createEntitlement({
@@ -358,7 +359,8 @@ export namespace Scouting {
 		structs: [MatchScouting, TeamComments],
 		permissions: ['match_scouting:*:*', 'team_comments:*:*'],
 		group: 'Scouting',
-		description: 'Manage match scouting and team comments'
+		description: 'Manage match scouting and team comments',
+		features: []
 	});
 
 	export namespace PIT {
@@ -1125,7 +1127,8 @@ export namespace Scouting {
 				'pit_answers:*:*'
 			],
 			group: 'Scouting',
-			description: 'View PIT scouting data'
+			description: 'View PIT scouting data',
+			features: []
 		});
 
 		Permissions.createEntitlement({
@@ -1133,7 +1136,8 @@ export namespace Scouting {
 			structs: [Sections, Groups, Questions, Answers],
 			permissions: ['*'],
 			group: 'Scouting',
-			description: 'Manage PIT scouting data'
+			description: 'Manage PIT scouting data',
+			features: []
 		});
 	}
 }

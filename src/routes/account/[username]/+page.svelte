@@ -5,6 +5,7 @@
 	const { data } = $props();
 
 	const account = $derived(Account.Account.Generator(data.account));
+	const _info = $derived(Account.AccountInfo.Generator(data.info));
 </script>
 
 <div class="container layer-1">

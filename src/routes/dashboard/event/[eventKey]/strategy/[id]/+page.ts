@@ -1,7 +1,7 @@
 import { Scouting } from '$lib/model/scouting.js';
 import { Strategy } from '$lib/model/strategy';
 import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba.js';
-import { DataArr } from 'drizzle-struct/front-end';
+import { DataArr } from '$lib/services/struct/data-arr';
 
 export const load = (event) => {
 	const e = new TBAEvent(event.data.event);
