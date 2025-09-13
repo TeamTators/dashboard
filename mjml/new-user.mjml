@@ -2,8 +2,13 @@
 	<mj-head>
 		<mj-preview>New User Registration Notification</mj-preview>
 		<mj-style inline="inline">
-			.button { background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px;
-			text-decoration: none; }
+			.button {
+				background-color: #007bff;
+				color: white;
+				padding: 10px 20px;
+				border-radius: 5px;
+				text-decoration: none;
+			}
 		</mj-style>
 	</mj-head>
 	<mj-body>

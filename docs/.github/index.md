@@ -11,8 +11,8 @@
 
 [testing-svelte-check.yml](https://github.com/tsaxking/sveltekit-template/tree/main/.github/workflows/testing-svelte-check.yml) - Run tsc checks, ensures types are correct.
 
-[testing-unit.yml](https://github.com/tsaxking/sveltekit-template/tree/main/.github/workflows/testing-unit.yml) - Run unit tests. (src/tests)
-=======
+# [testing-unit.yml](https://github.com/tsaxking/sveltekit-template/tree/main/.github/workflows/testing-unit.yml) - Run unit tests. (src/tests)
+
 `code-formatter.yml` - Ensure code is formatted correctly
 
 `docs.yml` - Generate documentation using `mdbook`.
@@ -24,4 +24,5 @@
 `testing-svelte-check` - Run tsc checks
 
 `testing-unit.yml` - Run unit tests.
->>>>>>> 3f40c913bce77472f0339ea9b2434d385d40e233
+
+> > > > > > > 3f40c913bce77472f0339ea9b2434d385d40e233
