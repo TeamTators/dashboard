@@ -1,0 +1,11 @@
+name: view-strategy
+structs:
+  - whiteboards
+  - strategy
+  - alliances
+permissions:
+  - whiteboards:read:*
+  - strategy:read:*
+  - alliances:read:*
+pages: []
+group: Strategy
