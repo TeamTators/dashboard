@@ -25,6 +25,7 @@ const updateTable = async (tableName: string) => {
 		DROP COLUMN IF EXISTS vh_created;
 	`);
 
+	// Rename old columns to temp columns if they exist
 	await DB.execute(sql`
 		ALTER TABLE ${sql.identifier(tableName)}
 		ADD COLUMN created TIMESTAMPTZ NOT NULL DEFAULT NOW(),

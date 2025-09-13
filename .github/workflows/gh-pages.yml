@@ -58,6 +58,9 @@ jobs:
           echo "PUBLIC_DOMAIN=localhost" >> .env
           echo "HTTPS=false" >> .env
           echo "SESSION_DURATION=10000000" >> .env
+          echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
+          echo "LOCAL_TBA_WEBHOOK_PORT=4000" >> .env
+          echo "LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks" >> .env
           export $(cat .env | xargs)
 
       - name: Generate Documentation
