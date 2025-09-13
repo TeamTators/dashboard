@@ -241,4 +241,30 @@ export namespace Permissions {
 			account: account.data.id
 		});
 	};
+
+	export const searchRoles = (
+		searchKey: string,
+		config: {
+			offset: number;
+			limit: number;
+		}
+	) => {
+		return attemptAsync(async () => {
+			const res = await Role.send(
+				'search',
+				{
+					searchKey,
+					offset: config.offset,
+					limit: config.limit
+				},
+				z.array(
+					Role.getZodSchema({
+						optionals: Object.keys(Role.data.structure)
+					})
+				)
+			).unwrap();
+
+			return res.map((r) => Role.Generator(r));
+		});
+	};
 }
