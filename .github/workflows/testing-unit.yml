@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: dashboard
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -62,7 +62,7 @@ jobs:
 
       - name: Clone the tba-webhooks repository
         run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
 
       - name: Install tba-webhooks dependencies
         run: |
