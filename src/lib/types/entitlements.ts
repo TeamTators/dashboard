@@ -1,28 +1,29 @@
-export type Entitlement =
-	| 'view-tba-info'
-	| 'upload-pictures'
-	| 'view-checklist'
-	| 'manage-tba'
-	| 'create-custom-tba-responses'
-	| 'view-scouting'
-	| 'view-roles'
-	| 'manage-members'
-	| 'manage-scouting'
-	| 'manage-roles'
-	| 'view-potatoes'
-	| 'manage-pit-scouting'
-	| 'view-pit-scouting'
-	| 'edit-potato-level'
-	| 'test-permission-view'
-	| 'test-permission-manage'
-	| 'view-strategy';
-export type Group =
-	| 'FIRST'
-	| 'Checklists'
-	| 'TBA'
-	| 'Scouting'
-	| 'Roles'
-	| 'Potatoes'
-	| 'Testing'
-	| 'Strategy';
-export type Features = 'manage-roles';
+export type Entitlement = 
+    'manage-pit-scouting'
+  | 'view-potatoes'
+  | 'manage-scouting'
+  | 'view-strategy'
+  | 'edit-potato-level'
+  | 'manage-tba'
+  | 'create-custom-tba-responses'
+  | 'view-tba-info'
+  | 'view-roles'
+  | 'view-checklist'
+  | 'upload-pictures'
+  | 'view-scouting'
+  | 'view-pit-scouting'
+  | 'manage-roles'
+  | 'manage-members'
+  | 'test-permission-view'
+  | 'test-permission-manage';
+export type Group = 
+    'Scouting'
+  | 'Potatoes'
+  | 'Strategy'
+  | 'TBA'
+  | 'FIRST'
+  | 'Roles'
+  | 'Checklists'
+  | 'Testing';
+export type Features = 
+	'manage-roles';
