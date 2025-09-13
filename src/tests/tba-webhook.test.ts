@@ -5,7 +5,7 @@ import { config } from 'dotenv';
 import { z } from 'zod';
 import { getSampleData } from '$lib/utils/zod-sample';
 import redis from '$lib/server/services/redis';
-import { str } from '$lib/server/utils/env';
+import { str, num } from '$lib/server/utils/env';
 
 describe('TBA Webhook', async () => {
 	config();
@@ -13,17 +13,16 @@ describe('TBA Webhook', async () => {
 	const server = await import(
 		path.resolve(
 			process.cwd(),
-			'../',
-			'.' + str('LOCAL_TBA_WEBHOOK_PATH', false) || '/tba-webhooks', 
-			'src', 
+			str('LOCAL_TBA_WEBHOOK_PATH', false) || '../tba-webhooks',
+			'src',
 			'index'
 		)
 	);
 
 	const serverPromise = server.main(
-		process.env.LOCAL_TBA_WEBHOOK_PORT,
-		process.env.LOCAL_TBA_WEBHOOK_SECRET,
-		process.env.LOCAL_TBA_WEBHOOK_REDIS_NAME
+		num('LOCAL_TBA_WEBHOOK_PORT', true),
+		String(process.env.LOCAL_TBA_WEBHOOK_SECRET),
+		String(process.env.LOCAL_TBA_WEBHOOK_REDIS_NAME)
 	);
 
 	let service: ReturnType<typeof TBAWebhooks.init> | undefined;
