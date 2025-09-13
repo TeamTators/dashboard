@@ -157,9 +157,7 @@ export namespace TBAWebhooks {
 	export const off = em.off.bind(em);
 	export const once = em.once.bind(em);
 
-	export const init = (
-		name: string
-	) => {
+	export const init = (name: string) => {
 		const service = redis.createListener(name, messageSchemas);
 		service.init().unwrap();
 		return service;

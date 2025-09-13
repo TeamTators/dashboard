@@ -22,7 +22,7 @@ describe('TBA Webhook', async () => {
 	const serverPromise = server.main(
 		num('LOCAL_TBA_WEBHOOK_PORT', true),
 		str('LOCAL_TBA_WEBHOOK_SECRET', true),
-		str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true),
+		str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true)
 	);
 
 	let service: ReturnType<typeof TBAWebhooks.init> | undefined;
@@ -31,9 +31,7 @@ describe('TBA Webhook', async () => {
 		const res = await redis.init();
 		expect(res.isOk()).toBe(true);
 
-		service = TBAWebhooks.init(
-			str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true),
-		);
+		service = TBAWebhooks.init(str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true));
 	});
 
 	const send = (data: unknown, secret: string) => {
