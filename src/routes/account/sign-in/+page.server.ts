@@ -4,8 +4,8 @@ import { Session } from '$lib/server/structs/session.js';
 import { ServerCode } from 'ts-utils/status';
 import { z } from 'zod';
 import { OAuth2Client } from 'google-auth-library';
-import { SECRET_OAUTH2_CLIENT_ID, SECRET_OAUTH2_CLIENT_SECRET } from '$env/static/private';
 import terminal from '$lib/server/utils/terminal';
+import { domain, str } from '$lib/server/utils/env';
 
 // const log = (...args: unknown[]) => console.log('[oauth/sign-in]', ...args);
 
@@ -71,36 +71,6 @@ export const actions = {
 			});
 		}
 
-		HASH: if (pass.value !== account.data.key) {
-			const success = await Account.externalHash({
-				user: res.data.username,
-				pass: res.data.password
-			});
-
-			if (success.isOk() && success.value) {
-				// Update the password in this database
-				const newHash = Account.newHash(res.data.password);
-				if (newHash.isErr()) {
-					terminal.error(newHash.error);
-					return fail(ServerCode.internalServerError, {
-						user: res.data.username,
-						message: 'Failed to hash password'
-					});
-				}
-
-				account.update({
-					key: newHash.value.hash,
-					salt: newHash.value.salt
-				});
-				break HASH;
-			}
-
-			return fail(ServerCode.unauthorized, {
-				user: res.data.username,
-				message: 'Invalid username or password'
-			});
-		}
-
 		const sessionRes = await Session.signIn(account, event.locals.session);
 		if (sessionRes.isErr()) {
 			terminal.error(sessionRes.error);
@@ -118,15 +88,18 @@ export const actions = {
 		};
 	},
 	OAuth2: async () => {
-		const domain = String(process.env.PUBLIC_DOMAIN).includes('localhost')
-			? `${process.env.PUBLIC_DOMAIN}:${process.env.PORT}`
-			: process.env.PUBLIC_DOMAIN;
-		const protocol = process.env.HTTPS === 'true' ? 'https://' : 'http://';
-		const redirectUri = `${protocol}${domain}/oauth/sign-in`;
-		console.log('Using Redirect URI:', redirectUri);
+		// const domain = String(process.env.PUBLIC_DOMAIN).includes('localhost')
+		// 	? `${process.env.PUBLIC_DOMAIN}:${process.env.PORT}`
+		// 	: process.env.PUBLIC_DOMAIN;
+		// const protocol = process.env.HTTPS === 'true' ? 'https://' : 'http://';
+		const url = domain({
+			port: false,
+			protocol: true
+		});
+		const redirectUri = `${url}/oauth/sign-in`;
 		const client = new OAuth2Client({
-			clientSecret: SECRET_OAUTH2_CLIENT_SECRET,
-			clientId: SECRET_OAUTH2_CLIENT_ID,
+			clientSecret: str('OAUTH2_CLIENT_SECRET', true),
+			clientId: str('OAUTH2_CLIENT_ID', true),
 			redirectUri
 		});
 		// log(client);

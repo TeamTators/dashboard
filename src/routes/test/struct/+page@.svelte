@@ -2,17 +2,12 @@
 	import '$lib/model/account';
 	import '$lib/model/analytics';
 	import '$lib/model/permissions';
-	import '$lib/model/checklists';
-	import '$lib/model/FIRST';
-	import '$lib/model/match-canvas';
-	import '$lib/model/potato';
-	import '$lib/model/scouting';
-	import '$lib/model/strategy';
+	import '$lib/model/testing.svelte';
 	import { writable } from 'svelte/store';
 
 	// Insert all other structs here
 
-	import { type Blank, Struct } from 'drizzle-struct/front-end';
+	import { type Blank, Struct } from '$lib/services/struct';
 	import { capitalize, fromSnakeCase } from 'ts-utils/text';
 
 	const structs = writable<[Struct<Blank>, 'connecting...' | 'connected' | string][]>([]);
