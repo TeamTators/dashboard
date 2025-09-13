@@ -2,7 +2,7 @@
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 	import { match as matchCase } from 'ts-utils/match';

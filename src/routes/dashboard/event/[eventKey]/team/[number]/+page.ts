@@ -1,4 +1,4 @@
-import { DataArr } from 'drizzle-struct/front-end';
+import { DataArr } from '$lib/services/struct/data-arr';
 import { Scouting } from '$lib/model/scouting';
 import { FIRST } from '$lib/model/FIRST';
 import { Account } from '$lib/model/account';

@@ -123,7 +123,8 @@ export namespace TBA {
 		structs: [Requests],
 		permissions: ['*'],
 		group: 'TBA',
-		description: 'Create custom TBA responses'
+		description: 'Create custom TBA responses',
+		features: []
 	});
 	// Blank because it needs to be called customly
 	Permissions.createEntitlement({
@@ -131,7 +132,8 @@ export namespace TBA {
 		structs: [],
 		permissions: [],
 		group: 'TBA',
-		description: 'Manage TBA data'
+		description: 'Manage TBA data',
+		features: []
 	});
 }
 
