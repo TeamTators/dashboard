@@ -4,7 +4,7 @@
 	import { Account } from '$lib/model/account';
 	import { capitalize } from 'ts-utils/text';
 	import { writable } from 'svelte/store';
-	import type { DataArr } from 'drizzle-struct/front-end';
+	import type { DataArr } from '$lib/services/struct/data-arr';
 
 	interface Props {
 		question: Scouting.PIT.QuestionData;

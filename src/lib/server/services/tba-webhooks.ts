@@ -1,11 +1,10 @@
-import { Redis } from './redis';
+import redis from './redis';
 import { EventEmitter } from 'ts-utils/event-emitter';
 import { z } from 'zod';
+import { str } from '../utils/env';
 
 export namespace TBAWebhooks {
-	export const messageSchemas: {
-		[key: string]: z.ZodTypeAny;
-	} = {
+	export const messageSchemas = {
 		upcoming_match: z.object({
 			event_key: z.string(),
 			match_key: z.string(),
@@ -154,13 +153,13 @@ export namespace TBAWebhooks {
 		[key in keyof typeof messageSchemas]: z.infer<(typeof messageSchemas)[key]>;
 	}>();
 
-	let service: Redis.ListeningService<typeof messageSchemas, string>;
-
 	export const on = em.on.bind(em);
 	export const off = em.off.bind(em);
 	export const once = em.once.bind(em);
 
 	export const init = (name: string) => {
-		return (service = Redis.createListeningService(name, messageSchemas));
+		const service = redis.createListener(name, messageSchemas);
+		service.init().unwrap();
+		return service;
 	};
 }

@@ -249,7 +249,8 @@ export namespace Strategy {
 		structs: [Whiteboards, Strategy, Alliances],
 		permissions: ['whiteboards:read:*', 'strategy:read:*', 'alliances:read:*'],
 		group: 'Strategy',
-		description: 'View strategy information'
+		description: 'View strategy information',
+		features: []
 	});
 }
 

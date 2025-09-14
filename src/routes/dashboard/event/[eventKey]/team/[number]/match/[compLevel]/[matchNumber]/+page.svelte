@@ -5,7 +5,7 @@
 	import type { TBAMatch } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Strategy } from '$lib/model/strategy.js';
 
 	const { data } = $props();

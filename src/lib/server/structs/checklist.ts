@@ -49,7 +49,8 @@ export namespace Checklist {
 			'checklist_questions:read:*'
 		],
 		group: 'Checklists',
-		description: 'View checklists and their answers'
+		description: 'View checklists and their answers',
+		features: []
 	});
 }
 

@@ -15,7 +15,6 @@
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
 	import AverageContributions from '$lib/components/robot-display/AverageContributions.svelte';
 	import AverageContributionsPie from '$lib/components/charts/AverageContributionsPie.svelte';
-	import type { DataArr, Blank, StructData } from 'drizzle-struct/front-end';
 	import { onMount } from 'svelte';
 	import { listen } from '$lib/utils/struct-listener';
 	import ScoutSummary from '$lib/components/robot-display/ScoutSummary.svelte';

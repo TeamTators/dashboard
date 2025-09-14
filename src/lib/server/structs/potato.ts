@@ -386,7 +386,8 @@ export namespace Potato {
 		structs: [Friend],
 		group: 'Potatoes',
 		permissions: ['potato_friend:read:*'],
-		description: 'View all potatoes'
+		description: 'View all potatoes',
+		features: []
 	});
 
 	Permissions.createEntitlement({
@@ -394,7 +395,8 @@ export namespace Potato {
 		structs: [Friend],
 		group: 'Potatoes',
 		permissions: ['potato_friend:update:level'],
-		description: 'Edit the level of a potato'
+		description: 'Edit the level of a potato',
+		features: []
 	});
 }
 

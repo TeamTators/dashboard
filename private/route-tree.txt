@@ -37,7 +37,6 @@
 /dashboard/event/*/team/*
 /dashboard/event/*/team/*/archived-matches
 /dashboard/event/*/team/*/match/*/*
-/dashboard/event/*/team/*/picture
 /dashboard/event/*/team/*/traces
 /dashboard/mentor
 /dashboard/mentor/accounts
@@ -61,7 +60,6 @@
 /examples/statestack
 /examples/struct/csr
 /examples/struct/ssr
-/files/*
 /fp
 /oauth/sign-in
 /oauth/sign-up
@@ -104,6 +102,7 @@
 /test/struct
 /test/tba
 /test/upload
+/upload
 /webhooks/event/*/actions/*
 /webhooks/event/*/comments
 /webhooks/event/*/pit-scouting

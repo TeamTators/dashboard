@@ -3,7 +3,7 @@
 	import EditSection from '$lib/components/pit-scouting/EditSection.svelte';
 	import { Scouting } from '$lib/model/scouting';
 	import { notify, prompt, select } from '$lib/utils/prompts';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { TBAEvent } from '$lib/utils/tba.js';
@@ -14,7 +14,7 @@
 	const eventKey = $derived(data.eventKey);
 	const sectionIndex = $derived(data.sectionIndex);
 	const section = $derived(data.section);
-	const year = $derived(data.year);
+	const _year = $derived(data.year);
 	const event = $derived(data.event);
 
 	$effect(() => nav(event));
@@ -22,7 +22,7 @@
 	let sections = $state(new DataArr(Scouting.PIT.Sections, []));
 
 	onMount(() => {
-		sections = Scouting.PIT.Sections.fromProperty('eventKey', page.params.eventKey, false);
+		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, false);
 		// sections.filter(s => true);
 		sections.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});

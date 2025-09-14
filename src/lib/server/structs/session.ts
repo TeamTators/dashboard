@@ -2,8 +2,7 @@ import { attemptAsync } from 'ts-utils/check';
 import { Struct } from 'drizzle-struct/back-end';
 import { integer, text } from 'drizzle-orm/pg-core';
 import { Account } from './account';
-
-const { PUBLIC_DOMAIN, SESSION_DURATION } = process.env;
+import { domain, num } from '../utils/env';
 
 interface RequestEvent {
 	cookies: {
@@ -24,6 +23,12 @@ interface RequestEvent {
 }
 
 export namespace Session {
+	const PUBLIC_DOMAIN = domain({
+		port: false,
+		protocol: false
+	});
+	const SESSION_DURATION = num('SESSION_DURATION', true);
+
 	export const Session = new Struct({
 		name: 'session',
 		structure: {
@@ -32,10 +37,12 @@ export namespace Session {
 			userAgent: text('user_agent').notNull(),
 			requests: integer('requests').notNull(),
 			prevUrl: text('prev_url').notNull(),
-			fingerprint: text('fingerprint').notNull().default('')
+			fingerprint: text('fingerprint').notNull().default(''),
+			tabs: integer('tabs').notNull().default(0)
 		},
 		frontend: false,
-		safes: ['fingerprint']
+		safes: ['fingerprint'],
+		lifetime: SESSION_DURATION
 	});
 
 	export type SessionData = typeof Session.sample;
@@ -52,14 +59,15 @@ export namespace Session {
 					userAgent: '',
 					requests: 0,
 					prevUrl: '',
-					fingerprint: ''
+					fingerprint: '',
+					tabs: 0
 				}).unwrap();
 
 				event.cookies.set('ssid_' + PUBLIC_DOMAIN, session.id, {
 					httpOnly: false,
 					domain: PUBLIC_DOMAIN ?? '',
 					path: '/',
-					expires: new Date(Date.now() + parseInt(SESSION_DURATION ?? '0'))
+					expires: new Date(Date.now() + SESSION_DURATION)
 				});
 
 				return session;

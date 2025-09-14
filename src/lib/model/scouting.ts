@@ -1,9 +1,6 @@
-import {
-	Struct,
-	type StructData,
-	type DataArr,
-	type StructDataVersion
-} from 'drizzle-struct/front-end';
+import { type DataArr } from '$lib/services/struct/data-arr';
+import { Struct } from '$lib/services/struct';
+import { type StructDataVersion, type StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
 import { attempt, attemptAsync } from 'ts-utils/check';
