@@ -2,7 +2,7 @@
 	import nav from '$lib/imports/robot-display.js';
 	import { page } from '$app/state';
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import { listen } from '$lib/utils/struct-listener.js';
 

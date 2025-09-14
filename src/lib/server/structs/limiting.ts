@@ -2,12 +2,103 @@ import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct/back-end';
 import type { Session } from './session';
 import type { Account } from './account';
-import { attemptAsync } from 'ts-utils/check';
+import { attempt, attemptAsync } from 'ts-utils/check';
 import { createHash } from 'crypto';
-import { Redis } from '../services/redis';
-import { z } from 'zod';
+import ignore from 'ignore';
+import fs from 'fs';
+import path from 'path';
+import redis from '../services/redis';
+import { num, str } from '../utils/env';
 
 export namespace Limiting {
+	const ipLimited = ignore();
+	const blockedPages = ignore();
+
+	try {
+		fs.mkdirSync(path.join(process.cwd(), 'private'), { recursive: true });
+	} catch {
+		// Do nothing
+	}
+
+	try {
+		const ipLimit = fs.readFileSync(
+			path.join(process.cwd(), 'private', 'ip-limited.pages'),
+			'utf-8'
+		);
+
+		ipLimited.add(ipLimit);
+	} catch {
+		fs.writeFileSync(
+			path.join(process.cwd(), 'private', 'ip-limited.pages'),
+			'# Put pages here that you would like to be limited to specifi ips\n'
+		);
+	}
+
+	try {
+		const blockedPageList = fs.readFileSync(
+			path.join(process.cwd(), 'private', 'blocked.pages'),
+			'utf-8'
+		);
+
+		blockedPages.add(blockedPageList);
+	} catch {
+		fs.writeFileSync(
+			path.join(process.cwd(), 'private', 'blocked.pages'),
+			'# Put pages here that you would like to be blocked for all ips\n'
+		);
+	}
+
+	export const PageRuleset = new Struct({
+		name: 'page_ruleset',
+		structure: {
+			ip: text('ip').notNull(),
+			page: text('page').notNull()
+		}
+	});
+
+	// Prevent duplicates
+	PageRuleset.on('create', async (rs) => {
+		const rules = PageRuleset.fromProperty('ip', rs.data.ip, {
+			type: 'stream'
+		});
+
+		rules.pipe((r) => {
+			if (r.data.page === rs.data.page) {
+				rs.delete();
+			}
+		});
+	});
+
+	export const isIpLimitedPage = (page: string) => {
+		return attempt(() => {
+			if (page.startsWith('/')) page = page.slice(1);
+			if (page.length === 0) return false;
+			return ipLimited.ignores(page);
+		});
+	};
+
+	export const isBlockedPage = (page: string) => {
+		return attempt(() => {
+			if (page.startsWith('/')) page = page.slice(1);
+			if (page.length === 0) return false;
+			return blockedPages.ignores(page);
+		});
+	};
+
+	export const isIpAllowed = (ip: string, page: string) => {
+		return attemptAsync(async () => {
+			const rules = PageRuleset.fromProperty('ip', ip, {
+				type: 'stream'
+			});
+
+			let allowed = false;
+			await rules.pipe((r) => {
+				if (r.data.page === page) allowed = true;
+			});
+			return allowed;
+		});
+	};
+
 	export const BlockedIps = new Struct({
 		name: 'blocked_ips',
 		structure: {
@@ -85,26 +176,27 @@ export namespace Limiting {
 		const accept = request.headers.get('accept') ?? '';
 		const language = request.headers.get('accept-language') ?? '';
 
-		const raw = `${ip}|${ua}|${accept}|${language}|${process.env.FINGERPRINT_SALT ?? ''}`;
+		const salt = str('FINGERPRINT_SALT', false) || '';
+
+		const raw = `${ip}|${ua}|${accept}|${language}|${salt}`;
 
 		return createHash('sha256').update(raw).digest('hex');
 	};
 
+	const limitService = redis.createItemGroup('rate_limit', 'number');
+
 	export const rateLimit = async (key: string) => {
-		const limit = parseInt(process.env.REQUEST_LIMIT ?? '1000', 10);
-		const windowSec = parseInt(process.env.REQUEST_LIMIT_WINDOW ?? '60000', 10) / 1000; // Convert milliseconds to seconds
-		const redisRes = Redis.getPub();
-		if (redisRes.isErr()) {
-			console.error('Failed to get Redis client for rate limiting:', redisRes.error);
-			return false;
-		}
-		const count = await redisRes.value.incr(key);
+		return attemptAsync(async () => {
+			const limit = num('REQUEST_LIMIT', false) || 1000;
+			const windowSec = num('REQUEST_LIMIT_WINDOW', false) || 60000;
+			const count = await limitService.incr(key).unwrap();
 
-		if (count === 1) {
-			await redisRes.value.expire(key, windowSec);
-		}
+			if (count === 1) {
+				await limitService.expire(key, windowSec).unwrap();
+			}
 
-		return count > limit;
+			return count > limit;
+		});
 	};
 
 	export const violate = async (
@@ -115,26 +207,28 @@ export namespace Limiting {
 	) => {
 		return attemptAsync(async () => {
 			await Promise.all([
-				Redis.incr(`violation_ip:${session.data.ip}`, increment),
-				Redis.incr(`violation_session:${session.id}`, increment),
-				Redis.incr(`violation_fingerprint:${session.data.fingerprint}`, increment),
-				account ? Redis.incr(`violation_account:${account.id}`, increment) : Promise.resolve()
+				limitService.incr(`violation_ip:${session.data.ip}`, increment).unwrap(),
+				limitService.incr(`violation_session:${session.id}`, increment).unwrap(),
+				limitService.incr(`violation_fingerprint:${session.data.fingerprint}`, increment).unwrap(),
+				account
+					? limitService.incr(`violation_account:${account.id}`, increment).unwrap()
+					: Promise.resolve()
 			]);
 			await Promise.all([
-				Redis.expire(`violation_ip:${session.data.ip}`, 60 * 60 * 24),
-				Redis.expire(`violation_session:${session.id}`, 60 * 60 * 24),
-				Redis.expire(`violation_fingerprint:${session.data.fingerprint}`, 60 * 60 * 24),
-				account ? Redis.expire(`violation_account:${account.id}`, 60 * 60 * 24) : Promise.resolve()
+				limitService.expire(`violation_ip:${session.data.ip}`, 60 * 60 * 24),
+				limitService.expire(`violation_session:${session.id}`, 60 * 60 * 24),
+				limitService.expire(`violation_fingerprint:${session.data.fingerprint}`, 60 * 60 * 24),
+				account
+					? limitService.expire(`violation_account:${account.id}`, 60 * 60 * 24)
+					: Promise.resolve()
 			]);
 
 			const score = Math.max(
 				...(await Promise.all([
-					Redis.getValue(`violation_ip:${session.data.ip}`, z.number()),
-					Redis.getValue(`violation_session:${session.id}`, z.number()),
-					Redis.getValue(`violation_fingerprint:${session.data.fingerprint}`, z.number()),
-					account
-						? Redis.getValue(`violation_account:${account.id}`, z.number())
-						: Promise.resolve('0')
+					limitService.getItem(`violation_ip:${session.data.ip}`),
+					limitService.getItem(`violation_session:${session.id}`),
+					limitService.getItem(`violation_fingerprint:${session.data.fingerprint}`),
+					account ? limitService.getItem(`violation_account:${account.id}`) : Promise.resolve('0')
 				]).then((res) => res.map(Number)))
 			);
 
@@ -205,20 +299,19 @@ export namespace Limiting {
 		account?: Account.AccountData
 	) => {
 		return attemptAsync(async () => {
-			const ipScore = await Redis.getValue(`violation_ip:${session.data.ip}`, z.number()).then(
-				(res) => Number(res) || 0
-			);
-			const sessionScore = await Redis.getValue(`violation_session:${session.id}`, z.number()).then(
-				(res) => Number(res) || 0
-			);
-			const fingerprintScore = await Redis.getValue(
-				`violation_fingerprint:${session.data.fingerprint}`,
-				z.number()
-			).then((res) => Number(res) || 0);
+			const ipScore = await limitService
+				.getItem(`violation_ip:${session.data.ip}`)
+				.then((res) => Number(res) || 0);
+			const sessionScore = await limitService
+				.getItem(`violation_session:${session.id}`)
+				.then((res) => Number(res) || 0);
+			const fingerprintScore = await limitService
+				.getItem(`violation_fingerprint:${session.data.fingerprint}`)
+				.then((res) => Number(res) || 0);
 			const accountScore = account
-				? await Redis.getValue(`violation_account:${account.id}`, z.number()).then(
-						(res) => Number(res) || 0
-					)
+				? await limitService
+						.getItem(`violation_account:${account.id}`)
+						.then((res) => Number(res) || 0)
 				: 0;
 
 			return Math.max(ipScore, sessionScore, fingerprintScore, accountScore);
@@ -226,6 +319,7 @@ export namespace Limiting {
 	};
 }
 
+export const _pageRuleset = Limiting.PageRuleset.table;
 export const _blockedIps = Limiting.BlockedIps.table;
 export const _blockedSessions = Limiting.BlockedSessions.table;
 export const _blockedFingerprints = Limiting.BlockedFingerprints.table;

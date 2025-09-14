@@ -1,5 +1,6 @@
-import { type Blank, DataArr, StructData } from 'drizzle-struct/front-end';
-
+import { DataArr } from '$lib/services/struct/data-arr';
+import { type Blank } from '$lib/services/struct';
+import { type StructData } from '$lib/services/struct';
 export const listen = <T extends Blank>(
 	data: DataArr<T>,
 	satisfies: (d: StructData<T>) => boolean

@@ -1,6 +1,38 @@
 import { attemptAsync } from 'ts-utils/check';
 import { type Email } from '../../types/email';
-import { Redis } from './redis';
+import redis from './redis';
+import { z } from 'zod';
+import { render } from 'html-constructor';
+import fs from 'fs/promises';
+import path from 'path';
+import { num, str } from '../utils/env';
+
+const emailService = redis.createQueue(
+	'email',
+	z.object({
+		html: z.string().optional(),
+		text: z.string().optional(),
+		to: z.union([z.string(), z.array(z.string())]),
+		subject: z.string(),
+		attachments: z
+			.array(
+				z.object({
+					filename: z.string(),
+					path: z.string() // full path
+				})
+			)
+			.optional()
+	}),
+	num('MAX_EMAIL_QUEUE', false) || 100
+);
+
+const openEmail = (name: keyof Email) => {
+	return attemptAsync(async () => {
+		const filepath = path.join(process.cwd(), 'private', 'emails', name + '.html');
+
+		return fs.readFile(filepath, 'utf-8');
+	});
+};
 
 /**
  *
@@ -29,32 +61,20 @@ export const sendEmail = <T extends keyof Email>(
 ) => {
 	return attemptAsync(async () => {
 		if (!targetService) {
-			if (!process.env.EMAIL_MICROSERVICE_NAME) {
-				throw new Error(
-					'EMAIL_MICROSERVICE_NAME environment variable is not set. Please set it to the name of your email service.'
-				);
-			}
-			targetService = process.env.EMAIL_MICROSERVICE_NAME;
+			targetService = str('EMAIL_MICROSERVICE_NAME', true);
 		}
 
-		const pub = Redis.getPub().unwrap();
+		const html = await openEmail(config.type).unwrap();
 
-		// Compose the job payload
 		const job = {
-			type: config.type,
-			data: config.data,
+			html: render(html, config.data),
 			to: config.to,
 			subject: config.subject,
 			attachments: config.attachments ?? [],
-			// Optionally add a timestamp or jobId here
 			timestamp: Date.now()
 		};
 
-		// Push the job as a JSON string to a Redis list keyed by the targetService
-		// e.g. "emailServiceQueue"
-
-		// Use LPUSH to add a job to the head of the queue
-		await pub.lPush(targetService, JSON.stringify(job));
+		await emailService.add(job).unwrap();
 
 		return {
 			success: true,

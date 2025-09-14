@@ -78,7 +78,8 @@ export namespace FIRST {
 		structs: [TeamPictures, Matches, CustomMatches],
 		group: 'FIRST',
 		permissions: ['team_pictures:read:*', 'matches:read:*', 'custom_matches:*:*'],
-		description: 'View FIRST team pictures and matches'
+		description: 'View FIRST team pictures and matches',
+		features: []
 	});
 
 	Permissions.createEntitlement({
@@ -86,7 +87,8 @@ export namespace FIRST {
 		structs: [TeamPictures],
 		group: 'FIRST',
 		permissions: ['team_pictures:create'],
-		description: 'Upload team pictures for FIRST events'
+		description: 'Upload team pictures for FIRST events',
+		features: []
 	});
 }
 

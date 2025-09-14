@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FIRST } from '$lib/model/FIRST';
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import Grid from '../general/Grid.svelte';
 	import type { INumberFilterParams, ITextFilterParams } from 'ag-grid-community';
 	import { onMount } from 'svelte';
@@ -55,11 +55,10 @@
 			team: Number(team),
 			type: 'general',
 			accountId: String(self.get().data.id)
-		})
-			.catch((e) => {
-				console.error(e);
-				alert('Failed to add comment');
-			});
+		}).catch((e) => {
+			console.error(e);
+			alert('Failed to add comment');
+		});
 	};
 </script>
 
@@ -94,56 +93,53 @@
 				}
 			],
 			onCellContextMenu: (e) => {
-				contextmenu(
-					e.event as PointerEvent,
-					{
-						options: [
-							{
-								name: 'Archive', 
-								action: async () => {
-									console.log(e)
-									if (!e.data) return;
+				contextmenu(e.event as PointerEvent, {
+					options: [
+						{
+							name: 'Archive',
+							action: async () => {
+								console.log(e);
+								if (!e.data) return;
 
-									if (await confirm("Are you sure you want to archive this?")) {
-										const res = await e.data.comment.setArchive(true);
-										if (res.isErr()) {
+								if (await confirm('Are you sure you want to archive this?')) {
+									const res = await e.data.comment.setArchive(true);
+									if (res.isErr()) {
+										notify({
+											color: 'danger',
+											message: 'There was an error, please contact a developer.',
+											title: 'Error',
+											textColor: 'light',
+											autoHide: 3000
+										});
+									} else {
+										if (res.value.success) {
 											notify({
-												'color': 'danger',
-												'message': 'There was an error, please contact a developer.',
-												'title': 'Error',
-												'textColor': 'light',
-												'autoHide': 3000
-											})
+												color: 'success',
+												message: 'You successfully archived the comment.',
+												title: 'Success',
+												textColor: 'light',
+												autoHide: 3000
+											});
 										} else {
-											if (res.value.success) {
-												notify({
-													'color': 'success',
-													'message': 'You successfully archived the comment.',
-													'title': 'Success',
-													'textColor': 'light',
-													'autoHide': 3000
-												})
-											} else {
-												notify({
-													'color': 'warning',
-													'message': res.value.message || 'Unknown issue',
-													'title': 'Not Archived',
-													'textColor': 'dark',
-													'autoHide': 3000
-												})
-											}
+											notify({
+												color: 'warning',
+												message: res.value.message || 'Unknown issue',
+												title: 'Not Archived',
+												textColor: 'dark',
+												autoHide: 3000
+											});
 										}
 									}
-								},
-								icon: {
-									type: 'material-icons',
-									name: 'archive',
 								}
+							},
+							icon: {
+								type: 'material-icons',
+								name: 'archive'
 							}
-						],
-						width: '150px',
-					}
-				);
+						}
+					],
+					width: '150px'
+				});
 			},
 			preventDefaultOnContextMenu: true
 		}}

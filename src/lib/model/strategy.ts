@@ -1,4 +1,6 @@
-import { Struct, type StructData, type DataArr } from 'drizzle-struct/front-end';
+import { type DataArr } from '$lib/services/struct/data-arr';
+import { Struct } from '$lib/services/struct';
+import { StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
 

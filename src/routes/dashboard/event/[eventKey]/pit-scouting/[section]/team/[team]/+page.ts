@@ -1,6 +1,6 @@
 import { FIRST } from '$lib/model/FIRST.js';
 import { Scouting } from '$lib/model/scouting';
-import { DataArr } from 'drizzle-struct/front-end';
+import { DataArr } from '$lib/services/struct/data-arr';
 import { Account } from '$lib/model/account';
 
 export const load = (event) => {

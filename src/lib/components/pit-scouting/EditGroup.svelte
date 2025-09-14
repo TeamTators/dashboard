@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import EditQuestion from './EditQuestion.svelte';
 	import { confirm, prompt, select } from '$lib/utils/prompts';

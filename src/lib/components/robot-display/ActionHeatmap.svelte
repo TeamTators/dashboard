@@ -5,7 +5,7 @@
 	import { MatchCanvas } from '$lib/model/match-canvas';
 	import { type Focus } from '$lib/types/robot-display';
 	import type { TBAEvent, TBATeam } from '$lib/utils/tba';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 
 	interface Props {
 		team: TBATeam;
