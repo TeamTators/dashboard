@@ -2,9 +2,8 @@
 	import nav from '$lib/imports/robot-display.js';
 	import { Scouting } from '$lib/model/scouting';
 	import { alert, confirm, prompt, select } from '$lib/utils/prompts';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
 	import { TBAEvent } from '$lib/utils/tba.js';
 
 	const { data } = $props();
@@ -17,7 +16,7 @@
 	let sections = $state(new DataArr(Scouting.PIT.Sections, []));
 
 	onMount(() => {
-		sections = Scouting.PIT.Sections.fromProperty('eventKey', page.params.eventKey, false);
+		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, false);
 		sections.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});
 

@@ -42,12 +42,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: dashboard
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10.16.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -62,7 +62,7 @@ jobs:
 
       - name: Clone the tba-webhooks repository
         run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
 
       - name: Install tba-webhooks dependencies
         run: |
@@ -82,6 +82,12 @@ jobs:
         run: |
           cd dashboard
           touch .env
+          echo "ENVIRONMENT=test" >> .env
+          echo "PORT=3000" >> .env
+          echo "HTTPS=false" >> .env
+          echo "PUBLIC_DOMAIN=localhost" >> .env
+          echo "SESSION_DURATION=10000000" >> .env
+          echo "FINGERPRINT_SECRET=some_secret" >> .env
           echo "DB_HOST=localhost" >> .env
           echo "DB_PORT=5432" >> .env
           echo "DB_USER=postgres" >> .env
@@ -89,12 +95,14 @@ jobs:
           echo "DB_NAME=postgres" >> .env
           echo "PUBLIC_APP_NAME=test" >> .env
           echo "REDIS_NAME=some_name" >> .env
+          echo "REDIS_URL=redis://localhost:6379" >> .env
           echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
           echo "PUBLIC_DO_POTATO=true" >> .env
           echo "LOCAL_TBA_WEBHOOK_PATH=../tba-webhooks" >> .env
           echo "LOCAL_TBA_WEBHOOK_PORT=5555" >> .env
           echo "LOCAL_TBA_WEBHOOK_SECRET=webhook_secret" >> .env
           echo "LOCAL_TBA_WEBHOOK_REDIS_NAME=tba_webhook" >> .env
+          export $(cat .env | xargs)
 
       - name: Run migrations
         run: |

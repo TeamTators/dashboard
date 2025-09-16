@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { prompt } from '$lib/utils/prompts';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 
 	interface Props {

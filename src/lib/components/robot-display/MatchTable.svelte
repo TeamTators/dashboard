@@ -3,7 +3,7 @@
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAMatch, TBAEvent } from '$lib/utils/tba';
-	import { DataArr } from 'drizzle-struct/front-end';
+	import { DataArr } from '$lib/services/struct/data-arr';
 	import MatchDisplay from './MatchDisplay.svelte';
 
 	interface Props {

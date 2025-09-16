@@ -10,9 +10,9 @@
 
 	const { data } = $props();
 	const accounts = $derived(writable(data.accounts));
-	const total = $derived(data.total);
-	const page = $derived(data.page);
-	const limit = $derived(data.limit);
+	const _total = $derived(data.total);
+	const _page = $derived(data.page);
+	const _limit = $derived(data.limit);
 
 	type Row = {
 		account: Account.AccountData;
@@ -22,7 +22,7 @@
 	let grid: Grid<Row>;
 	let gridContainer: HTMLDivElement;
 
-	const rerender = () => grid.rerender();
+	const _rerender = () => grid.rerender();
 
 	let distanceToTop = $state(0);
 
@@ -65,12 +65,12 @@
 							field: 'account.data.lastName',
 							headerName: 'Last Name'
 						},
-						{
-							headerName: 'Picture',
-							cellRenderer: (params: ICellRendererParams<Row>) => {
-								return `<img src="${params.data?.account.data.picture}" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;">`;
-							}
-						},
+						// {
+						// 	headerName: 'Picture',
+						// 	cellRenderer: (params: ICellRendererParams<Row>) => {
+						// 		return `<img src="${params.data?.account.data.picture}" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%;">`;
+						// 	}
+						// },
 						{
 							headerName: 'Verified',
 							cellRenderer: (params: ICellRendererParams<Row>) => {

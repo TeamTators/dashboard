@@ -6,6 +6,7 @@ import { ServerCode } from 'ts-utils/status';
 import { Account } from '$lib/server/structs/account';
 import { Err, resolveAll } from 'ts-utils/check';
 import { Logs } from '$lib/server/structs/log.js';
+import { str } from '$lib/server/utils/env.js';
 
 export const POST = async (event) => {
 	terminal.log('Event server request', event.request.url);
@@ -14,7 +15,7 @@ export const POST = async (event) => {
 	const res = (message: string, status: ServerCode) =>
 		new Response(JSON.stringify({ message }), { status });
 
-	if (String(header) !== String(process.env.EVENT_SERVER_API_KEY)) {
+	if (String(header) !== str('EVENT_SERVER_API_KEY', true)) {
 		return res('Invalid API key', 401);
 	}
 

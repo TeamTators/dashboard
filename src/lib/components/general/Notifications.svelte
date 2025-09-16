@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Account } from '$lib/model/account';
-	import { DataArr } from 'drizzle-struct/front-end';
 	import { onMount } from 'svelte';
 	import Notification from '../account/Notification.svelte';
 
@@ -10,12 +9,12 @@
 		notifs: number;
 	}
 
-	let limit = $state(10);
-	let page = $state(0);
+	let _limit = $state(10);
+	let _page = $state(0);
 	let { notifs = $bindable() }: Props = $props();
 
 	let notifications = $state(
-		new DataArr(Account.AccountNotification, [
+		Account.AccountNotification.arr([
 			// Account.AccountNotification.Generator({
 			// 	accountId: 'string',
 			// 	title: 'string',

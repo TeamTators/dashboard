@@ -12,15 +12,19 @@ import { attemptAsync, resolveAll } from 'ts-utils/check';
 import { Scouting } from '../../src/lib/server/structs/scouting';
 import { z } from 'zod';
 import { Struct } from 'drizzle-struct/back-end';
-import { DB } from '../../src/lib/server/db';
-import path from 'path';
-import { openStructs, structActions } from '../../src/lib/server/cli/struct';
+import { openStructs } from '../../src/lib/server/cli/struct';
 import { postBuild } from '../../src/lib/server/index';
+import { num, str } from '../../src/lib/server/utils/env';
 
 const initDB = async () => {
 	config();
 
-	const { DB_OLD_HOST, DB_OLD_PORT, DB_OLD_USER, DB_OLD_PASS, DB_OLD_NAME } = process.env;
+	const DB_OLD_HOST = str('DB_OLD_HOST', false);
+	const DB_OLD_PORT = num('DB_OLD_PORT', false);
+	const DB_OLD_USER = str('DB_OLD_USER', false);
+	const DB_OLD_PASS = str('DB_OLD_PASS', false);
+	const DB_OLD_NAME = str('DB_OLD_NAME', false);
+
 	const DB = new Client({
 		user: DB_OLD_USER,
 		database: DB_OLD_NAME,

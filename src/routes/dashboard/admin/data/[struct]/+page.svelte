@@ -19,12 +19,14 @@
 	import { copy } from '$lib/utils/clipboard.js';
 	import { useCommandStack } from '$lib/services/event-stack.js';
 	import { onDestroy, onMount } from 'svelte';
-	import { StructData, type Blank } from 'drizzle-struct/front-end';
-	import { confirm, notify } from '$lib/utils/prompts.js';
+	import { StructData, type Blank } from '$lib/services/struct';
+	import { confirm, notify, prompt } from '$lib/utils/prompts.js';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { match } from 'ts-utils/match';
 	import Flatpickr from '$lib/components/forms/Flatpickr.svelte';
 	import nav from '$lib/imports/admin';
+	import { v4 as uuid } from 'uuid';
+	import { StructDataStage } from '$lib/services/struct';
 
 	nav();
 
@@ -60,9 +62,31 @@
 
 	let grid: Grid<StructData<Blank>>;
 	let createModal: Modal;
+	let editModal: Modal;
+	// svelte-ignore state_referenced_locally
+	let editStage: StructDataStage<Blank> = $state(new StructDataStage(struct.Generator({}) as any));
+	let query = $state('');
+	let column = $state<string | null>(null);
 
 	const newItem = () => {
 		createModal.show();
+	};
+
+	const edit = (data: StructData<Blank>) => {
+		editModal.show();
+		editStage = new StructDataStage(data as any);
+	};
+
+	const saveEdit = () => {
+		editStage.save('force');
+	};
+
+	const resetEdit = () => {
+		editStage = new StructDataStage(struct.Generator({}) as any);
+	};
+
+	const genUUID = () => {
+		copy(uuid(), true);
 	};
 
 	const create = async () => {
@@ -108,6 +132,33 @@
 		}
 	};
 
+	const clearTable = async () => {
+		const res = await prompt(
+			`This will delete all data in this table. Type ${struct.data.name} to confirm.`
+		);
+
+		if (res === struct.data.name) {
+			struct.clear();
+		}
+	};
+
+	const search = (query: string, column: string | null) => {
+		const url = new URL(location.href);
+		url.searchParams.set('page', '0');
+		if (query.trim() === '') {
+			url.searchParams.delete('search');
+			url.searchParams.delete('column');
+		} else {
+			url.searchParams.set('search', query);
+			if (column) {
+				url.searchParams.set('column', column);
+			} else {
+				url.searchParams.delete('column');
+			}
+		}
+		location.href = url.toString();
+	};
+
 	onMount(() => {
 		const rect = gridContainer.getBoundingClientRect();
 		distanceToTop = rect.top;
@@ -121,6 +172,14 @@
 				.exec()
 				.unwrap();
 		});
+
+		const url = new URL(location.href);
+		if (url.searchParams.get('search')) {
+			query = url.searchParams.get('search') || '';
+		}
+		if (url.searchParams.get('column')) {
+			column = url.searchParams.get('column') || null;
+		}
 		// setTimeout(() => createModal.show());
 
 		// return () => createModal.hide();
@@ -142,13 +201,13 @@
 		</div>
 	</div>
 	<div class="row mb-3">
-		<div class="col-6">
+		<div class="col-4">
 			<div class="d-flex justify-content-between align-items-center">
 				<p class="ps-2">
 					{$structData.length > 0 ? 'Showing' : 'No'}
 					{$structData.length} of {total} rows
 					<br />
-					(Page {page + 1})
+					(Page {page + 1} / {Math.ceil(total / limit) || 1})
 				</p>
 				<button type="button" class="btn" onclick={prev} disabled={page <= 0}>
 					<i class="material-icons">navigate_before</i>
@@ -175,11 +234,53 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-6">
+		<div class="col-4">
 			<div class="d-flex w-100 justify-content-end pe-2">
 				<button type="button" class="btn btn-primary" onclick={newItem}>
 					<i class="material-icons">add</i>
 					New
+				</button>
+			</div>
+		</div>
+		<div class="col-4">
+			<div class="d-flex w-100 justify-content-end pe-2">
+				<button type="button" class="btn btn-danger" onclick={clearTable}>
+					<i class="material-icons">delete_sweep</i>
+					Clear Table
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="row mb-3">
+		<div class="col">
+			<div class="input-group">
+				<div class="form-floating" style="width: 200px;">
+					<select name="floating-column" id="column" class="form-select" bind:value={column}>
+						<option value="" selected>All Columns</option>
+						{#each Object.entries(structType).filter(([k]) => !safes?.includes(k)) as [key, _value]}
+							<option value={key}>{capitalize(fromCamelCase(key))}</option>
+						{/each}
+					</select>
+					<label for="column"> Column </label>
+				</div>
+				<input
+					type="text"
+					class="form-control"
+					placeholder="Search..."
+					aria-label="Search"
+					bind:value={query}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							search(query, column);
+						}
+					}}
+				/>
+				<button
+					class="btn btn-outline-secondary"
+					type="button"
+					onclick={() => search(query, column)}
+				>
+					<i class="material-icons">search</i>
 				</button>
 			</div>
 		</div>
@@ -208,7 +309,7 @@
 					},
 					...Object.entries(structType)
 						.filter(([k]) => !safes?.includes(k))
-						.map(([key, value]) => ({
+						.map(([key, _value]) => ({
 							field: ('data.' + key) as any,
 							headerName: capitalize(fromCamelCase(key)),
 							valueGetter: ['created', 'updated'].includes(key)
@@ -281,6 +382,7 @@
 						}))
 				],
 				onCellContextMenu: (params) => {
+					// return;
 					contextmenu(params.event as PointerEvent, {
 						options: [
 							'Cell Actions',
@@ -301,6 +403,16 @@
 								icon: {
 									type: 'material-icons',
 									name: 'add'
+								}
+							},
+							{
+								name: 'Edit',
+								action: () => {
+									if (params.data) edit(params.data);
+								},
+								icon: {
+									type: 'material-icons',
+									name: 'edit'
 								}
 							},
 							{
@@ -449,6 +561,10 @@
 	{/snippet}
 
 	{#snippet buttons()}
+		<button type="button" class="btn btn-secondary" onclick={genUUID}>
+			<i class="material-icons">content_copy</i>
+			Generate Id
+		</button>
 		<button
 			type="button"
 			class="btn btn-secondary"
@@ -460,5 +576,110 @@
 			Cancel
 		</button>
 		<button class="btn btn-primary" onclick={create}> Create </button>
+	{/snippet}
+</Modal>
+
+<Modal bind:this={editModal} title="Edit Item" size="lg">
+	{#snippet body()}
+		<div class="container-fluid">
+			{#key editStage}
+				{#each Object.entries(structType).filter(([k]) => !globalCols.includes(k)) as [key, value]}
+					<div class="row mb-3">
+						{#if value === 'text'}
+							<div class="form-floating">
+								<input
+									type="text"
+									class="form-control"
+									id="create-{key}"
+									placeholder="Placeholder"
+									bind:value={editStage.data[key]}
+								/>
+								<label for="create-{key}" class="ms-3">
+									{capitalize(fromCamelCase(key))}
+								</label>
+							</div>
+						{:else if value === 'date'}
+							<div class="form-floating">
+								<Flatpickr
+									value={editStage.data[key] as Date}
+									onChange={(date) => {
+										(editStage.data as any)[key] = date;
+									}}
+									className="form-control"
+									options={{ dateFormat: 'Y-m-d' }}
+									id="create-{key}"
+								/>
+								<label for="create-{key}" class="ms-3">{capitalize(fromCamelCase(key))}</label>
+							</div>
+						{:else if value === 'number'}
+							<div class="form-floating">
+								<input
+									type="number"
+									class="form-control"
+									id="create-{key}"
+									placeholder="Placeholder"
+									bind:value={editStage.data[key]}
+								/>
+								<label for="create-{key}" class="ms-3">
+									{capitalize(fromCamelCase(key))}
+								</label>
+							</div>
+						{:else if value === 'boolean'}
+							<div class="form-label mb-2">{capitalize(fromCamelCase(key))}</div>
+							<div class="btn-group" role="group" aria-label="Boolean toggle">
+								<input
+									type="radio"
+									class="btn-check"
+									name="btnradio-{key}"
+									id="btnradio-{key}-true"
+									autocomplete="off"
+									checked={(editStage.data as any)[key] === true}
+									onchange={() => ((editStage.data as any)[key] = true)}
+								/>
+								<label class="btn btn-outline-primary" for="btnradio-{key}-true">True</label>
+
+								<input
+									type="radio"
+									class="btn-check"
+									name="btnradio-{key}"
+									id="btnradio-{key}-false"
+									autocomplete="off"
+									checked={(editStage.data as any)[key] === false}
+									onchange={() => ((editStage.data as any)[key] = false)}
+								/>
+								<label class="btn btn-outline-primary" for="btnradio-{key}-false">False</label>
+							</div>
+						{/if}
+					</div>
+				{/each}
+			{/key}
+		</div>
+	{/snippet}
+
+	{#snippet buttons()}
+		<button type="button" class="btn btn-secondary" onclick={genUUID}>
+			<i class="material-icons">content_copy</i>
+			Generate Id
+		</button>
+		<button
+			type="button"
+			class="btn btn-warning"
+			onclick={() => {
+				editStage.rollback();
+			}}
+		>
+			Restore
+		</button>
+		<button
+			type="button"
+			class="btn btn-secondary"
+			onclick={() => {
+				resetEdit();
+				editModal.hide();
+			}}
+		>
+			Cancel
+		</button>
+		<button class="btn btn-primary" onclick={saveEdit}> Save </button>
 	{/snippet}
 </Modal>

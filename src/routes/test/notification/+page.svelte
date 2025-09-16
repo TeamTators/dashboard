@@ -5,9 +5,10 @@
 		notify({
 			color: 'success',
 			message: 'Test Message',
-			title: 'Test title',
-			autoHide: 3000
+			title: 'Test title'
 		});
+
+	// onMount(() => addNotif());
 </script>
 
 <button type="button" class="btn btn-primary" onclick={addNotif}>Click me!</button>

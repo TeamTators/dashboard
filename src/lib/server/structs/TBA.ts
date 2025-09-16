@@ -2,11 +2,10 @@ import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct/back-end';
 import { attemptAsync, resolveAll, type Result } from 'ts-utils/check';
-import { z } from 'zod';
 import { Permissions } from './permissions';
+import { str } from '../utils/env';
 
-const { TBA_KEY } = process.env;
-if (!TBA_KEY) throw new Error('TBA_KEY not found in .env file');
+const TBA_KEY = str('TBA_KEY', true);
 
 export namespace TBA {
 	const BASE_URL = 'https://www.thebluealliance.com/api/v3';
@@ -123,7 +122,8 @@ export namespace TBA {
 		structs: [Requests],
 		permissions: ['*'],
 		group: 'TBA',
-		description: 'Create custom TBA responses'
+		description: 'Create custom TBA responses',
+		features: []
 	});
 	// Blank because it needs to be called customly
 	Permissions.createEntitlement({
@@ -131,7 +131,8 @@ export namespace TBA {
 		structs: [],
 		permissions: [],
 		group: 'TBA',
-		description: 'Manage TBA data'
+		description: 'Manage TBA data',
+		features: []
 	});
 }
 

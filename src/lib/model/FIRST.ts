@@ -1,5 +1,7 @@
 import { sse } from '../services/sse';
-import { Struct, type StructData, type DataArr } from 'drizzle-struct/front-end';
+import { type DataArr } from '$lib/services/struct/data-arr';
+import { Struct } from '$lib/services/struct';
+import { StructData } from '$lib/services/struct';
 import { browser } from '$app/environment';
 
 export namespace FIRST {
