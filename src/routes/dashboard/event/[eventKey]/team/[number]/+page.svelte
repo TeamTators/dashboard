@@ -20,6 +20,7 @@
 	import ScoutSummary from '$lib/components/robot-display/ScoutSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
+	import { Scouting } from '$lib/model/scouting.js';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -36,6 +37,9 @@
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 	const checksSum = $derived(data.checksSum);
+
+	let contributions = $state(Scouting.averageContributions([]));
+
 	$effect(() => nav(event.tba));
 
 	const summary = new Dashboard.Card({
@@ -497,6 +501,11 @@
 			pictures,
 			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
 		);
+
+		const contributionSub = scouting.subscribe((s) => {
+			contributions = Scouting.averageContributions(s);
+		});
+
 		return () => {
 			offScouting();
 			offComments();
@@ -505,6 +514,7 @@
 			offGroups();
 			offSections();
 			offPictures();
+			contributionSub();
 		};
 	});
 </script>
@@ -650,7 +660,23 @@
 			</Card>
 			<Card card={radarChart}>
 				{#snippet body()}
-					<RadarChart {team} {scouting} />
+					{#key contributions}
+						<RadarChart
+							{team}
+							data={{
+								'Level 1': contributions.cl1,
+								'Level 2': contributions.cl2,
+								'Level 3': contributions.cl3,
+								'Level 4': contributions.cl4,
+								Barge: contributions.brg,
+								Processor: contributions.prc,
+							}}
+							opts={{ 
+								max: 80,
+								min: 0
+							}}
+						/>
+					{/key}
 				{/snippet}
 			</Card>
 		{/key}
