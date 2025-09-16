@@ -18,6 +18,21 @@
 	let brg = $state(0);
 	let prc = $state(0);
 
+	const ranges = {
+	cl1: { min: 0, max: 5 },
+	cl2: { min: 0, max: 20 },
+	cl3: { min: 0, max: 50 },
+	cl4: { min: 0, max: 10 },
+	brg: { min: 0, max: 15 },
+	prc: { min: 0, max: 100 }
+};
+
+	const normalize = (value: number, key: keyof typeof ranges) => {
+		const { min, max } = ranges[key];
+		return ((value - min) / (max - min)) * 10; // scale into 0–10
+	}
+
+
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
 
@@ -66,7 +81,14 @@
 				brg = contribution.brg;
 				prc = contribution.prc;
 
-				chartInstance.data.datasets[0].data = [cl1, cl2, cl3, cl4, brg, prc];
+				chartInstance.data.datasets[0].data = [
+					normalize(cl1, 'cl1'),
+					normalize(cl2, 'cl2'),
+					normalize(cl3, 'cl3'),
+					normalize(cl4, 'cl4'),
+					normalize(brg, 'brg'),
+					normalize(prc, 'prc')
+				];
 				chartInstance.update();
 			}
 		});
