@@ -19,16 +19,19 @@
 		return Number(teamKey.substring(3));
 	};
 
-	const inSelected = (teamKey: string) => {
+	const inSelected = (teamKey: string, scouted: boolean) => {
 		for (const match of selectedMatches) {
 			if (
 				match.alliances.red.team_keys.includes(teamKey) ||
 				match.alliances.blue.team_keys.includes(teamKey)
 			) {
-				return true;
+				if (scouted) {
+					return 'highlight-muted';
+				}
+				return 'highlight';
 			}
 		}
-		return false;
+		return '';
 	};
 
 	const findMatch = (
@@ -77,7 +80,7 @@
 	<td
 		class:table-danger={color === 'red'}
 		class:table-primary={color === 'blue'}
-		class:highlight={inSelected(teamKey)}
+		class={inSelected(teamKey, !!findMatch(match, matchScouting.data, team(teamKey)))}
 	>
 		<a
 			href="/dashboard/event/{data.event.key}/team/{team(
@@ -171,6 +174,16 @@
 <style>
 	.highlight {
 		background-color: rgba(255, 255, 0, 0.5) !important;
+		/* --bs-table-color: rgba(255, 255, 0, 0.5) !important; */
+		--bs-table-bg: rgba(0,0,0,0) !important;
+		--bs-table-striped-bg: rgba(0, 0, 0, 0) !important;
+	}
+
+	.highlight-muted {
+		background-color: rgba(0, 255, 0, 0.3) !important;
+		/* --bs-table-color: rgba(255, 255, 0, 0.3) !important; */
+		--bs-table-bg: rgba(0, 0, 0, 0) !important;
+		--bs-table-striped-bg: rgba(0, 0, 0, 0) !important;
 	}
 
 	.has-2122 {
