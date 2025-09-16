@@ -5,7 +5,7 @@
 	import { onMount } from 'svelte';
 	import { z } from 'zod';
 	import { contextmenu } from '$lib/utils/contextmenu.js';
-	import { NumberEditorModule } from 'ag-grid-community';
+	import { NumberEditorModule, ScrollApiModule } from 'ag-grid-community';
 
 	const { data } = $props();
 
@@ -157,7 +157,7 @@
 			<Grid
 				bind:this={grid}
 				rowNumbers={true}
-				modules={[NumberEditorModule]}
+				modules={[NumberEditorModule, ScrollApiModule]}
 				opts={{
 					columnDefs: [
 						{
