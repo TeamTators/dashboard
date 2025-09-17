@@ -1,8 +1,11 @@
 <script lang="ts">
 	import nav from '$lib/imports/robot-display.js';
 	import { Scouting } from '$lib/model/scouting.js';
+	import { Subscription } from '$lib/model/subscription.js';
 	import { DataArr } from '$lib/services/struct/data-arr';
+	import { contextmenu } from '$lib/utils/contextmenu';
 	import { onMount } from 'svelte';
+	import { preventDefault } from 'svelte/legacy';
 	import { type TBAMatch } from 'tatorscout/tba';
 	import { dateTime } from 'ts-utils/clock';
 
@@ -114,14 +117,67 @@
 			<br />
 			Highlight teams in all of their matches from a specific match by selecting the checkbox next to
 			it.
+			<br>
+			Right click on a match to subscribe to notifications for that match.
 		</p>
+	</div>
+	<div class="row mb-3">
+		<button type="button" class="btn btn-primary" onclick={() => Subscription.subscribe('schedule_updated', event.key)}>
+			<i class="material-icons">event</i>
+			Subscribe to Schedule Updates
+		</button>
 	</div>
 	<div class="row">
 		<div class="table-responsive">
 			<table class="table table-striped">
 				<tbody>
 					{#each matches as match}
-						<tr class:has-2122={has2122(match)}>
+						<tr class:has-2122={has2122(match)}
+							oncontextmenu={(e) => {
+								e.preventDefault();
+								contextmenu(e, {
+									options: [
+										{
+											name: 'Subscribe to Score',
+											icon: {
+												type: 'material-icons',
+												name: 'score'
+											},
+											action: () => {
+												Subscription.subscribe('match_score', 
+													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`,
+												);
+											},
+										},
+										{
+											name: 'Subscribe to Match Start',
+											icon: {
+												type: 'material-icons',
+												name: 'play_circle',
+											},
+											action: () => {
+												Subscription.subscribe('match_start', 
+													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`,
+												);
+											},
+										},
+										{
+											name: 'Subscribe to Match Video',
+											icon: {
+												type: 'material-icons',
+												name: 'videocam',
+											},
+											action: () => {
+												Subscription.subscribe('match_video', 
+													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`,
+												);
+											},
+										}
+									],
+									width: '200px'
+								})
+							}}
+						>
 							<td>
 								<input
 									type="checkbox"
