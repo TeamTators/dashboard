@@ -9,7 +9,7 @@
 		opts?: {
 			max?: number;
 			min?: number;
-		}
+		};
 	}
 
 	const { team, data, opts }: Props = $props();

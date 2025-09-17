@@ -11,5 +11,7 @@ export type Entitlement =
 	| 'manage-pit-scouting'
 	| 'manage-scouting'
 	| 'view-scouting'
+	| 'manage-roles'
 	| 'view-pit-scouting';
 export type Group = 'Roles' | 'Potatoes' | 'Strategy' | 'TBA' | 'Checklists' | 'FIRST' | 'Scouting';
+export type Features = string;

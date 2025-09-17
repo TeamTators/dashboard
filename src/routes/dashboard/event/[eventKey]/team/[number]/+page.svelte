@@ -669,9 +669,9 @@
 								'Level 3': contributions.cl3,
 								'Level 4': contributions.cl4,
 								Barge: contributions.brg,
-								Processor: contributions.prc,
+								Processor: contributions.prc
 							}}
-							opts={{ 
+							opts={{
 								max: 80,
 								min: 0
 							}}
