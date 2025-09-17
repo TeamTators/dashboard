@@ -456,6 +456,8 @@
 			],
 			id: 'robot-display'
 		});
+
+		contributions = Scouting.averageContributions(scouting.data);
 	});
 
 	let scroller: HTMLDivElement;
