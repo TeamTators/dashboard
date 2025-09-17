@@ -672,7 +672,7 @@
 								Processor: contributions.prc
 							}}
 							opts={{
-								max: 80,
+								max: 20,
 								min: 0
 							}}
 						/>
