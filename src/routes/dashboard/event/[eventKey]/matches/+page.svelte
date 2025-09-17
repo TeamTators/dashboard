@@ -106,12 +106,14 @@
 		</h1>
 		<p class="text-muted">
 			Matches with team 2122 are outlined in purple.
-			<br>
+			<br />
 			Click on a team number to view the match scouting page for that team in that match.
-			<br>
-			Teams in a red bubble have not been scouted yet for that match, while teams in a green bubble have been scouted.
-			<br>
-			Highlight teams in all of their matches from a specific match by selecting the checkbox next to it.
+			<br />
+			Teams in a red bubble have not been scouted yet for that match, while teams in a green bubble have
+			been scouted.
+			<br />
+			Highlight teams in all of their matches from a specific match by selecting the checkbox next to
+			it.
 		</p>
 	</div>
 	<div class="row">
@@ -132,8 +134,7 @@
 												(m, i, arr) =>
 													arr.findIndex(
 														(x) =>
-															x.match_number === m.match_number &&
-															x.comp_level === m.comp_level
+															x.match_number === m.match_number && x.comp_level === m.comp_level
 													) === i
 											);
 										} else {
@@ -175,7 +176,7 @@
 	.highlight {
 		background-color: rgba(255, 255, 0, 0.5) !important;
 		/* --bs-table-color: rgba(255, 255, 0, 0.5) !important; */
-		--bs-table-bg: rgba(0,0,0,0) !important;
+		--bs-table-bg: rgba(0, 0, 0, 0) !important;
 		--bs-table-striped-bg: rgba(0, 0, 0, 0) !important;
 	}
 
