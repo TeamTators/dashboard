@@ -1,5 +1,5 @@
 import { Subscription } from '$lib/server/structs/subscription.js';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
 export const load = async (event) => {
@@ -50,9 +50,9 @@ export const actions = {
 
         await sub.delete().unwrap()
 
-        return {
-            success: true,
-            message: 'Successfully unsubscribed',
-        };
+        throw redirect(
+            ServerCode.seeOther,
+            '/account/tba-subscription/unsubscribed',
+        )
     }
 };

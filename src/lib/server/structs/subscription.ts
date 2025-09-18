@@ -45,6 +45,24 @@ export namespace Subscription {
                 }
             }
 
+            const exists = await DB.select()
+                .from(WebhookSubscription.table)
+                .where(
+                    and(
+                        eq(WebhookSubscription.table.accountId, event.locals.account.id),
+                        eq(WebhookSubscription.table.type, data.type),
+                        eq(WebhookSubscription.table.args, data.args),
+                    )
+                )
+                .limit(1);
+
+            if (exists.length > 0) {
+                return {
+                    success: false,
+                    message: 'You already have a subscription for this exact trigger',
+                }
+            }
+
             const res = await WebhookSubscription.new({
                 accountId: event.locals.account.id,
                 type: data.type,
@@ -196,7 +214,7 @@ export namespace Subscription {
 
             service.on('upcoming_match', async (data) => {
                 if (data.data.team_keys.includes('frc2122')) {
-                    const subs = await getSubscriptions('upcoming_match', data.data.event_key);
+                    const subs = await getSubscriptions('tator_matches', data.data.event_key);
                     if (subs.isOk()) {
                         await Promise.all(subs.value.map(async (sub) => {
                             const account = await Account.Account.fromId(sub.data.accountId);

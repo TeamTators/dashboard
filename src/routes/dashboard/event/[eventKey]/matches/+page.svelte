@@ -5,9 +5,9 @@
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { onMount } from 'svelte';
-	import { preventDefault } from 'svelte/legacy';
 	import { type TBAMatch } from 'tatorscout/tba';
 	import { dateTime } from 'ts-utils/clock';
+	import { alert } from '$lib/utils/prompts.js';
 
 	const { data } = $props();
 	const matches = $derived(data.matches);
@@ -122,7 +122,16 @@
 		</p>
 	</div>
 	<div class="row mb-3">
-		<button type="button" class="btn btn-primary" onclick={() => Subscription.subscribe('schedule_updated', event.key)}>
+		<button type="button" class="btn btn-primary" onclick={async () => {
+			const res = await Subscription.subscribe('schedule_updated', event.key);
+			if (res.isErr()) {
+				alert('Failed to subscribe to schedule updates: ' + res.error.message);
+			} else {
+				if (!res.value.success) {
+					alert('Failed to subscribe to schedule updates: ' + res.value.message || 'Unknown error');
+				}
+			}
+		}}>
 			<i class="material-icons">event</i>
 			Subscribe to Schedule Updates
 		</button>

@@ -13,6 +13,9 @@
     ));
 </script>
 
+<svelte:head>
+    <title>My Subscriptions - {$account.username}</title>
+</svelte:head>
 
 <div class="container">
     <div class="row mb-3">
@@ -83,7 +86,7 @@
                 },
                 preventDefaultOnContextMenu: true,
             }}
-            height="200px"
+            height="800px"
             rowNumbers={true}
         />
     </div>
