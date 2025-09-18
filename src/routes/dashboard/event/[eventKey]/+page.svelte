@@ -22,6 +22,14 @@
 			id: 'event-dashboard'
 		})
 	);
+
+	const eventSummaries: ({
+		component: EventSummary | undefined;
+	})[] = $derived(summaries.map((s) => s.labels)
+	.flat() // now the length is number of rows * number of labels per row, hence we can index it with k * i
+	.map(() => ({
+		component: undefined as EventSummary | undefined
+	})));
 </script>
 
 <DB {dashboard}>
@@ -82,10 +90,21 @@
 						{/if}
 						<h2 class="text-primary">{row.title}</h2>
 						{#each row.labels as label, i}
-							<h5>{label}</h5>
+							{@const copy = () => {
+								if (eventSummaries[k].component) {
+									eventSummaries[k].component.copy(true);
+								}
+							}}
+							<div class="d-flex align-items-center mb-1 justify-content-between">
+								<h5>{label}</h5>
+								<button type="button" class="btn btn-sm btn-secondary ms-2" onclick={copy}>
+									Copy to Clipboard
+								</button>
+							</div>
 							<div class="scroll-x mb-1">
 								<div class="chart-container">
 									<EventSummary
+										bind:this={eventSummaries[k * i].component}
 										labels={Object.entries(row.data)
 											.sort((a, b) => {
 												const A = a[1][i];
