@@ -9,7 +9,9 @@
 		type ICellRendererParams,
 		type RichCellEditorParams,
 		type ValueGetterParams,
-		type ValueSetterParams
+		type ValueSetterParams,
+		CustomEditorModule,
+		SelectEditorModule
 	} from 'ag-grid-community';
 	import { match } from 'ts-utils/match';
 	import { alert, confirm } from '$lib/utils/prompts.js';
@@ -198,6 +200,7 @@
 				<Grid
 					data={updateMatches}
 					rowNumbers={true}
+					modules={[CustomEditorModule, SelectEditorModule]}
 					opts={{
 						columnDefs: [
 							{
