@@ -26,7 +26,7 @@
 		'"Maintain a healthy fear of what can go wrong" - Detrich R.',
 		'"Not all who wander are lost, but this robot is awfully close" - ',
 		'"That sounds a little evil" ... "That sounds like winning" - Raygen R.',
-		'"Bugs are just features in camouflage.',
+		'"Bugs are just features in camouflage."',
 		'import { coffee } from \'life\';',
 		'There are 10 types of people in the world: those who understand binary, and those who don\'t.',
 		'Somewhere, someone just pushed straight to main',
