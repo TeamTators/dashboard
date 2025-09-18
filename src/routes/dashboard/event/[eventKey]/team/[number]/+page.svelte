@@ -520,7 +520,6 @@
 		};
 	});
 
-
 	let progressChart: Progress | undefined = $state(undefined);
 	let teamEventStatsChart: TeamEventStats | undefined = $state(undefined);
 	let averageContributionsPieChart: AverageContributionsPie | undefined = $state(undefined);
@@ -638,19 +637,34 @@
 			</Card>
 			<Card card={progress}>
 				{#snippet body()}
-					<button type="button" class="btn btn-secondary copy-btn" onclick={() => {
-						progressChart?.copy(true);
-					}}>
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							progressChart?.copy(true);
+						}}
+					>
 						<i class="material-icons">copy_all</i>
 					</button>
-					<Progress bind:this={progressChart} {team} {event} {scouting} {matches} defaultView={'points'} />
+					<Progress
+						bind:this={progressChart}
+						{team}
+						{event}
+						{scouting}
+						{matches}
+						defaultView={'points'}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={eventStats}>
 				{#snippet body()}
-					<button type="button" class="btn btn-secondary copy-btn" onclick={() => {
-						teamEventStatsChart?.copy(true);
-					}}>
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							teamEventStatsChart?.copy(true);
+						}}
+					>
 						<i class="material-icons">copy_all</i>
 					</button>
 					<TeamEventStats bind:this={teamEventStatsChart} {team} {event} {scouting} {matches} />
@@ -663,12 +677,22 @@
 			</Card>
 			<Card card={averageContributionsPie}>
 				{#snippet body()}
-					<button type="button" class="btn btn-secondary copy-btn" onclick={() => {
-						averageContributionsPieChart?.copy(true);
-					}}>
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							averageContributionsPieChart?.copy(true);
+						}}
+					>
 						<i class="material-icons">copy_all</i>
 					</button>
-					<AverageContributionsPie bind:this={averageContributionsPieChart} {team} {event} {scouting} {matches} />
+					<AverageContributionsPie
+						bind:this={averageContributionsPieChart}
+						{team}
+						{event}
+						{scouting}
+						{matches}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={scoutSummary}>
@@ -684,9 +708,13 @@
 			<Card card={radarChart}>
 				{#snippet body()}
 					{#key contributions}
-						<button type="button" class="btn btn-secondary copy-btn" onclick={() => {
-							radarChartComp?.copy(true);
-						}}>
+						<button
+							type="button"
+							class="btn btn-secondary copy-btn"
+							onclick={() => {
+								radarChartComp?.copy(true);
+							}}
+						>
 							<i class="material-icons">copy_all</i>
 						</button>
 						<RadarChart
