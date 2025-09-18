@@ -9,7 +9,18 @@ import { and, eq } from 'drizzle-orm';
 import { type RequestEvent } from '@sveltejs/kit';
 import { teamsFromMatch } from 'tatorscout/tba';
 
-// Memoization utility for caching expensive function results
+/**
+ * Memoization utility for caching expensive function results
+ * 
+ * This utility enables significant performance optimizations by:
+ * - Caching database query results (pit scouting, team scouting)
+ * - Caching complex score calculations that are reused across multiple columns
+ * - Caching trace processing and analysis results
+ * - Reducing redundant API calls (team status, rankings)
+ * 
+ * The cache is maintained per function call with intelligent key generation
+ * to ensure correct cache hits while avoiding memory leaks.
+ */
 function memoize<TArgs extends unknown[], TReturn>(
 	fn: (...args: TArgs) => TReturn,
 	keyGenerator?: (...args: TArgs) => string
@@ -220,6 +231,11 @@ export const summarize = async (eventKey: string) => {
 			);
 		}, (team: Team) => `secondsNotMoving_${team.tba.team_number}`);
 
+		// Memoize team status calls to reduce API calls
+		const getTeamStatus = memoize(async (team: Team) => {
+			return (await team.getStatus()).unwrap()?.qual?.ranking.rank;
+		}, (team: Team) => `teamStatus_${team.tba.team_number}`);
+
 		const average = (array: number[]): number => {
 			if (array.length === 0) return 0;
 			return array.reduce((a, b) => a + b, 0) / array.length;
@@ -230,7 +246,7 @@ export const summarize = async (eventKey: string) => {
 		const t = new Table(eventKey);
 		t.column('Team Number', (t) => t.tba.team_number);
 		t.column('Team Name', (t) => t.tba.nickname || 'unknown');
-		t.column('Rank', (t) => t.getStatus().then((s) => s.unwrap()?.qual?.ranking.rank));
+		t.column('Rank', (t) => getTeamStatus(t));
 		t.column('Average velocity', (t) => getAverageVelocity(t));
 		t.column('Checks', (t) => getChecks(t));
 		t.column('Weight', async (t) => {
@@ -533,6 +549,8 @@ export class Table {
 
 	serialize() {
 		// TODO: Use multi-threading instead of Promise.all
+		// Note: The memoization optimizations in column functions will automatically
+		// reduce redundant calls when this method processes teams in parallel
 		return attemptAsync(async () => {
 			const event = (await Event.getEvent(this.eventKey)).unwrap();
 			const teams = (await event.getTeams()).unwrap();
