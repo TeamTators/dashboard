@@ -90,14 +90,13 @@
 						{/if}
 						<h2 class="text-primary">{row.title}</h2>
 						{#each row.labels as label, i}
-							{@const copy = () => {
+							<div class="d-flex align-items-center mb-1 justify-content-between">
+								<h5>{label}</h5>
+								<button type="button" class="btn btn-sm btn-secondary ms-2" onclick={() => {
 								if (eventSummaries[k].component) {
 									eventSummaries[k].component.copy(true);
 								}
-							}}
-							<div class="d-flex align-items-center mb-1 justify-content-between">
-								<h5>{label}</h5>
-								<button type="button" class="btn btn-sm btn-secondary ms-2" onclick={copy}>
+							}}>
 									Copy to Clipboard
 								</button>
 							</div>
