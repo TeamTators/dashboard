@@ -49,13 +49,14 @@
 					width:	min-content;
 				"
 				>
-					<li><a class="dropdown-item" href="/account/tba-subscription">Manage Subscriptions</a></li>
+					<li>
+						<a class="dropdown-item" href="/account/tba-subscription">Manage Subscriptions</a>
+					</li>
 					{#if $self.data.username === 'guest'}
 						<li><a class="dropdown-item" href="/account/sign-in">Sign In</a></li>
 					{:else}
 						<li><a class="dropdown-item" href="/account/sign-out">Sign Out</a></li>
 					{/if}
-
 				</ul>
 			</div>
 			<button

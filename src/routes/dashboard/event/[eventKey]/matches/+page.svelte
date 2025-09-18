@@ -117,21 +117,27 @@
 			<br />
 			Highlight teams in all of their matches from a specific match by selecting the checkbox next to
 			it.
-			<br>
+			<br />
 			Right click on a match to subscribe to notifications for that match.
 		</p>
 	</div>
 	<div class="row mb-3">
-		<button type="button" class="btn btn-primary" onclick={async () => {
-			const res = await Subscription.subscribe('schedule_updated', event.key);
-			if (res.isErr()) {
-				alert('Failed to subscribe to schedule updates: ' + res.error.message);
-			} else {
-				if (!res.value.success) {
-					alert('Failed to subscribe to schedule updates: ' + res.value.message || 'Unknown error');
+		<button
+			type="button"
+			class="btn btn-primary"
+			onclick={async () => {
+				const res = await Subscription.subscribe('schedule_updated', event.key);
+				if (res.isErr()) {
+					alert('Failed to subscribe to schedule updates: ' + res.error.message);
+				} else {
+					if (!res.value.success) {
+						alert(
+							'Failed to subscribe to schedule updates: ' + res.value.message || 'Unknown error'
+						);
+					}
 				}
-			}
-		}}>
+			}}
+		>
 			<i class="material-icons">event</i>
 			Subscribe to Schedule Updates
 		</button>
@@ -141,7 +147,8 @@
 			<table class="table table-striped">
 				<tbody>
 					{#each matches as match}
-						<tr class:has-2122={has2122(match)}
+						<tr
+							class:has-2122={has2122(match)}
 							oncontextmenu={(e) => {
 								e.preventDefault();
 								contextmenu(e, {
@@ -153,38 +160,41 @@
 												name: 'score'
 											},
 											action: () => {
-												Subscription.subscribe('match_score', 
-													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`,
+												Subscription.subscribe(
+													'match_score',
+													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`
 												);
-											},
+											}
 										},
 										{
 											name: 'Subscribe to Match Start',
 											icon: {
 												type: 'material-icons',
-												name: 'play_circle',
+												name: 'play_circle'
 											},
 											action: () => {
-												Subscription.subscribe('match_start', 
-													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`,
+												Subscription.subscribe(
+													'match_start',
+													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`
 												);
-											},
+											}
 										},
 										{
 											name: 'Subscribe to Match Video',
 											icon: {
 												type: 'material-icons',
-												name: 'videocam',
+												name: 'videocam'
 											},
 											action: () => {
-												Subscription.subscribe('match_video', 
-													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`,
+												Subscription.subscribe(
+													'match_video',
+													`${event.key}-${match.comp_level}-${match.match_number}-${match.set_number}`
 												);
-											},
+											}
 										}
 									],
 									width: '200px'
-								})
+								});
 							}}
 						>
 							<td>
