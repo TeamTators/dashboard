@@ -5,7 +5,7 @@
 	import { confirm, notify } from '$lib/utils/prompts';
 	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
-	import { NumberFilterModule, TextFilterModule } from 'ag-grid-community'; 
+	import { NumberFilterModule, TextFilterModule } from 'ag-grid-community';
 
 	interface Props {
 		team: number;
