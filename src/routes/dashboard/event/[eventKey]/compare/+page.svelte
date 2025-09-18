@@ -7,11 +7,17 @@
 	import { onMount } from 'svelte';
 	import { Dashboard } from '$lib/model/dashboard.js';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
+	import Chart from 'chart.js/auto';
+	import { Scouting } from '$lib/model/scouting';
+	import { writable, get } from 'svelte/store';
+	import { TBATeam } from '$lib/utils/tba.js';
+	import { Color } from 'colors/color';
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = $derived(data.selectedTeams);
+	const selectedTeams = writable(data.selectedTeams);
 	const teams = $derived(data.teams);
+	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
 	const matches = $derived(data.matches);
 
@@ -20,6 +26,36 @@
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
 	let view: 'progress' | 'stats' = $state('progress');
+
+	let chartCanvas: HTMLCanvasElement;
+	let chartInstance: Chart;
+
+	const colors: {
+		border: string;
+		background: string;
+	}[] = [
+		new Color(255, 99, 132),
+		new Color(54, 162, 235),
+		new Color(75, 192, 192),
+		new Color(153, 102, 255),
+		new Color(255, 159, 64),
+		new Color(199, 199, 199)
+	].map((c) => ({
+		border: c.clone().setAlpha(1).toString('rgba'),
+		background: c.clone().setAlpha(0.2).toString('rgba')
+	}));
+
+	const sort = (a: TBATeam, b: TBATeam): number => a.tba.team_number - b.tba.team_number;
+
+	const dataset: {
+		label: string;
+		data: number[];
+		backgroundColor: string;
+		borderColor: string;
+		borderWidth: number;
+		pointBackgroundColor: string;
+		pointBorderColor: string;
+	}[] = $state([]);
 
 	$effect(() => {
 		if (!view) return; // On view set
@@ -36,26 +72,93 @@
 	onMount(() => {
 		const search = new URLSearchParams(location.search);
 		view = (search.get('view') as 'progress' | 'stats') || 'progress';
+
+		chartInstance = new Chart(chartCanvas, {
+			type: 'radar',
+			data: {
+				labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Barge', 'Processor'],
+				datasets: dataset
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						position: 'right'
+					}
+				},
+				scales: {
+					r: {
+						min: 0,
+						max: 10,
+						grid: {
+							color: 'rgba(60, 60, 60, 1)'
+						},
+						angleLines: {
+							color: 'rgba(60, 60, 60, 1)'
+						},
+						ticks: {
+							color: 'rgba(102, 102, 102, 1)',
+							backdropColor: 'rgba(0, 0, 0, 0)'
+						}
+					}
+				}
+			}
+		});
+
+		const unsub = selectedTeams.subscribe((st) =>
+			st.map((team, i) => {
+				const color = colors[i % colors.length];
+				const scoutingData = teamScouting[i];
+				if (!scoutingData) {
+					return {
+						label: String(team.tba.team_number),
+						data: [0, 0, 0, 0, 0, 0],
+						backgroundColor: color.background,
+						borderColor: color.border,
+						borderWidth: 1,
+						pointBackgroundColor: color.background,
+						pointBorderColor: color.border
+					};
+				}
+				const contribution = Scouting.averageContributions(scoutingData.data) || {
+					cl1: 0,
+					cl2: 0,
+					cl3: 0,
+					cl4: 0,
+					brg: 0,
+					prc: 0
+				};
+
+				return {
+					label: String(team.tba.team_number),
+					data: [
+						contribution.cl1,
+						contribution.cl2,
+						contribution.cl3,
+						contribution.cl4,
+						contribution.brg,
+						contribution.prc
+					],
+					backgroundColor: color.background,
+					borderColor: color.border,
+					borderWidth: 1,
+					pointBackgroundColor: color.background,
+					pointBorderColor: color.border
+				};
+			})
+		);
+
+		return () => {
+			unsub();
+			chartInstance.destroy();
+		};
 	});
 
 	const dashboard = $derived(
 		new Dashboard.Dashboard({
 			name: event.tba.name + ' Team Comparison',
-			cards: teams.map(
-				(t) =>
-					new Dashboard.Card({
-						name: t.tba.team_number + ' | ' + t.tba.nickname,
-						id: t.tba.team_number.toString(),
-						icon: {
-							type: 'material-icons',
-							name: 'android'
-						},
-						size: {
-							width: 1,
-							height: 1
-						}
-					})
-			),
+			cards: [],
 			id: 'event-dashboard'
 		})
 	);
@@ -72,21 +175,25 @@
 							class="btn-check"
 							id="btn-check-{team.tba.team_number}"
 							autocomplete="off"
-							checked={!!selectedTeams.find((t) => t.tba.team_number === team.tba.team_number)}
+							checked={!!$selectedTeams.find((t) => t.tba.team_number === team.tba.team_number)}
 							onchange={(event) => {
 								if (event.currentTarget.checked) {
-									selectedTeams.push(team);
+									selectedTeams.set([...get(selectedTeams), team].sort(sort));
 								} else {
-									selectedTeams.splice(
-										selectedTeams.findIndex((t) => t.tba.team_number === team.tba.team_number),
-										1
+									selectedTeams.set(
+										get(selectedTeams)
+											.filter((t) => t !== team)
+											.sort(sort)
 									);
 								}
 
-								selectedTeams.sort((a, b) => a.tba.team_number - b.tba.team_number);
-
 								const search = new URLSearchParams(location.search);
-								search.set('teams', selectedTeams.map((t) => t.tba.team_number).join(','));
+								search.set(
+									'teams',
+									get(selectedTeams)
+										.map((t) => t.tba.team_number)
+										.join(',')
+								);
 								goto(`${location.pathname}?${search.toString()}`);
 							}}
 						/>
@@ -134,13 +241,27 @@
 					</div>
 				</div>
 				<div class="row mb-3">
-					{#key selectedTeams}
-						{#each selectedTeams as team, i}
-							<div class="col-md-4 mb-3">
-								<div class="card layer-2">
-									<div class="card-body">
-										<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
-										<div style="height: 300px;">
+					<div class="col-md-4 mb-3">
+						<div class="card layer-2">
+							<div class="card-body">
+								<h5 class="card-title">Radar Chart</h5>
+								<div style="height: 300px;">
+									<canvas bind:this={chartCanvas} style="height: 400px;"></canvas>
+									<!-- <RadarChart
+										{teamScouting} 
+										{scouting}
+										/>-->
+								</div>
+							</div>
+						</div>
+					</div>
+					{#each $selectedTeams as team, i}
+						<div class="col-md-4 mb-3">
+							<div class="card layer-2">
+								<div class="card-body">
+									<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
+									<div style="height: 300px;">
+										{#if teamScouting[i]}
 											{#if view === 'progress'}
 												<Progress
 													{team}
@@ -158,12 +279,14 @@
 													{matches}
 												/>
 											{/if}
-										</div>
+										{:else}
+											No data found :(
+										{/if}
 									</div>
 								</div>
 							</div>
-						{/each}
-					{/key}
+						</div>
+					{/each}
 				</div>
 			</div>
 		</div>

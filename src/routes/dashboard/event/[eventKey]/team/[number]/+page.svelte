@@ -19,6 +19,8 @@
 	import { listen } from '$lib/utils/struct-listener';
 	import ScoutSummary from '$lib/components/robot-display/ScoutSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
+	import RadarChart from '$lib/components/charts/RadarChart.svelte';
+	import { Scouting } from '$lib/model/scouting.js';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -35,6 +37,9 @@
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 	const checksSum = $derived(data.checksSum);
+
+	let contributions = $state(Scouting.averageContributions([]));
+
 	$effect(() => nav(event.tba));
 
 	const summary = new Dashboard.Card({
@@ -351,9 +356,37 @@
 		name: 'Checks Summary',
 		icon: {
 			type: 'material-icons',
-			name: 'summarize'
+			name: 'check'
 		},
 		id: 'checks_summary',
+		size: {
+			width: 4,
+			height: 1,
+			lg: {
+				width: 6,
+				height: 1
+			},
+			md: {
+				width: 6,
+				height: 1
+			},
+			sm: {
+				width: 6,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+	const radarChart = new Dashboard.Card({
+		name: 'Radar Chart',
+		icon: {
+			type: 'material-icons',
+			name: 'hexagon'
+		},
+		id: 'radar_chart',
 		size: {
 			width: 4,
 			height: 1,
@@ -399,7 +432,8 @@
 				progress,
 				eventStats,
 				scoutSummary,
-				checksSummary
+				checksSummary,
+				radarChart
 			],
 			id: 'robot-display'
 		})
@@ -417,10 +451,13 @@
 				matchViewer,
 				progress,
 				eventStats,
-				checksSummary
+				checksSummary,
+				radarChart
 			],
 			id: 'robot-display'
 		});
+
+		contributions = Scouting.averageContributions(scouting.data);
 	});
 
 	let scroller: HTMLDivElement;
@@ -466,6 +503,11 @@
 			pictures,
 			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
 		);
+
+		const contributionSub = scouting.subscribe((s) => {
+			contributions = Scouting.averageContributions(s);
+		});
+
 		return () => {
 			offScouting();
 			offComments();
@@ -474,6 +516,7 @@
 			offGroups();
 			offSections();
 			offPictures();
+			contributionSub();
 		};
 	});
 </script>
@@ -615,6 +658,27 @@
 			<Card card={checksSummary}>
 				{#snippet body()}
 					<ChecksSummary checks={checksSum} />
+				{/snippet}
+			</Card>
+			<Card card={radarChart}>
+				{#snippet body()}
+					{#key contributions}
+						<RadarChart
+							{team}
+							data={{
+								'Level 1': contributions.cl1,
+								'Level 2': contributions.cl2,
+								'Level 3': contributions.cl3,
+								'Level 4': contributions.cl4,
+								Barge: contributions.brg,
+								Processor: contributions.prc
+							}}
+							opts={{
+								max: 10,
+								min: 0
+							}}
+						/>
+					{/key}
 				{/snippet}
 			</Card>
 		{/key}
