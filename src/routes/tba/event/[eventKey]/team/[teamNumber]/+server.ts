@@ -17,8 +17,6 @@ export const POST = async (event) => {
 
 	const data = await event.request.json();
 
-	console.log(data);
-
 	const parsed = TeamSchema.safeParse(data);
 	if (!parsed.success) {
 		terminal.error('Invalid team data:', parsed.error);
@@ -52,7 +50,7 @@ export const POST = async (event) => {
 		);
 	}
 
-    const res = await e.value.saveCustomTeam(parsed.data);
+	const res = await e.value.saveCustomTeam(parsed.data);
 
 	if (res.isOk()) {
 		return json({

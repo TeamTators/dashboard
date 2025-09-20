@@ -216,7 +216,6 @@ export class Event {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set teams for a non-custom event');
 
-
 			teams = Array.from(new Set(teams)).sort((a, b) => a - b);
 
 			const found = (
@@ -240,24 +239,27 @@ export class Event {
 				type: 'all'
 			}).unwrap();
 
-			await Promise.all(currentTeams.map(c => c.delete().unwrap()));
+			await Promise.all(currentTeams.map((c) => c.delete().unwrap()));
 
 			// merge
 			const currentAndFound = [
-				...currentTeams.map(t => TeamSchema.parse(JSON.parse(t.data.data))),
-				...found,
+				...currentTeams.map((t) => TeamSchema.parse(JSON.parse(t.data.data))),
+				...found
 			]
-			// filter duplicates
-			.filter((t, i, a) => a.findIndex(u => u.team_number === t.team_number) === i)
-			// It is possible some are custom teams, so we need to handle that case by keeping all previous ones, merging, then filtering all those that aren't in teams
-			.filter(t => teams.includes(t.team_number));
+				// filter duplicates
+				.filter((t, i, a) => a.findIndex((u) => u.team_number === t.team_number) === i)
+				// It is possible some are custom teams, so we need to handle that case by keeping all previous ones, merging, then filtering all those that aren't in teams
+				.filter((t) => teams.includes(t.team_number));
 
-
-			await Promise.all(currentAndFound.map(t => TBA.Teams.new({
-				eventKey: this.tba.key,
-				teamKey: `frc${t.team_number}`,
-				data: JSON.stringify(t),
-			})));
+			await Promise.all(
+				currentAndFound.map((t) =>
+					TBA.Teams.new({
+						eventKey: this.tba.key,
+						teamKey: `frc${t.team_number}`,
+						data: JSON.stringify(t)
+					})
+				)
+			);
 		});
 	}
 
@@ -289,27 +291,28 @@ export class Event {
 
 	saveCustomTeam(team: z.infer<typeof TeamSchema>) {
 		return attemptAsync(async () => {
-			const current = await DB
-				.select()
+			const current = await DB.select()
 				.from(TBA.Teams.table)
 				.where(
 					and(
 						eq(TBA.Teams.table.eventKey, this.tba.key),
-						eq(TBA.Teams.table.teamKey, `frc${team.team_number}`),
+						eq(TBA.Teams.table.teamKey, `frc${team.team_number}`)
 					)
 				)
 				.limit(1);
 
 			if (current.length) {
 				const [c] = current;
-				return TBA.Teams.Generator(c).update({
-					data: JSON.stringify(team),
-				}).unwrap();
+				return TBA.Teams.Generator(c)
+					.update({
+						data: JSON.stringify(team)
+					})
+					.unwrap();
 			} else {
 				return TBA.Teams.new({
 					eventKey: this.tba.key,
 					teamKey: `frc${team.team_number}`,
-					data: JSON.stringify(team),
+					data: JSON.stringify(team)
 				}).unwrap();
 			}
 		});

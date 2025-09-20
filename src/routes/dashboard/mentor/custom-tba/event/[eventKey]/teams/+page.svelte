@@ -5,7 +5,7 @@
 	import { onMount } from 'svelte';
 	import { z } from 'zod';
 	import { contextmenu } from '$lib/utils/contextmenu.js';
-	import { NumberEditorModule, ScrollApiModule, TextEditorModule  } from 'ag-grid-community';
+	import { NumberEditorModule, ScrollApiModule, TextEditorModule } from 'ag-grid-community';
 
 	const { data } = $props();
 
@@ -157,7 +157,7 @@
 			<Grid
 				bind:this={grid}
 				rowNumbers={true}
-				modules={[NumberEditorModule, ScrollApiModule, TextEditorModule ]}
+				modules={[NumberEditorModule, ScrollApiModule, TextEditorModule]}
 				opts={{
 					columnDefs: [
 						{
@@ -171,37 +171,41 @@
 								} catch (error) {
 									console.error('Unable to find team:', error);
 								}
-								updateTeams.update(t => t);
+								updateTeams.update((t) => t);
 								save();
-							},
+							}
 						},
 						{
 							// field: 'tba.nickname',
 							headerName: 'Team Name',
 							editable: true,
 							cellEditor: 'agTextCellEditor',
-							valueSetter: async (e) => {
+							valueSetter: (e) => {
 								const name = e.newValue;
-								console.log(e);
-								const res = await event.saveCustomTeam(
-									{
+								event
+									.saveCustomTeam({
 										key: 'frc' + e.data.number,
 										team_number: e.data.number,
 										nickname: name,
-										name,
-									}
-								);
-								if (res.isOk() && res.value.success) {
-									e.data.tba = {
-										...e.data.tba,
-										nickname: name,
-										name: name
-									};
-									updateTeams.update(t => t);
-								}
+										name
+									})
+									.then((res) => {
+										if (res.isOk() && res.value.success) {
+											e.data.tba = {
+												nickname: name,
+												name: name,
+												team_number: e.data.number,
+												key: 'frc' + e.data.number
+											};
+											updateTeams.update((t) => t);
+										}
+									})
+									.catch(console.error);
+
+								return true;
 							},
 							valueGetter: (e) => {
-								return e.data.tba?.nickname || '';
+								return e.data?.tba?.nickname || '';
 							},
 							// scale the rest of the way
 							flex: 1
