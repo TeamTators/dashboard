@@ -44,7 +44,7 @@ jobs:
           PORT=3000
           SESSION_DURATION=10000000
           DB_HOST=db
-          EMAIL_MICROSERVICE_NAME=my_email_microservice_name
+          EMAIL_QUEUE_NAME=my_email_queue_name
           TBA_KEY=${{ secrets.TBA_KEY }}
           LOCAL_TBA_WEBHOOK_PORT=4000
           LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks
@@ -69,7 +69,7 @@ jobs:
           SESSION_DURATION=10000000
           PORT=3000
           DB_HOST=localhost
-          EMAIL_MICROSERVICE_NAME=my_email_microservice_name
+          EMAIL_QUEUE_NAME=my_email_queue_name
           TBA_KEY=${{ secrets.TBA_KEY }}
           LOCAL_TBA_WEBHOOK_PORT=4000
           LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks
