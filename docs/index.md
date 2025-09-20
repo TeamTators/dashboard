@@ -82,7 +82,9 @@ This requires node v22.12.0 or higher. Go ahead and run this script and it will 
 - `mjml/` - Email templates using MJML
 - `src/` - [Source code](./src/index.md)
 - `static/` - Static files
-- `scripts/` - [CLI Scripts](./scripts/index.md)
+  <<<<<<< HEAD
+- # `scripts/` - [CLI Scripts](./scripts/index.md)
+  > > > > > > > 3f40c913bce77472f0339ea9b2434d385d40e233
 
 ## Usage
 
@@ -152,3 +154,14 @@ View [License](./license.md) for full terms and conditions
 ## Contact
 
 If you have any questions, feel free to contact me via email at [taylor.reese.king@gmail.com](mailto:taylor.reese.king@gmail.com) or open an issue on GitHub.
+<<<<<<< HEAD
+=======
+
+This directory contains:
+
+- [.git](.git/index.md)
+- [.github](.github/index.md)
+- [cli](cli/index.md)
+- [scripts](scripts/index.md)
+- [src](src/index.md)
+  > > > > > > > 3f40c913bce77472f0339ea9b2434d385d40e233

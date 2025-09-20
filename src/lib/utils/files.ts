@@ -25,7 +25,7 @@ export class FileUploader {
 
 			// Handle successful upload
 			xhr.onload = (event) => {
-				console.log(event);
+				console.log(xhr.responseText);
 				if (xhr.status >= 200 && xhr.status < 300) {
 					emitter.emit(
 						'load',

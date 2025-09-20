@@ -60,6 +60,10 @@ jobs:
           echo "REDIS_URL=redis://localhost:6379" >> .env
           echo "REDIS_NAME=some_name" >> .env
           echo "EMAIL_QUEUE_NAME=my_email_queue_name" >> .env
+          echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
+          echo "PUBLIC_DO_POTATO=true" >> .env
+          echo "LOCAL_TBA_WEBHOOK_PORT=4000" >> .env
+          echo "LOCAL_TBA_WEBHOOK_REDIS_NAME=tba-webhooks" >> .env
           export $(cat .env | xargs)
 
       - name: Run
