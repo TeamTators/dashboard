@@ -138,6 +138,19 @@ export class TBAEvent {
 			})
 		);
 	}
+
+	saveCustomTeam(
+		team: z.infer<typeof TeamSchema>
+	) {
+		return post(
+			`/tba/event/${this.tba.key}/team/${team.team_number}`,
+			team,
+			z.object({
+				success: z.boolean(),
+				message: z.string()
+			})
+		);
+	}
 }
 
 export class TBAMatch {

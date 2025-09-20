@@ -5,7 +5,6 @@ import {
 	type TBAEvent as E,
 	type TBATeam as T,
 	type TBAMatch as M,
-	type TBATeamEventStatus,
 	TeamEventStatusSchema,
 	teamsFromMatch,
 	MediaSchema,
@@ -17,6 +16,8 @@ import { attempt, attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { TBA } from '../structs/TBA';
 import { StructData } from 'drizzle-struct/back-end';
 import { z } from 'zod';
+import { DB } from '../db';
+import { and, eq } from 'drizzle-orm';
 
 export class Event {
 	public static getEvents(year: number, force = false) {
@@ -119,8 +120,8 @@ export class Event {
 			if (this.custom) {
 				return (
 					await TBA.Teams.fromProperty('eventKey', this.tba.key, {
-						type: 'stream'
-					}).await()
+						type: 'all'
+					})
 				)
 					.unwrap()
 					.map((d) => TeamSchema.parse(JSON.parse(d.data.data)))
@@ -145,8 +146,8 @@ export class Event {
 			if (this.custom) {
 				return (
 					await TBA.Matches.fromProperty('eventKey', this.tba.key, {
-						type: 'stream'
-					}).await()
+						type: 'all'
+					})
 				)
 					.unwrap()
 					.map((m) => new Match(MatchSchema.parse(JSON.parse(m.data.data)), this))
@@ -215,6 +216,7 @@ export class Event {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set teams for a non-custom event');
 
+
 			teams = Array.from(new Set(teams)).sort((a, b) => a - b);
 
 			const found = (
@@ -234,31 +236,28 @@ export class Event {
 					return TeamSchema.parse(res.value);
 				})
 				.filter(Boolean);
-
-			// Remove all current teams
 			const currentTeams = await TBA.Teams.fromProperty('eventKey', this.tba.key, {
 				type: 'all'
 			}).unwrap();
 
-			await Promise.all(
-				found.map(async (t) => {
-					if (currentTeams.some((ct) => ct.data.teamKey === `frc${t.team_number}`)) {
-						return;
-					}
-					return TBA.Teams.new({
-						eventKey: this.tba.key,
-						teamKey: `frc${t.team_number}`,
-						data: JSON.stringify(t)
-					}).unwrap();
-				})
-			);
+			await Promise.all(currentTeams.map(c => c.delete().unwrap()));
 
-			// Remove all teams not in the new list
-			const foundKeys = new Set(found.map((t) => `frc${t.team_number}`));
+			// merge
+			const currentAndFound = [
+				...currentTeams.map(t => TeamSchema.parse(JSON.parse(t.data.data))),
+				...found,
+			]
+			// filter duplicates
+			.filter((t, i, a) => a.findIndex(u => u.team_number === t.team_number) === i)
+			// It is possible some are custom teams, so we need to handle that case by keeping all previous ones, merging, then filtering all those that aren't in teams
+			.filter(t => teams.includes(t.team_number));
 
-			const toRemove = currentTeams.filter((ct) => !foundKeys.has(ct.data.teamKey));
 
-			await Promise.all(toRemove.map((t) => t.delete().unwrap()));
+			await Promise.all(currentAndFound.map(t => TBA.Teams.new({
+				eventKey: this.tba.key,
+				teamKey: `frc${t.team_number}`,
+				data: JSON.stringify(t),
+			})));
 		});
 	}
 
@@ -285,6 +284,34 @@ export class Event {
 					)
 				)
 			).unwrap();
+		});
+	}
+
+	saveCustomTeam(team: z.infer<typeof TeamSchema>) {
+		return attemptAsync(async () => {
+			const current = await DB
+				.select()
+				.from(TBA.Teams.table)
+				.where(
+					and(
+						eq(TBA.Teams.table.eventKey, this.tba.key),
+						eq(TBA.Teams.table.teamKey, `frc${team.team_number}`),
+					)
+				)
+				.limit(1);
+
+			if (current.length) {
+				const [c] = current;
+				return TBA.Teams.Generator(c).update({
+					data: JSON.stringify(team),
+				}).unwrap();
+			} else {
+				return TBA.Teams.new({
+					eventKey: this.tba.key,
+					teamKey: `frc${team.team_number}`,
+					data: JSON.stringify(team),
+				}).unwrap();
+			}
 		});
 	}
 }
