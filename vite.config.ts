@@ -18,5 +18,9 @@ export default defineConfig({
 		port: num('PORT', true),
 		host: '0.0.0.0',
 		allowedHosts: ['dev.tsaxking.com', 'dev.tatorscout.org', 'tatorscout.org']
+	},
+	
+	define: {
+		'process.env.IS_PREACT': JSON.stringify('true'),
 	}
 });
