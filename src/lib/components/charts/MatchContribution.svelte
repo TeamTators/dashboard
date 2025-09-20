@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Scouting } from '$lib/model/scouting';
+	import { copyCanvas } from '$lib/utils/clipboard';
 	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
@@ -17,6 +18,8 @@
 	const { scouting, team, event, match, style }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
+
+	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	onMount(() => {
 		const ctx = canvas.getContext('2d');
