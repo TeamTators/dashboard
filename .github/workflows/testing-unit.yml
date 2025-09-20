@@ -96,6 +96,7 @@ jobs:
           echo "PUBLIC_APP_NAME=test" >> .env
           echo "REDIS_NAME=some_name" >> .env
           echo "REDIS_URL=redis://localhost:6379" >> .env
+          echo "EMAIL_MICROSERVICE_NAME=my_email_microservice_name" >> .env
           echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
           echo "PUBLIC_DO_POTATO=true" >> .env
           echo "LOCAL_TBA_WEBHOOK_PATH=../tba-webhooks" >> .env
