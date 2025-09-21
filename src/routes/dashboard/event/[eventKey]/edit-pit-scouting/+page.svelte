@@ -27,7 +27,8 @@
 		const res = await Scouting.PIT.Sections.new({
 			name,
 			order: $sections.length,
-			eventKey
+			eventKey,
+			allowMultiple: await confirm('Do you want to allow multiple submissions?'),
 		});
 	};
 

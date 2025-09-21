@@ -10,9 +10,10 @@
 		question: Scouting.PIT.QuestionData;
 		team: number;
 		answers: DataArr<typeof Scouting.PIT.Answers.data.structure>;
+		session: string;
 	}
 
-	const { question, team, answers }: Props = $props();
+	const { question, team, answers, session }: Props = $props();
 
 	let answer: Scouting.PIT.AnswerData | undefined = $state(
 		answers.data.find((a) => a.data.questionId === question.data.id && a.data.team === team)
@@ -73,7 +74,8 @@
 				questionId: question.data.id,
 				answer: JSON.stringify($value),
 				team,
-				accountId // Ideally, this would be done on the backend but it's okay to be a little insecure
+				accountId, // Ideally, this would be done on the backend but it's okay to be a little insecure
+				session,
 			});
 			// retrieveAnswer();
 		}

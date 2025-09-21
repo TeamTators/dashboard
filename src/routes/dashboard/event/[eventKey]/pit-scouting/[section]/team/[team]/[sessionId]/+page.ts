@@ -34,6 +34,7 @@ export const load = (event) => {
 		answeredAccounts: event.data.answers
 			.map((a) => a.account)
 			.filter(Boolean)
-			.map((a) => Account.Account.Generator(a))
+			.map((a) => Account.Account.Generator(a)),
+		session: event.data.session,
 	};
 };

@@ -1,51 +1,83 @@
-import { FIRST } from '$lib/server/structs/FIRST.js';
+import { DB } from '$lib/server/db/index.js';
+import { Account } from '$lib/server/structs/account.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
-import { Event } from '$lib/server/utils/tba.js';
 import { fail, redirect } from '@sveltejs/kit';
+import { eq } from 'drizzle-orm';
 import { ServerCode } from 'ts-utils/status';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
-	const { eventKey, section } = event.params;
 
-	const sections = (
-		await Scouting.PIT.Sections.fromProperty('eventKey', eventKey, {
-			type: 'stream'
-		}).await()
-	)
-		.unwrap()
-		.sort((a, b) => a.data.order - b.data.order);
+	const section = await Scouting.PIT.Sections.fromId(event.params.section).unwrap();
+	if (!section) throw fail(ServerCode.notFound);
 
-	const s = sections[parseInt(section)];
+	// const sessions = await Scouting.PIT.AnswerSessions.fromProperty('section', event.params.section, {
+	// 	type: 'all',
+	// }).unwrap();
 
-	if (!s) throw fail(404);
+	const sessions = (await DB
+		.select()
+		.from(Scouting.PIT.AnswerSessions.table)
+		.innerJoin(Account.Account.table, eq(
+			Account.Account.table.id,
+			Scouting.PIT.AnswerSessions.table.createdBy,
+		)).where(eq(
+			Scouting.PIT.AnswerSessions.table.archived,
+			false,
+		)))
+		.map(s => Scouting.PIT.AnswerSessions.Generator({
+			...s.pit_answer_sessions,
+			createdBy: s.account.username,
+		}));
 
-	const e = (await Event.getEvent(eventKey)).unwrap();
-	const teams = (await e.getTeams()).unwrap();
-	const team = teams.find((t) => t.tba.team_number === parseInt(event.params.team));
-	if (!team) throw fail(404);
+	const archived = (await DB		.select()
+		.from(Scouting.PIT.AnswerSessions.table)
+		.innerJoin(Account.Account.table, eq(
+			Account.Account.table.id,
+			Scouting.PIT.AnswerSessions.table.createdBy,
+		)).where(eq(
+			Scouting.PIT.AnswerSessions.table.archived,
+			true,
+		)))
+		.map(s => Scouting.PIT.AnswerSessions.Generator({
+			...s.pit_answer_sessions,
+			createdBy: s.account.username,
+		}));
 
-	const info = (
-		await Scouting.PIT.getScoutingInfoFromSection(parseInt(event.params.team), s)
-	).unwrap();
+	if (section.data.allowMultiple && sessions.length) {
+		return {
+			sessions: sessions.map(d => d.safe()),
+			archived: archived.map(d => d.safe()),
+			...event.params,
+		}
+	} else {
+		const [session] = sessions;
+		let id = '';
+		if (!session) {
+			const s = await Scouting.PIT.AnswerSessions.new({
+				section: section.data.id,
+				createdBy: event.locals.account.data.id,
+				answers: 0,
+			}).unwrap();
+			id = s.id;
 
-	const pictures = (
-		await FIRST.getTeamPictures(parseInt(event.params.team), event.params.eventKey)
-	).unwrap();
-	return {
-		section: s.safe(),
-		eventKey,
-		sections: sections.map((s) => s.safe()),
-		teams: teams.map((t) => t.tba),
-		team: team.tba,
-		sectionIndex: parseInt(section),
-		event: e.tba,
-		questions: info.questions.map((q) => q.safe()),
-		answers: info.answers.map((a) => ({
-			answer: a.answer.safe(),
-			account: a.account?.safe()
-		})),
-		groups: info.groups.map((g) => g.safe()),
-		pictures: pictures.map((p) => p.safe())
-	};
+		} else {
+			id = session.id;
+		}
+
+		throw redirect(ServerCode.seeOther, `/dashboard/event/${event.params.eventKey}/pit-scouting/${event.params.section}/team/${event.params.team}/${id}`);
+	}
 };
+
+
+export const actions = {
+	'new-session': async (event) => {
+	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
+		const s = await Scouting.PIT.AnswerSessions.new({
+			section: event.params.section,
+			createdBy: event.locals.account.data.id,
+			answers: 0,
+		}).unwrap();
+		throw redirect(ServerCode.seeOther, `/dashboard/event/${event.params.eventKey}/pit-scouting/${event.params.section}/team/${event.params.team}/${s.id}`);
+	},
+}

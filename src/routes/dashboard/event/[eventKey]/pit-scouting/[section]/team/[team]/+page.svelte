@@ -1,117 +1,135 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
-	import Section from '$lib/components/pit-scouting/Section.svelte';
-	import { afterNavigate, goto } from '$app/navigation';
-	import { sleep } from 'ts-utils/sleep';
+	import { Scouting } from '$lib/model/scouting.js';
+	import { contextmenu } from '$lib/utils/contextmenu.js';
+	import { alert, confirm, notify } from '$lib/utils/prompts.js';
 	import { onMount } from 'svelte';
-	import { listen } from '$lib/utils/struct-listener.js';
-	import PictureDisplay from '$lib/components/robot-display/PictureDisplay.svelte';
-	import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
+	import { dateTime } from 'ts-utils/clock';
 
-	const { data = $bindable() } = $props();
-	// const { eventKey, section, sections, teams, team, sectionIndex } = data;
-	const eventKey = $derived(data.eventKey);
-	const section = $derived(data.section);
-	const sections = $derived(data.sections);
-	const teams = $derived(data.teams);
-	const event = $derived(new TBAEvent(data.event));
-	const team = $derived(new TBATeam(data.team, event));
-	const sectionIndex = $derived(data.sectionIndex);
-	const groups = $derived(data.groups);
-	const answers = $derived(data.answers);
-	const questions = $derived(data.questions);
-	const pictures = $derived(data.pictures);
+	const { data } = $props();
 
-	$effect(() => nav(event.tba));
-
-	let scroller: HTMLDivElement;
-
-	afterNavigate(() => {
-		const btn = scroller.querySelector(`[data-team="${team.tba.team_number}"]`);
-		if (btn) {
-			sleep(500).then(() =>
-				btn.scrollIntoView({
-					behavior: 'smooth',
-					block: 'nearest',
-					inline: 'center'
-				})
-			);
-		}
-	});
-
-	onMount(() => {
-		const offSections = listen(sections, (s) => s.data.eventKey === event.tba.key);
-		const offGroups = listen(groups, (g) => section.data.id === g.data.sectionId);
-		const offQuestions = listen(
-			questions,
-			(q) => !!groups.data.find((g) => g.data.id === q.data.groupId)
-		);
-		const offAnswers = listen(
-			answers,
-			(a) => !!questions.data.find((q) => q.data.id === a.data.questionId)
-		);
-
-		return () => {
-			offSections();
-			offGroups();
-			offQuestions();
-			offAnswers();
-		};
-	});
+	const sessions = $derived(Scouting.PIT.AnswerSessions.arr(
+		data.sessions.map(s => Scouting.PIT.AnswerSessions.Generator(s)),
+		(d) => d.data.section === data.section
+	));	
+	
+	const archived = $derived(Scouting.PIT.AnswerSessions.arr(
+		data.archived.map(s => Scouting.PIT.AnswerSessions.Generator(s)),
+		(d) => d.data.section === data.section
+	));
 </script>
 
 <div class="container">
 	<div class="row mb-3">
-		<h2>Pitscouting: {team.tba.nickname}</h2>
+		{#each $sessions as session, i}
+			<div class="col-12 mb-3">
+				<a href="/dashboard/event/{data.eventKey}/pit-scouting/{data.section}/team/{data.team}/{session.data.id}"
+					class="
+						text-decoration-none
+						text-reset
+						w-100
+					"
+				>
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div  class="card w-100" oncontextmenu="{(e) =>{
+						e.preventDefault();
+						contextmenu(e, {
+							options: [
+								'Manage Submission',
+								{
+									name: 'Archive',
+									icon: {
+										type: 'material-icons',
+										name: 'archive',
+									},
+									action: async () => {
+										if (await confirm('Are you sure you want to archive this whole submission?')) {
+											const res = await session.setArchive(true);
+											if (res.isErr()) {
+												return alert('Error archiving submission:' + res.error.message);
+											} else {
+												if (res.value.success) {
+													notify({
+														autoHide: 3000,
+														color: 'success',
+														message: 'Archived submission',
+														title: 'Achived'
+													});
+												} else {
+													return alert('Error archiving submission:' + res.value.message);
+												}
+											}
+										}
+									}
+								}
+							],
+							width: '150px',
+						})
+					}}">
+						<div class="card-body bg-secondary">
+							<h5 class="card-title">
+								Submission {i + 1}
+							</h5>
+							<p class="card-text">
+								Created: {dateTime(session.data.created)}
+								<br>
+								Created By: {session.data.createdBy}
+							</p>
+						</div>
+					</div>
+				</a>
+			</div>
+		{/each}
+		<div class="col-12 mb-3">
+			<form action="?/new-session" method="POST">
+			<button class="btn w-100" type="submit">
+					<div class="card w-100">
+						<div class="card-body bg-primary">
+							<h5 class="card-title">
+								New Submission
+							</h5>
+						</div>
+					</div>
+				</button>
+			</form>
+		</div>
 	</div>
+	<hr>
 	<div class="row mb-3">
-		<div class="ws-nowrap p-3 mb-3" bind:this={scroller} style="overflow-x: auto;">
-			{#each teams as t}
-				<a
-					type="button"
-					href="/dashboard/event/{eventKey}/pit-scouting/{sectionIndex}/team/{t.team_number}"
-					class="btn mx-2"
-					class:btn-primary={t.team_number !== team.tba.team_number}
-					class:btn-outline-secondary={t.team_number === team.tba.team_number}
-					class:btn-disabled={t.team_number === team.tba.team_number}
-					class:text-muted={t.team_number === team.tba.team_number}
-					onclick={(e) => {
-						if (t.team_number === team.tba.team_number) {
-							return e.preventDefault();
+		{#each $archived as session, i}
+			<div class="col-12 mb-3">
+				<button
+					class="
+						w-100
+						btn
+					"
+					onclick={async () => {
+						if (await confirm('Do you want to unarchive this submission?')) {
+							const res = await session.setArchive(false);
+							if (res.isErr()) {
+								return alert(
+									'Error restoring submission: ' + res.error.message,
+								)
+							} else {
+								if (res.value.success) return location.href = `/dashboard/event/${data.eventKey}/pit-scouting/${data.section}/team/${data.team}/${session.data.id}`;
+								else alert('Error restoring submission: ' + res.value.message);
+							}
 						}
 					}}
-					data-team={t.team_number}
 				>
-					{t.team_number}
-				</a>
-			{/each}
-		</div>
-	</div>
-	<div class="row mb-3">
-		<div class="no-scroll-y ws-nowrap" style="overflow-x: auto;">
-			{#each $sections as section, i}
-				<button
-					onclick={() => {
-						goto(`/dashboard/event/${eventKey}/pit-scouting/${i}/team/${team.tba.team_number}`);
-					}}
-					class="btn btn-primary mx-2"
-					disabled={sectionIndex === i}
-				>
-					{section.data.name}
+					<div class="card w-100">
+						<div class="card-body bg-secondary">
+							<h5 class="card-title">
+								Submission {i + 1}
+							</h5>
+							<p class="card-text">
+								Created: {dateTime(session.data.created)}
+								<br>
+								Created By: {session.data.createdBy}
+							</p>
+						</div>
+					</div>
 				</button>
-			{/each}
-		</div>
+			</div>
+		{/each}
 	</div>
-	{#key team}
-		<Section
-			{section}
-			team={team.tba.team_number}
-			groups={$groups.filter((g) => g.data.sectionId === section.data.id)}
-			{questions}
-			{answers}
-		/>
-		<div style="height: 300px" class="layer-1">
-			<PictureDisplay {team} {event} teamPictures={pictures} />
-		</div>
-	{/key}
 </div>
