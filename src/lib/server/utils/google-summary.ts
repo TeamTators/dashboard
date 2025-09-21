@@ -487,13 +487,37 @@ export const summarize = async (eventKey: string) => {
 				)
 			);
 		});
+		t.column('StdDev Overall Coral Points', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(
+				scores.traceScore.map(
+					(s) =>
+						s.auto.cl1 +
+						s.auto.cl2 +
+						s.auto.cl3 +
+						s.auto.cl4 +
+						s.teleop.cl1 +
+						s.teleop.cl2 +
+						s.teleop.cl3 +
+						s.teleop.cl4
+				)
+			);
+		});
 		t.column('Average Overall Processor Points', async (t) => {
 			const scores = await getScores(t);
 			return average(scores.traceScore.map((s) => s.auto.prc + s.teleop.prc));
 		});
+		t.column('StdDev Overall Processor Points', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.prc + s.teleop.prc));
+		});
 		t.column('Average Overall Barge Points', async (t) => {
 			const scores = await getScores(t);
 			return average(scores.traceScore.map((s) => s.auto.brg + s.teleop.brg));
+		});
+		t.column('StdDev Overall Barge Points', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.traceScore.map((s) => s.auto.brg + s.teleop.brg));
 		});
 		t.column('Average Shallow Climb Points', async (t) => {
 			const scores = await getScores(t);
@@ -539,6 +563,10 @@ export const summarize = async (eventKey: string) => {
 		t.column('Average Endgame Points', async (t) => {
 			const scores = await getScores(t);
 			return average(scores.endgame.map((s) => s.dpc + s.shc + s.park));
+		});
+		t.column('StdDev Endgame Points', async (t) => {
+			const scores = await getScores(t);
+			return standardDeviation(scores.endgame.map((s) => s.dpc + s.shc + s.park));
 		});
 		t.column('Average Mobility Points', async (t) => {
 			const scores = await getScores(t);
