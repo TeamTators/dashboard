@@ -269,7 +269,8 @@ export namespace Scouting {
 			structure: {
 				name: 'string',
 				order: 'number',
-				eventKey: 'string'
+				eventKey: 'string',
+				allowMultiple: 'boolean'
 			},
 			socket: sse,
 			browser
@@ -316,7 +317,8 @@ export namespace Scouting {
 				questionId: 'string',
 				answer: 'string',
 				team: 'number',
-				accountId: 'string'
+				accountId: 'string',
+				session: 'string'
 			},
 			socket: sse,
 			browser
@@ -324,6 +326,19 @@ export namespace Scouting {
 
 		export type AnswerData = StructData<typeof Answers.data.structure>;
 		export type AnswerArr = DataArr<typeof Answers.data.structure>;
+
+		export const AnswerSessions = new Struct({
+			name: 'pit_answer_sessions',
+			structure: {
+				section: 'string',
+				createdBy: 'string',
+				answers: 'number'
+			},
+			socket: sse,
+			browser
+		});
+
+		export type AnswerSessionsData = typeof AnswerSessions.sample;
 
 		export type Options = {};
 
@@ -360,7 +375,8 @@ export namespace Scouting {
 			question: QuestionData,
 			answer: string[],
 			team: number,
-			account: Account.AccountData
+			account: Account.AccountData,
+			session: string
 		) => {
 			return attemptAsync(async () => {
 				if (!question.data.id) throw new Error('Question ID not found');
@@ -371,7 +387,8 @@ export namespace Scouting {
 						questionId: question.data.id,
 						answer: JSON.stringify(answer),
 						team,
-						accountId
+						accountId,
+						session
 					})
 				).unwrap();
 

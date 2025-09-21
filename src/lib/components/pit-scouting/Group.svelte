@@ -9,9 +9,10 @@
 		team: number;
 		questions: Scouting.PIT.QuestionData[];
 		answers: DataArr<typeof Scouting.PIT.Answers.data.structure>;
+		session: string;
 	}
 
-	const { group, team, questions, answers }: Props = $props();
+	const { group, team, questions, answers, session }: Props = $props();
 
 	let questionIds: string[] = $state([]);
 
@@ -31,7 +32,7 @@
 			{#if i > 0}
 				<hr />
 			{/if}
-			<Question {question} {team} {answers} />
+			<Question {question} {team} {answers} {session} />
 		{/each}
 	</div>
 </div>

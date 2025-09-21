@@ -29,7 +29,7 @@
 			{#each $sections as section, i}
 				<div class="col-md-4 p-3">
 					<a
-						href="/dashboard/event/{eventKey}/pit-scouting/{i}"
+						href="/dashboard/event/{eventKey}/pit-scouting/{section.data.id}"
 						class="text-reset text-decoration-none"
 					>
 						<!-- <a href="{location.href}/pitscouting/{i}">  -->
