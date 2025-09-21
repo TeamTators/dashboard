@@ -17,8 +17,8 @@
 				answers: {
 					answer: Scouting.PIT.AnswerData;
 					account: Account.AccountData | undefined;
-				}[]
-			}[]
+				}[];
+			}[];
 		}[];
 		groups: Scouting.PIT.GroupArr;
 		questions: Scouting.PIT.QuestionArr;

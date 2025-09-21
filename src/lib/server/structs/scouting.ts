@@ -369,7 +369,7 @@ export namespace Scouting {
 				name: text('name').notNull(),
 				order: integer('order').notNull(),
 				eventKey: text('event_key').notNull(),
-				allowMultiple: boolean('allow_multiple').notNull().default(false),
+				allowMultiple: boolean('allow_multiple').notNull().default(false)
 			},
 			versionHistory: {
 				type: 'versions',
@@ -447,7 +447,7 @@ export namespace Scouting {
 				answer: text('answer').notNull(),
 				team: integer('team').notNull(),
 				accountId: text('account_id').notNull(),
-				session: text('session').notNull().default(''), // The group of answers, uuid
+				session: text('session').notNull().default('') // The group of answers, uuid
 			},
 			versionHistory: {
 				type: 'versions',
@@ -468,8 +468,8 @@ export namespace Scouting {
 			structure: {
 				section: text('section').notNull(),
 				createdBy: text('created_by').notNull(),
-				answers: integer('answers').notNull(),
-			},
+				answers: integer('answers').notNull()
+			}
 		});
 
 		export type AnswerSessionData = typeof AnswerSessions.sample;
@@ -479,7 +479,7 @@ export namespace Scouting {
 
 			if (s.isOk() && s.value) {
 				s.value.update({
-					answers: s.value.data.answers + 1,
+					answers: s.value.data.answers + 1
 				});
 			}
 		};
@@ -489,7 +489,7 @@ export namespace Scouting {
 
 			if (s.isOk() && s.value) {
 				s.value.update({
-					answers: s.value.data.answers - 1,
+					answers: s.value.data.answers - 1
 				});
 			}
 		};
@@ -500,7 +500,7 @@ export namespace Scouting {
 		Answers.on('restore', add);
 
 		AnswerSessions.on('archive', (s) => {
-			Answers.fromProperty('session', s.id, { type: 'stream', }).pipe(a => {
+			Answers.fromProperty('session', s.id, { type: 'stream' }).pipe((a) => {
 				a.setArchive(true);
 			});
 		});
@@ -554,7 +554,6 @@ export namespace Scouting {
 					.filter((q, i, a) => a.findIndex((qq) => q.id === qq.id) === i)
 					.filter((a) => !a.archived);
 
-
 				const sectionObjects: {
 					section: SectionData;
 					sessions: {
@@ -563,52 +562,64 @@ export namespace Scouting {
 						answers: {
 							account?: Account.AccountData;
 							answer: AnswerData;
-						}[]
-					}[]
-				}[] = await Promise.all(sections.map(async section => {
-					const sessions = await AnswerSessions.fromProperty('section', section.id, {
-						type: 'all',
-					}).unwrap();
+						}[];
+					}[];
+				}[] = await Promise.all(
+					sections.map(async (section) => {
+						const sessions = await AnswerSessions.fromProperty('section', section.id, {
+							type: 'all'
+						}).unwrap();
 
-					return {
-						section,
-						sessions: await Promise.all(sessions.map(async session => {
-							const account = await Account.Account.fromId(session.data.createdBy).unwrap();
-
-							return {
-								account,
-								session,
-								answers: await Promise.all((await Answers.fromProperty('session', session.id, {
-									type: 'all',
-								}).unwrap()).map(async a => {
-									if (a.data.accountId === account?.data.id) {
-										return {
-											account,
-											answer: a,
-										}
-									}
-
-									const act = await Account.Account.fromId(a.data.accountId).unwrap();
+						return {
+							section,
+							sessions: await Promise.all(
+								sessions.map(async (session) => {
+									const account = await Account.Account.fromId(session.data.createdBy).unwrap();
 
 									return {
-										account: act,
-										answer: a,
-									}
-								})),
-							}
-						})),
-					}
-				}));
+										account,
+										session,
+										answers: await Promise.all(
+											(
+												await Answers.fromProperty('session', session.id, {
+													type: 'all'
+												}).unwrap()
+											).map(async (a) => {
+												if (a.data.accountId === account?.data.id) {
+													return {
+														account,
+														answer: a
+													};
+												}
+
+												const act = await Account.Account.fromId(a.data.accountId).unwrap();
+
+												return {
+													account: act,
+													answer: a
+												};
+											})
+										)
+									};
+								})
+							)
+						};
+					})
+				);
 
 				return {
 					questions,
 					groups,
-					sections: sectionObjects,
+					sections: sectionObjects
 				};
 			});
 		};
 
-		export const getScoutingInfoFromSection = (team: number, section: SectionData, sessionId: string) => {
+		export const getScoutingInfoFromSection = (
+			team: number,
+			section: SectionData,
+			sessionId: string
+		) => {
 			return attemptAsync(async () => {
 				const groups = (
 					await Groups.fromProperty('sectionId', section.id, {
@@ -623,29 +634,19 @@ export namespace Scouting {
 				)
 					.unwrap()
 					.flat();
-				const answers = 
-					(await Promise.all(
+				const answers = (
+					await Promise.all(
 						questions.map(async (q) => {
 							const res = await DB.select()
 								.from(Answers.table)
 								.where(
-									and(
-										eq(
-											Answers.table.questionId,
-											q.id
-										),
-										eq(
-											Answers.table.session,
-											sessionId,
-										)
-									)
+									and(eq(Answers.table.questionId, q.id), eq(Answers.table.session, sessionId))
 								);
-							
-							return res.map(r => Answers.Generator(r));
-						}
+
+							return res.map((r) => Answers.Generator(r));
+						})
 					)
-				))
-					.flat();
+				).flat();
 
 				return {
 					questions,
@@ -786,7 +787,7 @@ export namespace Scouting {
 						name: 'General',
 						eventKey,
 						order: 0,
-						allowMultiple: false,
+						allowMultiple: false
 					}),
 					// Sections.new({
 					// 	name: 'Mechanical',
@@ -797,7 +798,7 @@ export namespace Scouting {
 						name: 'Electrical',
 						eventKey,
 						order: 2,
-						allowMultiple: false,
+						allowMultiple: false
 					})
 				]);
 

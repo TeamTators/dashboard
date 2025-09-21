@@ -28,7 +28,7 @@
 			name,
 			order: $sections.length,
 			eventKey,
-			allowMultiple: await confirm('Do you want to allow multiple submissions?'),
+			allowMultiple: await confirm('Do you want to allow multiple submissions?')
 		});
 	};
 

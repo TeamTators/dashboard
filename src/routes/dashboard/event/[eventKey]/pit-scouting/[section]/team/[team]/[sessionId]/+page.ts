@@ -35,6 +35,6 @@ export const load = (event) => {
 			.map((a) => a.account)
 			.filter(Boolean)
 			.map((a) => Account.Account.Generator(a)),
-		session: event.data.session,
+		session: event.data.session
 	};
 };

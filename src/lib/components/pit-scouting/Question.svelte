@@ -75,7 +75,7 @@
 				answer: JSON.stringify($value),
 				team,
 				accountId, // Ideally, this would be done on the backend but it's okay to be a little insecure
-				session,
+				session
 			});
 			// retrieveAnswer();
 		}

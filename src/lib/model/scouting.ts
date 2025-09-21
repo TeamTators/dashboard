@@ -270,7 +270,7 @@ export namespace Scouting {
 				name: 'string',
 				order: 'number',
 				eventKey: 'string',
-				allowMultiple: 'boolean',
+				allowMultiple: 'boolean'
 			},
 			socket: sse,
 			browser
@@ -318,7 +318,7 @@ export namespace Scouting {
 				answer: 'string',
 				team: 'number',
 				accountId: 'string',
-				session: 'string',
+				session: 'string'
 			},
 			socket: sse,
 			browser
@@ -332,10 +332,10 @@ export namespace Scouting {
 			structure: {
 				section: 'string',
 				createdBy: 'string',
-				answers: 'number',
+				answers: 'number'
 			},
 			socket: sse,
-			browser,
+			browser
 		});
 
 		export type AnswerSessionsData = typeof AnswerSessions.sample;
@@ -376,7 +376,7 @@ export namespace Scouting {
 			answer: string[],
 			team: number,
 			account: Account.AccountData,
-			session: string,
+			session: string
 		) => {
 			return attemptAsync(async () => {
 				if (!question.data.id) throw new Error('Question ID not found');

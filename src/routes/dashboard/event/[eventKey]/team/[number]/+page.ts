@@ -31,14 +31,14 @@ export const load = (event) => {
 		questions,
 		groups,
 		pictures,
-		sections: event.data.sections.map(sess => ({
+		sections: event.data.sections.map((sess) => ({
 			section: Scouting.PIT.Sections.Generator(sess.section),
-			sessions: sess.sessions.map(sect => ({
+			sessions: sess.sessions.map((sect) => ({
 				session: Scouting.PIT.AnswerSessions.Generator(sect.section),
 				account: sect.account ? Account.Account.Generator(sect.account) : undefined,
-				answers: sect.answers.map(ans => ({
+				answers: sect.answers.map((ans) => ({
 					answer: Scouting.PIT.Answers.Generator(ans.answer),
-					account: sect.account ? Account.Account.Generator(ans.account) : undefined,
+					account: ans.account ? Account.Account.Generator(ans.account) : undefined
 				}))
 			}))
 		}))

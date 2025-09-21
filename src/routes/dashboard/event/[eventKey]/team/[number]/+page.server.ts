@@ -112,14 +112,14 @@ export const load = async (event) => {
 		groups: pitScouting.value.groups.map((g) => g.safe()),
 		sections: pitScouting.value.sections.map((sect) => ({
 			section: sect.section.safe(),
-			sessions: sect.sessions.map(sess => ({
+			sessions: sect.sessions.map((sess) => ({
 				section: sect.section.safe(),
 				account: sess.account?.safe(),
-				answers: sess.answers.map(ans => ({
+				answers: sess.answers.map((ans) => ({
 					account: ans.account?.safe(),
-					answer: ans.answer.safe(),
-				})),
-			})),
+					answer: ans.answer.safe()
+				}))
+			}))
 		})),
 		pictures: pictures.value.map((p) => p.safe()),
 		matches: matches.value.map((m) => m.tba),

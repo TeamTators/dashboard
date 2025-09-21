@@ -92,7 +92,9 @@
 			{#each $sections as section, i}
 				<button
 					onclick={() => {
-						goto(`/dashboard/event/${eventKey}/pit-scouting/${section.data.id}/team/${team.tba.team_number}`);
+						goto(
+							`/dashboard/event/${eventKey}/pit-scouting/${section.data.id}/team/${team.tba.team_number}`
+						);
 					}}
 					class="btn btn-primary mx-2"
 					disabled={sectionIndex === i}
@@ -109,7 +111,7 @@
 			groups={$groups.filter((g) => g.data.sectionId === section.data.id)}
 			{questions}
 			{answers}
-            session={data.session}
+			session={data.session}
 		/>
 		<div style="height: 300px" class="layer-1">
 			<PictureDisplay {team} {event} teamPictures={pictures} />

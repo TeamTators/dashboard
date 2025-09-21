@@ -35,7 +35,7 @@
 				</div>
 			{/each}
 			{#if i < sessions.length - 1}
-				<hr>
+				<hr />
 			{/if}
 		{/each}
 	{:else}

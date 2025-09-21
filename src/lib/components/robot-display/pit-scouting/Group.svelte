@@ -15,7 +15,7 @@
 		answers: {
 			answer: Scouting.PIT.AnswerData;
 			account: Account.AccountData | undefined;
-		}[]
+		}[];
 	}
 
 	const { group, section, team, event, questions, answers }: Props = $props();

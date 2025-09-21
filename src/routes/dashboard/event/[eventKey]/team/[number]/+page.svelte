@@ -598,13 +598,7 @@
 			</Card> -->
 			<Card card={pitScouting}>
 				{#snippet body()}
-					<PitScoutingCard
-						{team}
-						{event}
-						{sections}
-						{groups}
-						{questions}
-					/>
+					<PitScoutingCard {team} {event} {sections} {groups} {questions} />
 				{/snippet}
 			</Card>
 			<Card card={matchViewer}>
