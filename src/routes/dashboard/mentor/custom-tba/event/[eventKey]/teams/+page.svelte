@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { TBAEvent, TBATeam, TBAMatch, get } from '$lib/utils/tba.js';
+	import { TBAEvent, TBATeam, get } from '$lib/utils/tba.js';
 	import Grid from '$lib/components/general/Grid.svelte';
 	import { writable, type Writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { z } from 'zod';
 	import { contextmenu } from '$lib/utils/contextmenu.js';
-	import { NumberEditorModule, ScrollApiModule } from 'ag-grid-community';
+	import { NumberEditorModule, ScrollApiModule, TextEditorModule } from 'ag-grid-community';
 
 	const { data } = $props();
 
@@ -35,7 +35,8 @@
 					$updateTeams
 						.filter((t) => t.number >= 1) // no team 0s or less
 						.filter((t) => t.tba) // only teams with TBA data
-						.map((t) => t.number)
+						.map((t) => t.tba)
+						.filter(Boolean)
 				)
 			)
 		);
@@ -157,27 +158,47 @@
 			<Grid
 				bind:this={grid}
 				rowNumbers={true}
-				modules={[NumberEditorModule, ScrollApiModule]}
+				modules={[NumberEditorModule, ScrollApiModule, TextEditorModule]}
 				opts={{
 					columnDefs: [
 						{
 							field: 'number',
 							headerName: 'Team Number',
 							editable: true,
-							cellEditor: 'agNumberCellEditor'
+							cellEditor: 'agNumberCellEditor',
+							onCellValueChanged: async (event) => {
+								try {
+									event.data.tba = await findTeam(event.data.number);
+								} catch (error) {
+									console.error('Unable to find team:', error);
+								}
+								updateTeams.update((t) => t);
+								save();
+							}
 						},
 						{
-							field: 'tba.nickname',
 							headerName: 'Team Name',
+							editable: true,
+							cellEditor: 'agTextCellEditor',
+							valueSetter: (e) => {
+								const name = e.newValue;
+								e.data.tba = {
+									team_number: e.data.number,
+									key: `frc${e.data.number}`,
+									name,
+									nickname: name
+								};
+								updateTeams.update((t) => t);
+								save();
+								return true;
+							},
+							valueGetter: (e) => {
+								return e.data?.tba?.nickname || '';
+							},
 							// scale the rest of the way
 							flex: 1
 						}
 					],
-					onCellValueChanged: async (event) => {
-						event.data.tba = await findTeam(event.data.number);
-						updateTeams.update((t) => t);
-						save();
-					},
 					onCellEditingStarted: (event) => (editing = Number(event.rowIndex)),
 					onCellEditingStopped: () => (editing = -1),
 					onCellContextMenu: (event) => {
