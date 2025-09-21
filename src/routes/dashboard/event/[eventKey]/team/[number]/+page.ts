@@ -1,7 +1,7 @@
 import { DataArr } from '$lib/services/struct/data-arr';
 import { Scouting } from '$lib/model/scouting';
 import { FIRST } from '$lib/model/FIRST';
-import { Account } from '$lib/model/account';
+import { Account } from '$lib/model/account.js';
 
 export const load = (event) => {
 	const scouting = new DataArr(
@@ -12,10 +12,6 @@ export const load = (event) => {
 		Scouting.TeamComments,
 		event.data.comments.map((c) => Scouting.TeamComments.Generator(c))
 	);
-	const answers = new DataArr(
-		Scouting.PIT.Answers,
-		event.data.answers.map((a) => Scouting.PIT.Answers.Generator(a))
-	);
 	const questions = new DataArr(
 		Scouting.PIT.Questions,
 		event.data.questions.map((q) => Scouting.PIT.Questions.Generator(q))
@@ -23,10 +19,6 @@ export const load = (event) => {
 	const groups = new DataArr(
 		Scouting.PIT.Groups,
 		event.data.groups.map((g) => Scouting.PIT.Groups.Generator(g))
-	);
-	const sections = new DataArr(
-		Scouting.PIT.Sections,
-		event.data.sections.map((s) => Scouting.PIT.Sections.Generator(s))
 	);
 	const pictures = new DataArr(
 		FIRST.TeamPictures,
@@ -36,11 +28,19 @@ export const load = (event) => {
 		...event.data,
 		scouting,
 		comments,
-		answers,
 		questions,
 		groups,
-		sections,
 		pictures,
-		answerAccounts: event.data.answerAccounts.map((a) => Account.Account.Generator(a))
+		sections: event.data.sections.map(sess => ({
+			section: Scouting.PIT.Sections.Generator(sess.section),
+			sessions: sess.sessions.map(sect => ({
+				session: Scouting.PIT.AnswerSessions.Generator(sect.section),
+				account: sect.account ? Account.Account.Generator(sect.account) : undefined,
+				answers: sect.answers.map(ans => ({
+					answer: Scouting.PIT.Answers.Generator(ans.answer),
+					account: sect.account ? Account.Account.Generator(ans.account) : undefined,
+				}))
+			}))
+		}))
 	};
 };

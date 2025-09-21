@@ -338,6 +338,8 @@ export namespace Scouting {
 			browser,
 		});
 
+		export type AnswerSessionsData = typeof AnswerSessions.sample;
+
 		export type Options = {};
 
 		export const parseOptions = (question: QuestionData) => {

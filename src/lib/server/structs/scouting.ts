@@ -472,6 +472,8 @@ export namespace Scouting {
 			},
 		});
 
+		export type AnswerSessionData = typeof AnswerSessions.sample;
+
 		const add = async (a: AnswerData) => {
 			const s = await AnswerSessions.fromId(a.data.session);
 
@@ -552,25 +554,56 @@ export namespace Scouting {
 					.filter((q, i, a) => a.findIndex((qq) => q.id === qq.id) === i)
 					.filter((a) => !a.archived);
 
-				const answers = (
-					await Answers.fromProperty('team', team, { type: 'stream' }).await()
-				).unwrap();
+
+				const sectionObjects: {
+					section: SectionData;
+					sessions: {
+						session: AnswerSessionData;
+						account?: Account.AccountData;
+						answers: {
+							account?: Account.AccountData;
+							answer: AnswerData;
+						}[]
+					}[]
+				}[] = await Promise.all(sections.map(async section => {
+					const sessions = await AnswerSessions.fromProperty('section', section.id, {
+						type: 'all',
+					}).unwrap();
+
+					return {
+						section,
+						sessions: await Promise.all(sessions.map(async session => {
+							const account = await Account.Account.fromId(session.data.createdBy).unwrap();
+
+							return {
+								account,
+								session,
+								answers: await Promise.all((await Answers.fromProperty('session', session.id, {
+									type: 'all',
+								}).unwrap()).map(async a => {
+									if (a.data.accountId === account?.data.id) {
+										return {
+											account,
+											answer: a,
+										}
+									}
+
+									const act = await Account.Account.fromId(a.data.accountId).unwrap();
+
+									return {
+										account: act,
+										answer: a,
+									}
+								})),
+							}
+						})),
+					}
+				}));
 
 				return {
 					questions,
 					groups,
-					sections,
-					answers: await Promise.all(
-						answers
-							.filter((a) => a.data.team === team)
-							.map(async (a) => {
-								const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
-								return {
-									answer: a,
-									account
-								};
-							})
-					)
+					sections: sectionObjects,
 				};
 			});
 		};

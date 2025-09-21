@@ -9,14 +9,22 @@
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
-		sections: Scouting.PIT.SectionArr;
+		sections: {
+			section: Scouting.PIT.SectionData;
+			sessions: {
+				session: Scouting.PIT.AnswerSessionsData;
+				account: Account.AccountData | undefined;
+				answers: {
+					answer: Scouting.PIT.AnswerData;
+					account: Account.AccountData | undefined;
+				}[]
+			}[]
+		}[];
 		groups: Scouting.PIT.GroupArr;
 		questions: Scouting.PIT.QuestionArr;
-		answers: Scouting.PIT.AnswerArr;
-		answerAccounts: Account.AccountData[];
 	}
 
-	const { team, event, sections, groups, questions, answers, answerAccounts }: Props = $props();
+	const { team, event, sections, groups, questions }: Props = $props();
 </script>
 
 <div
@@ -26,14 +34,14 @@
 	overflow-y: auto;
 "
 >
-	{#if $sections.length}
-		{#each $sections as section, i}
+	{#if sections.length}
+		{#each sections as section, i}
 			{#if i > 0}
 				<hr />
 			{/if}
 			<div class="row mb-3">
 				<div class="d-flex justify-content-between align-items-center">
-					<h6 class="mb-0">{section.data.name}</h6>
+					<h6 class="mb-0">{section.section.data.name}</h6>
 					<a
 						href="/dashboard/event/{event.tba.key}/pit-scouting/{i}/team/{team.tba.team_number}"
 						class="btn"
@@ -44,13 +52,12 @@
 			</div>
 			<div class="row mb-3">
 				<Section
-					{section}
+					section={section.section}
 					team={team.tba}
 					event={event.tba}
 					{groups}
 					{questions}
-					{answers}
-					{answerAccounts}
+					sessions={section.sessions}
 				/>
 			</div>
 		{/each}

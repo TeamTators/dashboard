@@ -28,12 +28,10 @@
 	const team = $derived(new TBATeam(data.team, event));
 	const scouting = $derived(data.scouting);
 	const comments = $derived(data.comments);
-	const answers = $derived(data.answers);
 	const questions = $derived(data.questions);
 	const groups = $derived(data.groups);
 	const sections = $derived(data.sections);
 	const pictures = $derived(data.pictures);
-	const answerAccounts = $derived(data.answerAccounts);
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 	const checksSum = $derived(data.checksSum);
@@ -484,21 +482,10 @@
 			comments,
 			(d) => d.data.team === team.tba.team_number && d.data.eventKey === event.tba.key
 		);
-		const offAnswers = listen(
-			answers,
-			(d) =>
-				d.data.team === team.tba.team_number &&
-				!!questions.data.find((q) => q.data.id === d.data.questionId)
-		);
 		const offQuestions = listen(
 			questions,
 			(d) => !!groups.data.find((s) => s.data.id === d.data.groupId)
 		);
-		const offGroups = listen(
-			groups,
-			(d) => !!sections.data.find((s) => s.data.id === d.data.sectionId)
-		);
-		const offSections = listen(sections, (d) => d.data.eventKey === event.tba.key);
 		const offPictures = listen(
 			pictures,
 			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
@@ -511,10 +498,7 @@
 		return () => {
 			offScouting();
 			offComments();
-			offAnswers();
 			offQuestions();
-			offGroups();
-			offSections();
 			offPictures();
 			contributionSub();
 		};
@@ -620,8 +604,6 @@
 						{sections}
 						{groups}
 						{questions}
-						{answers}
-						{answerAccounts}
 					/>
 				{/snippet}
 			</Card>
