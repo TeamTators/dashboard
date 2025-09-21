@@ -52,7 +52,7 @@
 														autoHide: 3000,
 														color: 'success',
 														message: 'Archived submission',
-														title: 'Achived'
+														title: 'Archived'
 													});
 												} else {
 													return alert('Error archiving submission:' + res.value.message);
