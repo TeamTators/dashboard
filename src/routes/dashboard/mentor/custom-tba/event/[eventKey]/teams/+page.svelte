@@ -188,7 +188,7 @@
 									name,
 									nickname: name
 								};
-
+								updateTeams.update((t) => t);
 								save();
 								return true;
 							},
