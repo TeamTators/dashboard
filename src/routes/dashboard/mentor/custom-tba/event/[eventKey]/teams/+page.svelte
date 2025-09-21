@@ -36,7 +36,7 @@
 						.filter((t) => t.number >= 1) // no team 0s or less
 						.filter((t) => t.tba) // only teams with TBA data
 						.map((t) => t.tba)
-						.filter(Boolean),
+						.filter(Boolean)
 				)
 			)
 		);
@@ -186,7 +186,7 @@
 									team_number: e.data.number,
 									key: `frc${e.data.number}`,
 									name,
-									nickname: name,
+									nickname: name
 								};
 
 								save();
