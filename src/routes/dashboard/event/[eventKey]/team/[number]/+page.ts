@@ -1,7 +1,7 @@
 import { DataArr } from '$lib/services/struct/data-arr';
 import { Scouting } from '$lib/model/scouting';
 import { FIRST } from '$lib/model/FIRST';
-import { Account } from '$lib/model/account.js';
+import { Account } from '$lib/model/account';
 
 export const load = (event) => {
 	const scouting = new DataArr(
