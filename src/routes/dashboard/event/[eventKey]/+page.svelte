@@ -99,8 +99,8 @@
 									type="button"
 									class="btn btn-sm btn-secondary ms-2"
 									onclick={() => {
-										if (eventSummaries[k].component) {
-											eventSummaries[k].component.copy(true);
+										if (eventSummaries[k * i].component) {
+											eventSummaries[k * i].component.copy(true);
 										}
 									}}
 								>
