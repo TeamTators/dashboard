@@ -116,7 +116,7 @@ export const load = async (event) => {
 				section: sect.section.safe(),
 				account: sess.account?.safe(),
 				answers: sess.answers.map(ans => ({
-					account: ans.answer?.safe(),
+					account: ans.account?.safe(),
 					answer: ans.answer.safe(),
 				})),
 			})),
