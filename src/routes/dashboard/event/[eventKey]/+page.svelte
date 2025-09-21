@@ -100,7 +100,7 @@
 									class="btn btn-sm btn-secondary ms-2"
 									onclick={() => {
 										if (eventSummaries[k * i].component) {
-											eventSummaries[k * i].component.copy(true);
+											eventSummaries[k * i].component?.copy(true);
 										}
 									}}
 								>
