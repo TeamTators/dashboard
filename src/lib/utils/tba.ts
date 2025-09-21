@@ -109,7 +109,7 @@ export class TBAEvent {
 		);
 	}
 
-	setTeams(teams: number[]) {
+	setTeams(teams: z.infer<typeof TeamSchema>[]) {
 		return post(
 			'/tba/event/' + this.tba.key + '/teams',
 			teams,
@@ -132,17 +132,6 @@ export class TBAEvent {
 		return post(
 			'/tba/event/' + this.tba.key + '/matches',
 			matches,
-			z.object({
-				success: z.boolean(),
-				message: z.string()
-			})
-		);
-	}
-
-	saveCustomTeam(team: z.infer<typeof TeamSchema>) {
-		return post(
-			`/tba/event/${this.tba.key}/team/${team.team_number}`,
-			team,
 			z.object({
 				success: z.boolean(),
 				message: z.string()

@@ -16,8 +16,6 @@ import { attempt, attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { TBA } from '../structs/TBA';
 import { StructData } from 'drizzle-struct/back-end';
 import { z } from 'zod';
-import { DB } from '../db';
-import { and, eq } from 'drizzle-orm';
 
 export class Event {
 	public static getEvents(year: number, force = false) {
@@ -212,47 +210,21 @@ export class Event {
 		});
 	}
 
-	setTeams(teams: number[]) {
+	setTeams(teams: z.infer<typeof TeamSchema>[]) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set teams for a non-custom event');
 
-			teams = Array.from(new Set(teams)).sort((a, b) => a - b);
+			teams = Array.from(new Set(teams)).sort((a, b) => a.team_number - b.team_number)
+				.filter((t, i, a) => a.findIndex(tt => tt.team_number == t.team_number) === i);
 
-			const found = (
-				await Promise.all(
-					teams.map((t) =>
-						TBA.get(`/team/frc${t}`, {
-							updateThreshold: 1000 * 60 * 60 * 24,
-							force: false
-						})
-					)
-				)
-			)
-				.map((res) => {
-					if (res.isErr()) {
-						return null;
-					}
-					return TeamSchema.parse(res.value);
-				})
-				.filter(Boolean);
 			const currentTeams = await TBA.Teams.fromProperty('eventKey', this.tba.key, {
 				type: 'all'
 			}).unwrap();
 
 			await Promise.all(currentTeams.map((c) => c.delete().unwrap()));
 
-			// merge
-			const currentAndFound = [
-				...currentTeams.map((t) => TeamSchema.parse(JSON.parse(t.data.data))),
-				...found
-			]
-				// filter duplicates
-				.filter((t, i, a) => a.findIndex((u) => u.team_number === t.team_number) === i)
-				// It is possible some are custom teams, so we need to handle that case by keeping all previous ones, merging, then filtering all those that aren't in teams
-				.filter((t) => teams.includes(t.team_number));
-
 			await Promise.all(
-				currentAndFound.map((t) =>
+				teams.map((t) =>
 					TBA.Teams.new({
 						eventKey: this.tba.key,
 						teamKey: `frc${t.team_number}`,
@@ -266,10 +238,6 @@ export class Event {
 	setMatches(matches: TBAMatch[]) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set matches for a non-custom event');
-
-			// const current = await TBA.Matches.fromProperty('eventKey', this.tba.key, {
-			// 	type: 'all',
-			// });
 
 			await TBA.Matches.fromProperty('eventKey', this.tba.key, {
 				type: 'stream'
@@ -286,35 +254,6 @@ export class Event {
 					)
 				)
 			).unwrap();
-		});
-	}
-
-	saveCustomTeam(team: z.infer<typeof TeamSchema>) {
-		return attemptAsync(async () => {
-			const current = await DB.select()
-				.from(TBA.Teams.table)
-				.where(
-					and(
-						eq(TBA.Teams.table.eventKey, this.tba.key),
-						eq(TBA.Teams.table.teamKey, `frc${team.team_number}`)
-					)
-				)
-				.limit(1);
-
-			if (current.length) {
-				const [c] = current;
-				return TBA.Teams.Generator(c)
-					.update({
-						data: JSON.stringify(team)
-					})
-					.unwrap();
-			} else {
-				return TBA.Teams.new({
-					eventKey: this.tba.key,
-					teamKey: `frc${team.team_number}`,
-					data: JSON.stringify(team)
-				}).unwrap();
-			}
 		});
 	}
 }

@@ -35,7 +35,8 @@
 					$updateTeams
 						.filter((t) => t.number >= 1) // no team 0s or less
 						.filter((t) => t.tba) // only teams with TBA data
-						.map((t) => t.number)
+						.map((t) => t.tba)
+						.filter(Boolean),
 				)
 			)
 		);
@@ -182,26 +183,14 @@
 							cellEditor: 'agTextCellEditor',
 							valueSetter: (e) => {
 								const name = e.newValue;
-								event
-									.saveCustomTeam({
-										key: 'frc' + e.data.number,
-										team_number: e.data.number,
-										nickname: name,
-										name
-									})
-									.then((res) => {
-										if (res.isOk() && res.value.success) {
-											e.data.tba = {
-												nickname: name,
-												name: name,
-												team_number: e.data.number,
-												key: 'frc' + e.data.number
-											};
-											updateTeams.update((t) => t);
-										}
-									})
-									.catch(console.error);
+								e.data.tba = {
+									team_number: e.data.number,
+									key: `frc${e.data.number}`,
+									name,
+									nickname: name,
+								};
 
+								save();
 								return true;
 							},
 							valueGetter: (e) => {
