@@ -177,7 +177,6 @@
 							}
 						},
 						{
-							// field: 'tba.nickname',
 							headerName: 'Team Name',
 							editable: true,
 							cellEditor: 'agTextCellEditor',
