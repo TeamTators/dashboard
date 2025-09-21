@@ -214,7 +214,7 @@ export class Event {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set teams for a non-custom event');
 
-			teams = Array.from(new Set(teams))
+			teams = teams
 				.sort((a, b) => a.team_number - b.team_number)
 				.filter((t, i, a) => a.findIndex((tt) => tt.team_number === t.team_number) === i);
 
