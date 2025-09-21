@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
+	import { copyCanvas } from '$lib/utils/clipboard';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
@@ -21,6 +22,8 @@
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
+
+	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	type datasetType = {
 		label: string;
