@@ -77,23 +77,23 @@
 </script>
 
 {#snippet teamLink(teamKey: string, color: 'red' | 'blue', match: TBAMatch)}
+	{@const foundTeam = team(teamKey)}
+	{@const found = !!findMatch(match, matchScouting.data, foundTeam)}
 	<td
 		class:table-danger={color === 'red'}
 		class:table-primary={color === 'blue'}
-		class={inSelected(teamKey, !!findMatch(match, matchScouting.data, team(teamKey)))}
+		class={inSelected(teamKey, found)}
 	>
 		<a
-			href="/dashboard/event/{data.event.key}/team/{team(
-				teamKey
-			)}/match/{match.comp_level}/{match.match_number}"
+			href="/dashboard/event/{data.event.key}/team/{foundTeam}/match/{match.comp_level}/{match.match_number}"
 			style="text-decoration: none;"
 		>
 			<span
 				class="badge"
-				class:bg-danger={!findMatch(match, matchScouting.data, team(teamKey))}
-				class:bg-success={!!findMatch(match, matchScouting.data, team(teamKey))}
+				class:bg-danger={!found}
+				class:bg-success={found}
 			>
-				{team(teamKey)}
+				{foundTeam}
 			</span>
 		</a>
 	</td>
