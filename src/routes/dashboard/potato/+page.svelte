@@ -116,7 +116,7 @@
 					if (res.isOk()) {
 						if (res.value.success) {
 							alert(
-								`${data.account?.data.username}'s potato score has sucessfully been changed by ${score}.`
+								`${data.account?.data.username}'s potato score has successfully been changed by ${score}.`
 							);
 						}
 						if (!res.value.success) {
@@ -145,7 +145,7 @@
 					if (res.isOk()) {
 						if (res.value.success) {
 							alert(
-								`${data.account?.data.username}'s potato score has sucessfully been to ${score}.`
+								`${data.account?.data.username}'s potato score has successfully been set to ${score}.`
 							);
 						}
 						if (!res.value.success) {

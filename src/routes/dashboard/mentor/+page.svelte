@@ -34,7 +34,7 @@
 					<div class="card-body">
 						<h5 class="card-title text-black">Potato Leaderboard</h5>
 						<p class="card-text text-black">
-							View and manage students potato score.
+							View and manage students' potato scores.
 						</p>
 					</div>
 				</div>
