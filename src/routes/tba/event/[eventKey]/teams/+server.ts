@@ -1,7 +1,7 @@
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { fail, json } from '@sveltejs/kit';
-import { EventSchema, TeamSchema } from 'tatorscout/tba';
+import { TeamSchema } from 'tatorscout/tba';
 import { ServerCode } from 'ts-utils/status';
 import { z } from 'zod';
 
@@ -39,7 +39,7 @@ export const POST = async (event) => {
 
 	const data = await event.request.json();
 
-	const parsed = z.array(z.number()).safeParse(data);
+	const parsed = z.array(TeamSchema).safeParse(data);
 	if (!parsed.success) {
 		terminal.error('Invalid event data:', parsed.error);
 		return json(

@@ -5,7 +5,6 @@ import {
 	type TBAEvent as E,
 	type TBATeam as T,
 	type TBAMatch as M,
-	type TBATeamEventStatus,
 	TeamEventStatusSchema,
 	teamsFromMatch,
 	MediaSchema,
@@ -119,8 +118,8 @@ export class Event {
 			if (this.custom) {
 				return (
 					await TBA.Teams.fromProperty('eventKey', this.tba.key, {
-						type: 'stream'
-					}).await()
+						type: 'all'
+					})
 				)
 					.unwrap()
 					.map((d) => TeamSchema.parse(JSON.parse(d.data.data)))
@@ -145,8 +144,8 @@ export class Event {
 			if (this.custom) {
 				return (
 					await TBA.Matches.fromProperty('eventKey', this.tba.key, {
-						type: 'stream'
-					}).await()
+						type: 'all'
+					})
 				)
 					.unwrap()
 					.map((m) => new Match(MatchSchema.parse(JSON.parse(m.data.data)), this))
@@ -211,64 +210,35 @@ export class Event {
 		});
 	}
 
-	setTeams(teams: number[]) {
+	setTeams(teams: z.infer<typeof TeamSchema>[]) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set teams for a non-custom event');
 
-			teams = Array.from(new Set(teams)).sort((a, b) => a - b);
+			teams = teams
+				.sort((a, b) => a.team_number - b.team_number)
+				.filter((t, i, a) => a.findIndex((tt) => tt.team_number === t.team_number) === i);
 
-			const found = (
-				await Promise.all(
-					teams.map((t) =>
-						TBA.get(`/team/frc${t}`, {
-							updateThreshold: 1000 * 60 * 60 * 24,
-							force: false
-						})
-					)
-				)
-			)
-				.map((res) => {
-					if (res.isErr()) {
-						return null;
-					}
-					return TeamSchema.parse(res.value);
-				})
-				.filter(Boolean);
-
-			// Remove all current teams
 			const currentTeams = await TBA.Teams.fromProperty('eventKey', this.tba.key, {
 				type: 'all'
 			}).unwrap();
 
+			await Promise.all(currentTeams.map((c) => c.delete().unwrap()));
+
 			await Promise.all(
-				found.map(async (t) => {
-					if (currentTeams.some((ct) => ct.data.teamKey === `frc${t.team_number}`)) {
-						return;
-					}
-					return TBA.Teams.new({
+				teams.map((t) =>
+					TBA.Teams.new({
 						eventKey: this.tba.key,
 						teamKey: `frc${t.team_number}`,
 						data: JSON.stringify(t)
-					}).unwrap();
-				})
+					})
+				)
 			);
-
-			// Remove all teams not in the new list
-			const foundKeys = new Set(found.map((t) => `frc${t.team_number}`));
-
-			const toRemove = currentTeams.filter((ct) => !foundKeys.has(ct.data.teamKey));
-
-			await Promise.all(toRemove.map((t) => t.delete().unwrap()));
 		});
 	}
 
 	setMatches(matches: TBAMatch[]) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set matches for a non-custom event');
-
-			// const current = await TBA.Matches.fromProperty('eventKey', this.tba.key, {
-			// 	type: 'all',
-			// });
 
 			await TBA.Matches.fromProperty('eventKey', this.tba.key, {
 				type: 'stream'

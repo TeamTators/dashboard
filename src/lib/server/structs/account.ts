@@ -15,7 +15,7 @@ import type { Icon } from '../../types/icons';
 import { z } from 'zod';
 import { Permissions } from './permissions';
 import { QueryListener } from '../services/struct-listeners';
-import { str, num } from '../utils/env';
+import { str, num, domain } from '../utils/env';
 
 export namespace Account {
 	export const Account = new Struct({
@@ -494,11 +494,14 @@ export namespace Account {
 
 			const email = account.data.email;
 
-			sendEmail({
+			await sendEmail({
 				type: 'forgot-password',
 				to: email,
 				data: {
-					link: `/account/password-reset/${pr.id}`,
+					link: `${domain({
+						port: false,
+						protocol: true
+					})}/account/password-reset/${pr.id}`,
 					supportEmail: str('SUPPORT_EMAIL', false) || ''
 				},
 				subject: 'Password Reset Request'
