@@ -1,5 +1,6 @@
 export type TaskTypes = {
     'pit-scouting': {
-        teamNumber: string;
+        teamNumber: number;
+        section: string;
     };
 }

@@ -1208,6 +1208,34 @@ export namespace Scouting {
 			});
 		};
 
+		export const getEventKeyFromAnswer = (answer: AnswerData) => {
+			return attemptAsync<string>(async () => {
+				const res = await DB.select()
+					.from(Questions.table)
+					.innerJoin(Groups.table, eq(Questions.table.groupId, Groups.table.id))
+					.innerJoin(Sections.table, eq(Groups.table.sectionId, Sections.table.id))
+					.where(eq(Questions.table.id, answer.data.questionId))
+					.limit(1);
+
+				if (!res.length) throw new Error('Not found');
+				return res[0].pit_sections.eventKey;
+			});
+		};
+
+		export const getSectionFromAnswer = (answer: AnswerData) => {
+			return attemptAsync(async () => {
+				const [res] = await DB.select()
+					.from(Questions.table)
+					.innerJoin(Groups.table, eq(Questions.table.groupId, Groups.table.id))
+					.innerJoin(Sections.table, eq(Groups.table.sectionId, Sections.table.id))
+					.where(eq(Questions.table.id, answer.data.questionId))
+					.limit(1);
+
+				if (!res) throw new Error('Not found');
+				return Sections.Generator(res.pit_sections);
+			});
+		};
+
 		Permissions.createEntitlement({
 			name: 'view-pit-scouting',
 			structs: [Sections, Groups, Questions, Answers],
