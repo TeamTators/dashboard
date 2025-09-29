@@ -109,7 +109,7 @@ export class TBAEvent {
 		);
 	}
 
-	setTeams(teams: number[]) {
+	setTeams(teams: z.infer<typeof TeamSchema>[]) {
 		return post(
 			'/tba/event/' + this.tba.key + '/teams',
 			teams,
