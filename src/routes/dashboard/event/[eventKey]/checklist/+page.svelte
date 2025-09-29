@@ -51,7 +51,7 @@
 			<h4>Pit Scouting</h4>
 			<Grid
 				rowNumbers={true}
-				modules={[NumberFilterModule, TextFilterModule]}
+				modules={[TextFilterModule]}
 				opts={{
 					columnDefs: [
 						{
@@ -60,14 +60,9 @@
 							filter: 'agTextColumnFilter'
 						},
 						{
-							headerName: 'TBA',
-							field: 'tbaPictures',
-							filter: 'agNumberColumnFilter'
-						},
-						{
-							headerName: 'Uploaded',
-							field: 'uploaded',
-							filter: 'agNumberColumnFilter'
+							headerName: 'Missing',
+							field: "question",
+							filter: 'agTextColumnFilter'
 						}
 					]
 				}}
