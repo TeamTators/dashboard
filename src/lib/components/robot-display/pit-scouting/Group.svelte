@@ -12,11 +12,13 @@
 		team: TBATeam;
 		event: TBAEvent;
 		questions: Scouting.PIT.QuestionArr;
-		answers: Scouting.PIT.AnswerArr;
-		answerAccounts: Account.AccountData[];
+		answers: {
+			answer: Scouting.PIT.AnswerData;
+			account: Account.AccountData | undefined;
+		}[];
 	}
 
-	const { group, section, team, event, questions, answers, answerAccounts }: Props = $props();
+	const { group, section, team, event, questions, answers }: Props = $props();
 </script>
 
 <ul class="list-group border-0 layer-2">
@@ -24,8 +26,7 @@
 		<li class="list-group-item border-0 layer-2">
 			<Question
 				{question}
-				answer={$answers.find((a) => a.data.questionId === question.data.id)}
-				{answerAccounts}
+				answer={answers.find((a) => a.answer.data.questionId === question.data.id)}
 			/>
 		</li>
 	{/each}

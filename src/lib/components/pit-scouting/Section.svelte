@@ -10,9 +10,10 @@
 		groups: Scouting.PIT.GroupData[];
 		questions: DataArr<typeof Scouting.PIT.Questions.data.structure>;
 		answers: DataArr<typeof Scouting.PIT.Answers.data.structure>;
+		session: string;
 	}
 
-	const { section, team, groups, questions, answers }: Props = $props();
+	const { section, team, groups, questions, answers, session }: Props = $props();
 
 	$effect(() => {
 		if (!section || !team) return; // trigger on section or team change
@@ -31,6 +32,7 @@
 				{team}
 				questions={$questions.filter((q) => q.data.groupId === group.data.id)}
 				{answers}
+				{session}
 			/>
 		</div>
 	{/each}
