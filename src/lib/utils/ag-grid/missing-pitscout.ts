@@ -1,5 +1,4 @@
 import type { ICellRendererComp, ICellRendererParams } from "ag-grid-community";
-import z from "zod";
 import { Scouting } from "$lib/model/scouting";
 
 export class MissingPitscoutComp implements ICellRendererComp {
