@@ -104,7 +104,7 @@
 										}
 									}}
 								>
-									Copy to Clipboard
+									<i class="material-icons">copy_all</i>
 								</button>
 							</div>
 							<div class="scroll-x mb-1">
