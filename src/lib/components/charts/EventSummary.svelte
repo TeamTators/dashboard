@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { copyCanvas } from '$lib/utils/clipboard';
 	import { Chart, registerables } from 'chart.js';
 	import { onMount } from 'svelte';
 
@@ -20,8 +21,10 @@
 
 	let canvas: HTMLCanvasElement;
 
+	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
+
 	onMount(() => {
-		const chart = new Chart(canvas, {
+		new Chart(canvas, {
 			options: {
 				responsive: true,
 				scales: {

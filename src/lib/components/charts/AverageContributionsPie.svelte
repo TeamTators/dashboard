@@ -4,6 +4,7 @@
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Scouting } from '$lib/model/scouting';
 	import Chart from 'chart.js/auto';
+	import { copyCanvas } from '$lib/utils/clipboard';
 
 	interface Props {
 		team: TBATeam;
@@ -23,6 +24,8 @@
 
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
+
+	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
 
 	onMount(() => {
 		chartInstance = new Chart(chartCanvas, {

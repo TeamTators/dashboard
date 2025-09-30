@@ -2,10 +2,9 @@
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
-	import { match as matchCase } from 'ts-utils/match';
+	import { copyCanvas } from '$lib/utils/clipboard';
 
 	interface Props {
 		team: TBATeam;
@@ -15,10 +14,12 @@
 		matches: TBAMatch[];
 	}
 
-	let { team, event, staticY = $bindable(), scouting, matches }: Props = $props();
+	let { team, staticY = $bindable(), scouting }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
+
+	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	onMount(() => {
 		scouting.sort((a, b) => {

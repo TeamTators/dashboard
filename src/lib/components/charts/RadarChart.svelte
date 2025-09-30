@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { TBATeam } from '$lib/utils/tba';
 	import Chart from 'chart.js/auto';
+	import { copyCanvas } from '$lib/utils/clipboard';
 
 	interface Props {
 		team: TBATeam;
@@ -15,6 +16,8 @@
 	const { team, data, opts }: Props = $props();
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
+
+	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
 
 	const render = () => {
 		if (chartInstance) {
