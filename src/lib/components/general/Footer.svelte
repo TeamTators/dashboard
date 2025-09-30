@@ -44,6 +44,7 @@
 		'sudo rm -rf /',
 		'If you climb a hill you\'ll gain a lot of potential. Same thing if you rub a balloon.',
 		'Lamps are just domesticated fire.',
+		'Click me for points!',
 	];
 
 	const quote = Random.choose(quotes);
@@ -66,6 +67,10 @@
 			<i class="fa-brands fa-github fa-2x link-secondary"></i>
 		</a>
 		<br />
-		{quote}
+		{#if quote === 'Click me for points!'}
+			<a href="/click-me-for-points">{quote}</a>
+			{:else}
+			{quote}
+		{/if}
 	</p>
 </footer>
