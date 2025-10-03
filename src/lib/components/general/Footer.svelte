@@ -41,7 +41,7 @@
 		'99 little bugs in the code, take one down, patch it around, 117 little bugs in the code…',
 		'"It works on my machine" - Every Developer Ever',
 		'alias please=sudo',
-		'sudo rm -rf /',
+		'To backup all files, run: sudo rm -rf / --no-preserve-root (Don\'t do this)',
 		'If you climb a hill you\'ll gain a lot of potential. Same thing if you rub a balloon.',
 		'Lamps are just domesticated fire.',
 		'Click me for points!',
