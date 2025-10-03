@@ -39,7 +39,7 @@
 			);
 		});
 
-		const off = uploadComponent.on('load', (file) => {
+		uploadComponent.on('load', (file) => {
 			FIRST.TeamPictures.new({
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
