@@ -37,7 +37,7 @@
 			},
 			{
 				name: 'Logs',
-				href: '/dashboard/mentor/potato/logs',
+				href: '/dashboard/potato/logs',
 				icon: {
 					type: 'material-icons',
 					name: 'history'
