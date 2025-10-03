@@ -15,7 +15,7 @@ export const load = (event) => {
 			return {
 				team: new TBATeam(d.team, e),
 				left,
-				question: left, //.map((item) => item.data.key).join(','),
+				// question: left.map((item) => item.data.key).join(','),
 				uploaded: d.uploaded,
 				tbaPictures: d.tba
 			};

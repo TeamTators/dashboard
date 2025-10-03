@@ -10,8 +10,13 @@ export class MissingPitscoutComp implements ICellRendererComp {
 
         this.eGui = document.createElement('div');
         // create your gui here
-        const questions: Scouting.PIT.QuestionArr = params.data.question;
-
+        const questions: Scouting.PIT.QuestionArr = params.data.left;
+        for (const q of questions) {
+            const text = document.createElement('a');
+            text.textContent = q;
+            this.eGui.appendChild(text);
+        };
+        //questions.map((q) => Scouting.PIT.Questions.Generator(q));
         // Task:
         // Create links for each of the questions, they will go to the correct link
     }
