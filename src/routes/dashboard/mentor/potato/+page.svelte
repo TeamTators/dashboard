@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Navbar } from '$lib/model/navbar';
 	import { Potato } from '$lib/model/potato';
 	import { capitalize } from 'ts-utils/text';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
@@ -22,31 +21,6 @@
 	let rest: PotatoAccount[] = $state([]);
 
 	const you = $derived(data.you);
-
-	Navbar.getSections().set([]);
-
-	Navbar.addSection({
-		name: 'Potato',
-		links: [
-			{
-				name: 'Home',
-				href: '/',
-				icon: {
-					type: 'material-icons',
-					name: 'home'
-				}
-			},
-			{
-				name: 'Logs',
-				href: '/dashboard/potato/logs',
-				icon: {
-					type: 'material-icons',
-					name: 'history'
-				}
-			}
-		],
-		priority: 0
-	});
 
 	let selectedPotato = $state(Potato.Friend.Generator({}));
 	let modal: Modal;
