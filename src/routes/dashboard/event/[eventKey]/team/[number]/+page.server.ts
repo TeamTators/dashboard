@@ -1,13 +1,10 @@
 import { FIRST } from '$lib/server/structs/FIRST.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Account } from '$lib/server/structs/account.js';
-import { and, eq } from 'drizzle-orm';
 import * as TBA from '$lib/server/utils/tba';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
-import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
 import terminal from '$lib/server/utils/terminal';
-import { resolveAll } from 'ts-utils/check';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
@@ -111,15 +108,20 @@ export const load = async (event) => {
 		event: e.value.tba,
 		scouting: scouting.value.map((s) => s.safe()),
 		comments: comments.value.map((c) => c.safe()),
-		answers: pitScouting.value.answers.map((a) => a.answer.safe()),
 		questions: pitScouting.value.questions.map((q) => q.safe()),
 		groups: pitScouting.value.groups.map((g) => g.safe()),
-		sections: pitScouting.value.sections.map((s) => s.safe()),
+		sections: pitScouting.value.sections.map((sect) => ({
+			section: sect.section.safe(),
+			sessions: sect.sessions.map((sess) => ({
+				section: sect.section.safe(),
+				account: sess.account?.safe(),
+				answers: sess.answers.map((ans) => ({
+					account: ans.account?.safe(),
+					answer: ans.answer.safe()
+				}))
+			}))
+		})),
 		pictures: pictures.value.map((p) => p.safe()),
-		answerAccounts: pitScouting.value.answers
-			.map((a) => a.account)
-			.filter(Boolean)
-			.map((a) => a.safe()),
 		matches: matches.value.map((m) => m.tba),
 		scoutingAccounts: accounts,
 		checksSum: checks

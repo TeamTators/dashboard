@@ -9,20 +9,25 @@ import { str, num } from '$lib/server/utils/env';
 
 describe('TBA Webhook', async () => {
 	config();
+	const LOCAL_TBA_WEBHOOK_PATH = str('LOCAL_TBA_WEBHOOK_PATH', false);
 
 	const server = await import(
 		path.resolve(
 			process.cwd(),
-			str('LOCAL_TBA_WEBHOOK_PATH', false) || '../tba-webhooks',
+			LOCAL_TBA_WEBHOOK_PATH || '../tba-webhooks',
 			'src',
 			'index'
 		)
 	);
 
+	const LOCAL_TBA_WEBHOOK_PORT = num('LOCAL_TBA_WEBHOOK_PORT', true);
+	const LOCAL_TBA_WEBHOOK_SECRET = str('LOCAL_TBA_WEBHOOK_SECRET', true);
+	const LOCAL_TBA_WEBHOOK_REDIS_NAME = str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true);
+
 	const serverPromise = server.main(
-		num('LOCAL_TBA_WEBHOOK_PORT', true),
-		str('LOCAL_TBA_WEBHOOK_SECRET', true),
-		str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true)
+		LOCAL_TBA_WEBHOOK_PORT,
+		LOCAL_TBA_WEBHOOK_SECRET,
+		LOCAL_TBA_WEBHOOK_REDIS_NAME
 	);
 
 	let service: ReturnType<typeof TBAWebhooks.init> | undefined;
@@ -41,7 +46,7 @@ describe('TBA Webhook', async () => {
 		const payload = JSON.stringify(data);
 		const hmac = server.generateWebhookHmac(payload, secret);
 
-		return fetch(`http://localhost:${process.env.LOCAL_TBA_WEBHOOK_PORT}`, {
+		return fetch(`http://localhost:${LOCAL_TBA_WEBHOOK_PORT}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
