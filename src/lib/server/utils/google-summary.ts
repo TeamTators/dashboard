@@ -9,6 +9,37 @@ import { and, eq } from 'drizzle-orm';
 import { type RequestEvent } from '@sveltejs/kit';
 import { teamsFromMatch } from 'tatorscout/tba';
 
+/**
+ * Memoization utility for caching expensive function results
+ *
+ * This utility enables significant performance optimizations by:
+ * - Caching database query results (pit scouting, team scouting)
+ * - Caching complex score calculations that are reused across multiple columns
+ * - Caching trace processing and analysis results
+ * - Reducing redundant API calls (team status, rankings)
+ *
+ * The cache is maintained per function call with intelligent key generation
+ * to ensure correct cache hits while avoiding memory leaks.
+ */
+function memoize<TArgs extends unknown[], TReturn>(
+	fn: (...args: TArgs) => TReturn,
+	keyGenerator?: (...args: TArgs) => string
+): (...args: TArgs) => TReturn {
+	const cache = new Map<string, TReturn>();
+
+	return (...args: TArgs): TReturn => {
+		const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
+
+		if (cache.has(key)) {
+			return cache.get(key)!;
+		}
+
+		const result = fn(...args);
+		cache.set(key, result);
+		return result;
+	};
+}
+
 export const auth = (event: RequestEvent) => {
 	// const key = event.request.headers.get('X-Auth-Key');
 	// if (key !== process.env.WEBHOOK_AUTH_KEY) {
@@ -43,126 +74,190 @@ export const summarize = async (eventKey: string) => {
 			return data;
 		};
 
-		const getScores = async (team: Team) => {
-			try {
-				const traces = await getAllTraces(team);
-				if (!traces) throw new Error('No traces found');
-				const teamMatches = matches.filter((m) =>
-					teamsFromMatch(m.tba).includes(team.tba.team_number)
-				);
-				if (teamMatches.length === 0) throw new Error('No matches found');
-
-				// TODO: include tba climb and mobility score here
-				// Return a new object with { traceScore: (current score), endgame: number, mobility: number }
-				// For each of the listeners below, you'll need to do `scores.map(s => s.traceScore.something)` instead of `scores.map(s => s.something)`
-				// Then, fill out the blank columns below with the appropriate values
-
-				const traceScore = traces.map((t) =>
-					Trace.score.parse2025(t.trace, (t.match.data.alliance || 'red') as 'red' | 'blue')
-				);
-
-				const endgame: { dpc: number; shc: number; park: number }[] = [];
-				const mobility: number[] = [];
-				type EndGameRobotKey = `endGameRobot${1 | 2 | 3}`;
-				type AutoLineKey = `autoLineRobot${1 | 2 | 3}`;
-
-				for (const match of teamMatches) {
-					const scoreBreakdown = match.tba.score_breakdown;
-					if (!scoreBreakdown) continue;
-
-					const alliance = match.tba.alliances.red.team_keys.includes(team.tba.key)
-						? 'red'
-						: 'blue';
-
-					const teamIndex = match.tba.alliances[alliance].team_keys.indexOf(team.tba.key);
-					const status = (
-						scoreBreakdown?.[alliance] as Record<EndGameRobotKey, string | undefined>
-					)?.[`endGameRobot${teamIndex + 1}` as EndGameRobotKey];
-
-					endgame.push({
-						dpc: status === 'DeepCage' ? 12 : 0,
-						shc: status === 'ShallowCage' ? 6 : 0,
-						park: status === 'Parked' ? 2 : 0
-					});
-
-					mobility.push(
-						(
-							(scoreBreakdown?.[alliance] as Record<AutoLineKey, string | undefined>)?.[
-								`autoLineRobot${teamIndex + 1}` as AutoLineKey
-							] ?? ''
-						).length > 0
-							? 2
-							: 0
+		// Memoized version of getScores to cache results per team
+		const getScores = memoize(
+			async (team: Team) => {
+				try {
+					const traces = await getAllTraces(team);
+					if (!traces) throw new Error('No traces found');
+					const teamMatches = matches.filter((m) =>
+						teamsFromMatch(m.tba).includes(team.tba.team_number)
 					);
+					if (teamMatches.length === 0) throw new Error('No matches found');
+
+					// TODO: include tba climb and mobility score here
+					// Return a new object with { traceScore: (current score), endgame: number, mobility: number }
+					// For each of the listeners below, you'll need to do `scores.map(s => s.traceScore.something)` instead of `scores.map(s => s.something)`
+					// Then, fill out the blank columns below with the appropriate values
+
+					const traceScore = traces.map((t) =>
+						Trace.score.parse2025(t.trace, (t.match.data.alliance || 'red') as 'red' | 'blue')
+					);
+
+					const endgame: { dpc: number; shc: number; park: number }[] = [];
+					const mobility: number[] = [];
+					type EndGameRobotKey = `endGameRobot${1 | 2 | 3}`;
+					type AutoLineKey = `autoLineRobot${1 | 2 | 3}`;
+
+					for (const match of teamMatches) {
+						const scoreBreakdown = match.tba.score_breakdown;
+						if (!scoreBreakdown) continue;
+
+						const alliance = match.tba.alliances.red.team_keys.includes(team.tba.key)
+							? 'red'
+							: 'blue';
+
+						const teamIndex = match.tba.alliances[alliance].team_keys.indexOf(team.tba.key);
+						const status = (
+							scoreBreakdown?.[alliance] as Record<EndGameRobotKey, string | undefined>
+						)?.[`endGameRobot${teamIndex + 1}` as EndGameRobotKey];
+
+						endgame.push({
+							dpc: status === 'DeepCage' ? 12 : 0,
+							shc: status === 'ShallowCage' ? 6 : 0,
+							park: status === 'Parked' ? 2 : 0
+						});
+
+						mobility.push(
+							(
+								(scoreBreakdown?.[alliance] as Record<AutoLineKey, string | undefined>)?.[
+									`autoLineRobot${teamIndex + 1}` as AutoLineKey
+								] ?? ''
+							).length > 0
+								? 2
+								: 0
+						);
+					}
+
+					return { traceScore, endgame, mobility };
+				} catch (error) {
+					terminal.error(`Error pulling scores for team ${team.tba.team_number}`, error);
+					throw error;
 				}
+			},
+			(team: Team) => `getScores_${team.tba.team_number}`
+		);
 
-				return { traceScore, endgame, mobility };
-			} catch (error) {
-				terminal.error(`Error pulling scores for team ${team.tba.team_number}`, error);
-				throw error;
-			}
-		};
+		// Memoized version of getScoresWithoutDefense to cache results per team
+		const getScoresWithoutDefense = memoize(
+			async (team: Team) => {
+				try {
+					const traces = await getAllTraces(team);
+					if (!traces) throw new Error('No traces found');
+					const teamMatches = matches.filter((m) =>
+						teamsFromMatch(m.tba).includes(team.tba.team_number)
+					);
+					if (teamMatches.length === 0) throw new Error('No matches found');
 
-		const getScoresWithoutDefense = async (team: Team) => {
-			try {
-				const traces = await getAllTraces(team);
-				if (!traces) throw new Error('No traces found');
-				const teamMatches = matches.filter((m) =>
-					teamsFromMatch(m.tba).includes(team.tba.team_number)
-				);
-				if (teamMatches.length === 0) throw new Error('No matches found');
+					const traceScore = traces
+						.map((t) => {
+							if (!t.match.data.checks.includes('defense')) {
+								return Trace.score.parse2025(
+									t.trace,
+									(t.match.data.alliance || 'red') as 'red' | 'blue'
+								);
+							}
+						})
+						.filter((score) => score !== undefined); // Remove undefined values
 
-				const traceScore = traces
-					.map((t) => {
-						if (!t.match.data.checks.includes('defense')) {
-							return Trace.score.parse2025(
-								t.trace,
-								(t.match.data.alliance || 'red') as 'red' | 'blue'
-							);
-						}
-					})
-					.filter((score) => score !== undefined); // Remove undefined values
+					return { traceScore };
+				} catch (error) {
+					terminal.error(`Error pulling scores for team ${team.tba.team_number}`, error);
+					throw error;
+				}
+			},
+			(team: Team) => `getScoresWithoutDefense_${team.tba.team_number}`
+		);
 
-				return { traceScore };
-			} catch (error) {
-				terminal.error(`Error pulling scores for team ${team.tba.team_number}`, error);
-				throw error;
-			}
-		};
-
-		const getPitScouting = async (requestedQuestion: string, team: Team) => {
-			try {
-				const res = await DB.select()
-					.from(Scouting.PIT.Answers.table)
-					.innerJoin(
-						Scouting.PIT.Questions.table,
-						eq(Scouting.PIT.Answers.table.questionId, Scouting.PIT.Questions.table.id)
-					)
-					.innerJoin(
-						Scouting.PIT.Groups.table,
-						eq(Scouting.PIT.Questions.table.groupId, Scouting.PIT.Groups.table.id)
-					)
-					.innerJoin(
-						Scouting.PIT.Sections.table,
-						eq(Scouting.PIT.Groups.table.sectionId, Scouting.PIT.Sections.table.id)
-					)
-					.where(
-						and(
-							eq(Scouting.PIT.Answers.table.team, team.tba.team_number),
-							eq(Scouting.PIT.Questions.table.key, requestedQuestion),
-							eq(Scouting.PIT.Sections.table.eventKey, event.tba.key)
+		// Memoized version of getPitScouting to cache results per team and question
+		const getPitScouting = memoize(
+			async (requestedQuestion: string, team: Team) => {
+				try {
+					const res = await DB.select()
+						.from(Scouting.PIT.Answers.table)
+						.innerJoin(
+							Scouting.PIT.Questions.table,
+							eq(Scouting.PIT.Answers.table.questionId, Scouting.PIT.Questions.table.id)
 						)
-					);
+						.innerJoin(
+							Scouting.PIT.Groups.table,
+							eq(Scouting.PIT.Questions.table.groupId, Scouting.PIT.Groups.table.id)
+						)
+						.innerJoin(
+							Scouting.PIT.Sections.table,
+							eq(Scouting.PIT.Groups.table.sectionId, Scouting.PIT.Sections.table.id)
+						)
+						.where(
+							and(
+								eq(Scouting.PIT.Answers.table.team, team.tba.team_number),
+								eq(Scouting.PIT.Questions.table.key, requestedQuestion),
+								eq(Scouting.PIT.Sections.table.eventKey, event.tba.key)
+							)
+						);
 
-				if (res.length === 0) {
-					return 'unknown';
+					if (res.length === 0) {
+						return 'unknown';
+					}
+					return z.array(z.string()).parse(JSON.parse(res[0].pit_answers.answer))[0];
+				} catch (error) {
+					terminal.error(`Error pulling pitscouting for team: ${team}`, error);
+					throw error;
 				}
-				return z.array(z.string()).parse(JSON.parse(res[0].pit_answers.answer))[0];
-			} catch (error) {
-				terminal.error(`Error pulling pitscouting for team: ${team}`, error);
-				throw error;
-			}
-		};
+			},
+			(requestedQuestion: string, team: Team) =>
+				`getPitScouting_${requestedQuestion}_${team.tba.team_number}`
+		);
+
+		// Memoize expensive velocity and scouting calculations
+		const getTeamScouting = memoize(
+			async (teamNumber: number, eventKey: string) => {
+				return (await Scouting.getTeamScouting(teamNumber, eventKey)).unwrap();
+			},
+			(teamNumber: number, eventKey: string) => `teamScouting_${teamNumber}_${eventKey}`
+		);
+
+		const getAverageVelocity = memoize(
+			async (team: Team) => {
+				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
+				return average(
+					matchScouting.map((s) =>
+						Trace.velocity.average(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray)
+					)
+				);
+			},
+			(team: Team) => `averageVelocity_${team.tba.team_number}`
+		);
+
+		const getChecks = memoize(
+			async (team: Team) => {
+				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
+				return matchScouting
+					.map((s) => z.array(z.string()).parse(JSON.parse(s.data.checks)))
+					.flat()
+					.join('\n ');
+			},
+			(team: Team) => `checks_${team.tba.team_number}`
+		);
+
+		const getSecondsNotMoving = memoize(
+			async (team: Team) => {
+				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
+				return average(
+					matchScouting.map((s) =>
+						Trace.secondsNotMoving(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray, false)
+					)
+				);
+			},
+			(team: Team) => `secondsNotMoving_${team.tba.team_number}`
+		);
+
+		// Memoize team status calls to reduce API calls
+		const getTeamStatus = memoize(
+			async (team: Team) => {
+				return (await team.getStatus()).unwrap()?.qual?.ranking.rank;
+			},
+			(team: Team) => `teamStatus_${team.tba.team_number}`
+		);
 
 		const average = (array: number[]): number => {
 			if (array.length === 0) return 0;
@@ -174,22 +269,9 @@ export const summarize = async (eventKey: string) => {
 		const t = new Table(eventKey);
 		t.column('Team Number', (t) => t.tba.team_number);
 		t.column('Team Name', (t) => t.tba.nickname || 'unknown');
-		t.column('Rank', (t) => t.getStatus().then((s) => s.unwrap()?.qual?.ranking.rank));
-		t.column('Average velocity', async (t) => {
-			const matchScouting = (await Scouting.getTeamScouting(t.tba.team_number, eventKey)).unwrap();
-			return average(
-				matchScouting.map((s) =>
-					Trace.velocity.average(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray)
-				)
-			);
-		});
-		t.column('Checks', async (t) => {
-			const matchScouting = (await Scouting.getTeamScouting(t.tba.team_number, eventKey)).unwrap();
-			return matchScouting
-				.map((s) => z.array(z.string()).parse(JSON.parse(s.data.checks)))
-				.flat()
-				.join('\n ');
-		});
+		t.column('Rank', (t) => getTeamStatus(t));
+		t.column('Average velocity', (t) => getAverageVelocity(t));
+		t.column('Checks', (t) => getChecks(t));
 		t.column('Weight', async (t) => {
 			return getPitScouting('robot_weight', t);
 		});
@@ -402,14 +484,7 @@ export const summarize = async (eventKey: string) => {
 			const scores = await getScores(t);
 			return average(scores.mobility);
 		});
-		t.column('Seconds not moving', async (t) => {
-			const matchScouting = (await Scouting.getTeamScouting(t.tba.team_number, eventKey)).unwrap();
-			return average(
-				matchScouting.map((s) =>
-					Trace.secondsNotMoving(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray, false)
-				)
-			);
-		});
+		t.column('Seconds not moving', (t) => getSecondsNotMoving(t));
 		t.column('Average Score Contribution Without Defense', async (t) => {
 			const scores = await getScoresWithoutDefense(t);
 			return average(scores.traceScore.map((s) => s.total));
@@ -497,6 +572,8 @@ export class Table {
 
 	serialize() {
 		// TODO: Use multi-threading instead of Promise.all
+		// Note: The memoization optimizations in column functions will automatically
+		// reduce redundant calls when this method processes teams in parallel
 		return attemptAsync(async () => {
 			const event = (await Event.getEvent(this.eventKey)).unwrap();
 			const teams = (await event.getTeams()).unwrap();

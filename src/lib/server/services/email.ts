@@ -8,7 +8,7 @@ import path from 'path';
 import { num, str } from '../utils/env';
 
 const emailService = redis.createQueue(
-	'email',
+	str('EMAIL_QUEUE_NAME', true),
 	z.object({
 		html: z.string().optional(),
 		text: z.string().optional(),
@@ -46,24 +46,17 @@ const openEmail = (name: keyof Email) => {
  * @param targetService - The name of the target service queue to which the email job will be pushed. Defaults to the value of EMAIL_MICROSERVICE_NAME environment variable or 'emailServiceQueue'.
  * @returns
  */
-export const sendEmail = <T extends keyof Email>(
-	config: {
-		type: T;
-		data: Email[T];
-		to: string | string[];
-		subject: string;
-		attachments?: {
-			filename: string;
-			path: string; // fullpath
-		}[];
-	},
-	targetService?: string
-) => {
+export const sendEmail = <T extends keyof Email>(config: {
+	type: T;
+	data: Email[T];
+	to: string | string[];
+	subject: string;
+	attachments?: {
+		filename: string;
+		path: string; // fullpath
+	}[];
+}) => {
 	return attemptAsync(async () => {
-		if (!targetService) {
-			targetService = str('EMAIL_MICROSERVICE_NAME', true);
-		}
-
 		const html = await openEmail(config.type).unwrap();
 
 		const job = {
@@ -78,7 +71,7 @@ export const sendEmail = <T extends keyof Email>(
 
 		return {
 			success: true,
-			message: `Email job queued successfully on ${targetService}`
+			message: `Email job queued successfully`
 		};
 	});
 };

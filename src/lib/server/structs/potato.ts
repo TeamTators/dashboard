@@ -396,7 +396,7 @@ export namespace Potato {
 		group: 'Potatoes',
 		permissions: ['potato_friend:update:level'],
 		description: 'Edit the level of a potato',
-		features: []
+		features: ['manage-potatoes']
 	});
 }
 
