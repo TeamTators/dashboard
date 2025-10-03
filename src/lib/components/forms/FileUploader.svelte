@@ -33,7 +33,7 @@
 		endpoint,
 		usage = 'images',
 		allowLocal = true,
-		btnClasses = 'btn btn-primary',
+		btnClasses = 'btn btn-primary'
 	}: Props = $props();
 
 	const allowedFileTypes = usage === 'images' ? ['image/*'] : ['*'];

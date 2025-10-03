@@ -13,13 +13,13 @@
 	import { Account } from '$lib/model/account.js';
 	import { contextmenu } from '$lib/utils/contextmenu.js';
 	import { MissingPitscoutComp } from '$lib/utils/ag-grid/missing-pitscout.js';
-	
+
 	const { data } = $props();
 	const event = $derived(data.event);
 	const checklist = $derived(readable(data.data));
 
 	$effect(() => nav(event.tba));
-	
+
 	let uploadTeam: undefined | (typeof $checklist)[number] = $state(undefined);
 	let uploadComponent: FileUploader;
 
@@ -28,14 +28,13 @@
 		uploadComponent.uppy.use(ImageEditor);
 		uploadComponent.uppy.use(Compressor, { quality: 0.4 });
 
-
 		uploadComponent.on('load', (file) => {
 			if (!uploadTeam) return;
 			FIRST.TeamPictures.new({
 				team: uploadTeam.team.tba.team_number,
 				eventKey: event.tba.key,
 				picture: file,
-				accountId: Account.getSelf().get().data.id || '',
+				accountId: Account.getSelf().get().data.id || ''
 			});
 		});
 	});
@@ -86,7 +85,7 @@
 									name: 'Upload Picture',
 									icon: {
 										type: 'material-icons',
-										name: 'add_a_photo',
+										name: 'add_a_photo'
 									},
 									action: () => {
 										uploadTeam = e.data;
@@ -96,7 +95,7 @@
 							]
 						});
 					},
-					preventDefaultOnContextMenu: true,
+					preventDefaultOnContextMenu: true
 				}}
 				data={checklist}
 				height={400}
@@ -119,6 +118,7 @@
 							// field: "question",
 							filter: 'agTextColumnFilter',
 							cellRenderer: MissingPitscoutComp,
+							width: 300
 						}
 					]
 				}}
@@ -129,12 +129,11 @@
 	</div>
 </div>
 
-
 <FileUploader
 	multiple={true}
 	message="Upload Pictures"
 	usage="images"
-	endpoint='/upload'
+	endpoint="/upload"
 	bind:this={uploadComponent}
 	btnClasses="d-none"
 />
