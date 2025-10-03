@@ -5,7 +5,7 @@ import type { TaskTypes } from "$lib/types/tasks";
 import { CallListener } from "../services/struct-listeners";
 import { z } from "zod";
 import { attemptAsync } from "ts-utils/check";
-import { deepEqual} from "node:assert";
+import { deepEqual } from "node:assert";
 import { DB } from "../db";
 import { and, eq } from "drizzle-orm";
 import { Scouting } from "./scouting";
@@ -170,6 +170,17 @@ export namespace Tasks {
             });
             if (res.isErr()) return terminal.error(res.error);
         }
+
+        complete({
+            eventKey: eventKey.value,
+            type: 'pit-scouting',
+            args: {
+                teamNumber: answer.data.team,
+                questionId: question.value.data.id,
+                section: section.value.data.id,
+            },
+            completedBy: account.value,
+        });
     });
 }
 
