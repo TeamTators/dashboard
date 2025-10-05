@@ -80,6 +80,7 @@ jobs:
       - name: Create .env file for dashboard
         run: |
           cd dashboard
+          cp config.example.json config.json
           touch .env
           echo "PORT=3000" >> .env
           echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
