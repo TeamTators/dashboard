@@ -93,7 +93,7 @@ describe('TBA Webhook', async () => {
 	});
 
 	it('Should send a successful request to the webhook', async () => {
-		const res = await fetch(`http://localhost:${process.env.LOCAL_TBA_WEBHOOK_PORT}`);
+		const res = await fetch(`http://localhost:${config.tba_webhook.port}`);
 		expect(res.status).toBe(200);
 	});
 
