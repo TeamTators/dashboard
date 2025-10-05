@@ -61,12 +61,7 @@ jobs:
           pnpm install --frozen-lockfile
 
       - name: Clone the tba-webhooks repository
-        run: |
-          cp config.example.json config.json
-          touch .env
-          echo "OAUTH2_CLIENT_ID=1234567890" >> .env
-          echo "OAUTH2_CLIENT_SECRET=1234567890" >> .env
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
+        run: git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
 
       - name: Install tba-webhooks dependencies
         run: |
@@ -85,11 +80,11 @@ jobs:
       - name: Create .env file for dashboard
         run: |
           cd dashboard
-          cp config.example.json config.json
           touch .env
-          echo "ENVIRONMENT=test" >> .env
           echo "PORT=3000" >> .env
           echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
+          echo "OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "OAUTH2_CLIENT_SECRET=1234567890" >> .env
           export $(cat .env | xargs)
 
       - name: Run migrations

@@ -47,5 +47,14 @@
 		"enabled": true,
 		"requests": 100,
 		"window": 600
+	},
+	"tba_webhook": {
+		"path": "../tba-webhooks",
+		"port": 3000,
+		"redis_name": "tba-webhooks",
+		"secret": "your_webhook_secret"
+	},
+	"potato": {
+		"enabled": true
 	}
 }
