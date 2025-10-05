@@ -4,7 +4,7 @@ import { ServerCode } from 'ts-utils/status';
 import { config } from '$lib/server/utils/env';
 
 export const load = async (event) => {
-	if (config.potato.enabled) throw redirect(ServerCode.permanentRedirect, '/');
+	if (!config.potato.enabled) throw redirect(ServerCode.permanentRedirect, '/');
 	const rankings = (await Potato.getRankings()).unwrap();
 	const you = rankings.find((r) => r.account.data.username === event.locals.account?.data.username);
 	return {
