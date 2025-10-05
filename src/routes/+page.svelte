@@ -28,7 +28,7 @@
 				</div>
 			</a>
 		</div>
-		{#if __APP_ENV__.potato.enabled === 'true'}
+		{#if __APP_ENV__.do_potato}
 			<div class="col-md-6 p-3">
 				<a href="/dashboard/potato" class="text-reset text-decoration-none">
 					<div class="card bg-warning">

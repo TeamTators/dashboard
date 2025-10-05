@@ -1,7 +1,6 @@
-import { boolean } from 'drizzle-orm/pg-core';
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct, StructStream } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct/back-end';
 import { Permissions } from './permissions';
 import { z } from 'zod';
 import { DB } from '../db';
