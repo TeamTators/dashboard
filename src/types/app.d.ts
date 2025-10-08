@@ -16,6 +16,11 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	const __APP_ENV__: {
+		name: string;
+		do_potato: boolean;
+	};
 }
 
 export {};

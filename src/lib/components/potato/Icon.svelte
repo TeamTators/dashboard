@@ -5,7 +5,6 @@
 	import Modal from '../bootstrap/Modal.svelte';
 	import { alert, prompt } from '$lib/utils/prompts';
 	import Stats from './Stats.svelte';
-	import { PUBLIC_DO_POTATO } from '$env/static/public';
 
 	const self = Account.getSelf();
 
@@ -48,7 +47,7 @@
 	let modal: Modal;
 </script>
 
-{#if level && PUBLIC_DO_POTATO === 'true'}
+{#if level && __APP_ENV__.do_potato}
 	<div class="d-flex align-items-center">
 		<p class="mb-0">
 			{level.toLocaleString()}
