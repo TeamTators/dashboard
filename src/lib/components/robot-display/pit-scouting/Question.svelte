@@ -7,27 +7,27 @@
 
 	interface Props {
 		question: Scouting.PIT.QuestionData;
-		answer: Scouting.PIT.AnswerData | undefined;
-		answerAccounts: Account.AccountData[];
+		answer?: {
+			answer: Scouting.PIT.AnswerData;
+			account: Account.AccountData | undefined;
+		};
 	}
 
-	const { question, answer, answerAccounts }: Props = $props();
+	const { question, answer }: Props = $props();
 
 	let value = $state('No answer');
 	let accountUsername = $state('unknown');
 
 	onMount(() => {
 		if (!answer) return;
-		const res = Scouting.PIT.parseAnswer(answer);
+		const res = Scouting.PIT.parseAnswer(answer.answer);
 		if (res.isOk()) {
 			value = res.value.join(', ');
-			console.log(answerAccounts);
-			const a = answerAccounts.find((a) => a.data.id === answer.data.accountId);
-			accountUsername = a?.data.username || 'unknown';
+			accountUsername = answer.account?.data.username || 'unknown';
 		}
 
 		import('bootstrap').then((bs) => {
-			const tt = bs.Tooltip.getOrCreateInstance(tooltip);
+			const _tt = bs.Tooltip.getOrCreateInstance(tooltip);
 		});
 	});
 

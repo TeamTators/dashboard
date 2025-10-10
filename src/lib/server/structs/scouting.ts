@@ -368,7 +368,8 @@ export namespace Scouting {
 			structure: {
 				name: text('name').notNull(),
 				order: integer('order').notNull(),
-				eventKey: text('event_key').notNull()
+				eventKey: text('event_key').notNull(),
+				allowMultiple: boolean('allow_multiple').notNull().default(false)
 			},
 			versionHistory: {
 				type: 'versions',
@@ -445,7 +446,8 @@ export namespace Scouting {
 				questionId: text('question_id').notNull(),
 				answer: text('answer').notNull(),
 				team: integer('team').notNull(),
-				accountId: text('account_id').notNull()
+				accountId: text('account_id').notNull(),
+				session: text('session').notNull().default('') // The group of answers, uuid
 			},
 			versionHistory: {
 				type: 'versions',
@@ -460,6 +462,48 @@ export namespace Scouting {
 		});
 
 		export type AnswerData = typeof Answers.sample;
+
+		export const AnswerSessions = new Struct({
+			name: 'pit_answer_sessions',
+			structure: {
+				section: text('section').notNull(),
+				createdBy: text('created_by').notNull(),
+				answers: integer('answers').notNull()
+			}
+		});
+
+		export type AnswerSessionData = typeof AnswerSessions.sample;
+
+		const add = async (a: AnswerData) => {
+			const s = await AnswerSessions.fromId(a.data.session);
+
+			if (s.isOk() && s.value) {
+				s.value.update({
+					answers: s.value.data.answers + 1
+				});
+			}
+		};
+
+		const remove = async (a: AnswerData) => {
+			const s = await AnswerSessions.fromId(a.data.session);
+
+			if (s.isOk() && s.value) {
+				s.value.update({
+					answers: s.value.data.answers - 1
+				});
+			}
+		};
+
+		Answers.on('create', add);
+		Answers.on('delete', remove);
+		Answers.on('archive', remove);
+		Answers.on('restore', add);
+
+		AnswerSessions.on('archive', (s) => {
+			Answers.fromProperty('session', s.id, { type: 'stream' }).pipe((a) => {
+				a.setArchive(true);
+			});
+		});
 
 		Answers.queryListen('from-group', async (event, data) => {
 			const account = event.locals.account;
@@ -510,30 +554,72 @@ export namespace Scouting {
 					.filter((q, i, a) => a.findIndex((qq) => q.id === qq.id) === i)
 					.filter((a) => !a.archived);
 
-				const answers = (
-					await Answers.fromProperty('team', team, { type: 'stream' }).await()
-				).unwrap();
+				const sectionObjects: {
+					section: SectionData;
+					sessions: {
+						session: AnswerSessionData;
+						account?: Account.AccountData;
+						answers: {
+							account?: Account.AccountData;
+							answer: AnswerData;
+						}[];
+					}[];
+				}[] = await Promise.all(
+					sections.map(async (section) => {
+						const sessions = await AnswerSessions.fromProperty('section', section.id, {
+							type: 'all'
+						}).unwrap();
+
+						return {
+							section,
+							sessions: await Promise.all(
+								sessions.map(async (session) => {
+									const account = await Account.Account.fromId(session.data.createdBy).unwrap();
+
+									return {
+										account,
+										session,
+										answers: await Promise.all(
+											(
+												await Answers.fromProperty('session', session.id, {
+													type: 'all'
+												}).unwrap()
+											).map(async (a) => {
+												if (a.data.accountId === account?.data.id) {
+													return {
+														account,
+														answer: a
+													};
+												}
+
+												const act = await Account.Account.fromId(a.data.accountId).unwrap();
+
+												return {
+													account: act,
+													answer: a
+												};
+											})
+										)
+									};
+								})
+							)
+						};
+					})
+				);
 
 				return {
 					questions,
 					groups,
-					sections,
-					answers: await Promise.all(
-						answers
-							.filter((a) => a.data.team === team)
-							.map(async (a) => {
-								const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
-								return {
-									answer: a,
-									account
-								};
-							})
-					)
+					sections: sectionObjects
 				};
 			});
 		};
 
-		export const getScoutingInfoFromSection = (team: number, section: SectionData) => {
+		export const getScoutingInfoFromSection = (
+			team: number,
+			section: SectionData,
+			sessionId: string
+		) => {
 			return attemptAsync(async () => {
 				const groups = (
 					await Groups.fromProperty('sectionId', section.id, {
@@ -548,15 +634,19 @@ export namespace Scouting {
 				)
 					.unwrap()
 					.flat();
-				const answers = resolveAll(
+				const answers = (
 					await Promise.all(
-						questions.map((q) =>
-							Answers.fromProperty('questionId', q.id, { type: 'stream' }).await()
-						)
+						questions.map(async (q) => {
+							const res = await DB.select()
+								.from(Answers.table)
+								.where(
+									and(eq(Answers.table.questionId, q.id), eq(Answers.table.session, sessionId))
+								);
+
+							return res.map((r) => Answers.Generator(r));
+						})
 					)
-				)
-					.unwrap()
-					.flat();
+				).flat();
 
 				return {
 					questions,
@@ -696,7 +786,8 @@ export namespace Scouting {
 					Sections.new({
 						name: 'General',
 						eventKey,
-						order: 0
+						order: 0,
+						allowMultiple: false
 					}),
 					// Sections.new({
 					// 	name: 'Mechanical',
@@ -706,7 +797,8 @@ export namespace Scouting {
 					Sections.new({
 						name: 'Electrical',
 						eventKey,
-						order: 2
+						order: 2,
+						allowMultiple: false
 					})
 				]);
 
@@ -1154,3 +1246,4 @@ export const _scoutingPitSectionsVersionTable = Scouting.PIT.Sections.versionTab
 export const _scoutingPitGroupsVersionTable = Scouting.PIT.Groups.versionTable;
 export const _scoutingPitQuestionsVersionTable = Scouting.PIT.Questions.versionTable;
 export const _scoutingPitAnswersVersionTable = Scouting.PIT.Answers.versionTable;
+export const _scoutingPitAnswerSections = Scouting.PIT.AnswerSessions.table;
