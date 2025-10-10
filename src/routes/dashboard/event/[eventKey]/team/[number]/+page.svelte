@@ -519,6 +519,11 @@
 			contributionSub();
 		};
 	});
+
+	let progressChart: Progress | undefined = $state(undefined);
+	let teamEventStatsChart: TeamEventStats | undefined = $state(undefined);
+	let averageContributionsPieChart: AverageContributionsPie | undefined = $state(undefined);
+	let radarChartComp: RadarChart<{ [key: string]: number }> | undefined = $state(undefined);
 </script>
 
 <DB {dashboard}>
@@ -632,12 +637,37 @@
 			</Card>
 			<Card card={progress}>
 				{#snippet body()}
-					<Progress {team} {event} {scouting} {matches} defaultView={'points'} />
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							progressChart?.copy(true);
+						}}
+					>
+						<i class="material-icons">copy_all</i>
+					</button>
+					<Progress
+						bind:this={progressChart}
+						{team}
+						{event}
+						{scouting}
+						{matches}
+						defaultView={'points'}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={eventStats}>
 				{#snippet body()}
-					<TeamEventStats {team} {event} {scouting} {matches} />
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							teamEventStatsChart?.copy(true);
+						}}
+					>
+						<i class="material-icons">copy_all</i>
+					</button>
+					<TeamEventStats bind:this={teamEventStatsChart} {team} {event} {scouting} {matches} />
 				{/snippet}
 			</Card>
 			<Card card={averageContributionsTable}>
@@ -647,7 +677,22 @@
 			</Card>
 			<Card card={averageContributionsPie}>
 				{#snippet body()}
-					<AverageContributionsPie {team} {event} {scouting} {matches} />
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							averageContributionsPieChart?.copy(true);
+						}}
+					>
+						<i class="material-icons">copy_all</i>
+					</button>
+					<AverageContributionsPie
+						bind:this={averageContributionsPieChart}
+						{team}
+						{event}
+						{scouting}
+						{matches}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={scoutSummary}>
@@ -663,7 +708,17 @@
 			<Card card={radarChart}>
 				{#snippet body()}
 					{#key contributions}
+						<button
+							type="button"
+							class="btn btn-secondary copy-btn"
+							onclick={() => {
+								radarChartComp?.copy(true);
+							}}
+						>
+							<i class="material-icons">copy_all</i>
+						</button>
 						<RadarChart
+							bind:this={radarChartComp}
 							{team}
 							data={{
 								'Level 1': contributions.cl1,
@@ -688,5 +743,14 @@
 <style>
 	.btn-disabled {
 		pointer-events: none;
+	}
+
+	.copy-btn {
+		position: absolute;
+		top: 50px;
+		right: 0.5rem;
+		z-index: 10;
+		padding-bottom: 8px;
+		opacity: 0.7;
 	}
 </style>
