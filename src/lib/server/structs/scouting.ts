@@ -9,7 +9,6 @@ import { eq, and } from 'drizzle-orm';
 import { Session } from './session';
 import { Permissions } from './permissions';
 import terminal from '../utils/terminal';
-import { TraceSchema } from 'tatorscout/trace';
 import { Logs } from './log';
 import { Account } from './account';
 

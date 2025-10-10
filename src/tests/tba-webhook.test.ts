@@ -1,28 +1,25 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
 import path from 'path';
-import { config } from 'dotenv';
 import { z } from 'zod';
 import { getSampleData } from '$lib/utils/zod-sample';
 import redis from '$lib/server/services/redis';
-import { str, num } from '$lib/server/utils/env';
+import { config } from '$lib/server/utils/env';
 
 describe('TBA Webhook', async () => {
-	config();
-
 	const server = await import(
 		path.resolve(
 			process.cwd(),
-			str('LOCAL_TBA_WEBHOOK_PATH', false) || '../tba-webhooks',
+			config.tba_webhook.path,
 			'src',
 			'index'
 		)
 	);
 
 	const serverPromise = server.main(
-		num('LOCAL_TBA_WEBHOOK_PORT', true),
-		str('LOCAL_TBA_WEBHOOK_SECRET', true),
-		str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true)
+		config.tba_webhook.port,
+		config.tba_webhook.secret,
+		config.tba_webhook.redis_name
 	);
 
 	let service: ReturnType<typeof TBAWebhooks.init> | undefined;
@@ -31,7 +28,7 @@ describe('TBA Webhook', async () => {
 		const res = await redis.init();
 		expect(res.isOk()).toBe(true);
 
-		service = TBAWebhooks.init(str('LOCAL_TBA_WEBHOOK_REDIS_NAME', true));
+		service = TBAWebhooks.init(config.tba_webhook.redis_name);
 	});
 
 	const send = (data: unknown, secret: string) => {
@@ -41,7 +38,7 @@ describe('TBA Webhook', async () => {
 		const payload = JSON.stringify(data);
 		const hmac = server.generateWebhookHmac(payload, secret);
 
-		return fetch(`http://localhost:${process.env.LOCAL_TBA_WEBHOOK_PORT}`, {
+		return fetch(`http://localhost:${config.tba_webhook.port}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -72,7 +69,7 @@ describe('TBA Webhook', async () => {
 				message_type: name
 			};
 
-			const res = await send(messageData, str('LOCAL_TBA_WEBHOOK_SECRET', true));
+			const res = await send(messageData, config.tba_webhook.secret);
 
 			expect(res.status).toBe(200);
 
@@ -96,7 +93,7 @@ describe('TBA Webhook', async () => {
 	});
 
 	it('Should send a successful request to the webhook', async () => {
-		const res = await fetch(`http://localhost:${process.env.LOCAL_TBA_WEBHOOK_PORT}`);
+		const res = await fetch(`http://localhost:${config.tba_webhook.port}`);
 		expect(res.status).toBe(200);
 	});
 

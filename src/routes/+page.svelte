@@ -1,11 +1,9 @@
 <script lang="ts">
-	import Card from '$lib/components/bootstrap/Card.svelte';
-	import { PUBLIC_APP_NAME, PUBLIC_DO_POTATO } from '$env/static/public';
 	import '$lib/index';
 </script>
 
 <svelte:head>
-	<title>{PUBLIC_APP_NAME}</title>
+	<title>{__APP_ENV__.name}</title>
 </svelte:head>
 
 <div class="container mt-5">
@@ -30,7 +28,7 @@
 				</div>
 			</a>
 		</div>
-		{#if PUBLIC_DO_POTATO === 'true'}
+		{#if __APP_ENV__.do_potato}
 			<div class="col-md-6 p-3">
 				<a href="/dashboard/potato" class="text-reset text-decoration-none">
 					<div class="card bg-warning">

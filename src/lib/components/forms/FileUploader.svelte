@@ -47,8 +47,6 @@
 	uppy.use(XHRUpload, {
 		endpoint,
 		onAfterResponse(xhr) {
-			console.log(xhr.responseText);
-
 			if (xhr.status >= 200 && xhr.status < 300) {
 				emitter.emit(
 					'load',

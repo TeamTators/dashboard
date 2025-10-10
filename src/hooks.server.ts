@@ -26,7 +26,7 @@ import { sse } from '$lib/server/services/sse';
 import { sleep } from 'ts-utils/sleep';
 // import { signFingerprint } from '$lib/server/utils/fingerprint';
 import redis from '$lib/server/services/redis';
-import { env, str } from '$lib/server/utils/env';
+import { config } from '$lib/server/utils/env';
 
 (async () => {
 	await redis.init();
@@ -106,9 +106,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	event.locals.session = session.value;
 
-	const autoSignIn = str('AUTO_SIGN_IN', false);
+	const autoSignIn = config.sessions.auto_sign_in;
 
-	if (autoSignIn && env !== 'prod') {
+	if (autoSignIn && config.environment !== 'prod') {
 		const a = await Account.Account.fromProperty('username', autoSignIn, { type: 'single' });
 		if (a.isOk() && a.value) {
 			event.locals.account = a.value;
@@ -178,75 +178,75 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// 	}
 	// }
 
-	const notIgnored = () => {
-		if (event.url.pathname === '/') return true;
-		return (
-			!sessionIgnore.ignores(event.url.pathname.slice(1)) && !event.url.pathname.startsWith('/.')
-		);
-	};
+	// const notIgnored = () => {
+	// 	if (event.url.pathname === '/') return true;
+	// 	return (
+	// 		!sessionIgnore.ignores(event.url.pathname.slice(1)) && !event.url.pathname.startsWith('/.')
+	// 	);
+	// };
 
-	if (notIgnored()) {
-		session.value.update({
-			prevUrl: event.url.pathname
-		});
+	// if (notIgnored()) {
+	// 	session.value.update({
+	// 		prevUrl: event.url.pathname
+	// 	});
 
-		const violation = await Limiting.violationSeverity(event.locals.session, event.locals.account);
-		if (violation.isErr()) {
-			return new Response('Internal Server Error', { status: ServerCode.internalServerError });
-		} else {
-			if (violation.value < Limiting.ViolationTiers.warn) {
-				await sleep(100 * violation.value);
-			}
-		}
+	// 	const violation = await Limiting.violationSeverity(event.locals.session, event.locals.account);
+	// 	if (violation.isErr()) {
+	// 		return new Response('Internal Server Error', { status: ServerCode.internalServerError });
+	// 	} else {
+	// 		if (violation.value < Limiting.ViolationTiers.warn) {
+	// 			await sleep(100 * violation.value);
+	// 		}
+	// 	}
 
-		const limit = await Promise.all([
-			Limiting.rateLimit(`limit_ip:${event.locals.session.data.ip}`),
-			Limiting.rateLimit(`limit_session:${event.locals.session.id}`),
-			Limiting.rateLimit(`limit_fingerprint:${event.locals.session.data.fingerprint}`),
-			event.locals.account
-				? Limiting.rateLimit(`limit_account:${event.locals.account.id}`)
-				: Promise.resolve(false)
-		]);
+	// 	const limit = await Promise.all([
+	// 		Limiting.rateLimit(`limit_ip:${event.locals.session.data.ip}`),
+	// 		Limiting.rateLimit(`limit_session:${event.locals.session.id}`),
+	// 		Limiting.rateLimit(`limit_fingerprint:${event.locals.session.data.fingerprint}`),
+	// 		event.locals.account
+	// 			? Limiting.rateLimit(`limit_account:${event.locals.account.id}`)
+	// 			: Promise.resolve(false)
+	// 	]);
 
-		if (limit.some((l) => l)) {
-			const res = await Limiting.violate(
-				event.locals.session,
-				event.locals.account,
-				1,
-				'Rate limit exceeded'
-			);
-			if (res.isOk()) {
-				switch (res.value) {
-					case 'warn':
-						terminal.warn(
-							`Rate limit violation for session ${event.locals.session.id} (${event.locals.session.data.ip})`
-						);
-						sse.fromSession(event.locals.session.id).notify({
-							title: 'Rate Limit Warning',
-							severity: 'warning',
-							message:
-								'You are sending too many requests, you will experience degraded performance temporarily.'
-						});
-						await sleep(100);
-						break;
-					case 'block':
-						await sleep(1000); // wait a bit before responding
-						terminal.warn(
-							`Blocked session ${event.locals.session.id} (${event.locals.session.data.ip}) due to rate limiting.`
-						);
-					// return new Response(
-					// 	'You are being rate limited. If this continues, you will be blocked from our service.',
-					// 	{
-					// 		status: ServerCode.tooManyRequests,
-					// 		headers: {
-					// 			'Content-Type': 'text/plain'
-					// 		}
-					// 	}
-					// );
-				}
-			}
-		}
-	}
+	// 	if (limit.some((l) => l)) {
+	// 		const res = await Limiting.violate(
+	// 			event.locals.session,
+	// 			event.locals.account,
+	// 			1,
+	// 			'Rate limit exceeded'
+	// 		);
+	// 		if (res.isOk()) {
+	// 			switch (res.value) {
+	// 				case 'warn':
+	// 					terminal.warn(
+	// 						`Rate limit violation for session ${event.locals.session.id} (${event.locals.session.data.ip})`
+	// 					);
+	// 					sse.fromSession(event.locals.session.id).notify({
+	// 						title: 'Rate Limit Warning',
+	// 						severity: 'warning',
+	// 						message:
+	// 							'You are sending too many requests, you will experience degraded performance temporarily.'
+	// 					});
+	// 					await sleep(100);
+	// 					break;
+	// 				case 'block':
+	// 					await sleep(1000); // wait a bit before responding
+	// 					terminal.warn(
+	// 						`Blocked session ${event.locals.session.id} (${event.locals.session.data.ip}) due to rate limiting.`
+	// 					);
+	// 				// return new Response(
+	// 				// 	'You are being rate limited. If this continues, you will be blocked from our service.',
+	// 				// 	{
+	// 				// 		status: ServerCode.tooManyRequests,
+	// 				// 		headers: {
+	// 				// 			'Content-Type': 'text/plain'
+	// 				// 		}
+	// 				// 	}
+	// 				// );
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	try {
 		const res = await resolve(event);
