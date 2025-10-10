@@ -12,10 +12,17 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
+	import { Component } from 'ag-grid-community';
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = writable(data.selectedTeams);
+	const selectedTeams = writable<{
+		team: TBATeam;
+		component: Progress | TeamEventStats | undefined;
+	}[]>(data.selectedTeams.map(t => ({
+		team: t,
+		component: undefined,
+	})));
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
@@ -45,7 +52,11 @@
 		background: c.clone().setAlpha(0.2).toString('rgba')
 	}));
 
-	const sort = (a: TBATeam, b: TBATeam): number => a.tba.team_number - b.tba.team_number;
+	const sort = (a: {
+		team: TBATeam;
+	}, b: {
+		team: TBATeam;
+	}): number => a.team.tba.team_number - b.team.tba.team_number;
 
 	const dataset: {
 		label: string;
@@ -112,7 +123,7 @@
 				const scoutingData = teamScouting[i];
 				if (!scoutingData) {
 					return {
-						label: String(team.tba.team_number),
+						label: String(team.team.tba.team_number),
 						data: [0, 0, 0, 0, 0, 0],
 						backgroundColor: color.background,
 						borderColor: color.border,
@@ -131,7 +142,7 @@
 				};
 
 				return {
-					label: String(team.tba.team_number),
+					label: String(team.team.tba.team_number),
 					data: [
 						contribution.cl1,
 						contribution.cl2,
@@ -175,14 +186,17 @@
 							class="btn-check"
 							id="btn-check-{team.tba.team_number}"
 							autocomplete="off"
-							checked={!!$selectedTeams.find((t) => t.tba.team_number === team.tba.team_number)}
+							checked={!!$selectedTeams.find((t) => t.team.tba.team_number === team.tba.team_number)}
 							onchange={(event) => {
 								if (event.currentTarget.checked) {
-									selectedTeams.set([...get(selectedTeams), team].sort(sort));
+									selectedTeams.set([...get(selectedTeams), {
+										team,
+										component: undefined,
+									}].sort(sort));
 								} else {
 									selectedTeams.set(
 										get(selectedTeams)
-											.filter((t) => t !== team)
+											.filter((t) => t.team !== team)
 											.sort(sort)
 									);
 								}
@@ -191,7 +205,7 @@
 								search.set(
 									'teams',
 									get(selectedTeams)
-										.map((t) => t.tba.team_number)
+										.map((t) => t.team.tba.team_number)
 										.join(',')
 								);
 								goto(`${location.pathname}?${search.toString()}`);
@@ -259,12 +273,24 @@
 						<div class="col-md-4 mb-3">
 							<div class="card layer-2">
 								<div class="card-body">
-									<h5 class="card-title">{team.tba.team_number} | {team.tba.nickname}</h5>
+									<div class="d-flex align-items-center mb-1 justify-content-between">
+										<h5 class="card-title">{team.team.tba.team_number} | {team.team.tba.nickname}</h5>
+										<button
+											type="button"
+											class="btn btn-sm btn-secondary ms-2"
+											onclick={() => {
+												team.component?.copy(true);
+											}}
+										>
+											<i class="material-icons">copy_all</i>
+										</button>
+									</div>
 									<div style="height: 300px;">
 										{#if teamScouting[i]}
 											{#if view === 'progress'}
 												<Progress
-													{team}
+													bind:this={team.component}
+													team={team.team}
 													{event}
 													bind:staticY
 													scouting={teamScouting[i]}
@@ -272,7 +298,8 @@
 												/>
 											{:else}
 												<TeamEventStats
-													{team}
+													bind:this={team.component}
+													team={team.team}
 													{event}
 													bind:staticY
 													scouting={teamScouting[i]}
