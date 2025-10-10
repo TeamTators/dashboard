@@ -1,28 +1,28 @@
 export type Entitlement =
-	| 'view-roles'
 	| 'view-tba-info'
-	| 'view-scouting'
-	| 'view-checklist'
+	| 'view-roles'
 	| 'upload-pictures'
 	| 'manage-scouting'
-	| 'manage-pit-scouting'
 	| 'view-pit-scouting'
+	| 'manage-pit-scouting'
 	| 'view-potatoes'
+	| 'view-scouting'
 	| 'edit-potato-level'
-	| 'view-strategy'
 	| 'create-custom-tba-responses'
+	| 'view-strategy'
 	| 'manage-tba'
-	| 'test-permission-view'
-	| 'manage-members'
+	| 'view-checklist'
 	| 'manage-roles'
-	| 'test-permission-manage';
+	| 'manage-members'
+	| 'test-permission-manage'
+	| 'test-permission-view';
 export type Group =
-	| 'Roles'
 	| 'FIRST'
+	| 'Roles'
 	| 'Scouting'
-	| 'Checklists'
 	| 'Potatoes'
-	| 'Strategy'
 	| 'TBA'
+	| 'Strategy'
+	| 'Checklists'
 	| 'Testing';
-export type Features = 'manage-roles';
+export type Features = 'manage-potatoes' | 'manage-roles';

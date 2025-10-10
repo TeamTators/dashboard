@@ -7,12 +7,15 @@ export const load = (event) => {
 	return {
 		event: e,
 		data: event.data.data.map((d) => {
+			const left = new DataArr(
+				Scouting.PIT.Questions,
+				d.left.map((q) => Scouting.PIT.Questions.Generator(q))
+			);
+
 			return {
 				team: new TBATeam(d.team, e),
-				left: new DataArr(
-					Scouting.PIT.Questions,
-					d.left.map((q) => Scouting.PIT.Questions.Generator(q))
-				),
+				left,
+				// question: left.map((item) => item.data.key).join(','),
 				uploaded: d.uploaded,
 				tbaPictures: d.tba
 			};
