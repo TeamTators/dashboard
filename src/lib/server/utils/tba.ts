@@ -20,11 +20,10 @@ import { z } from 'zod';
 export class Event {
 	public static getEvents(year: number, force = false) {
 		return attemptAsync<Event[]>(async () => {
-			const custom = (
+			const custom = 
 				await TBA.Events.fromProperty('year', year, {
-					type: 'stream'
-				}).await()
-			).unwrap();
+					type: 'all'
+				}).unwrap();
 
 			const tba = (
 				await TBA.get<E[]>(`/team/frc2122/events/${year}`, {
@@ -61,11 +60,10 @@ export class Event {
 
 	public static getTeamEvents(year: number, team: number, force = false) {
 		return attemptAsync(async () => {
-			const custom = (
+			const custom = 
 				await TBA.Events.fromProperty('year', year, {
-					type: 'stream'
-				}).await()
-			).unwrap();
+					type: 'all'
+				}).unwrap();
 
 			const tba = (
 				await TBA.get<E[]>(`/team/frc${team}/events/${year}`, {
