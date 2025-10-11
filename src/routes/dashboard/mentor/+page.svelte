@@ -27,4 +27,18 @@
 			</a>
 		</div>
 	</div>
+	<div class="row mb-3">
+		<div class="col-md-6">
+			<a href="/dashboard/mentor/potato" class="text-reset text-decoration-none">
+				<div class="card bg-warning">
+					<div class="card-body">
+						<h5 class="card-title text-black">Potato Leaderboard</h5>
+						<p class="card-text text-black">
+							View and manage students' potato scores.
+						</p>
+					</div>
+				</div>
+			</a>
+		</div>
+	</div>
 </div>
