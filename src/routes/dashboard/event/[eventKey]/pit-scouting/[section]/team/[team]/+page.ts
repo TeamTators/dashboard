@@ -10,6 +10,7 @@ export const load = (event) => {
 		sections: new DataArr(
 			Scouting.PIT.Sections,
 			event.data.sections.map((s) => Scouting.PIT.Sections.Generator(s))
+				.sort((a, b) => Number(a.data.order) - Number(b.data.order))
 		),
 		teams: event.data.teams,
 		team: event.data.team,
@@ -18,6 +19,7 @@ export const load = (event) => {
 		questions: new DataArr(
 			Scouting.PIT.Questions,
 			event.data.questions.map((q) => Scouting.PIT.Questions.Generator(q))
+				.sort((a, b) => Number(a.data.order) - Number(b.data.order))
 		),
 		answers: new DataArr(
 			Scouting.PIT.Answers,
@@ -26,6 +28,7 @@ export const load = (event) => {
 		groups: new DataArr(
 			Scouting.PIT.Groups,
 			event.data.groups.map((g) => Scouting.PIT.Groups.Generator(g))
+				.sort((a, b) => Number(a.data.order) - Number(b.data.order))
 		),
 		pictures: new DataArr(
 			FIRST.TeamPictures,
