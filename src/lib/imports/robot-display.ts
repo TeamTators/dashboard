@@ -77,12 +77,28 @@ export default (event: TBAEvent) => {
 					name: 'compare'
 				}
 			},
+			// {
+			// 	name: 'Strategy',
+			// 	href: 'https://docs.google.com/presentation/d/1kwopP8dvpRW90R5VY4jQy9Rx5XiZPmFtyoY_8qw5628/edit?usp=sharing',
+			// 	icon: {
+			// 		type: 'material-icons',
+			// 		name: 'assessment'
+			// 	}
+			// },
 			{
-				name: 'Strategy',
-				href: 'https://docs.google.com/presentation/d/1kwopP8dvpRW90R5VY4jQy9Rx5XiZPmFtyoY_8qw5628/edit?usp=sharing',
+				name: 'Qualifications Strategy',
+				href: 'https://padlet.com/tatorscout/bordie-strategy-sheet-xvmkd3uf631sg64s',
 				icon: {
 					type: 'material-icons',
 					name: 'assessment'
+				}
+			},
+			{
+				name: 'Playoff Strategy',
+				href: 'https://padlet.com/tatorscout/eliminations-bordie-26u9obktpg4da31v',
+				icon: {
+					type: 'material-icons',
+					name: 'insights'
 				}
 			},
 			{
