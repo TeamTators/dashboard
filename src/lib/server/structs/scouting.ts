@@ -5,7 +5,7 @@ import { Struct, StructStream } from 'drizzle-struct/back-end';
 import { z } from 'zod';
 import { attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { Session } from './session';
 import { Permissions } from './permissions';
 import terminal from '../utils/terminal';
@@ -535,43 +535,81 @@ export namespace Scouting {
 
 		export const getScoutingInfoFromSection = (team: number, section: SectionData) => {
 			return attemptAsync(async () => {
-				const groups = (
-					await Groups.fromProperty('sectionId', section.id, {
-						type: 'stream'
-					}).await()
-				).unwrap();
+				// const groups = (
+				// 	await Groups.fromProperty('sectionId', section.id, {
+				// 		type: 'stream'
+				// 	}).await()
+				// ).unwrap();
 
-				const questions = resolveAll(
-					await Promise.all(
-						groups.map((g) => Questions.fromProperty('groupId', g.id, { type: 'stream' }).await())
+				// const questions = resolveAll(
+				// 	await Promise.all(
+				// 		groups.map((g) => Questions.fromProperty('groupId', g.id, { type: 'stream' }).await())
+				// 	)
+				// )
+				// 	.unwrap()
+				// 	.flat();
+				// const answers = resolveAll(
+				// 	await Promise.all(
+				// 		questions.map((q) =>
+				// 			Answers.fromProperty('questionId', q.id, { type: 'stream' }).await()
+				// 		)
+				// 	)
+				// )
+				// 	.unwrap()
+				// 	.flat();
+
+				// return {
+				// 	questions,
+				// 	groups,
+				// 	answers: await Promise.all(
+				// 		answers
+				// 			.filter((a) => a.data.team === team)
+				// 			.map(async (a) => {
+				// 				const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
+				// 				return {
+				// 					answer: a,
+				// 					account
+				// 				};
+				// 			})
+				// 	)
+				// };
+				const groups = await DB.select()
+					.from(Groups.table)
+					.where(
+						and(eq(Groups.table.sectionId, section.id), eq(Groups.table.archived, false))
 					)
-				)
-					.unwrap()
-					.flat();
-				const answers = resolveAll(
-					await Promise.all(
-						questions.map((q) =>
-							Answers.fromProperty('questionId', q.id, { type: 'stream' }).await()
+					.orderBy(Groups.table.order);
+
+				const questions = await DB.select()
+					.from(Questions.table)
+					.where(
+						and(
+							inArray(Questions.table.groupId, groups.map((g) => g.id)),
+							eq(Questions.table.archived, false),
 						)
 					)
-				)
-					.unwrap()
-					.flat();
+					.orderBy(Questions.table.order);
+
+				const answers = await DB.select()
+					.from(Answers.table)
+					.where(
+						and(
+							inArray(Answers.table.questionId, questions.map((q) => q.id)),
+							eq(Answers.table.archived, false),
+						)
+					);
+
+				const accounts = await Account.Account.all({ type: 'all' }).unwrap();
 
 				return {
-					questions,
-					groups,
-					answers: await Promise.all(
-						answers
-							.filter((a) => a.data.team === team)
-							.map(async (a) => {
-								const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
-								return {
-									answer: a,
-									account
-								};
-							})
-					)
+					questions: questions.map((q) => Questions.Generator(q)),
+					groups: groups.map((g) => Groups.Generator(g)),
+					answers: answers
+						.filter((a) => a.team === team)
+						.map((a) => ({
+							answer: Answers.Generator(a),
+							account: accounts.find((acc) => acc.id === a.accountId)
+						})),
 				};
 			});
 		};
@@ -588,9 +626,7 @@ export namespace Scouting {
 		};
 
 		Sections.callListen('generate-event-template', async (event, data) => {
-			const session = (await Session.getSession(event)).unwrap();
-			const account = (await Session.getAccount(session)).unwrap();
-			if (!account) {
+			if (!event.locals.account) {
 				terminal.error('Not logged in');
 				return {
 					success: false,
@@ -598,7 +634,7 @@ export namespace Scouting {
 				};
 			}
 
-			if (!(await Account.isAdmin(account))) throw new Error('Not entitled');
+			if (!(await Account.isAdmin(event.locals.account))) throw new Error('Not entitled');
 
 			const parsed = z
 				.object({
@@ -614,7 +650,7 @@ export namespace Scouting {
 				};
 			}
 
-			const res = await generateBoilerplate(parsed.data.eventKey, account.id);
+			const res = await generateBoilerplate(parsed.data.eventKey, event.locals.account.id);
 
 			if (res.isOk()) {
 				return {

@@ -7,14 +7,7 @@ import redis from '$lib/server/services/redis';
 import { config } from '$lib/server/utils/env';
 
 describe('TBA Webhook', async () => {
-	const server = await import(
-		path.resolve(
-			process.cwd(),
-			config.tba_webhook.path,
-			'src',
-			'index'
-		)
-	);
+	const server = await import(path.resolve(process.cwd(), config.tba_webhook.path, 'src', 'index'));
 
 	const serverPromise = server.main(
 		config.tba_webhook.port,
