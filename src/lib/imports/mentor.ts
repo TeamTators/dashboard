@@ -19,6 +19,22 @@ export default () => {
 					type: 'material-icons',
 					name: 'auto_awesome_mosaic'
 				}
+			},
+			{
+				name: 'Potato Leaderboard',
+				href: '/dashboard/mentor/potato',
+				icon: {
+					type: 'material-icons',
+					name: 'leaderboard'
+				}
+			},
+			{
+				name: 'Potato Logs',
+				href: '/dashboard/mentor/potato/logs',
+				icon: {
+					type: 'material-icons',
+					name: 'history'
+				}
 			}
 		],
 		priority: 0

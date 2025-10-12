@@ -5,11 +5,12 @@ import { ServerCode } from 'ts-utils/status';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
+	const force = event.url.searchParams.get('force') === 'true';
 	const year = parseInt(event.params.year);
 	if (isNaN(year)) {
 		throw fail(ServerCode.badRequest);
 	}
-	const events = await Event.getEvents(year);
+	const events = await Event.getEvents(year, force);
 	if (events.isErr()) {
 		console.error(events.error);
 		throw fail(ServerCode.internalServerError);

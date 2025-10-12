@@ -6,6 +6,7 @@ import '$lib/model/testing.svelte';
 import '$lib/model/FIRST.ts';
 import '$lib/model/potato';
 import '$lib/model/scouting';
+import '$lib/model/TBA';
 import '$lib/model/strategy';
 
 export const load = (event) => {

@@ -24,6 +24,7 @@
 		endpoint: string;
 		usage: 'images' | 'general';
 		allowLocal?: boolean;
+		btnClasses?: string;
 	}
 
 	const {
@@ -31,7 +32,8 @@
 		message = 'Upload Files',
 		endpoint,
 		usage = 'images',
-		allowLocal = true
+		allowLocal = true,
+		btnClasses = 'btn btn-primary'
 	}: Props = $props();
 
 	const allowedFileTypes = usage === 'images' ? ['image/*'] : ['*'];
@@ -45,8 +47,6 @@
 	uppy.use(XHRUpload, {
 		endpoint,
 		onAfterResponse(xhr) {
-			console.log(xhr.responseText);
-
 			if (xhr.status >= 200 && xhr.status < 300) {
 				emitter.emit(
 					'load',
@@ -66,9 +66,13 @@
 	});
 
 	let modal: Modal;
+
+	export const show = () => {
+		modal.show();
+	};
 </script>
 
-<button type="button" class="btn btn-primary" onclick={() => modal.show()}>
+<button type="button" class={btnClasses} onclick={() => modal.show()}>
 	<i class="material-icons">add</i>
 	{message}
 </button>
