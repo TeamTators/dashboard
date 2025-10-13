@@ -176,7 +176,7 @@
 		"vite-node": "^3.2.4",
 		"yaml": "^2.8.0",
 		"zod": "^3.25.76",
-		"tatorscout": "github:TeamTators/tatorscout-utils"
+		"tatorscout": "github:TeamTators/tatorscout-utils#v0.0.5"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
