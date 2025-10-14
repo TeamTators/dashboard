@@ -1,5 +1,5 @@
 import { summarize } from '../src/lib/server/utils/google-summary';
-import { openStructs } from '../src/lib/server/cli/struct';
+import { openStructs } from '../cli/struct';
 import { Struct } from 'drizzle-struct/back-end';
 import { DB } from '../src/lib/server/db';
 
