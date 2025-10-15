@@ -1,0 +1,50 @@
+<mjml>
+	<mj-body background-color="#f4f4f4">
+		<mj-section>
+			<mj-column>
+				<mj-image
+					width="100px"
+					src="https://www.thebluealliance.com/images/logo.png"
+					alt="The Blue Alliance Logo"
+				/>
+				<mj-divider border-color="#0057b8" />
+				<mj-text
+					font-size="22px"
+					font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+					color="#222"
+					font-weight="bold"
+				>
+					The Blue Alliance Trigger Notification
+				</mj-text>
+				<mj-text font-size="16px" color="#333"> Hello, </mj-text>
+				<mj-text font-size="16px" color="#333">
+					This is a notification for the following trigger you subscribed to:
+				</mj-text>
+				<mj-table>
+					<tr style="background-color: #e6f0fa">
+						<th align="left">Trigger</th>
+						<th align="left">Description</th>
+					</tr>
+					<tr>
+						<td>{{ triggerName }}</td>
+						<td>{{ triggerDescription }}</td>
+					</tr>
+				</mj-table>
+				<mj-text font-size="15px" color="#333">
+					<b>Event Details:</b>
+				</mj-text>
+				<mj-text font-size="15px" color="#333">
+					{{ details }}
+				</mj-text>
+				<mj-button background-color="#0057b8" color="#fff" href="{{ manageSubscription }}">
+					Manage Subscriptions
+				</mj-button>
+				<mj-divider border-color="#cccccc" />
+				<mj-text font-size="12px" color="#aaa">
+					You are receiving this email because you subscribed to this trigger on The Blue Alliance.
+					To change your preferences, use the link above.
+				</mj-text>
+			</mj-column>
+		</mj-section>
+	</mj-body>
+</mjml>

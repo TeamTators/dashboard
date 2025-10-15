@@ -1,12 +1,11 @@
 <script lang="ts">
 	import nav from '$lib/imports/robot-display.js';
-	import Card from '$lib/components/dashboard/Card.svelte';
 	import { Dashboard } from '$lib/model/dashboard';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
-	import { Navbar } from '$lib/model/navbar.js';
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
-	import { confirm } from '$lib/utils/prompts.js';
+	import { alert, confirm } from '$lib/utils/prompts.js';
+	import { Subscription } from '$lib/model/subscription';
 	const { data = $bindable() } = $props();
 	const event = $derived(data.event);
 	const teams = $derived(data.teams);
@@ -37,14 +36,39 @@
 
 <DB {dashboard}>
 	{#snippet body()}
-		<a
-			href="https://docs.google.com/spreadsheets/d/1ntbCYyqMxMLbD6R0rVxfx_sIgq0mrYtXbbh2Wb5iuok/edit?gid=722231706#gid=722231706"
-			type="button"
-			target="_blank"
-			class="btn btn-primary"
-		>
-			Picklist Spreadsheet
-		</a>
+		<div class="d-flex w-100" style="gap: 10px;">
+			<a
+				href="https://docs.google.com/spreadsheets/d/1ntbCYyqMxMLbD6R0rVxfx_sIgq0mrYtXbbh2Wb5iuok/edit?gid=722231706#gid=722231706"
+				type="button"
+				target="_blank"
+				class="btn btn-primary link-button"
+			>
+				Go to Picklist Spreadsheet
+			</a>
+			<button
+				type="button"
+				class="btn btn-secondary link-button"
+				onclick={async () => {
+					if (
+						await confirm(
+							'This will send you notifications for every match the Tators are in at this event before the match starts. Do you want to continue?'
+						)
+					) {
+						const res = await Subscription.subscribe('tator_matches', event.key);
+
+						if (res.isErr()) {
+							alert('Unable to subscribe: ' + res.error.message);
+						} else {
+							if (!res.value.success) {
+								alert('Unable to subscribe: ' + res.value.message);
+							}
+						}
+					}
+				}}
+			>
+				Subscribe to Tator Matches
+			</button>
+		</div>
 		<div style="grid-column: span var(--grid-size);">
 			<div class="ws-nowrap p-3 scroll-x" style="width: 100% !important;">
 				{#each teams as team}
@@ -158,5 +182,10 @@
 		min-width: 1500px !important;
 		width: 100vw;
 		height: 100%;
+	}
+
+	.link-button {
+		max-width: 50%;
+		width: 120px;
 	}
 </style>

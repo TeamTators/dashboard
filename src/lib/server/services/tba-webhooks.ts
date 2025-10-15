@@ -1,7 +1,6 @@
 import redis from './redis';
 import { EventEmitter } from 'ts-utils/event-emitter';
 import { z } from 'zod';
-import { str } from '../utils/env';
 
 export namespace TBAWebhooks {
 	export const messageSchemas = {
