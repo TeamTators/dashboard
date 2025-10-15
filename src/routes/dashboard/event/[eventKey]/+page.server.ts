@@ -1,15 +1,30 @@
+import { Cache } from '$lib/server/structs/cache.js';
 import { Scouting } from '$lib/server/structs/scouting';
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { redirect, fail } from '@sveltejs/kit';
-import { teamsFromMatch } from 'tatorscout/tba';
+import { EventSchema, TeamSchema, teamsFromMatch } from 'tatorscout/tba';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 import { $Math } from 'ts-utils/math';
 import { ServerCode } from 'ts-utils/status';
-import { match as matchCase } from 'ts-utils/match';
+import z from 'zod';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
+	const cache = await Cache.get('event-summary', event.params.eventKey, z.object({
+		event: EventSchema,
+		teams: z.array(TeamSchema),
+		summaries: z.array(z.object({
+			labels: z.array(z.string()),
+			title: z.string(),
+			data: z.record(z.union([z.string(), z.number()]), z.array(z.number())),
+		})),
+	})).unwrap();
+
+	if (cache) {
+		return cache;
+	}
+
 	const e = await TBA.Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {
 		throw fail(404);
@@ -158,7 +173,7 @@ export const load = async (event) => {
 	};
 
 	endgame.data = Object.fromEntries(
-		Object.entries(auto?.data || {}).map(([k, v]) => {
+		Object.entries(auto?.data || {}).map(([k, _v]) => {
 			let park = 0;
 			let shallow = 0;
 			let deep = 0;
@@ -222,10 +237,18 @@ export const load = async (event) => {
 		);
 	}
 
-	return {
+	const obj =  {
 		event: e.value.tba,
 		teams: teams.value.map((t) => t.tba),
-		matches: matches.value.map((m) => m.tba),
 		summaries
 	};
+
+	Cache.set(
+		'event-summary', 
+		event.params.eventKey, 
+		obj,
+		new Date(Date.now() + 1000 * 60),
+	);
+
+	return obj;
 };

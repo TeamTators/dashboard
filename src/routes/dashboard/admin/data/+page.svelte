@@ -8,6 +8,7 @@
 	import '$lib/model/scouting';
 	import '$lib/model/strategy';
 	import '$lib/model/TBA';
+	import '$lib/model/cache';
 	import { Struct } from '$lib/services/struct';
 	import { capitalize, fromSnakeCase } from 'ts-utils/text';
 

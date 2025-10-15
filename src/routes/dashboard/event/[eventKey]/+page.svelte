@@ -3,14 +3,12 @@
 	import Card from '$lib/components/dashboard/Card.svelte';
 	import { Dashboard } from '$lib/model/dashboard';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
-	import { Navbar } from '$lib/model/navbar.js';
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { confirm } from '$lib/utils/prompts.js';
 	const { data = $bindable() } = $props();
 	const event = $derived(data.event);
 	const teams = $derived(data.teams);
-	const matches = $derived(data.matches);
 	const summaries = $derived(data.summaries);
 
 	$effect(() => nav(event));
