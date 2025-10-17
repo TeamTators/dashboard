@@ -267,7 +267,7 @@ export const summarize = async (eventKey: string) => {
 		const standardDeviation = (array: number[]): number => {
 			if (array.length === 0) return 0;
 			const mean = average(array);
-			const squaredDifferences = array.map(value => Math.pow(value - mean, 2));
+			const squaredDifferences = array.map((value) => Math.pow(value - mean, 2));
 			const variance = average(squaredDifferences);
 			return Math.sqrt(variance);
 		};

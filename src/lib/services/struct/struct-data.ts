@@ -103,7 +103,7 @@ export class StructData<T extends Blank> implements Writable<PartialStructable<T
 			delete result.canUpdate;
 
 			const res = (
-				await this.struct.postReq(PropertyAction.Update, {
+				await this.struct.post(PropertyAction.Update, {
 					data: result,
 					id: this.data.id
 				})
@@ -129,7 +129,7 @@ export class StructData<T extends Blank> implements Writable<PartialStructable<T
 				})
 				.parse(
 					await this.struct
-						.postReq(DataAction.Delete, {
+						.post(DataAction.Delete, {
 							id: this.data.id
 						})
 						.then((r) => r.unwrap().json())
@@ -153,7 +153,7 @@ export class StructData<T extends Blank> implements Writable<PartialStructable<T
 					})
 					.parse(
 						await this.struct
-							.postReq(DataAction.Archive, {
+							.post(DataAction.Archive, {
 								id: this.data.id
 							})
 							.then((r) => r.unwrap().json())
@@ -166,7 +166,7 @@ export class StructData<T extends Blank> implements Writable<PartialStructable<T
 				})
 				.parse(
 					await this.struct
-						.postReq(DataAction.RestoreArchive, {
+						.post(DataAction.RestoreArchive, {
 							id: this.data.id
 						})
 						.then((r) => r.unwrap().json())
@@ -255,7 +255,7 @@ export class StructData<T extends Blank> implements Writable<PartialStructable<T
 			}
 
 			const res = await this.struct
-				.postReq(PropertyAction.SetAttributes, {
+				.post(PropertyAction.SetAttributes, {
 					id: this.data.id,
 					attributes
 				})
@@ -306,7 +306,7 @@ export class StructData<T extends Blank> implements Writable<PartialStructable<T
 	getVersions() {
 		return attemptAsync(async () => {
 			const versions = (await this.struct
-				.postReq(PropertyAction.ReadVersionHistory, {
+				.post(PropertyAction.ReadVersionHistory, {
 					id: this.data.id
 				})
 				.then((r) => r.unwrap().json())) as StatusMessage<VersionStructable<T>[]>;

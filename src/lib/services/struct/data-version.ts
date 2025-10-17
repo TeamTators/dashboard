@@ -137,7 +137,7 @@ export class StructDataVersion<T extends Blank> {
 				})
 				.parse(
 					await this.struct
-						.postReq(DataAction.DeleteVersion, {
+						.post(DataAction.DeleteVersion, {
 							id: this.data.id,
 							vhId: this.data.vhId
 						})
@@ -160,7 +160,7 @@ export class StructDataVersion<T extends Blank> {
 				})
 				.parse(
 					await this.struct
-						.postReq(DataAction.RestoreVersion, {
+						.post(DataAction.RestoreVersion, {
 							id: this.data.id,
 							vhId: this.data.vhId
 						})

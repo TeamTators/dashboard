@@ -5,7 +5,7 @@ import { Struct, StructData, type Blank } from 'drizzle-struct/back-end';
 import { PropertyAction } from 'drizzle-struct/types';
 import { z } from 'zod';
 
-export const GET = async (event) => {
+export const POST = async (event) => {
 	// console.log('Read request for struct:', event.params.struct, event.params.readType);
 	if (event.params.struct !== 'test') {
 		if (!event.locals.account) return Errors.noAccount();
