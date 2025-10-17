@@ -3,7 +3,7 @@ import { QueryListener } from '$lib/server/services/struct-listeners';
 import { Struct, StructData, type Blank } from 'drizzle-struct/back-end';
 import { z } from 'zod';
 
-export const POST = async (event) => {
+export const GET = async (event) => {
 	// console.log('Custom request:', event.params.struct);
 	// if (event.params.struct !== 'test') {
 	// 	if (!event.locals.account) return Errors.noAccount();

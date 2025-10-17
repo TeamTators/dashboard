@@ -683,7 +683,7 @@ export class Struct<T extends Blank> {
 					message: z.string().optional()
 				})
 				.parse(
-					await this.post(DataAction.Create, {
+					await this.postReq(DataAction.Create, {
 						data,
 						attributes
 					}).then((r) => r.unwrap().json())
@@ -1058,7 +1058,7 @@ export class Struct<T extends Blank> {
 	 * @param {unknown} data
 	 * @returns {*}
 	 */
-	post(action: DataAction | PropertyAction | string, data: unknown, date?: Date) {
+	postReq(action: DataAction | PropertyAction | string, data: unknown, date?: Date) {
 		return attemptAsync(async () => {
 			this.log('Post Action:', action, data);
 			if (!this.data.browser)
@@ -1089,6 +1089,60 @@ export class Struct<T extends Blank> {
 			this.log('POST:', action, data, date);
 			const res = await fetch(`/struct/${this.data.name}/${action}`, {
 				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					...Object.fromEntries(Struct.headers.entries()),
+					'X-Date': String(date?.getTime() || Struct.getDate())
+				},
+				body: JSON.stringify(data)
+			});
+
+			if (res.ok) {
+				deleteStructUpdate(id).unwrap();
+			}
+
+			this.log('Post:', action, data, res);
+			return res;
+		});
+	}
+	/**
+	 * Sends a post request to the server
+	 *
+	 * @param {(DataAction | PropertyAction)} action
+	 * @param {unknown} data
+	 * @returns {*}
+	 */
+	getReq(action: DataAction | PropertyAction | string, data: unknown, date?: Date) {
+		return attemptAsync(async () => {
+			this.log('Get Action:', action, data);
+			if (!this.data.browser)
+				throw new StructError(
+					'Currently not in a browser environment. Will not run a fetch request'
+				);
+			const id = uuid();
+			if (
+				![
+					PropertyAction.Read,
+					PropertyAction.ReadArchive,
+					PropertyAction.ReadVersionHistory
+				].includes(action as PropertyAction) &&
+				action !== `${PropertyAction.Read}/custom` &&
+				!action.startsWith('custom')
+			) {
+				// this is an update, so set up batch updating
+				saveStructUpdate({
+					struct: this.data.name,
+					data,
+					id,
+					type: action
+				}).unwrap();
+			}
+			if (BATCH_TEST) {
+				throw new Error('Batch test is enabled, will not run a fetch request');
+			}
+			this.log('GET:', action, data, date);
+			const res = await fetch(`/struct/${this.data.name}/${action}`, {
+				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
 					...Object.fromEntries(Struct.headers.entries()),
@@ -1170,7 +1224,7 @@ export class Struct<T extends Blank> {
 	public getStream<K extends keyof ReadTypes>(type: K, args: ReadTypes[K]): StructStream<T> {
 		this.log('Stream:', type, args);
 		const s = new StructStream(this);
-		this.post(`${PropertyAction.Read}/${type}`, { args }).then((res) => {
+		this.getReq(`${PropertyAction.Read}/${type}`, { args }).then((res) => {
 			const response = res.unwrap();
 			this.log('Stream Result:', response);
 
@@ -1475,7 +1529,7 @@ export class Struct<T extends Blank> {
 		return attemptAsync(async () => {
 			const has = this.cache.get(id);
 			if (has) return has;
-			const res = await this.post(`${PropertyAction.Read}/from-id`, {
+			const res = await this.postReq(`${PropertyAction.Read}/from-id`, {
 				id
 			});
 			const data = await res.unwrap().json();
@@ -1608,7 +1662,7 @@ export class Struct<T extends Blank> {
 	 */
 	send<T>(name: string, data: unknown, returnType: z.ZodType<T>) {
 		return attemptAsync<T>(async () => {
-			const res = await this.post(`custom/${name}`, data).then((r) => r.unwrap().json());
+			const res = await this.postReq(`custom/${name}`, data).then((r) => r.unwrap().json());
 			const parsed = z
 				.object({
 					success: z.boolean(),
@@ -1636,7 +1690,7 @@ export class Struct<T extends Blank> {
 	 */
 	call(event: string, data: unknown) {
 		return attemptAsync(async () => {
-			const res = await (await this.post(`call/${event}`, data)).unwrap().json();
+			const res = await (await this.postReq(`call/${event}`, data)).unwrap().json();
 
 			return z
 				.object({
@@ -1678,6 +1732,6 @@ export class Struct<T extends Blank> {
 
 	clear() {
 		this.log('Clearing all data from struct (admin only)');
-		return this.post('clear', {});
+		return this.postReq('clear', {});
 	}
 }
