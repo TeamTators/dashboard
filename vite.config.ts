@@ -17,11 +17,12 @@ export default defineConfig({
 	server: {
 		port: config.network.port,
 		host: '0.0.0.0',
-		allowedHosts: ['dev.tsaxking.com']
+		allowedHosts: ['dev.tsaxking.com', 'dev.tatorscout.org', 'tatorscout.org']
 	},
 	define: {
 		__APP_ENV__: JSON.stringify({
-			name: config.app_name
+			name: config.app_name,
+			do_potato: config.potato.enabled
 		})
 	}
 });

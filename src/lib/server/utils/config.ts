@@ -52,5 +52,14 @@ export default z.object({
 		enabled: z.boolean(),
 		requests: z.number().min(1),
 		window: z.number().min(1)
+	}),
+	tba_webhook: z.object({
+		path: z.string().min(1),
+		port: z.number().min(1).max(65535),
+		redis_name: z.string().min(1),
+		secret: z.string().min(1)
+	}),
+	potato: z.object({
+		enabled: z.boolean()
 	})
 });
