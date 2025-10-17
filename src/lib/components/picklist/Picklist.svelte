@@ -6,7 +6,12 @@
 	import { writable } from "svelte/store";
 	import { contextmenu } from "$lib/utils/contextmenu";
 	import { confirm, prompt, select } from "$lib/utils/prompts";
-    import { TextEditorModule } from 'ag-grid-community'; 
+    import { TextEditorModule, RowDragModule } from 'ag-grid-community'; 
+	import { Account } from "$lib/model/account";
+    import { Stack } from "$lib/utils/stack";
+
+    const s = new Stack('Picklist');
+    Stack.use(s);
 
     interface Props {
         picklist: Picklist.PicklistData;
@@ -62,6 +67,7 @@
                             reason: 'Added via bulk import',
                             order: i,
                             chosen: false,
+                            addedBy: String(Account.getSelf().get().data.id),
                         });
                         i++;
                     }
@@ -83,34 +89,51 @@
         </div>
     </div>
     <div class="row mb-3">
-        {#key teams}
+            {#key teams}
             
         <Grid 
             data={teams}
             opts={{
+                rowDragMultiRow: true,
+                rowSelection: {
+                    mode: 'multiRow',
+                },
+                rowDragManaged: true,
+                onRowDragEnd: (params) => {
+                    const nodes = params.api.getRenderedNodes();
+                    console.log(nodes.map(d => d.data?.data.order));
+                    for (let i = 0; i < nodes.length; i++) {
+                        const node = nodes[i];
+                        node.data?.update(() => ({
+                            order: i,
+                        }));
+                    }
+                },
                 columnDefs: [
-                    {
-                        field: 'data.order',
-                        headerName: 'Order',
-                        sort: 'asc',
-                        editable: true,
-                        valueGetter: (params) => {
-                            return Number(params.data?.data.order) + 1;
-                        },
-                        valueSetter: (params) => {
-                            if (params.data) {
-                                params.data.update(() => ({
-                                    order: Math.max(0, Number(params.newValue) - 1),
-                                }));
-                                return true;
-                            }
-                            return false;
-                        },
-                        width: 100
-                    },
+                    // {
+                    //     rowDrag: true,
+                    //     field: 'data.order',
+                    //     headerName: 'Order',
+                    //     // sort: 'asc',
+                    //     editable: true,
+                    //     valueGetter: (params) => {
+                    //         return Number(params.data?.data.order) + 1;
+                    //     },
+                    //     valueSetter: (params) => {
+                    //         if (params.data) {
+                    //             params.data.update(() => ({
+                    //                 order: Math.max(0, Number(params.newValue) - 1),
+                    //             }));
+                    //             return true;
+                    //         }
+                    //         return false;
+                    //     },
+                    //     width: 100
+                    // },
                     {
                         field: 'data.team',
                         headerName: 'Team',
+                        rowDrag: true,
                     },
                     {
                         headerName: 'Name',
@@ -152,6 +175,7 @@
                     }
                 ],
                 onCellContextMenu: (event) => {
+                    if (!event.data) return;
                     contextmenu(event.event as PointerEvent, {
                         options: [
                             'Insert',
@@ -173,10 +197,12 @@
                                         reason: why,
                                         order: Math.max(0, Number(event.data?.data.order)),
                                         chosen: false,
+                                        addedBy: String(Account.getSelf().get().data.id),
                                     });
 
                                     // update all teams below
                                     const below = $teams.filter(t => Number(t.data.order) > Number(event.data?.data.order));
+                                    if (event.data) below.push(event.data);
                                     for (const t of below) {
                                         t.update(() => ({
                                             order: Number(t.data.order) + 1
@@ -205,8 +231,9 @@
                                         picklist: String(picklist.data.id),
                                         team: chosen.tba.team_number,
                                         reason: why,
-                                        order: Number(event.data?.data.order),
+                                        order: Number(event.data?.data.order) + 1,
                                         chosen: false,
+                            addedBy: String(Account.getSelf().get().data.id),
                                     });
 
                                     // update all teams below
@@ -302,6 +329,24 @@
                                     type: 'material-icons',
                                     name: 'visibility',
                                 },
+                            },
+                            {
+                                name: 'Make SpecTator',
+                                action: async () => {
+                                    const reason = await prompt(`Why are you making ${event.data?.data.team} a SpecTator?`);
+                                    if (!reason) return;
+                                    event.data?.delete();
+                                    Picklist.SpecTator.new({
+                                        eventKey: String(picklist.data.eventKey),
+                                        reason,
+                                        team: Number(event.data?.data.team),
+                            addedBy: String(Account.getSelf().get().data.id),
+                                    })
+                                },
+                                icon: {
+                                    type: 'material-icons',
+                                    name: 'delete',
+                                }
                             }
                         ],
                         width: '150px',
@@ -310,7 +355,8 @@
                 preventDefaultOnContextMenu: true,
             }}
             height="400px"
-            modules={[TextEditorModule]}
+            modules={[TextEditorModule, RowDragModule]}
+            rowNumbers={true}
         />
         {/key}
     </div>

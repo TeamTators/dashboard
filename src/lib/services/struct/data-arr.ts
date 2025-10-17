@@ -92,7 +92,7 @@ export class DataArr<T extends Blank> implements Writable<StructData<T>[]> {
 	 * @param {StructData<T>[]} value
 	 */
 	private apply(value: StructData<T>[]): void {
-		this.data = value.sort(this._sort).filter(this._filter);
+		this.data = value;
 		this.struct.log('Applied Data:', this.data);
 		this.inform();
 	}
@@ -176,7 +176,8 @@ export class DataArr<T extends Blank> implements Writable<StructData<T>[]> {
 	 * Informs the array to emit updates without any local changes
 	 */
 	inform() {
-		this.subscribers.forEach((s) => s(this.data));
+		const data = this.data.sort(this._sort).filter(this._filter);
+		this.subscribers.forEach((s) => s(data));
 	}
 
 	/**

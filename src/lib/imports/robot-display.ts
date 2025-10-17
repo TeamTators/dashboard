@@ -77,6 +77,14 @@ export default (event: TBAEvent) => {
 					name: 'compare'
 				}
 			},
+			{
+				name: 'Picklist',
+				href: `/dashboard/event/${event.key}/picklist`,
+				icon: {
+					type: 'material-icons',
+					name: 'list',
+				}
+			},
 			// {
 			// 	name: 'Strategy',
 			// 	href: 'https://docs.google.com/presentation/d/1kwopP8dvpRW90R5VY4jQy9Rx5XiZPmFtyoY_8qw5628/edit?usp=sharing',

@@ -58,5 +58,6 @@
 			"fileMatch": ["config.json", "config.example.json", "config.docker.json"],
 			"url": "./config/config.schema.json"
 		}
-	]
+	],
+	"excalidraw.theme": "dark"
 }

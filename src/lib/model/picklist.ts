@@ -9,6 +9,7 @@ export namespace Picklist {
             eventKey: 'string',
             name: 'string',
             frozen: 'boolean',
+            addedBy: 'string',
         },
         browser,
         socket: sse,
@@ -25,6 +26,7 @@ export namespace Picklist {
             order: 'number',
             reason: 'string',
             chosen: 'boolean',
+            addedBy: 'string',
         },
         browser,
         socket: sse,
@@ -40,6 +42,7 @@ export namespace Picklist {
             direction: 'string',
             team: 'number',
             reason: 'string',
+            addedBy: 'string',
         },
         browser,
         socket: sse,
@@ -47,4 +50,19 @@ export namespace Picklist {
 
     export type PicklistChangeData = typeof PicklistChange.sample;
     export type PicklistChangeDataArr = ReturnType<typeof PicklistChange.arr>;
+
+    export const SpecTator = new Struct({
+        name: 'picklist_spectator',
+        structure: {
+            eventKey: 'string',
+            team: 'number',
+            reason: 'string',
+            addedBy: 'string',
+        },
+        browser,
+        socket: sse,
+    });
+
+    export type SpecTatorData = typeof SpecTator.sample;
+    export type SpecTatorArr = ReturnType<typeof SpecTator.arr>;
 }

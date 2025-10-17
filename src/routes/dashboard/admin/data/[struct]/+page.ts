@@ -8,6 +8,7 @@ import '$lib/model/potato';
 import '$lib/model/scouting';
 import '$lib/model/TBA';
 import '$lib/model/strategy';
+import '$lib/model/picklist';
 
 export const load = (event) => {
 	const struct = Struct.structs.get(event.params.struct);

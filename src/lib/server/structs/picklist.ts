@@ -11,6 +11,7 @@ export namespace Picklist {
             eventKey: text('event_key').notNull(),
             name: text('name').notNull(),
             frozen: boolean('frozen').notNull().default(false),
+            addedBy: text('added_by').notNull()
         }
     });
 
@@ -25,6 +26,7 @@ export namespace Picklist {
             order: integer('order').notNull(),
             reason: text('reason').notNull(),
             chosen: boolean('chosen').notNull().default(false),
+            addedBy: text('added_by').notNull()
         },
         log: true,
     });
@@ -38,6 +40,17 @@ export namespace Picklist {
             direction: text('direction').notNull(),
             team: integer('team').notNull(),
             reason: text('reason').notNull(),
+            addedBy: text('added_by').notNull(),
+        }
+    });
+
+    export const SpecTator = new Struct({
+        name: 'picklist_spectator',
+        structure: {
+            eventKey: text('event_key').notNull(),
+            team: integer('team').notNull(),
+            reason: text('reason').notNull(),
+            addedBy: text('added_by').notNull()
         }
     });
 
@@ -72,3 +85,4 @@ export namespace Picklist {
 export const _picklist = Picklist.Picklist.table;
 export const _picklistTeam = Picklist.PicklistTeam.table;
 export const _picklistChange = Picklist.PicklistChange.table;
+export const _specTator = Picklist.SpecTator.table;
