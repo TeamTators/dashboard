@@ -58,6 +58,7 @@
 			});
 		});
 		const unsub = rankings.subscribe((data) => {
+			console.log(data);
 			first = data[0];
 			second = data[1];
 			third = data[2];
