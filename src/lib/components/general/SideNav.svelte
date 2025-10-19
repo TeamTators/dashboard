@@ -31,34 +31,32 @@
 	let offset = $state(0);
 
 	const getLinks = async () => {
-		Analytics.myLinks({
-			offset: offset,
-			limit: limit
-		}).then(async (data) => {
-			if (data.isOk()) {
-				links = await Promise.all(
-					data.value.map(async (link) => {
-						const res = await getTitle(link.data.url || '');
-						let title: string;
-
-						if (res.isOk()) title = res.value;
-						else {
-							title = '';
-						}
-						return {
-							link,
-							title
-						};
-					})
-				);
-			} else console.error('Failed to fetch links:', data.error);
-		});
-
-		Analytics.count().then((res) => {
-			if (res.isOk()) {
-				count = res.value;
-			}
-		});
+		// Analytics.myLinks({
+		// 	offset: offset,
+		// 	limit: limit
+		// }).then(async (data) => {
+		// 	if (data.isOk()) {
+		// 		links = await Promise.all(
+		// 			data.value.map(async (link) => {
+		// 				const res = await getTitle(link.data.url || '');
+		// 				let title: string;
+		// 				if (res.isOk()) title = res.value;
+		// 				else {
+		// 					title = '';
+		// 				}
+		// 				return {
+		// 					link,
+		// 					title
+		// 				};
+		// 			})
+		// 		);
+		// 	} else console.error('Failed to fetch links:', data.error);
+		// });
+		// Analytics.count().then((res) => {
+		// 	if (res.isOk()) {
+		// 		count = res.value;
+		// 	}
+		// });
 	};
 
 	$effect(() => {
@@ -122,7 +120,7 @@
 					</ul>
 				</li>
 			{/each}
-			<li class="mb-3 no-select">
+			<!-- <li class="mb-3 no-select">
 				<div class="d-flex align-items-center justify-content-between">
 					<h4 class="text-secondary">Recents ({links.length} / {count})</h4>
 					{#if count > limit}
@@ -169,7 +167,7 @@
 						{/if}
 					{/each}
 				</ul>
-			</li>
+			</li> -->
 		</ul>
 	</div>
 </div>

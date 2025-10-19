@@ -12,6 +12,7 @@ export type ContextMenuOptions = (
 			action: (e: MouseEvent) => void;
 			name: string;
 			icon: Icon;
+			disabled?: boolean;
 	  }
 	| null
 	| string
@@ -92,6 +93,7 @@ export const contextmenu = (
 				'p-2',
 				'rounded-0'
 			);
+			if (o.disabled) button.disabled = true;
 			button.type = 'button';
 			const icon = create('span');
 			switch (o.icon.type) {

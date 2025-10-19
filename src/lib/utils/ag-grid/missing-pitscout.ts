@@ -18,7 +18,9 @@ export class MissingPitscoutComp implements ICellRendererComp {
 		// 	text.textContent = capitalize(fromSnakeCase(q.data.key || '')) || 'No Question Text';
 		// 	this.eGui.appendChild(text);
 		// }
-		this.eGui.innerHTML = questions.data.map(q => capitalize(fromSnakeCase(q.data.key || ''))).join(', ');
+		this.eGui.innerHTML = questions.data
+			.map((q) => capitalize(fromSnakeCase(q.data.key || '')))
+			.join(', ');
 		//questions.map((q) => Scouting.PIT.Questions.Generator(q));
 		// Task:
 		// Create links for each of the questions, they will go to the correct link

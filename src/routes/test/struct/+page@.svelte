@@ -9,6 +9,7 @@
 	import '$lib/model/potato';
 	import '$lib/model/scouting';
 	import '$lib/model/strategy';
+	import '$lib/model/picklist';
 	import { writable } from 'svelte/store';
 
 	// Insert all other structs here
