@@ -3,7 +3,7 @@
 	"app_name": "Your App Name",
 	"network": {
 		"host": "localhost",
-		"port": 3000,
+		"port": 2122,
 		"protocol": "http"
 	},
 	"database": {
@@ -66,5 +66,14 @@
 		"version": 1,
 		"debug": true,
 		"debounce_interval_ms": 16
+	},
+	"tba_webhook": {
+		"path": "../tba-webhooks",
+		"port": 3000,
+		"redis_name": "tba-webhooks",
+		"secret": "your_webhook_secret"
+	},
+	"potato": {
+		"enabled": true
 	}
 }

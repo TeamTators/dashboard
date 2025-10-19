@@ -1,0 +1,10 @@
+name: manage-pit-scouting
+structs:
+  - pit_sections
+  - pit_groups
+  - pit_questions
+  - pit_answers
+permissions:
+  - '*'
+pages: []
+group: Scouting

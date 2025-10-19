@@ -39,6 +39,7 @@ declare global {
 			batch_size: number;
 			debug: boolean;
 		};
+		do_potato: boolean;
 	};
 }
 
