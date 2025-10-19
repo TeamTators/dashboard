@@ -82,7 +82,7 @@ export default (event: TBAEvent) => {
 				href: `/dashboard/event/${event.key}/picklist`,
 				icon: {
 					type: 'material-icons',
-					name: 'list',
+					name: 'list'
 				}
 			},
 			// {

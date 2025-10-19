@@ -85,14 +85,11 @@
 		class={inSelected(teamKey, found)}
 	>
 		<a
-			href="/dashboard/event/{data.event.key}/team/{foundTeam}/match/{match.comp_level}/{match.match_number}"
+			href="/dashboard/event/{data.event
+				.key}/team/{foundTeam}/match/{match.comp_level}/{match.match_number}"
 			style="text-decoration: none;"
 		>
-			<span
-				class="badge"
-				class:bg-danger={!found}
-				class:bg-success={found}
-			>
+			<span class="badge" class:bg-danger={!found} class:bg-success={found}>
 				{foundTeam}
 			</span>
 		</a>

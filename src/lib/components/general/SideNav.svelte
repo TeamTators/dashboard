@@ -40,7 +40,6 @@
 		// 			data.value.map(async (link) => {
 		// 				const res = await getTitle(link.data.url || '');
 		// 				let title: string;
-
 		// 				if (res.isOk()) title = res.value;
 		// 				else {
 		// 					title = '';
@@ -53,7 +52,6 @@
 		// 		);
 		// 	} else console.error('Failed to fetch links:', data.error);
 		// });
-
 		// Analytics.count().then((res) => {
 		// 	if (res.isOk()) {
 		// 		count = res.value;
