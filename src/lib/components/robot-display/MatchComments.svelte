@@ -22,11 +22,9 @@
 	let render = $state(0);
 
 	onMount(() => {
-		comments = Scouting.TeamComments.fromProperty(
-			'matchScoutingId',
-			String(scouting.data.id),
-			false
-		);
+		comments = Scouting.TeamComments.fromProperty('matchScoutingId', String(scouting.data.id), {
+			asStream: false
+		});
 
 		render++;
 

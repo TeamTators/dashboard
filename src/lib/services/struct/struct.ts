@@ -1084,21 +1084,23 @@ export class Struct<T extends Blank> {
 			if (__APP_ENV__.struct_batching.enabled) {
 				res = await StructBatching.add(this.data.name, action, data, date).unwrap();
 			} else {
-				res = z.object({
-					success: z.boolean(),
-					message: z.string().optional(),
-					data: z.unknown().optional()
-				}).parse(
-					await fetch(`/struct/${this.data.name}/${action}`, {
-						method: 'POST',
-						headers: {
-							...Object.fromEntries(Struct.headers.entries()),
-							'X-Date': String(date?.getTime() || Struct.getDate()),
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(data)
-					}).then((r) => r.json())
-				);
+				res = z
+					.object({
+						success: z.boolean(),
+						message: z.string().optional(),
+						data: z.unknown().optional()
+					})
+					.parse(
+						await fetch(`/struct/${this.data.name}/${action}`, {
+							method: 'POST',
+							headers: {
+								...Object.fromEntries(Struct.headers.entries()),
+								'X-Date': String(date?.getTime() || Struct.getDate()),
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify(data)
+						}).then((r) => r.json())
+					);
 			}
 			this.log('Post:', action, data, res);
 			return res;

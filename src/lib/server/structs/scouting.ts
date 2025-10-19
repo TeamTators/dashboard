@@ -575,17 +575,18 @@ export namespace Scouting {
 				// };
 				const groups = await DB.select()
 					.from(Groups.table)
-					.where(
-						and(eq(Groups.table.sectionId, section.id), eq(Groups.table.archived, false))
-					)
+					.where(and(eq(Groups.table.sectionId, section.id), eq(Groups.table.archived, false)))
 					.orderBy(Groups.table.order);
 
 				const questions = await DB.select()
 					.from(Questions.table)
 					.where(
 						and(
-							inArray(Questions.table.groupId, groups.map((g) => g.id)),
-							eq(Questions.table.archived, false),
+							inArray(
+								Questions.table.groupId,
+								groups.map((g) => g.id)
+							),
+							eq(Questions.table.archived, false)
 						)
 					)
 					.orderBy(Questions.table.order);
@@ -594,8 +595,11 @@ export namespace Scouting {
 					.from(Answers.table)
 					.where(
 						and(
-							inArray(Answers.table.questionId, questions.map((q) => q.id)),
-							eq(Answers.table.archived, false),
+							inArray(
+								Answers.table.questionId,
+								questions.map((q) => q.id)
+							),
+							eq(Answers.table.archived, false)
 						)
 					);
 
@@ -609,7 +613,7 @@ export namespace Scouting {
 						.map((a) => ({
 							answer: Answers.Generator(a),
 							account: accounts.find((acc) => acc.id === a.accountId)
-						})),
+						}))
 				};
 			});
 		};
