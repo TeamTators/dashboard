@@ -7,6 +7,7 @@ import { attempt, attemptAsync } from 'ts-utils/check';
 import { z } from 'zod';
 import { Account } from './account';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+import YearInfo2025 from 'tatorscout/years/2025';
 import { $Math } from 'ts-utils/math';
 import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
@@ -41,9 +42,11 @@ export namespace Scouting {
 	export type MatchScoutingHistory = StructDataVersion<typeof MatchScouting.data.structure>;
 
 	export const getAverageVelocity = (data: MatchScoutingData[]) => {
-		return Trace.velocity.average(
-			data.map((d) => TraceSchema.parse(JSON.parse(d.data.trace || '[]'))).flat() as TraceArray
-		);
+		return attempt(() => {
+			return $Math.average(
+				data.map((d) => Trace.parse(d.data.trace).unwrap().velocityMap()).flat()
+			);
+		});
 	};
 
 	export const getArchivedMatches = (team: number, eventKey: string) => {
@@ -61,13 +64,9 @@ export namespace Scouting {
 		return attempt(() => {
 			if (year === 2025) {
 				return $Math.average(
-					data.map(
-						(d) =>
-							Trace.score.parse2025(
-								TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-								d.data.alliance as 'red' | 'blue'
-							).auto.total
-					)
+					data.map((d) => {
+						return YearInfo2025.parse(Trace.parse(d.data.trace).unwrap()).auto.total;
+					})
 				);
 			}
 			return 0;
@@ -77,15 +76,11 @@ export namespace Scouting {
 	export const averageTeleopScore = (data: MatchScoutingData[], year: number) => {
 		return attempt(() => {
 			if (year === 2025) {
-				const teles = data.map(
-					(d) =>
-						Trace.score.parse2025(
-							TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-							d.data.alliance as 'red' | 'blue'
-						).teleop
+				return $Math.average(
+					data.map((d) => {
+						return YearInfo2025.parse(Trace.parse(d.data.trace).unwrap()).teleop.total;
+					})
 				);
-
-				return $Math.average(teles.map((t) => t.total));
 			}
 			return 0;
 		});
@@ -194,12 +189,9 @@ export namespace Scouting {
 	export const averageSecondsNotMoving = (data: MatchScoutingData[]) => {
 		return attempt(() => {
 			return $Math.average(
-				data.map((d) =>
-					Trace.secondsNotMoving(
-						TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-						false
-					)
-				)
+				data.map((d) => {
+					return Trace.parse(d.data.trace).unwrap().secondsNotMoving();
+				})
 			);
 		});
 	};
