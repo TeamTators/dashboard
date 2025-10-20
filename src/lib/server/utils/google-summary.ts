@@ -3,6 +3,7 @@ import { Event, Team } from './tba';
 import { z } from 'zod';
 import { Scouting } from '../structs/scouting';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+import YearInfo2025 from 'tatorscout/years/2025';
 import terminal from './terminal';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
@@ -90,9 +91,7 @@ export const summarize = async (eventKey: string) => {
 					// For each of the listeners below, you'll need to do `scores.map(s => s.traceScore.something)` instead of `scores.map(s => s.something)`
 					// Then, fill out the blank columns below with the appropriate values
 
-					const traceScore = traces.map((t) =>
-						Trace.score.parse2025(t.trace, (t.match.data.alliance || 'red') as 'red' | 'blue')
-					);
+					const traceScore = traces.map((t) => YearInfo2025.parse(Trace.parse(t.trace).unwrap()));
 
 					const endgame: { dpc: number; shc: number; park: number }[] = [];
 					const mobility: number[] = [];
@@ -152,10 +151,7 @@ export const summarize = async (eventKey: string) => {
 					const traceScore = traces
 						.map((t) => {
 							if (!t.match.data.checks.includes('defense')) {
-								return Trace.score.parse2025(
-									t.trace,
-									(t.match.data.alliance || 'red') as 'red' | 'blue'
-								);
+								return YearInfo2025.parse(Trace.parse(t.trace).unwrap());
 							}
 						})
 						.filter((score) => score !== undefined); // Remove undefined values
@@ -220,9 +216,7 @@ export const summarize = async (eventKey: string) => {
 			async (team: Team) => {
 				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
 				return average(
-					matchScouting.map((s) =>
-						Trace.velocity.average(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray)
-					)
+					matchScouting.map((s) => Trace.parse(s.data.trace).unwrap().averageVelocity())
 				);
 			},
 			(team: Team) => `averageVelocity_${team.tba.team_number}`
@@ -243,9 +237,7 @@ export const summarize = async (eventKey: string) => {
 			async (team: Team) => {
 				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
 				return average(
-					matchScouting.map((s) =>
-						Trace.secondsNotMoving(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray, false)
-					)
+					matchScouting.map((s) => Trace.parse(s.data.trace).unwrap().secondsNotMoving())
 				);
 			},
 			(team: Team) => `secondsNotMoving_${team.tba.team_number}`
@@ -272,7 +264,7 @@ export const summarize = async (eventKey: string) => {
 			return Math.sqrt(variance);
 		};
 
-		const yearBreakdown = Trace.score.yearBreakdown[2025];
+		const yearBreakdown = YearInfo2025.scoreBreakdown;
 
 		const t = new Table(eventKey);
 		t.column('Team Number', (t) => t.tba.team_number);

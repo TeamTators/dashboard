@@ -5,6 +5,7 @@
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
 	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+	import YearInfo2025 from 'tatorscout/years/2025';
 	import { match as matchCase } from 'ts-utils/match';
 
 	interface Props {
@@ -67,10 +68,7 @@
 				return;
 			}
 
-			const res = Trace.score.parse2025(
-				trace.data as TraceArray,
-				(scouting.data.alliance || 'red') as 'red' | 'blue'
-			);
+			const res = YearInfo2025.parse(Trace.parse(scouting.data.trace).unwrap());
 
 			const chart = new Chart(canvas, {
 				type: 'bar',

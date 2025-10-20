@@ -42,17 +42,12 @@
 		}
 	});
 
-	const average = (array: number[]): number => {
-		if (array.length === 0) return 0;
-		return array.reduce((a, b) => a + b, 0) / array.length;
-	};
-
 	const avgvelocity = () => {
 		if (!scouting) return 0;
 		const trace = TraceSchema.safeParse(JSON.parse(scouting.data.trace || '[]'));
 		if (!trace.success) return 0;
 		const traceData = trace.data;
-		return T.velocity.average(traceData as TraceArray).toFixed(2);
+		return T.parse(traceData).unwrap().averageVelocity();
 	};
 </script>
 

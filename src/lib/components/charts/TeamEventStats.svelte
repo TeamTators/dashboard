@@ -39,6 +39,7 @@
 						(acc, curr) => {
 							if (!curr[3]) return acc;
 							const section = Trace.getSection(curr);
+							if (!section) return acc;
 							if (!acc[section]) acc[section] = {};
 							acc[section][curr[3] as string] = (acc[section][curr[3] as string] || 0) + 1;
 							return acc;

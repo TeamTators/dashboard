@@ -5,6 +5,7 @@
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
 	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+	import YearInfo2025 from 'tatorscout/years/2025';
 	import { match as matchCase } from 'ts-utils/match';
 
 	interface Props {
@@ -48,9 +49,9 @@
 			if (chart) chart.destroy();
 			try {
 				const countsPerMatch = data.map((d) => {
-					const trace = TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray;
+					const trace = Trace.parse(d.data.trace).unwrap();
 
-					return trace.reduce(
+					return trace.points.reduce(
 						(acc, curr) => {
 							if (!curr[3]) return acc;
 							if (
@@ -71,11 +72,7 @@
 						(m) =>
 							m.tba.match_number === s.data.matchNumber && m.tba.comp_level === s.data.compLevel
 					);
-					const trace = TraceSchema.parse(JSON.parse(s.data.trace || '[]')) as TraceArray;
-					const traceScore = Trace.score.parse2025(
-						trace,
-						(s.data.alliance || 'red') as 'red' | 'blue'
-					);
+					const traceScore = YearInfo2025.parse(Trace.parse(s.data.trace).unwrap());
 					if (!match)
 						return {
 							traceScore,

@@ -70,7 +70,7 @@
 			<td>Average Velocity:</td>
 			<td class="ws-nowrap">
 				{#if $scouting.length}
-					{Scouting.getAverageVelocity($scouting).toFixed(2)} ft/s
+					{Scouting.getAverageVelocity($scouting).unwrap().toFixed(2)} ft/s
 				{:else}
 					No data
 				{/if}
