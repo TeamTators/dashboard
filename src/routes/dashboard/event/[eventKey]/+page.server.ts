@@ -6,7 +6,6 @@ import { teamsFromMatch } from 'tatorscout/tba';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 import { $Math } from 'ts-utils/math';
 import { ServerCode } from 'ts-utils/status';
-import { match as matchCase } from 'ts-utils/match';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
