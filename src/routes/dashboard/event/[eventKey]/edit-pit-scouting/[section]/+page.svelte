@@ -22,7 +22,9 @@
 	let sections = $state(new DataArr(Scouting.PIT.Sections, []));
 
 	onMount(() => {
-		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, false);
+		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, {
+			asStream: false
+		});
 		// sections.filter(s => true);
 		sections.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});

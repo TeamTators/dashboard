@@ -143,6 +143,9 @@ importers:
       colors:
         specifier: git+https://github.com/tsaxking/colors#v1.0.0
         version: https://codeload.github.com/tsaxking/colors/tar.gz/033743f3dc346eb907160d770ba1bced183e4565
+      dexie:
+        specifier: ^4.2.1
+        version: 4.2.1
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
@@ -255,8 +258,8 @@ importers:
         specifier: github:TeamTators/tatorscout-utils
         version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a45a03a057954ce017044772065d52e113a8da72(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       ts-utils:
-        specifier: github:tsaxking/global-ts-utilities#v1.0.0
-        version: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+        specifier: github:tsaxking/global-ts-utilities#v1.0.5
+        version: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e5a4ddb377109fe2c1255b82d673cdccc870ce29(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2768,6 +2771,9 @@ packages:
   devalue@5.3.2:
     resolution: {integrity: sha512-UDsjUbpQn9kvm68slnrs+mfxwFkIflOhkanmyabZ8zOYk8SMEIbJ3TK+88g70hSIeytu4y18f0z/hYHMTrXIWw==}
 
+  dexie@4.2.1:
+    resolution: {integrity: sha512-Ckej0NS6jxQ4Po3OrSQBFddayRhTCic2DoCAG5zacOfOVB9P2Q5Xc5uL/nVa7ZVs+HdMnvUPzLFCB/JwpB6Csg==}
+
   diff@4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
     engines: {node: '>=0.3.1'}
@@ -4974,8 +4980,8 @@ packages:
     resolution: {tarball: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4}
     version: 1.0.0
 
-  ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/f8bcf8080b7f48abb7f2e2dccdbc3b28282c78ac:
-    resolution: {tarball: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/f8bcf8080b7f48abb7f2e2dccdbc3b28282c78ac}
+  ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e5a4ddb377109fe2c1255b82d673cdccc870ce29:
+    resolution: {tarball: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e5a4ddb377109fe2c1255b82d673cdccc870ce29}
     version: 1.0.0
 
   tslib@2.8.1:
@@ -8123,6 +8129,8 @@ snapshots:
 
   devalue@5.3.2: {}
 
+  dexie@4.2.1: {}
+
   diff@4.0.2: {}
 
   doctrine@3.0.0:
@@ -8974,7 +8982,7 @@ snapshots:
       expr-eval: 2.0.2
       node-html-parser: 7.0.1
       prettier: 3.6.2
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/f8bcf8080b7f48abb7f2e2dccdbc3b28282c78ac(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e5a4ddb377109fe2c1255b82d673cdccc870ce29(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       typescript: 5.9.2
       vite-node: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       vitest: 2.1.9(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
@@ -10081,7 +10089,7 @@ snapshots:
   redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/1e612b476d486f0e002b6e4fd92b379a81102416(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
     dependencies:
       redis: 5.8.2
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/f8bcf8080b7f48abb7f2e2dccdbc3b28282c78ac(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e5a4ddb377109fe2c1255b82d673cdccc870ce29(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       uuid: 11.1.0
       vitest: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       zod: 3.25.76
@@ -10106,7 +10114,7 @@ snapshots:
   redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/d3b228def595096d6252e89ee9fb1c10f583eadf(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
     dependencies:
       redis: 5.8.2
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/f8bcf8080b7f48abb7f2e2dccdbc3b28282c78ac(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e5a4ddb377109fe2c1255b82d673cdccc870ce29(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       uuid: 11.1.0
       vitest: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       zod: 3.25.76
@@ -10742,7 +10750,7 @@ snapshots:
       - supports-color
       - terser
 
-  ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/f8bcf8080b7f48abb7f2e2dccdbc3b28282c78ac(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
+  ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e5a4ddb377109fe2c1255b82d673cdccc870ce29(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
     dependencies:
       typescript: 5.9.2
       vitest: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)

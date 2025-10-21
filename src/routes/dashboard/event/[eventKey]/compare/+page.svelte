@@ -16,13 +16,17 @@
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = writable<{
-		team: TBATeam;
-		component: Progress | TeamEventStats | undefined;
-	}[]>(data.selectedTeams.map(t => ({
-		team: t,
-		component: undefined,
-	})));
+	const selectedTeams = writable<
+		{
+			team: TBATeam;
+			component: Progress | TeamEventStats | undefined;
+		}[]
+	>(
+		data.selectedTeams.map((t) => ({
+			team: t,
+			component: undefined
+		}))
+	);
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
@@ -52,11 +56,14 @@
 		background: c.clone().setAlpha(0.2).toString('rgba')
 	}));
 
-	const sort = (a: {
-		team: TBATeam;
-	}, b: {
-		team: TBATeam;
-	}): number => a.team.tba.team_number - b.team.tba.team_number;
+	const sort = (
+		a: {
+			team: TBATeam;
+		},
+		b: {
+			team: TBATeam;
+		}
+	): number => a.team.tba.team_number - b.team.tba.team_number;
 
 	const dataset: {
 		label: string;
@@ -186,13 +193,20 @@
 							class="btn-check"
 							id="btn-check-{team.tba.team_number}"
 							autocomplete="off"
-							checked={!!$selectedTeams.find((t) => t.team.tba.team_number === team.tba.team_number)}
+							checked={!!$selectedTeams.find(
+								(t) => t.team.tba.team_number === team.tba.team_number
+							)}
 							onchange={(event) => {
 								if (event.currentTarget.checked) {
-									selectedTeams.set([...get(selectedTeams), {
-										team,
-										component: undefined,
-									}].sort(sort));
+									selectedTeams.set(
+										[
+											...get(selectedTeams),
+											{
+												team,
+												component: undefined
+											}
+										].sort(sort)
+									);
 								} else {
 									selectedTeams.set(
 										get(selectedTeams)
@@ -274,7 +288,9 @@
 							<div class="card layer-2">
 								<div class="card-body">
 									<div class="d-flex align-items-center mb-1 justify-content-between">
-										<h5 class="card-title">{team.team.tba.team_number} | {team.team.tba.nickname}</h5>
+										<h5 class="card-title">
+											{team.team.tba.team_number} | {team.team.tba.nickname}
+										</h5>
 										<button
 											type="button"
 											class="btn btn-sm btn-secondary ms-2"

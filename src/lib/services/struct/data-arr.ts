@@ -93,6 +93,9 @@ export class DataArr<T extends Blank> implements Writable<StructData<T>[]> {
 	 */
 	private apply(value: StructData<T>[]): void {
 		this.data = value.sort(this._sort).filter(this._filter);
+		if (this._reverse) {
+			this.data.reverse();
+		}
 		this.struct.log('Applied Data:', this.data);
 		this.inform();
 	}
@@ -151,7 +154,7 @@ export class DataArr<T extends Blank> implements Writable<StructData<T>[]> {
 	 */
 	sort(fn: (a: StructData<T>, b: StructData<T>) => number) {
 		this._sort = fn;
-		this.inform();
+		this.apply(this.data);
 	}
 
 	/**
@@ -169,7 +172,20 @@ export class DataArr<T extends Blank> implements Writable<StructData<T>[]> {
 	 */
 	filter(fn: (data: StructData<T>) => boolean) {
 		this._filter = fn;
-		this.inform();
+		this.apply(this.data);
+	}
+
+	/**
+	 * Indicates whether the current sort order is reversed
+	 */
+	private _reverse = false;
+
+	/**
+	 * Toggles the sort order between ascending and descending
+	 */
+	reverse() {
+		this._reverse = !this._reverse;
+		this.apply(this.data);
 	}
 
 	/**
