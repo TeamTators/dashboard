@@ -39,7 +39,7 @@
 
 	onMount(() => {
 		groups = Scouting.PIT.Groups.fromProperty('sectionId', $section.id || '', {
-			asStream: false
+			type: 'all'
 		});
 		groups.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});
