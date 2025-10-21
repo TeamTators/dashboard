@@ -157,8 +157,6 @@ export namespace Scouting {
 					{} as Record<string, number>
 				);
 
-				console.log('trace', trace);
-
 				return actionObj;
 			});
 
