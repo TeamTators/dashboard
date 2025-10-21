@@ -17,7 +17,7 @@ export default defineConfig({
 	server: {
 		port: config.network.port,
 		host: '0.0.0.0',
-		allowedHosts: ['dev.tsaxking.com']
+		allowedHosts: ['dev.tsaxking.com', 'dev.tatorscout.org', 'tatorscout.org']
 	},
 	define: {
 		__APP_ENV__: JSON.stringify({
@@ -25,7 +25,8 @@ export default defineConfig({
 			name: config.app_name,
 			indexed_db: config.indexed_db,
 			struct_cache: config.struct_cache,
-			struct_batching: config.struct_batching
+			struct_batching: config.struct_batching,
+			do_potato: config.potato.enabled
 		})
 	}
 });
