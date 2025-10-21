@@ -11,7 +11,7 @@
 
 	const getEvent = async () => {
 		eventKey = eventKey.trim().toLowerCase();
-		const e = await TBA.TBAEvent.getEvent(eventKey, true, new Date);
+		const e = await TBA.TBAEvent.getEvent(eventKey, true, new Date());
 		if (e.isErr()) return (status = 'Failed');
 
 		const eventTeams = await e.value.getTeams(true, new Date);
