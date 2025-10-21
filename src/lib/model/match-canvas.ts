@@ -46,7 +46,7 @@ const ACTION_COLORS: Record<Action | 'blank', string> = {
 	dpc: 'black',
 	shc: 'white',
 
-	blank: 'blue',
+	blank: 'blue'
 };
 
 const SECTION_COLORS = {

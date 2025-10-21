@@ -24,30 +24,29 @@
 		matches = Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key);
 		c = new MatchCanvas([], event.tba.year, ctx);
 
-        const offMatches = matches.subscribe((matchesData) => {
-            const array = matchesData
-                .map((m) => m.data.trace)
-                .filter(Boolean)
-                // casted as string because sveltekit doesn't recognize filter(Boolean) as a type guard
-                .map((t) => {
-                    const [first] = JSON.parse(t as string) as TraceArray;
-                    first[3] = 'blank' as Action;
-                    return first;
-                });
+		const offMatches = matches.subscribe((matchesData) => {
+			const array = matchesData
+				.map((m) => m.data.trace)
+				.filter(Boolean)
+				// casted as string because sveltekit doesn't recognize filter(Boolean) as a type guard
+				.map((t) => {
+					const [first] = JSON.parse(t as string) as TraceArray;
+					first[3] = 'blank' as Action;
+					return first;
+				});
 
-            console.log('Updating heatmap with traces:', array);
-            c.trace = array;
-            c.reset();
-            c.hidePath();
-            c.init();
-        });
+			c.trace = array;
+			c.reset();
+			c.hidePath();
+			c.init();
+		});
 
 		const stop = c.animate();
 
-        return () => {
-            stop();
-            offMatches();
-        };
+		return () => {
+			stop();
+			offMatches();
+		};
 	});
 </script>
 
