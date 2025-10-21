@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import { type TraceArray } from 'tatorscout/trace';
+	import { type TraceArray, type Action } from 'tatorscout/trace';
 	import { MatchCanvas } from '$lib/model/match-canvas';
 	import type { TBAEvent, TBATeam } from '$lib/utils/tba';
 
@@ -31,7 +31,7 @@
                 // casted as string because sveltekit doesn't recognize filter(Boolean) as a type guard
                 .map((t) => {
                     const [first] = JSON.parse(t as string) as TraceArray;
-                    first[3] = 'blank' as any;
+                    first[3] = 'blank' as Action;
                     return first;
                 });
 
