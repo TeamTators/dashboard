@@ -30,10 +30,18 @@
 				.filter(Boolean)
 				// casted as string because sveltekit doesn't recognize filter(Boolean) as a type guard
 				.map((t) => {
-					const [first] = JSON.parse(t as string) as TraceArray;
+					const trace = JSON.parse(t as string) as TraceArray;
+					const [first] = trace;
+					if (!first) return [];
 					first[3] = 'blank' as Action;
-					return first;
-				});
+					const firstPlacement = trace.find(t => !!t[3]); // first action that is not blank
+					if (!firstPlacement) return first;
+					return [
+						first,
+						firstPlacement,
+					];
+				})
+				.flat() as TraceArray;
 
 			c.trace = array;
 			c.reset();
