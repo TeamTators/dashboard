@@ -43,7 +43,7 @@
 	const retrieveAnswer = () => {
 		if (answer) return;
 		Scouting.PIT.Answers.fromProperty('questionId', question.data.id || '', {
-			asStream: true
+			type: 'stream'
 		})
 			.await()
 			.then((res) => {

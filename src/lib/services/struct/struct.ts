@@ -10,7 +10,7 @@ import { StructDataVersion } from './data-version';
 import { StructBatching } from './batching';
 import { StructData } from './struct-data';
 import { StructDataStage } from './data-staging';
-import { DataArr } from './data-arr';
+import { DataArr, PaginationDataArr } from './data-arr';
 import { StructCache } from './cache';
 import { encode } from 'ts-utils/text';
 
@@ -474,10 +474,15 @@ type ReadTypes = {
 		key: string;
 		value: unknown;
 	};
-	universe: string;
 	custom: {
 		query: string;
 		data: unknown;
+	};
+	'from-ids': {
+		ids: string[];
+	};
+	get: {
+		[key: string]: unknown;
 	};
 };
 
@@ -496,6 +501,8 @@ export type GlobalCols = {
 	canUpdate: 'boolean';
 };
 
+type ReadConfigType = 'stream' | 'all' | 'pagination';
+
 /**
  * Configuration object for read operations that determines return type and caching behavior
  *
@@ -503,21 +510,34 @@ export type GlobalCols = {
  * @typedef {ReadConfig}
  * @template {boolean} AsStream
  */
-export type ReadConfig<AsStream extends boolean> = {
-	/**
-	 * Determines the return type: true returns a StructStream, false returns a DataArr
-	 */
-	asStream: AsStream;
-	/**
-	 * Optional cache configuration for server-side caching
-	 */
-	cache?: {
-		/**
-		 * Date when the cached data expires
-		 */
-		expires: Date;
-	};
-};
+export type ReadConfig<AsStream extends ReadConfigType> = AsStream extends 'stream' | 'all'
+	? {
+			/**
+			 * Determines the return type: true returns a StructStream, false returns a DataArr
+			 */
+			type: AsStream;
+			/**
+			 * Optional cache configuration for server-side caching
+			 */
+			cache?: {
+				/**
+				 * Date when the cached data expires
+				 */
+				expires: Date;
+			};
+			force?: boolean;
+		}
+	: {
+			type: 'pagination';
+			cache?: {
+				expires: Date;
+			};
+			pagination: {
+				page: number;
+				size: number;
+			};
+			force?: boolean;
+		};
 
 /**
  * Struct class that communicates with the server
@@ -1122,6 +1142,10 @@ export class Struct<T extends Blank> {
 			cache?: {
 				expires: Date;
 			};
+			pagination?: {
+				page: number;
+				size: number;
+			};
 		}
 	) {
 		return attemptAsync(async () => {
@@ -1131,7 +1155,10 @@ export class Struct<T extends Blank> {
 					'Currently not in a browser environment. Will not run a fetch request'
 				);
 
-			const url = `/struct/${this.data.name}/${action}`;
+			let url = `/struct/${this.data.name}/${action}`;
+			if (config.pagination) {
+				url += `?pagination=true&page=${config.pagination.page}&size=${config.pagination.size}`;
+			}
 			const encoded = encode(JSON.stringify(config.data));
 			CACHE: if (config.cache) {
 				cacheWarning();
@@ -1322,32 +1349,100 @@ export class Struct<T extends Blank> {
 		return s;
 	}
 
+	private getPaginated<ReadType extends 'all' | 'archived' | 'property' | 'from-ids' | 'get'>(
+		type: ReadType,
+		args: ReadTypes[ReadType],
+		config: {
+			cache?: {
+				expires: Date;
+			};
+			pagination: {
+				page: number;
+				size: number;
+			};
+		}
+	) {
+		return attemptAsync(async () => {
+			const res = await this.getReq(`${PropertyAction.Read}/${type}`, {
+				data: { args },
+				cache: config?.cache,
+				pagination: config.pagination
+			}).then((r) => r.unwrap());
+
+			const parsed = z
+				.object({
+					success: z.boolean(),
+					data: z.array(z.unknown()),
+					message: z.string().optional()
+				})
+				.parse(await res.json());
+
+			const total = Number(res.headers.get('X-Total-Count'));
+
+			if (!parsed.success) {
+				throw new StructError(parsed.message || 'Failed to get paginated data');
+			}
+
+			return {
+				items: parsed.data.map((d) => this.Generator(d as any)),
+				total
+			};
+		});
+	}
+
+	/**
+	 * Gets all data as a paginated array
+	 */
+	all(config: ReadConfig<'pagination'>): PaginationDataArr<T>;
 	/**
 	 * Gets all data as a stream
 	 *
 	 * @param {true} asStream If true, returns a stream
 	 * @returns {StructStream<T>}
 	 */
-	all(config: ReadConfig<true>): StructStream<T>;
+	all(config: ReadConfig<'stream'>): StructStream<T>;
 	/**
 	 * Gets all data as an svelte store
 	 *
 	 * @param {false} asStream If false, returns a svelte store
 	 * @returns {DataArr<T>}
 	 */
-	all(config: ReadConfig<false>): DataArr<T>;
+	all(config: ReadConfig<'all'>): DataArr<T>;
 	/**
 	 * Gets all data as a stream or svelte store
 	 *
 	 * @param {boolean} asStream Returns a stream if true, svelte store if false
 	 * @returns
 	 */
-	all(config: ReadConfig<boolean>) {
-		const getStream = () => this.getStream('all', undefined, config);
-		if (config.asStream) return getStream();
+	all(config: ReadConfig<ReadConfigType>) {
+		if (config.type === 'pagination' && 'pagination' in config) {
+			let total = 0;
+			return new PaginationDataArr<T>(
+				this,
+				config.pagination.page,
+				config.pagination.size,
+				async (page, size) => {
+					const res = await this.getPaginated('all', undefined, {
+						cache: config.cache,
+						pagination: {
+							page,
+							size
+						}
+					}).unwrap();
+					total = res.total;
+					return res.items;
+				},
+				() => total
+			);
+		}
 
-		const arr = this.writables.get('all');
-		if (arr) return arr;
+		const getStream = () => this.getStream('all', undefined, config);
+		if (config.type === 'stream') return getStream();
+
+		if (!config?.force) {
+			const arr = this.writables.get('all');
+			if (arr) return arr;
+		}
 
 		const newArr = new DataArr(this, [...this.cache.values()]);
 		this.writables.set('all', newArr);
@@ -1367,31 +1462,58 @@ export class Struct<T extends Blank> {
 	}
 
 	/**
+	 * Gets all archived data as a paginated array
+	 */
+	archived(config: ReadConfig<'pagination'>): PaginationDataArr<T>;
+	/**
 	 * Gets all archived data
 	 *
 	 * @param {true} asStream If true, returns a stream
 	 * @returns {StructStream<T>}
 	 */
-	archived(config: ReadConfig<true>): StructStream<T>;
+	archived(config: ReadConfig<'stream'>): StructStream<T>;
 	/**
 	 * Gets all archived data
 	 *
 	 * @param {false} asStream If false, returns a svelte store
 	 * @returns {DataArr<T>}
 	 */
-	archived(config: ReadConfig<false>): DataArr<T>;
+	archived(config: ReadConfig<'all'>): DataArr<T>;
 	/**
 	 * Gets all archived data
 	 *
 	 * @param {boolean} asStream Returns a stream if true, svelte store if false
 	 * @returns
 	 */
-	archived(config: ReadConfig<boolean>) {
-		const getStream = () => this.getStream('archived', undefined, config);
-		if (config.asStream) return getStream();
+	archived(config: ReadConfig<ReadConfigType>) {
+		if (config.type === 'pagination' && 'pagination' in config) {
+			let total = 0;
+			return new PaginationDataArr<T>(
+				this,
+				config.pagination.page,
+				config.pagination.size,
+				async (page, size) => {
+					const res = await this.getPaginated('archived', undefined, {
+						cache: config.cache,
+						pagination: {
+							page,
+							size
+						}
+					}).unwrap();
+					total = res.total;
+					return res.items;
+				},
+				() => total
+			);
+		}
 
-		const arr = this.writables.get('archived');
-		if (arr) return arr;
+		const getStream = () => this.getStream('archived', undefined, config);
+		if (config.type === 'stream') return getStream();
+
+		if (!config?.force) {
+			const arr = this.writables.get('archived');
+			if (arr) return arr;
+		}
 
 		const newArr = new DataArr(
 			this,
@@ -1419,6 +1541,14 @@ export class Struct<T extends Blank> {
 	}
 
 	/**
+	 * Gets all data with a specific property value as a paginated array
+	 */
+	fromProperty<K extends keyof (T & GlobalCols)>(
+		key: K,
+		value: ColTsType<(T & GlobalCols)[K]>,
+		config: ReadConfig<'pagination'>
+	): PaginationDataArr<T>;
+	/**
 	 * Gets all data with a specific property value
 	 *
 	 * @param {string} key Property key
@@ -1429,7 +1559,7 @@ export class Struct<T extends Blank> {
 	fromProperty<K extends keyof (T & GlobalCols)>(
 		key: K,
 		value: ColTsType<(T & GlobalCols)[K]>,
-		config: ReadConfig<true>
+		config: ReadConfig<'stream'>
 	): StructStream<T>;
 	/**
 	 * Gets all data with a specific property value
@@ -1442,7 +1572,7 @@ export class Struct<T extends Blank> {
 	fromProperty<K extends keyof (T & GlobalCols)>(
 		key: K,
 		value: ColTsType<(T & GlobalCols)[K]>,
-		config: ReadConfig<false>
+		config: ReadConfig<'all'>
 	): DataArr<T>;
 	/**
 	 * Gets all data with a specific property value
@@ -1455,12 +1585,43 @@ export class Struct<T extends Blank> {
 	fromProperty<K extends keyof (T & GlobalCols)>(
 		key: K,
 		value: ColTsType<(T & GlobalCols)[K]>,
-		config: ReadConfig<boolean>
+		config: ReadConfig<ReadConfigType>
 	) {
+		if (config.type === 'pagination' && 'pagination' in config) {
+			let total = 0;
+			return new PaginationDataArr<T>(
+				this,
+				config.pagination.page,
+				config.pagination.size,
+				async (page, size) => {
+					const res = await this.getPaginated(
+						'property',
+						{ key: String(key), value },
+						{
+							cache: config.cache,
+							pagination: {
+								page,
+								size
+							}
+						}
+					).unwrap();
+					total = res.total;
+					return res.items;
+				},
+				() => total
+			);
+		}
+
 		const getStream = () => this.getStream('property', { key: String(key), value }, config);
-		if (config.asStream) return getStream();
+		if (config.type === 'stream') return getStream();
 
 		const cacheKey = `property:${String(key)}:${JSON.stringify(value)}`;
+
+		if (!config?.force) {
+			const arr = this.writables.get(cacheKey);
+			if (arr) return arr;
+		}
+
 		const arr =
 			this.writables.get(cacheKey) ||
 			new DataArr(
@@ -1491,22 +1652,189 @@ export class Struct<T extends Blank> {
 	 */
 	fromId(
 		id: string,
-		config: {
+		config?: {
 			cache?: {
 				expires: Date;
 			};
+			force?: boolean;
 		}
 	) {
 		return attemptAsync(async () => {
-			const has = this.cache.get(id);
-			if (has) return has;
+			if (!config?.force) {
+				const has = this.cache.get(id);
+				if (has) return has;
+			}
 			const res = await this.getReq(`${PropertyAction.Read}/from-id`, {
-				data: id,
+				data: {
+					args: {
+						id
+					}
+				},
 				cache: config?.cache
 			});
 			const data = await res.unwrap().json();
-			return this.Generator(data as SafePartialStructable<T & GlobalCols>);
+			console.log('Recieved from-id data:', data);
+			const parsed = z
+				.object({
+					success: z.boolean(),
+					data: z.array(z.unknown()),
+					message: z.string().optional()
+				})
+				.parse(data);
+			return this.Generator(parsed.data[0] as SafePartialStructable<T & GlobalCols>);
 		});
+	}
+
+	/**
+	 * Gets data from specific ids as a paginated array
+	 * @param ids
+	 * @param config
+	 */
+	fromIds(ids: string[], config: ReadConfig<'pagination'>): PaginationDataArr<T>;
+	/**
+	 * Gets data from specific ids as a stream
+	 * @param ids
+	 * @param config
+	 */
+	fromIds(ids: string[], config: ReadConfig<'stream'>): StructStream<T>;
+	/**
+	 * Gets data from specific ids as a svelte store
+	 * @param ids
+	 * @param config
+	 */
+	fromIds(ids: string[], config: ReadConfig<'all'>): DataArr<T>;
+	/**
+	 * Gets data from specific ids as a stream or svelte store
+	 * @param ids
+	 * @param config
+	 * @returns
+	 */
+	fromIds(
+		ids: string[],
+		config: ReadConfig<ReadConfigType>
+	): PaginationDataArr<T> | StructStream<T> | DataArr<T> {
+		const getStream = () =>
+			this.getStream(
+				'from-ids',
+				{
+					ids
+				},
+				config
+			);
+		if (config.type === 'stream') return getStream();
+
+		if (config.type === 'pagination' && 'pagination' in config) {
+			const stream = getStream().await();
+			let total = 0;
+			return new PaginationDataArr<T>(
+				this,
+				config.pagination.page,
+				config.pagination.size,
+				async (page, size) => {
+					const all = await stream;
+					if (all.isErr()) return [];
+					const items = all.value.slice(page * size, (page + 1) * size);
+					total = all.value.length;
+					return items;
+				},
+				() => total
+			);
+		}
+
+		const cacheKey = `from-ids:${ids.join(',')}`;
+
+		if (!config?.force) {
+			const arr = this.writables.get(cacheKey);
+			if (arr) return arr;
+		}
+
+		const arr =
+			this.writables.get(cacheKey) ||
+			new DataArr(
+				this,
+				[...this.cache.values()].filter((d) => ids.includes(String(d.data.id)) && !d.data.archived)
+			);
+		this.writables.set(cacheKey, arr);
+
+		// Register with centralized event system using a satisfy function
+		this.registerDataArray(cacheKey, arr, (data) => {
+			// Data satisfies if id is in the ids array and is not archived
+			if (data.data.id === undefined) return false;
+			return ids.includes(data.data.id) && !data.data.archived;
+		});
+
+		// Load initial data from stream
+		const stream = getStream();
+		stream.once('data', (data) => arr.set([data]));
+		stream.pipe((data) => arr.add(data));
+		return arr;
+	}
+
+	get(
+		data: PartialStructable<T & GlobalCols>,
+		config: ReadConfig<'pagination'>
+	): PaginationDataArr<T>;
+	get(data: PartialStructable<T & GlobalCols>, config: ReadConfig<'stream'>): StructStream<T>;
+	get(data: PartialStructable<T & GlobalCols>, config: ReadConfig<'all'>): DataArr<T>;
+	get(data: PartialStructable<T & GlobalCols>, config: ReadConfig<ReadConfigType>) {
+		if (config.type === 'pagination' && 'pagination' in config) {
+			let total = 0;
+			return new PaginationDataArr<T>(
+				this,
+				config.pagination.page,
+				config.pagination.size,
+				async (page, size) => {
+					const res = await this.getPaginated('get', data, {
+						cache: config.cache,
+						pagination: {
+							page,
+							size
+						}
+					}).unwrap();
+					total = res.total;
+					return res.items;
+				},
+				() => total
+			);
+		}
+
+		const getStream = () => this.getStream('get', data, config);
+		if (config.type === 'stream') return getStream();
+
+		const cacheKey = `get:${JSON.stringify(data)}`;
+
+		if (!config?.force) {
+			const arr = this.writables.get(cacheKey);
+			if (arr) return arr;
+		}
+
+		const arr =
+			this.writables.get(cacheKey) ||
+			new DataArr(
+				this,
+				[...this.cache.values()].filter((d) => {
+					for (const [key, value] of Object.entries(data)) {
+						if ((d.data as any)[key] !== value) return false;
+					}
+					return !d.data.archived;
+				})
+			);
+		this.writables.set(cacheKey, arr);
+
+		// Register with centralized event system using a satisfy function
+		this.registerDataArray(cacheKey, arr, (d) => {
+			for (const [key, value] of Object.entries(data)) {
+				if ((d.data as any)[key] !== value) return false;
+			}
+			return !d.data.archived;
+		});
+
+		// Load initial data from stream
+		const stream = getStream();
+		stream.once('data', (d) => arr.set([d]));
+		stream.pipe((d) => arr.add(d));
+
+		return arr;
 	}
 
 	/**
@@ -1643,6 +1971,7 @@ export class Struct<T extends Blank> {
 
 	/**
 	 * Sends custom data to the server and returns the result.
+	 * This should be used for exclusively data retrieval.
 	 *
 	 * @template T
 	 * @param {string} name
@@ -1685,6 +2014,7 @@ export class Struct<T extends Blank> {
 	// custom functions
 	/**
 	 * Calls a custom event on the server and returns the result.
+	 * This should exclusively be used for triggering server-side events.
 	 *
 	 * @param {string} event
 	 * @param {unknown} data
@@ -1730,6 +2060,16 @@ export class Struct<T extends Blank> {
 		}
 
 		return arr;
+	}
+
+	pagination() {
+		return new PaginationDataArr<T>(
+			this,
+			0,
+			10,
+			async (_page, _size) => [] as StructData<T>[],
+			() => 0
+		);
 	}
 
 	clear() {

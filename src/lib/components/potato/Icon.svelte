@@ -18,7 +18,7 @@
 		const u = self.subscribe(async () => {
 			const [p] = (
 				await Potato.Friend.fromProperty('account', String(self.get().data.id), {
-					asStream: true
+					type: 'stream'
 				}).await()
 			).unwrap();
 			if (!p) return;
