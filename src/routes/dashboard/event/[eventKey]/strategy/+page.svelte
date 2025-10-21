@@ -35,7 +35,9 @@
 	let alliance: 'red' | 'blue' | 'unknown' = $state('unknown');
 
 	const selectFromMatch = async (match: TBAMatch) => {
-		const teams = await match.getTeams();
+		const date = new Date();
+		date.setMinutes(date.getMinutes() + 10);
+		const teams = await match.getTeams(false, date);
 		if (teams.isErr()) return console.error(teams.error);
 		const teamNumbers = teamsFromMatch(match.tba);
 		// const teamNumbers = teams.value.map((team) => team.tba.team_number);

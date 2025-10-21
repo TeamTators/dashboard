@@ -65,6 +65,7 @@
 	const findTeam = async (teamNumber: number) => {
 		const t = await get(
 			`/tba/team/frc${teamNumber}`,
+			true,
 			z.object({
 				team: z
 					.object({
@@ -74,7 +75,8 @@
 						name: z.string()
 					})
 					.optional()
-			})
+			}),
+			new Date(),
 		);
 		if (t.isErr()) {
 			console.error(`Error finding team ${teamNumber}:`, t.error);

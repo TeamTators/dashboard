@@ -35,7 +35,9 @@
 
 	const copy = async () => {
 		try {
-			const events = (await TBAEvent.getEvents(year))
+			const d = new Date();
+			d.setDate(d.getDate() + 1);
+			const events = (await TBAEvent.getEvents(year, false, d))
 				.unwrap()
 				.filter((e) => e.tba.key !== eventKey);
 

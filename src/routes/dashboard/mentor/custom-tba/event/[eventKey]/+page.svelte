@@ -91,7 +91,7 @@
 			eventTimeout = null;
 		}
 		setTimeout(async () => {
-			const event = await TBAEvent.getEvent(key, true);
+			const event = await TBAEvent.getEvent(key, true, new Date());
 			if (event.isErr()) {
 				eventState = 'not_found';
 				year = parseInt(key.substring(0, 4), 10);

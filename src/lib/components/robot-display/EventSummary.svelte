@@ -26,7 +26,9 @@
 	let averageSecondsNotMoving = $state(0);
 
 	onMount(() => {
-		team.getStatus().then((s) => {
+		const d = new Date();
+		d.setMinutes(d.getMinutes() + 10);
+		team.getStatus(true, d).then((s) => {
 			if (s.isErr()) return console.error(s.error);
 			rank = s.value.qual?.ranking.rank ?? 0;
 			const { wins, losses, ties } = s.value.qual?.ranking.record ?? {

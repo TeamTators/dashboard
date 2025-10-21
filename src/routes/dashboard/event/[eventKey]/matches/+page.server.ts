@@ -23,7 +23,11 @@ export const load = async (event) => {
 
 	return {
 		event: e.value.tba,
-		matches: matches.value.map((m) => m.tba),
-		scouting: scouting.value.map((s) => s.safe())
+		scouting: scouting.value.map((s) => ({
+			matchNumber: s.data.matchNumber,
+			compLevel: s.data.compLevel,
+			team: s.data.team,
+			eventKey: s.data.eventKey,
+		}))
 	};
 };

@@ -2,18 +2,20 @@
 	import nav from '$lib/imports/robot-display.js';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { DataArr } from '$lib/services/struct/data-arr';
+	import { TBAEvent, TBAMatch } from '$lib/utils/tba.js';
 	import { onMount } from 'svelte';
-	import { type TBAMatch } from 'tatorscout/tba';
 	import { dateTime } from 'ts-utils/clock';
 
 	const { data } = $props();
-	const matches = $derived(data.matches);
-	const event = $derived(data.event);
+
+	let matches: TBAMatch[] = $state([]);
+
+	const event = $derived(new TBAEvent(data.event));
 	const matchScouting = $derived(new DataArr(Scouting.MatchScouting, data.scouting));
 
 	let selectedMatches: TBAMatch[] = $state([]);
 
-	$effect(() => nav(event));
+	$effect(() => nav(event.tba));
 
 	const team = (teamKey: string) => {
 		return Number(teamKey.substring(3));
@@ -22,8 +24,8 @@
 	const inSelected = (teamKey: string, scouted: boolean) => {
 		for (const match of selectedMatches) {
 			if (
-				match.alliances.red.team_keys.includes(teamKey) ||
-				match.alliances.blue.team_keys.includes(teamKey)
+				match.tba.alliances.red.team_keys.includes(teamKey) ||
+				match.tba.alliances.blue.team_keys.includes(teamKey)
 			) {
 				if (scouted) {
 					return 'highlight-muted';
@@ -41,26 +43,26 @@
 	) => {
 		return matchScouting.find(
 			(m) =>
-				m.data.matchNumber === match.match_number &&
-				m.data.compLevel === match.comp_level &&
+				m.data.matchNumber === match.tba.match_number &&
+				m.data.compLevel === match.tba.comp_level &&
 				m.data.team === team
 		);
 	};
 
 	const has2122 = (match: TBAMatch) => {
 		return (
-			match.alliances.red.team_keys.includes('frc2122') ||
-			match.alliances.blue.team_keys.includes('frc2122')
+			match.tba.alliances.red.team_keys.includes('frc2122') ||
+			match.tba.alliances.blue.team_keys.includes('frc2122')
 		);
 	};
 
 	onMount(() => {
 		const add = (scouting: Scouting.MatchScoutingData) => {
-			if (scouting.data.eventKey !== event.key) return;
+			if (scouting.data.eventKey !== event.tba.key) return;
 			matchScouting.add(scouting);
 		};
 		const remove = (scouting: Scouting.MatchScoutingData) => {
-			if (scouting.data.eventKey !== event.key) return;
+			if (scouting.data.eventKey !== event.tba.key) return;
 			matchScouting.remove(scouting);
 		};
 
@@ -68,11 +70,26 @@
 			matchScouting.inform();
 		};
 
-		Scouting.MatchScouting.on('new', add);
-		Scouting.MatchScouting.on('delete', remove);
-		Scouting.MatchScouting.on('update', update);
-		Scouting.MatchScouting.on('archive', remove);
-		Scouting.MatchScouting.on('restore', add);
+		const offNew = Scouting.MatchScouting.on('new', add);
+		const offDelete = Scouting.MatchScouting.on('delete', remove);
+		const offUpdate = Scouting.MatchScouting.on('update', update);
+		const offArchive = Scouting.MatchScouting.on('archive', remove);
+		const offRestore = Scouting.MatchScouting.on('restore', add);
+
+		const expires = new Date();
+		expires.setMinutes(expires.getMinutes() + 10);
+
+		event.getMatches(false, expires).then(m => {
+			if (m.isOk()) matches = m.value;
+		});
+
+		return () => {
+			offNew();
+			offDelete();
+			offUpdate();
+			offArchive();
+			offRestore();
+		};
 	});
 </script>
 
@@ -86,7 +103,7 @@
 	>
 		<a
 			href="/dashboard/event/{data.event
-				.key}/team/{foundTeam}/match/{match.comp_level}/{match.match_number}"
+				.key}/team/{foundTeam}/match/{match.tba.comp_level}/{match.tba.match_number}"
 			style="text-decoration: none;"
 		>
 			<span class="badge" class:bg-danger={!found} class:bg-success={found}>
@@ -99,7 +116,7 @@
 <div class="container">
 	<div class="row mb-3">
 		<h1>
-			Match Schedule for {event.name}
+			Match Schedule for {event.tba.name}
 		</h1>
 		<p class="text-muted">
 			Matches with team 2122 are outlined in purple.
@@ -122,8 +139,8 @@
 							<td>
 								<input
 									type="checkbox"
-									name="match-check-{match.match_number}"
-									id="match-check-{match.match_number}"
+									name="match-check-{match.tba.match_number}"
+									id="match-check-{match.tba.match_number}"
 									onchange={(event) => {
 										const checked = event.currentTarget.checked;
 										if (checked) {
@@ -131,15 +148,15 @@
 												(m, i, arr) =>
 													arr.findIndex(
 														(x) =>
-															x.match_number === m.match_number && x.comp_level === m.comp_level
+															x.tba.match_number === m.tba.match_number && x.tba.comp_level === m.tba.comp_level
 													) === i
 											);
 										} else {
 											selectedMatches = selectedMatches.filter(
 												(m) =>
 													!(
-														m.match_number === match.match_number &&
-														m.comp_level === match.comp_level
+														m.tba.match_number === match.tba.match_number &&
+														m.tba.comp_level === match.tba.comp_level
 													)
 											);
 										}
@@ -147,20 +164,20 @@
 								/>
 							</td>
 							<td>
-								{match.match_number}
+								{match.tba.match_number}
 							</td>
 							<td>
-								{match.comp_level}
+								{match.tba.comp_level}
 							</td>
 							<td>
-								{dateTime(Number(match.predicted_time) * 1000)}
+								{dateTime(Number(match.tba.predicted_time) * 1000)}
 							</td>
-							{@render teamLink(match.alliances.red.team_keys[0], 'red', match)}
-							{@render teamLink(match.alliances.red.team_keys[1], 'red', match)}
-							{@render teamLink(match.alliances.red.team_keys[2], 'red', match)}
-							{@render teamLink(match.alliances.blue.team_keys[0], 'blue', match)}
-							{@render teamLink(match.alliances.blue.team_keys[1], 'blue', match)}
-							{@render teamLink(match.alliances.blue.team_keys[2], 'blue', match)}
+							{@render teamLink(match.tba.alliances.red.team_keys[0], 'red', match)}
+							{@render teamLink(match.tba.alliances.red.team_keys[1], 'red', match)}
+							{@render teamLink(match.tba.alliances.red.team_keys[2], 'red', match)}
+							{@render teamLink(match.tba.alliances.blue.team_keys[0], 'blue', match)}
+							{@render teamLink(match.tba.alliances.blue.team_keys[1], 'blue', match)}
+							{@render teamLink(match.tba.alliances.blue.team_keys[2], 'blue', match)}
 						</tr>
 					{/each}
 				</tbody>
