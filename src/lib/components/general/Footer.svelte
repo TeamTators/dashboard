@@ -45,6 +45,7 @@
 		"If you climb a hill you'll gain a lot of potential. Same thing if you rub a balloon.",
 		'Lamps are just domesticated fire.',
 		'Click me for points!',
+		'hellooooo',
 		'Nothing is more permanent than a temporary solution.',
 		'When you click on "Click me for points!" you get as many points as it takes for you to realise nothing happens.',
 	];
