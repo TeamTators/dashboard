@@ -45,6 +45,7 @@
 		'If you climb a hill you\'ll gain a lot of potential. Same thing if you rub a balloon.',
 		'Lamps are just domesticated fire.',
 		'Click me for points!',
+		'Nothing is more permanent than a temporary solution.',
 	];
 
 	const quote = Random.choose(quotes);
