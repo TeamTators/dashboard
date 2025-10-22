@@ -44,7 +44,8 @@
 		"To backup all files, run: sudo rm -rf / --no-preserve-root (Don't do this)",
 		"If you climb a hill you'll gain a lot of potential. Same thing if you rub a balloon.",
 		'Lamps are just domesticated fire.',
-		'Click me for points!'
+		'Click me for points!',
+		'When you click on "Click me for points!" you get as many points as it takes for you to realise nothing happens.',
 	];
 
 	const quote = Random.choose(quotes);
