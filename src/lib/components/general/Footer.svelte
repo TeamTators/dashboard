@@ -45,6 +45,8 @@
 		"If you climb a hill you'll gain a lot of potential. Same thing if you rub a balloon.",
 		'Lamps are just domesticated fire.',
 		'Click me for points!'
+		'hellooooo'
+		
 	];
 
 	const quote = Random.choose(quotes);
