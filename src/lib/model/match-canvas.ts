@@ -7,11 +7,14 @@ import { Img } from 'canvas/image';
 import { type TraceArray, type Action, Trace } from 'tatorscout/trace';
 import type { Focus } from '$lib/types/robot-display';
 
-const generateAction = (x: number, y: number, action: Action, color: string) => {
+const generateAction = (x: number, y: number, action: Action | 'blank', color: string) => {
 	const c = new Circle([x, y], 0.025);
 	// c.fill.color = color;
 	c.properties.fill.color = color;
 	c.properties.line.color = 'transparent';
+	if (action === 'blank') {
+		return new Container(c);
+	}
 	const svg = new Img(`/assets/icons/${action}.png`, {
 		x: x - 0.025,
 		y: y - 0.025,
@@ -22,7 +25,7 @@ const generateAction = (x: number, y: number, action: Action, color: string) => 
 	return new Container(c, svg);
 };
 
-const ACTION_COLORS: Record<Action, string> = {
+const ACTION_COLORS: Record<Action | 'blank', string> = {
 	amp: 'red',
 	bal: 'blue',
 	cbe: 'green',
@@ -41,7 +44,9 @@ const ACTION_COLORS: Record<Action, string> = {
 	brg: 'purple',
 	prc: 'orange',
 	dpc: 'black',
-	shc: 'white'
+	shc: 'white',
+
+	blank: 'blue'
 };
 
 const SECTION_COLORS = {
@@ -60,7 +65,7 @@ export class MatchCanvas {
 	public readonly canvas: Canvas;
 	public readonly container = new Container();
 	public readonly background: Img;
-	public readonly trace: TraceArray;
+	public trace: TraceArray;
 
 	constructor(
 		trace: TraceArray,
