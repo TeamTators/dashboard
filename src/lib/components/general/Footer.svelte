@@ -27,25 +27,26 @@
 		'"Not all who wander are lost, but this robot is awfully close" - ',
 		'"That sounds a little evil" ... "That sounds like winning" - Raygen R.',
 		'"Bugs are just features in camouflage."',
-		'import { coffee } from \'life\';',
-		'There are 10 types of people in the world: those who understand binary, and those who don\'t.',
+		"import { coffee } from 'life';",
+		"There are 10 types of people in the world: those who understand binary, and those who don't.",
 		'Somewhere, someone just pushed straight to main',
 		'Be yourself; everyone else is already taken.',
-		'There\'s no place like 127.0.0.1',
-		'Wifi connects us all, except when it doesn\'t',
+		"There's no place like 127.0.0.1",
+		"Wifi connects us all, except when it doesn't",
 		'Debugging: Being the detective in a crime movie where you are the murderer',
-		'The cloud is just someone else\'s computer',
-		'Your future self is already judging you. Be someone you\'ll be proud of.',
+		"The cloud is just someone else's computer",
+		"Your future self is already judging you. Be someone you'll be proud of.",
 		'Technically, all spoons are shovels.',
-		'Mirrors don\'t break, they multiply',
+		"Mirrors don't break, they multiply",
 		'99 little bugs in the code, take one down, patch it around, 117 little bugs in the code…',
 		'"It works on my machine" - Every Developer Ever',
 		'alias please=sudo',
-		'To backup all files, run: sudo rm -rf / --no-preserve-root (Don\'t do this)',
-		'If you climb a hill you\'ll gain a lot of potential. Same thing if you rub a balloon.',
+		"To backup all files, run: sudo rm -rf / --no-preserve-root (Don't do this)",
+		"If you climb a hill you'll gain a lot of potential. Same thing if you rub a balloon.",
 		'Lamps are just domesticated fire.',
 		'Click me for points!',
 		'Nothing is more permanent than a temporary solution.',
+		'When you click on "Click me for points!" you get as many points as it takes for you to realise nothing happens.',
 	];
 
 	const quote = Random.choose(quotes);
@@ -70,7 +71,7 @@
 		<br />
 		{#if quote === 'Click me for points!'}
 			<a href="/click-me-for-points">{quote}</a>
-			{:else}
+		{:else}
 			{quote}
 		{/if}
 	</p>

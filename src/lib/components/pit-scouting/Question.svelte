@@ -42,7 +42,9 @@
 
 	const retrieveAnswer = () => {
 		if (answer) return;
-		Scouting.PIT.Answers.fromProperty('questionId', question.data.id || '', true)
+		Scouting.PIT.Answers.fromProperty('questionId', question.data.id || '', {
+			type: 'stream'
+		})
 			.await()
 			.then((res) => {
 				if (res.isErr()) return console.error(res.error);
