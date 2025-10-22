@@ -38,7 +38,9 @@
 	};
 
 	onMount(() => {
-		groups = Scouting.PIT.Groups.fromProperty('sectionId', $section.id || '', false);
+		groups = Scouting.PIT.Groups.fromProperty('sectionId', $section.id || '', {
+			type: 'all'
+		});
 		groups.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});
 </script>

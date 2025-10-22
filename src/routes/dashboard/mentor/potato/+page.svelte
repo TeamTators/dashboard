@@ -115,7 +115,10 @@
 					if (!score) return;
 					if (!data.account?.data.id) return;
 					if (!data.potato.data.level) return;
-					const res = await Potato.giveLevels(data.account.data.id, parseInt(score)-data.potato.data.level);
+					const res = await Potato.giveLevels(
+						data.account.data.id,
+						parseInt(score) - data.potato.data.level
+					);
 					if (res.isOk()) {
 						if (res.value.success) {
 							alert(

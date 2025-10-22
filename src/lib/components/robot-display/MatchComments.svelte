@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { FIRST } from '$lib/model/FIRST';
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import Grid from '../general/Grid.svelte';
-	import type { INumberFilterParams, ITextFilterParams } from 'ag-grid-community';
 	import { onMount } from 'svelte';
-	import type { TBAEvent, TBAMatch, TBATeam } from 'tatorscout/tba';
 	import { prompt } from '$lib/utils/prompts';
 	import { Account } from '$lib/model/account';
 
@@ -22,11 +19,9 @@
 	let render = $state(0);
 
 	onMount(() => {
-		comments = Scouting.TeamComments.fromProperty(
-			'matchScoutingId',
-			String(scouting.data.id),
-			false
-		);
+		comments = Scouting.TeamComments.fromProperty('matchScoutingId', String(scouting.data.id), {
+			type: 'all'
+		});
 
 		render++;
 
