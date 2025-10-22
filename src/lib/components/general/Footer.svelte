@@ -44,7 +44,8 @@
 		"To backup all files, run: sudo rm -rf / --no-preserve-root (Don't do this)",
 		"If you climb a hill you'll gain a lot of potential. Same thing if you rub a balloon.",
 		'Lamps are just domesticated fire.',
-		'Click me for points!'
+		'Click me for points!',
+		'Gaff tape is duct tape that went to college and grew up - Adam Savage'
 	];
 
 	const quote = Random.choose(quotes);
