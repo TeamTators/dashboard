@@ -49,7 +49,9 @@
 	};
 
 	onMount(() => {
-		team.getMatches().then((m) => {
+		const d = new Date();
+		d.setMinutes(d.getMinutes() + 10);
+		team.getMatches(true, d).then((m) => {
 			if (m.isOk()) {
 				matches = m.value;
 			}

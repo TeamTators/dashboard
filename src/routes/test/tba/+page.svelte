@@ -11,13 +11,13 @@
 
 	const getEvent = async () => {
 		eventKey = eventKey.trim().toLowerCase();
-		const e = await TBA.TBAEvent.getEvent(eventKey);
+		const e = await TBA.TBAEvent.getEvent(eventKey, true, new Date());
 		if (e.isErr()) return (status = 'Failed');
 
-		const eventTeams = await e.value.getTeams();
+		const eventTeams = await e.value.getTeams(true, new Date());
 		if (eventTeams.isErr()) return (status = 'Failed');
 
-		const eventMatches = await e.value.getMatches();
+		const eventMatches = await e.value.getMatches(true, new Date());
 		if (eventMatches.isErr()) return (status = 'Failed');
 
 		event = e.value;

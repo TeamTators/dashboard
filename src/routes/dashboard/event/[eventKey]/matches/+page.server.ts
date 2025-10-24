@@ -16,14 +16,16 @@ export const load = async (event) => {
 	if (matches.isErr()) throw fail(ServerCode.internalServerError);
 
 	const scouting = await Scouting.MatchScouting.fromProperty('eventKey', event.params.eventKey, {
-		type: 'stream'
-	}).await();
-
-	if (scouting.isErr()) throw fail(ServerCode.internalServerError);
+		type: 'all'
+	}).unwrap();
 
 	return {
 		event: e.value.tba,
-		matches: matches.value.map((m) => m.tba),
-		scouting: scouting.value.map((s) => s.safe())
+		scouting: scouting.map((s) => ({
+			matchNumber: s.data.matchNumber,
+			compLevel: s.data.compLevel,
+			team: s.data.team,
+			eventKey: s.data.eventKey
+		}))
 	};
 };

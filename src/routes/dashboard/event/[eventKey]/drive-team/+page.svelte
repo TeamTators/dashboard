@@ -17,7 +17,7 @@
 
 	const render = async () => {
 		console.log('rendering');
-		const matches = await event.getMatches(true);
+		const matches = await event.getMatches(true, new Date());
 		if (matches.isErr()) return console.error(matches.error);
 
 		const now = Date.now(); // in ms

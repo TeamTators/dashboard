@@ -25,8 +25,9 @@
 		uploadComponent.uppy.use(Webcam, { modes: ['picture'] });
 		uploadComponent.uppy.use(ImageEditor);
 		uploadComponent.uppy.use(Compressor, { quality: 0.4 });
-
-		team.getMedia().then((m) => {
+		const d = new Date();
+		d.setDate(d.getDate() + 7);
+		team.getMedia(true, d).then((m) => {
 			if (m.isErr()) return console.error(m.error);
 			pictures.push(
 				...m.value.filter((media) => media.type === 'imgur').map((media) => media.direct_url)
