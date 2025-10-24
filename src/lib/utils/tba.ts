@@ -28,7 +28,7 @@ const TBARequestCache = new Table('tba_request_cache', {
 
 if (browser) {
 	new Loop(async () => {
-		const now = new Date();
+		const now = new Date(new Date().getTime() + 1000 * 60 * 60 * 24);
 		const data = await TBARequestCache.table().where('expires').below(now).toArray();
 		if (data.length) console.log('Deleting', data.length, 'expired TBA cache entries');
 
@@ -36,9 +36,9 @@ if (browser) {
 	}, 1000 * 60).start(); // Keep the connection alive
 }
 
-
 export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expires: Date) => {
-	return attemptAsync(async () => {
+	return attemptAsync<T>(async () => {
+		let cached: T | null = null;
 		if (!force) {
 			const res = await TBARequestCache.fromProperty('url', url, {
 				pagination: false
@@ -46,29 +46,44 @@ export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expire
 			const [cache] = res.data;
 			if (cache) {
 				const parsed = parser.safeParse(JSON.parse(cache.data.response));
-				if (parsed.success && cache.data.expires > new Date()) {
-					return parsed.data;
+				if (parsed.success) {
+					cached = parsed.data;
 				} else {
-					await cache.delete();
+					console.warn('TBA Cache parse error:', parsed.error);
+					cache.delete();
+				}
+				if (cache.data.expires > new Date() && cached !== null) {
+					return cached;
 				}
 			}
 		}
 
-		const res = (
-			await Requests.get(url + `?force=${force}`, {
-				cache: true,
-				expectStream: false,
-				parser: parser
-			})
-		).unwrap();
-
-		await TBARequestCache.new({
-			url,
-			response: JSON.stringify(res),
-			expires
+		const res = await Requests.get(url + `?force=${force}`, {
+			cache: true,
+			expectStream: false,
+			parser: parser
 		});
 
-		return res;
+		if (res.isErr() && cached !== null) {
+			return cached;
+		}
+
+		if (res.isErr() && cached === null) {
+			throw res.error;
+		}
+
+		if (res.isOk()) {
+			if (!force) {
+				await TBARequestCache.new({
+					url,
+					response: JSON.stringify(res),
+					expires
+				});
+			}
+
+			return res.value;
+		}
+		throw new Error('Unreachable');
 	});
 };
 

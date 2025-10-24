@@ -76,7 +76,7 @@
 					})
 					.optional()
 			}),
-			new Date(),
+			new Date()
 		);
 		if (t.isErr()) {
 			console.error(`Error finding team ${teamNumber}:`, t.error);

@@ -79,7 +79,7 @@
 		const expires = new Date();
 		expires.setMinutes(expires.getMinutes() + 10);
 
-		event.getMatches(false, expires).then(m => {
+		event.getMatches(false, expires).then((m) => {
 			if (m.isOk()) matches = m.value;
 		});
 
@@ -102,8 +102,8 @@
 		class={inSelected(teamKey, found)}
 	>
 		<a
-			href="/dashboard/event/{data.event
-				.key}/team/{foundTeam}/match/{match.tba.comp_level}/{match.tba.match_number}"
+			href="/dashboard/event/{data.event.key}/team/{foundTeam}/match/{match.tba.comp_level}/{match
+				.tba.match_number}"
 			style="text-decoration: none;"
 		>
 			<span class="badge" class:bg-danger={!found} class:bg-success={found}>
@@ -148,7 +148,8 @@
 												(m, i, arr) =>
 													arr.findIndex(
 														(x) =>
-															x.tba.match_number === m.tba.match_number && x.tba.comp_level === m.tba.comp_level
+															x.tba.match_number === m.tba.match_number &&
+															x.tba.comp_level === m.tba.comp_level
 													) === i
 											);
 										} else {
