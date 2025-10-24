@@ -33,7 +33,7 @@ if (browser) {
 		if (data.length) console.log('Deleting', data.length, 'expired TBA cache entries');
 
 		for (const item of data) TBARequestCache.Generator(item).delete();
-	}, 1000 * 60).start(); // Keep the connection alive
+	}, 1000 * 60).start(); // Clean up expired cache entries every minute
 }
 
 export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expires: Date) => {
