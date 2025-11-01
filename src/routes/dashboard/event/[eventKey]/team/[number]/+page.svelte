@@ -21,6 +21,7 @@
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
+	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -409,6 +410,35 @@
 		}
 	});
 
+	const startLocation = new Dashboard.Card({
+		name: 'Start Location Heatmap',
+		icon: {
+			type: 'material-icons',
+			name: 'place'
+		},
+		id: 'start_location_heatmap',
+		size: {
+			width: 2,
+			height: 1,
+			lg: {
+				width: 4,
+				height: 1
+			},
+			md: {
+				width: 4,
+				height: 1
+			},
+			sm: {
+				width: 4,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
 	// const actionHeatmap = new Dashboard.Card({
 	// 	name: 'Action Heatmap',
 	// 	iconType: 'material-icons',
@@ -734,6 +764,11 @@
 							}}
 						/>
 					{/key}
+				{/snippet}
+			</Card>
+			<Card card={startLocation}>
+				{#snippet body()}
+					<StartLocationHeatmap {team} {event} />
 				{/snippet}
 			</Card>
 		{/key}
