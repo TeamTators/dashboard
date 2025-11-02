@@ -170,6 +170,41 @@ export class Event {
 		});
 	}
 
+	public getMatchesFromSchema(matchSchema: z.ZodSchema, force = false) {
+		return attemptAsync(async () => {
+			if (this.custom) {
+				return (
+					await TBA.Matches.fromProperty('eventKey', this.tba.key, {
+						type: 'all'
+					})
+				)
+					.unwrap()
+					.map((m) => new Match(matchSchema.parse(JSON.parse(m.data.data)), this))
+					.sort((a, b) => {
+						if (a.tba.comp_level === b.tba.comp_level)
+							return a.tba.match_number - b.tba.match_number;
+						const order = ['qm', 'qf', 'sf', 'f'];
+						return order.indexOf(a.tba.comp_level) - order.indexOf(b.tba.comp_level);
+					});
+			} else {
+				return (
+					await TBA.get<M[]>(`/event/${this.tba.key}/matches`, {
+						updateThreshold: 1000 * 60 * 10,
+						force
+					})
+				)
+					.unwrap()
+					.map((t) => new Match(t, this))
+					.sort((a, b) => {
+						if (a.tba.comp_level === b.tba.comp_level)
+							return a.tba.match_number - b.tba.match_number;
+						const order = ['qm', 'qf', 'sf', 'f'];
+						return order.indexOf(a.tba.comp_level) - order.indexOf(b.tba.comp_level);
+					});
+			}
+		});
+	}
+
 	delete() {
 		return attemptAsync(async () => {
 			if (this.data) {

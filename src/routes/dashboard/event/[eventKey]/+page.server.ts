@@ -2,7 +2,7 @@ import { Scouting } from '$lib/server/structs/scouting';
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { redirect, fail } from '@sveltejs/kit';
-import { teamsFromMatch } from 'tatorscout/tba';
+import { Match2025Schema, teamsFromMatch } from 'tatorscout/tba';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 import { $Math } from 'ts-utils/math';
 import { ServerCode } from 'ts-utils/status';
@@ -15,7 +15,7 @@ export const load = async (event) => {
 		throw fail(404);
 	}
 
-	const [teams, matches] = await Promise.all([e.value.getTeams(), e.value.getMatches(true)]);
+	const [teams, matches] = await Promise.all([e.value.getTeams(), e.value.getMatchesFromSchema(Match2025Schema, true)]);
 
 	if (teams.isErr()) throw fail(ServerCode.internalServerError);
 	if (matches.isErr()) throw fail(ServerCode.internalServerError);
