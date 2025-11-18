@@ -48,7 +48,7 @@
 		'Gaff tape is duct tape that went to college and grew up - Adam Savage',
 		'hellooooo',
 		'Nothing is more permanent than a temporary solution.',
-		'When you click on "Click me for points!" you get as many points as it takes for you to realise nothing happens.',
+		'When you click on "Click me for points!" you get as many points as it takes for you to realise nothing happens.'
 	];
 
 	const quote = Random.choose(quotes);
