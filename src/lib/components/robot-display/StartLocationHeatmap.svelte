@@ -34,12 +34,9 @@
 					const [first] = trace;
 					if (!first) return [];
 					first[3] = 'blank' as Action;
-					const firstPlacement = trace.find(t => !!t[3]); // first action that is not blank
+					const firstPlacement = trace.find((t) => !!t[3]); // first action that is not blank
 					if (!firstPlacement) return first;
-					return [
-						first,
-						firstPlacement,
-					];
+					return [first, firstPlacement];
 				})
 				.flat() as TraceArray;
 

@@ -15,7 +15,10 @@ export const load = async (event) => {
 		throw fail(404);
 	}
 
-	const [teams, matches] = await Promise.all([e.value.getTeams(), e.value.getMatchesFromSchema(Match2025Schema, true)]);
+	const [teams, matches] = await Promise.all([
+		e.value.getTeams(),
+		e.value.getMatchesFromSchema(Match2025Schema, true)
+	]);
 
 	if (teams.isErr()) throw fail(ServerCode.internalServerError);
 	if (matches.isErr()) throw fail(ServerCode.internalServerError);

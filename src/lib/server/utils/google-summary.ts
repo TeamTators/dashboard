@@ -648,13 +648,7 @@ export const summarize = async (eventKey: string) => {
 		t.column('Average Teleop Coral Points', async (t) => {
 			const scores = await getScores(t);
 			return average(
-				scores.traceScore.map(
-					(s) =>
-						s.teleop.cl1 +
-						s.teleop.cl2 +
-						s.teleop.cl3 +
-						s.teleop.cl4
-				)
+				scores.traceScore.map((s) => s.teleop.cl1 + s.teleop.cl2 + s.teleop.cl3 + s.teleop.cl4)
 			);
 		});
 		return t;
