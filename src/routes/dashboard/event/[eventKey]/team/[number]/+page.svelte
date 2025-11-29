@@ -21,7 +21,6 @@
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
-	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -354,25 +353,25 @@
 	});
 
 	const checksSummary = new Dashboard.Card({
-		name: 'Checks Summary',
+		name: 'Check Summary',
 		icon: {
 			type: 'material-icons',
 			name: 'check'
 		},
 		id: 'checks_summary',
 		size: {
-			width: 4,
+			width: 2,
 			height: 1,
 			lg: {
-				width: 6,
+				width: 4,
 				height: 1
 			},
 			md: {
-				width: 6,
+				width: 4,
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 5,
 				height: 1
 			},
 			xs: {
@@ -401,35 +400,6 @@
 			},
 			sm: {
 				width: 6,
-				height: 1
-			},
-			xs: {
-				width: 12,
-				height: 1
-			}
-		}
-	});
-
-	const startLocation = new Dashboard.Card({
-		name: 'Start Location Heatmap',
-		icon: {
-			type: 'material-icons',
-			name: 'place'
-		},
-		id: 'start_location_heatmap',
-		size: {
-			width: 2,
-			height: 1,
-			lg: {
-				width: 4,
-				height: 1
-			},
-			md: {
-				width: 4,
-				height: 1
-			},
-			sm: {
-				width: 4,
 				height: 1
 			},
 			xs: {
@@ -636,6 +606,63 @@
 		</div>
 
 		{#key team}
+			<Card card={radarChart}>
+				{#snippet body()}
+					{#key contributions}
+						<button
+							type="button"
+							class="btn btn-secondary copy-btn"
+							onclick={() => {
+								radarChartComp?.copy(true);
+							}}
+						>
+							<i class="material-icons">copy_all</i>
+						</button>
+						<RadarChart
+							bind:this={radarChartComp}
+							{team}
+							data={{
+								'Level 1': contributions.cl1,
+								'Level 2': contributions.cl2,
+								'Level 3': contributions.cl3,
+								'Level 4': contributions.cl4,
+								Barge: contributions.brg,
+								Processor: contributions.prc
+							}}
+							opts={{
+								max: 10,
+								min: 0
+							}}
+						/>
+					{/key}
+				{/snippet}
+			</Card>
+			<Card card={checksSummary}>
+				{#snippet body()}
+					<ChecksSummary checks={checksSum} />
+				{/snippet}
+			</Card>
+			<Card card={progress}>
+				{#snippet body()}
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							progressChart?.copy(true);
+						}}
+					>
+						<i class="material-icons">copy_all</i>
+					</button>
+					<Progress
+						bind:this={progressChart}
+						{team}
+						{event}
+						{scouting}
+						{matches}
+						defaultView={'points'}
+					/>
+				{/snippet}
+			</Card>
 			<Card card={summary}>
 				{#snippet body()}
 					<EventSummary {matches} {team} {event} {scouting} />
@@ -672,27 +699,6 @@
 			<Card card={matchViewer}>
 				{#snippet body()}
 					<MatchTable {team} {event} {scouting} />
-				{/snippet}
-			</Card>
-			<Card card={progress}>
-				{#snippet body()}
-					<button
-						type="button"
-						class="btn btn-secondary copy-btn"
-						onclick={() => {
-							progressChart?.copy(true);
-						}}
-					>
-						<i class="material-icons">copy_all</i>
-					</button>
-					<Progress
-						bind:this={progressChart}
-						{team}
-						{event}
-						{scouting}
-						{matches}
-						defaultView={'points'}
-					/>
 				{/snippet}
 			</Card>
 			<Card card={eventStats}>
@@ -737,47 +743,6 @@
 			<Card card={scoutSummary}>
 				{#snippet body()}
 					<ScoutSummary scouts={scoutingAccounts} />
-				{/snippet}
-			</Card>
-			<Card card={checksSummary}>
-				{#snippet body()}
-					<ChecksSummary checks={checksSum} />
-				{/snippet}
-			</Card>
-			<Card card={radarChart}>
-				{#snippet body()}
-					{#key contributions}
-						<button
-							type="button"
-							class="btn btn-secondary copy-btn"
-							onclick={() => {
-								radarChartComp?.copy(true);
-							}}
-						>
-							<i class="material-icons">copy_all</i>
-						</button>
-						<RadarChart
-							bind:this={radarChartComp}
-							{team}
-							data={{
-								'Level 1': contributions.cl1,
-								'Level 2': contributions.cl2,
-								'Level 3': contributions.cl3,
-								'Level 4': contributions.cl4,
-								Barge: contributions.brg,
-								Processor: contributions.prc
-							}}
-							opts={{
-								max: 10,
-								min: 0
-							}}
-						/>
-					{/key}
-				{/snippet}
-			</Card>
-			<Card card={startLocation}>
-				{#snippet body()}
-					<StartLocationHeatmap {team} {event} />
 				{/snippet}
 			</Card>
 		{/key}
