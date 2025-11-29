@@ -22,7 +22,7 @@
 	const focus = writable<'auto' | 'teleop' | 'endgame' | 'all'>('all');
 	onMount(() => {
 		return listen(scoutingArr, (data) => {
-			return data.data.year === year && data.data.team === teamNumber;
+			return data.data.year === year && data.data.team === teamNumber && data.data.prescouting === true;
 		});
 	});
 
