@@ -143,7 +143,7 @@
 			},
 			preventDefaultOnContextMenu: true
 		}}
-		height={400}
+		height="100%"
 		data={commentProxy}
 	/>
 </div>
