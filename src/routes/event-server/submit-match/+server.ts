@@ -15,11 +15,12 @@ export const POST = async (event) => {
 	const res = (success: boolean, message: string, status: ServerCode) =>
 		new Response(JSON.stringify({ success, message }), { status });
 
-
-    if (String(header) !== str('EVENT_SERVER_API_KEY', true) && !event.locals.account?.data.verified) {
-        return res(false, 'Invalid API key', 401);
-    }
-
+	if (
+		String(header) !== str('EVENT_SERVER_API_KEY', true) &&
+		!event.locals.account?.data.verified
+	) {
+		return res(false, 'Invalid API key', 401);
+	}
 
 	const body = await event.request.json();
 
@@ -100,6 +101,17 @@ export const POST = async (event) => {
 		return res(false, 'Internal server error', 500);
 	}
 	if (exists.value) {
+		if (
+			exists.value.data.trace === JSON.stringify(trace) &&
+			exists.value.data.checks === JSON.stringify(checks) &&
+			exists.value.data.sliders === JSON.stringify(sliders) &&
+			exists.value.data.scoutGroup === group &&
+			exists.value.data.remote === remote &&
+			exists.value.data.prescouting === prescouting &&
+			exists.value.data.alliance === (alliance ? alliance : 'unknown')
+		) {
+			return res(true, 'No changes detected', 200);
+		}
 		matchScoutingId = exists.value.id;
 		const update = await exists.value.update({
 			scoutId: scout,
@@ -109,7 +121,8 @@ export const POST = async (event) => {
 			trace: JSON.stringify(trace),
 			checks: JSON.stringify(checks),
 			alliance: alliance ? alliance : 'unknown',
-			year
+			year,
+			sliders: JSON.stringify(sliders)
 		});
 		if (update.isErr()) {
 			terminal.error('Error updating match scouting', update.error);

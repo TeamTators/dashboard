@@ -294,42 +294,44 @@ export namespace Scouting {
 			const res = await fetch('/event-server/submit-match/batch', {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json',
+					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(matches.map(m => ({
-					...m,
-					remote: true,
-				}))),
+				body: JSON.stringify(
+					matches.map((m) => ({
+						...m,
+						remote: true
+					}))
+				)
 			});
 
 			if (!res.ok) {
 				return matches.map(() => ({
 					success: false,
-					message: 'Failed to upload match batch',
+					message: 'Failed to upload match batch'
 				}));
 			}
 
 			const json = await res.json();
-			return z.array((
-				z.object({
-					success: z.boolean(),
-					message: z.string().optional(),
-				})
-			)).parse(json);
+			return z
+				.array(
+					z.object({
+						success: z.boolean(),
+						message: z.string().optional()
+					})
+				)
+				.parse(json);
 		},
 		{
 			batchSize: 10,
 			interval: 500,
 			limit: 500,
-			timeout: 10000,
+			timeout: 10000
 		}
 	);
 
 	batcher.on('drained', () => console.log('Match upload batcher drained'));
 
-	export const uploadMatches = (
-		matches: MatchSchemaType[]
-	) => {
+	export const uploadMatches = (matches: MatchSchemaType[]) => {
 		return attemptAsync(async () => {
 			return resolveAll(await Promise.all(matches.map(async (m) => batcher.add(m, true)))).unwrap();
 		});
