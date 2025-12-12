@@ -12,12 +12,14 @@ export const POST = async (event) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');
 
-	const res = (message: string, status: ServerCode) =>
-		new Response(JSON.stringify({ message }), { status });
+	const res = (success: boolean, message: string, status: ServerCode) =>
+		new Response(JSON.stringify({ success, message }), { status });
 
-	if (String(header) !== str('EVENT_SERVER_API_KEY', true)) {
-		return res('Invalid API key', 401);
-	}
+
+    if (String(header) !== str('EVENT_SERVER_API_KEY', true) && !event.locals.account?.data.verified) {
+        return res(false, 'Invalid API key', 401);
+    }
+
 
 	const body = await event.request.json();
 
@@ -51,7 +53,7 @@ export const POST = async (event) => {
 
 	if (!parsed.success) {
 		terminal.warn('Invalid request body', parsed.error.message);
-		return res('Invalid request body: ' + parsed.error.message, 400);
+		return res(false, 'Invalid request body: ' + parsed.error.message, 400);
 	}
 
 	const {
@@ -60,13 +62,13 @@ export const POST = async (event) => {
 		match,
 		team,
 		compLevel,
-		flipX,
-		flipY,
+		// flipX,
+		// flipY,
 		checks,
 		comments,
 		scout,
 		prescouting,
-		practice,
+		// practice,
 		alliance,
 		group,
 		remote,
@@ -95,7 +97,7 @@ export const POST = async (event) => {
 
 	if (exists.isErr()) {
 		terminal.error('Error getting match scouting', exists.error);
-		return res('Internal server error', 500);
+		return res(false, 'Internal server error', 500);
 	}
 	if (exists.value) {
 		matchScoutingId = exists.value.id;
@@ -111,7 +113,7 @@ export const POST = async (event) => {
 		});
 		if (update.isErr()) {
 			terminal.error('Error updating match scouting', update.error);
-			return res('Internal server error', 500);
+			return res(false, 'Internal server error', 500);
 		} else {
 			Logs.log({
 				struct: Scouting.MatchScouting.name,
@@ -140,7 +142,7 @@ export const POST = async (event) => {
 		});
 		if (create.isErr()) {
 			terminal.error('Error creating match scouting', create.error);
-			return res('Internal server error', 500);
+			return res(false, 'Internal server error', 500);
 		} else {
 			Logs.log({
 				struct: Scouting.MatchScouting.name,
@@ -184,8 +186,8 @@ export const POST = async (event) => {
 
 	if (commentRes.isErr()) {
 		terminal.error('Error creating comments', commentRes.error);
-		return res('Internal server error', 500);
+		return res(false, 'Internal server error', 500);
 	}
 
-	return res('Success', 200);
+	return res(true, 'Success', 200);
 };

@@ -3,7 +3,7 @@ import { Struct } from '$lib/services/struct';
 import { type StructDataVersion, type StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
-import { attempt, attemptAsync } from 'ts-utils/check';
+import { attempt, attemptAsync, resolveAll } from 'ts-utils/check';
 import { z } from 'zod';
 import { Account } from './account';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
@@ -11,6 +11,7 @@ import { $Math } from 'ts-utils/math';
 import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
 import { match } from 'ts-utils/match';
+import { Batch } from 'ts-utils/batch';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -258,6 +259,79 @@ export namespace Scouting {
 			return z
 				.array(z.tuple([z.number(), z.number(), z.number(), z.string()]))
 				.parse(JSON.parse(trace)) as TraceArray;
+		});
+	};
+
+	export const MatchSchema = z.object({
+		trace: TraceSchema,
+		eventKey: z.string(),
+		match: z.number().int(),
+		team: z.number().int(),
+		compLevel: z.enum(['pr', 'qm', 'qf', 'sf', 'f']),
+		flipX: z.boolean(),
+		flipY: z.boolean(),
+		checks: z.array(z.string()),
+		comments: z.record(z.string()),
+		scout: z.string(),
+		prescouting: z.boolean(),
+		practice: z.boolean(),
+		alliance: z.union([z.literal('red'), z.literal('blue'), z.literal(null)]),
+		group: z.number().int(),
+		sliders: z.record(
+			z.string(),
+			z.object({
+				value: z.number().int().min(0).max(5),
+				text: z.string(),
+				color: z.string()
+			})
+		)
+	});
+	export type MatchSchemaType = z.infer<typeof MatchSchema>;
+
+	const batcher = new Batch(
+		async (matches: MatchSchemaType[]) => {
+			console.log('Uploading match batch of size', matches.length);
+			const res = await fetch('/event-server/submit-match/batch', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(matches.map(m => ({
+					...m,
+					remote: true,
+				}))),
+			});
+
+			if (!res.ok) {
+				return matches.map(() => ({
+					success: false,
+					message: 'Failed to upload match batch',
+				}));
+			}
+
+			const json = await res.json();
+			return z.array((
+				z.object({
+					success: z.boolean(),
+					message: z.string().optional(),
+				})
+			)).parse(json);
+		},
+		{
+			batchSize: 10,
+			interval: 500,
+			limit: 500,
+			timeout: 10000,
+		}
+	);
+
+	batcher.on('drained', () => console.log('Match upload batcher drained'));
+
+	export const uploadMatches = (
+		matches: MatchSchemaType[]
+	) => {
+		return attemptAsync(async () => {
+			return resolveAll(await Promise.all(matches.map(async (m) => batcher.add(m, true)))).unwrap();
 		});
 	};
 

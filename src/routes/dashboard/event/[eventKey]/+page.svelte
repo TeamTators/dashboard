@@ -7,7 +7,6 @@
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { confirm } from '$lib/utils/prompts.js';
-	import { uploadMatch } from '$lib/utils/upload-matches.ts';
 	const { data = $bindable() } = $props();
 	const event = $derived(data.event);
 	const teams = $derived(data.teams);
@@ -46,10 +45,6 @@
 		>
 			Picklist Spreadsheet
 		</a>
-		<button type="button" class="btn btn-secondary" onclick={() => uploadMatch()}>
-			<i class="material-icons">upload</i>
-			Upload Matches
-		</button>
 		<div style="grid-column: span var(--grid-size);">
 			<div class="ws-nowrap p-3 scroll-x" style="width: 100% !important;">
 				{#each teams as team}

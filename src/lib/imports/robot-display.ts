@@ -38,6 +38,14 @@ export default (event: TBAEvent) => {
 					type: 'material-icons',
 					name: 'archive'
 				}
+			},
+			{
+				name: 'Upload Match Data',
+				href: `/dashboard/event/${event.key}/upload-match`,
+				icon: {
+					type: 'material-icons',
+					name: 'upload_file'
+				}
 			}
 		]
 	});
