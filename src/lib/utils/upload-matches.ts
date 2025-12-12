@@ -33,23 +33,24 @@ export const MatchSchema = z.object({
 export type MatchSchemaType = z.infer<typeof MatchSchema>;
 
 const post = async (url: string, body: unknown) => {
-		return attemptAsync(async () => {
-			const res = await fetch('/api' + url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(body)
-			});
-
-			if (!res.ok) throw new Error('Failed to post data');
-			return res.json();
+	return attemptAsync(async () => {
+		const res = await fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(body)
 		});
-	};
+
+		if (!res.ok) throw new Error('Failed to post data');
+		return res.json();
+	});
+};
 
 export const downloadUrl = async (text: string, filename: string) => {
 	return attempt(() => {
         const url = window.URL.createObjectURL(new Blob([text]));
+		console.log(url);
 		const element = document.createElement('a');
 		element.setAttribute('href', url);
 		element.setAttribute('download', filename);
@@ -117,7 +118,7 @@ export const uploadMatch = () => {
 export const submitMatch = (data: MatchSchemaType, download: boolean) => {
     return attemptAsync(async () => {
         if (download) (await downloadMatch(data)).unwrap();
-        const res = await post('/submit-match', data);
+        const res = await post('/event-server/submit-match', data);
         if (res.isOk()) {
             notify({
                 title: 'Match Submitted',

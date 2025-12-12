@@ -7,7 +7,7 @@
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { confirm } from '$lib/utils/prompts.js';
-	import { uploadMatch } from '$lib/server/utils/upload-matches.ts';
+	import { uploadMatch } from '$lib/utils/upload-matches.ts';
 	const { data = $bindable() } = $props();
 	const event = $derived(data.event);
 	const teams = $derived(data.teams);
