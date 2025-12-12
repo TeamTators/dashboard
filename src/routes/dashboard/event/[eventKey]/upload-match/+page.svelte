@@ -90,7 +90,7 @@
 						cellRendererParams: {
 							buttons: [
 								{
-									label: 'Delete',
+									html: '<i class="material-icons">delete</i>',
 									onClick: (params: ICellRendererParams<Scouting.MatchSchemaType>) => {
 										matches.splice(Number(params.node.rowIndex), 1);
 									},
