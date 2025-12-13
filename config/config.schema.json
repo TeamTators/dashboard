@@ -294,6 +294,45 @@
 			},
 			"required": ["enabled", "interval", "timeout", "limit", "batch_size", "debug"],
 			"additionalProperties": false
+		},
+		"tba_webhook": {
+			"description": "TheBlueAlliance webhook configuration",
+			"type": "object",
+			"properties": {
+				"path": {
+					"type": "string",
+					"description": "Path to the webhook service"
+				},
+				"port": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 65535,
+					"description": "Port for the webhook service"
+				},
+				"redis_name": {
+					"type": "string",
+					"description": "Redis instance name for the webhook"
+				},
+				"secret": {
+					"type": "string",
+					"minLength": 1,
+					"description": "Secret for validating webhook requests"
+				}
+			},
+			"required": ["path", "port", "redis_name", "secret"],
+			"additionalProperties": false
+		},
+		"potato": {
+			"description": "Potato feature configuration",
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Whether the potato feature is enabled"
+				}
+			},
+			"required": ["enabled"],
+			"additionalProperties": false
 		}
 	},
 	"required": [
@@ -310,7 +349,9 @@
 		"limiting",
 		"struct_cache",
 		"struct_batching",
-		"indexed_db"
+		"indexed_db",
+		"tba_webhook",
+		"potato"
 	],
 	"additionalProperties": false
 }
