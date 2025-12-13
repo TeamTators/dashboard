@@ -1,7 +1,7 @@
 <script lang="ts">
 	import nav from '$lib/imports/robot-display.js';
 	import { Scouting } from '$lib/model/scouting';
-	import { alert, confirm, prompt, select } from '$lib/utils/prompts';
+	import { alert, confirm, notify, prompt, select } from '$lib/utils/prompts';
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import { TBAEvent } from '$lib/utils/tba.js';
@@ -31,6 +31,25 @@
 			order: $sections.length,
 			eventKey
 		});
+
+		if (res.isOk()) {
+			notify({
+				autoHide: 3000,
+				color: 'success',
+				message: `Section "${name}" added successfully!`,
+
+				textColor: 'white',
+				title: 'Section Added'
+			});
+		} else {
+			notify({
+				autoHide: 5000,
+				color: 'danger',
+				message: `Failed to add section: ${res.error}`,
+				textColor: 'white',
+				title: 'Error'
+			});
+		}
 	};
 
 	const copy = async () => {

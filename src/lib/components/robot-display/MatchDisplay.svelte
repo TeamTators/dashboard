@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import { FIRST } from '$lib/model/FIRST';
 	import { onMount } from 'svelte';
-	import { MatchCanvas } from '$lib/model/match-canvas';
-	import type { Focus } from '$lib/types/robot-display';
 	import Trace from './Trace.svelte';
 	import { TBAEvent, TBATeam, TBAMatch } from '$lib/utils/tba';
 	import { writable } from 'svelte/store';
@@ -37,15 +34,10 @@
 		if (scouting) {
 			scouting.getVersions().then((res) => {
 				if (res.isErr()) return console.error(res.error);
-				versions.set(res.value);
+				versions.set(res.value.data);
 			});
 		}
 	});
-
-	const average = (array: number[]): number => {
-		if (array.length === 0) return 0;
-		return array.reduce((a, b) => a + b, 0) / array.length;
-	};
 
 	const avgvelocity = () => {
 		if (!scouting) return 0;

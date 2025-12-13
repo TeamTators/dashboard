@@ -1,6 +1,5 @@
 import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba.js';
 import { Scouting } from '$lib/model/scouting';
-import { DataArr } from '$lib/services/struct/data-arr';
 
 export const load = (event) => {
 	const e = new TBAEvent(event.data.event);

@@ -42,7 +42,7 @@
 	});
 </script>
 
-<div>
+<div class={classes}>
 	<h5 class="text-center">Sliders</h5>
 	<ul class="list">
 		{#each Object.entries(sliders) as [key, slider]}

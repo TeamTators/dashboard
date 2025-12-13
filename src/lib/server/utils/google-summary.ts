@@ -40,7 +40,7 @@ function memoize<TArgs extends unknown[], TReturn>(
 	};
 }
 
-export const auth = (event: RequestEvent) => {
+export const auth = (_event: RequestEvent) => {
 	// const key = event.request.headers.get('X-Auth-Key');
 	// if (key !== process.env.WEBHOOK_AUTH_KEY) {
 	// 	console.error('Unauthorized webhook ping event', key, process.env.WEBHOOK_AUTH_KEY);

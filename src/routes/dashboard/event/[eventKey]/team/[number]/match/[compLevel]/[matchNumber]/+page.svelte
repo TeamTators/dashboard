@@ -1,6 +1,5 @@
 <script lang="ts">
 	import nav from '$lib/imports/robot-display.js';
-	import MatchContribution from '$lib/components/charts/MatchContribution.svelte';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import type { TBAMatch } from '$lib/utils/tba';
 	import { onMount } from 'svelte';

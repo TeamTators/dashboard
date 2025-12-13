@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import type { BootstrapColor } from 'colors/color';
 	import { TraceSchema } from 'tatorscout/trace';
 	import { actions } from 'tatorscout/trace';
 

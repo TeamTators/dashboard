@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from '$lib/services/struct/data-arr';
-	import { onMount } from 'svelte';
 	import type { TBAEvent, TBATeam } from 'tatorscout/tba';
 	import Group from './Group.svelte';
 	import { Account } from '$lib/model/account';

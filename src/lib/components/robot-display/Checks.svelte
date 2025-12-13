@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import type { BootstrapColor } from 'colors/color';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
-	import { writable } from 'svelte/store';
 	import { capitalize, fromCamelCase } from 'ts-utils/text';
 	import { z } from 'zod';
 
