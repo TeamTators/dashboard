@@ -4,14 +4,14 @@ import path from 'path';
 import { z } from 'zod';
 import { getSampleData } from '$lib/utils/zod-sample';
 import redis from '$lib/server/services/redis';
-import { config } from '$lib/server/utils/env';
+import { config, str } from '$lib/server/utils/env';
 
 describe('TBA Webhook', async () => {
 	const server = await import(path.resolve(process.cwd(), config.tba_webhook.path, 'src', 'index'));
 
 	const serverPromise = server.main(
 		config.tba_webhook.port,
-		config.tba_webhook.secret,
+		str('TBA_WEBHOOK_SECRET', true),
 		config.tba_webhook.redis_name
 	);
 
@@ -62,7 +62,7 @@ describe('TBA Webhook', async () => {
 				message_type: name
 			};
 
-			const res = await send(messageData, config.tba_webhook.secret);
+			const res = await send(messageData, str('TBA_WEBHOOK_SECRET', true));
 
 			expect(res.status).toBe(200);
 

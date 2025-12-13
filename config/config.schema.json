@@ -312,14 +312,9 @@
 				"redis_name": {
 					"type": "string",
 					"description": "Redis instance name for the webhook"
-				},
-				"secret": {
-					"type": "string",
-					"minLength": 1,
-					"description": "Secret for validating webhook requests"
 				}
 			},
-			"required": ["path", "port", "redis_name", "secret"],
+			"required": ["path", "port", "redis_name"],
 			"additionalProperties": false
 		},
 		"potato": {
