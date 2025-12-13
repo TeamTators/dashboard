@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { MatchCanvas } from '$lib/model/match-canvas';
 	import type { Scouting } from '$lib/model/scouting';
-	import { TBAEvent } from '$lib/utils/tba';
-	import { Canvas } from 'canvas/canvas';
 	import { onMount } from 'svelte';
 	import { TraceSchema, type TraceArray } from 'tatorscout/trace';
 	import rangeSlider from 'range-slider-input';

@@ -21,35 +21,35 @@
 	const scouting = $derived(data.scouting);
 	$effect(() => nav(event.tba));
 
-	const selectTeams = (partners: number[], opponents: number[]) => {
-		if (partners.length !== 3) {
-			console.log(partners);
-			return alert('You must select 3 partners');
-		}
-		if (opponents.length !== 3) {
-			console.log(opponents);
-			return alert('You must select 3 opponents');
-		}
+	// const selectTeams = (partners: number[], opponents: number[]) => {
+	// 	if (partners.length !== 3) {
+	// 		console.log(partners);
+	// 		return alert('You must select 3 partners');
+	// 	}
+	// 	if (opponents.length !== 3) {
+	// 		console.log(opponents);
+	// 		return alert('You must select 3 opponents');
+	// 	}
 
-		if (!partners.includes(2122)) {
-			console.log(partners);
-			return alert('The Tators must be one of the partners');
-		}
+	// 	if (!partners.includes(2122)) {
+	// 		console.log(partners);
+	// 		return alert('The Tators must be one of the partners');
+	// 	}
 
-		strategy.update((s) => ({
-			...s,
-			alliance: 'red',
-			matchNumber: -1,
-			compLevel: 'na',
-			type: 'custom',
-			partner1: partners[0],
-			partner2: partners[1],
-			partner3: partners[2],
-			opponent1: opponents[0],
-			opponent2: opponents[1],
-			opponent3: opponents[2]
-		}));
-	};
+	// 	strategy.update((s) => ({
+	// 		...s,
+	// 		alliance: 'red',
+	// 		matchNumber: -1,
+	// 		compLevel: 'na',
+	// 		type: 'custom',
+	// 		partner1: partners[0],
+	// 		partner2: partners[1],
+	// 		partner3: partners[2],
+	// 		opponent1: opponents[0],
+	// 		opponent2: opponents[1],
+	// 		opponent3: opponents[2]
+	// 	}));
+	// };
 
 	const selectMatch = (match: TBAMatch) => {
 		const teams = teamsFromMatch(match.tba);
@@ -97,7 +97,7 @@
 	};
 
 	onMount(() => {
-		const unsub = strategy.subscribe((s) => {
+		const unsub = strategy.subscribe(() => {
 			render++;
 		});
 
@@ -254,7 +254,7 @@
 			selected={teams.find((t) => t.tba.team_number === team)}
 			onSelect={async (selectedTeam) => {
 				if (selectedTeam.tba.team_number === team) return;
-				const { partner1, partner2, partner3, opponent1, opponent2, opponent3 } = $strategy;
+				const { partner1, partner2, partner3 /*opponent1, opponent2, opponent3*/ } = $strategy;
 				const tators = [partner1, partner2, partner3].filter((t) => t === 2122).length;
 
 				const partner = async () => {

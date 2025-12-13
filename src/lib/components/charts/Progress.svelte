@@ -16,7 +16,7 @@
 		defaultView?: 'frequency' | 'points';
 	}
 
-	let { team, event, matches, staticY = $bindable(), scouting, defaultView }: Props = $props();
+	let { team, matches, staticY = $bindable(), scouting, defaultView }: Props = $props();
 
 	let view = $state(defaultView);
 

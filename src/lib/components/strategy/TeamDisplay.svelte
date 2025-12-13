@@ -3,8 +3,6 @@
 	import Progress from '../charts/Progress.svelte';
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
-	import { DataArr } from '$lib/services/struct/data-arr';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		teams: TBATeam[];

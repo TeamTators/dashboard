@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import Grid from '../general/Grid.svelte';
-	import { onMount } from 'svelte';
 	import { confirm, notify } from '$lib/utils/prompts';
 	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
@@ -14,7 +13,7 @@
 		scouting: Scouting.MatchScoutingData[];
 	}
 
-	const { team, event, comments, scouting }: Props = $props();
+	const { comments, scouting }: Props = $props();
 
 	let commentProxy: Writable<
 		{

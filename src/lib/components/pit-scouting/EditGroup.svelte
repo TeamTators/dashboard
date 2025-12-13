@@ -3,7 +3,7 @@
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import EditQuestion from './EditQuestion.svelte';
-	import { confirm, prompt, select } from '$lib/utils/prompts';
+	import { confirm, prompt } from '$lib/utils/prompts';
 
 	interface Props {
 		group: Scouting.PIT.GroupData;

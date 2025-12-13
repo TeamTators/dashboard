@@ -12,7 +12,6 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
-	import { Component } from 'ag-grid-community';
 
 	const { data } = $props();
 	const event = $derived(data.event);

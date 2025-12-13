@@ -6,7 +6,6 @@ import { Match2025Schema, teamsFromMatch } from 'tatorscout/tba';
 import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 import { $Math } from 'ts-utils/math';
 import { ServerCode } from 'ts-utils/status';
-import { match as matchCase } from 'ts-utils/match';
 
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
@@ -161,7 +160,7 @@ export const load = async (event) => {
 	};
 
 	endgame.data = Object.fromEntries(
-		Object.entries(auto?.data || {}).map(([k, v]) => {
+		Object.entries(auto?.data || {}).map(([k]) => {
 			let park = 0;
 			let shallow = 0;
 			let deep = 0;

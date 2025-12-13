@@ -1,18 +1,13 @@
-import { json, error, fail } from '@sveltejs/kit';
+import { json, fail } from '@sveltejs/kit';
 import fs from 'fs/promises';
 import path from 'path';
-import { Permissions } from '$lib/server/structs/permissions';
 import { ServerCode } from 'ts-utils/status';
-import { Logs } from '$lib/server/structs/log.js';
-import { Account } from '$lib/server/structs/account.js';
-import { FileUploader } from '$lib/services/file-upload';
+import { FileUploader } from '$lib/server/services/file-upload';
 
 const UPLOAD_DIR = path.resolve(process.cwd(), './static/uploads');
 const fileUploader = new FileUploader(UPLOAD_DIR);
 
 export async function POST(event) {
-	console.log('Received POST request to upload files');
-
 	const request = event.request;
 	const formData = await request.formData();
 	const file = formData.get('file'); // Assuming 'files[]' is the field name used
@@ -25,7 +20,6 @@ export async function POST(event) {
 		}
 		try {
 			const result = await fileUploader.receiveFile(file, event.locals.account);
-			console.log(`File uploaded successfully: ${result.url}`);
 			return json(result);
 		} catch (err) {
 			console.error(`Error uploading file: ${err instanceof Error ? err.message : String(err)}`);
