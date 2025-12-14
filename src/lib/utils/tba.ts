@@ -40,7 +40,6 @@ export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expire
 	return attemptAsync<T>(async () => {
 		let cached: T | null = null;
 		if (!force) {
-			console.log('Checking TBA cache for', url);
 			const res = await TBARequestCache.fromProperty('url', url, {
 				pagination: false
 			}).unwrap();

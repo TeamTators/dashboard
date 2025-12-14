@@ -298,7 +298,7 @@ export namespace Scouting {
 			if (![2024, 2025].includes(match.data.year)) return;
 			FIRST.generateSummary(match.data.eventKey, match.data.year as 2024 | 2025);
 		},
-		5 * 1000 * 60
+		1 * 1000 * 60
 	);
 
 	MatchScouting.on('create', genDebounce);

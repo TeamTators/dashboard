@@ -219,7 +219,6 @@ export const summarize = async (eventKey: string) => {
 				return average(
 					matchScouting.map(
 						(s) => s.averageVelocity
-						// Trace.velocity.average(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray)
 					)
 				);
 			},
