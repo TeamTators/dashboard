@@ -10,7 +10,7 @@
 		event: TBAEvent;
 		staticY?: number;
 		matches: TBAMatch[];
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	let { teamNumber, teams, event, staticY = $bindable(), matches, scouting }: Props = $props();

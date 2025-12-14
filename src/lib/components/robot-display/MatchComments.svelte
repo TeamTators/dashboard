@@ -5,23 +5,32 @@
 	import { onMount } from 'svelte';
 	import { prompt } from '$lib/utils/prompts';
 	import { Account } from '$lib/model/account';
+	import { tomorrow } from 'ts-utils';
+	// import { TextFilterModule } from 'ag-grid-community';
 
 	interface Props {
-		scouting: Scouting.MatchScoutingData;
+		scouting: Scouting.MatchScoutingExtended;
 		style?: string;
 	}
 
 	const { scouting, style }: Props = $props();
-	let team = $state(scouting.data.team);
-	let event = $state(scouting.data.eventKey);
+	let team = $state(scouting.team);
+	let event = $state(scouting.eventKey);
 	let comments = $state(new DataArr(Scouting.TeamComments, []));
 
 	let render = $state(0);
 
 	onMount(() => {
-		comments = Scouting.TeamComments.fromProperty('matchScoutingId', String(scouting.data.id), {
-			type: 'all'
-		});
+		comments = Scouting.TeamComments.fromProperty(
+			'matchScoutingId',
+			String(scouting.scouting.data.id),
+			{
+				type: 'all',
+				cache: {
+					expires: tomorrow()
+				}
+			}
+		);
 
 		render++;
 
@@ -39,7 +48,7 @@
 		});
 		if (!c) return;
 		Scouting.TeamComments.new({
-			matchScoutingId: String(scouting.data.id),
+			matchScoutingId: String(scouting.scouting.data.id),
 			comment: c,
 			eventKey: String(event),
 			scoutUsername: String(self.get().data.username),

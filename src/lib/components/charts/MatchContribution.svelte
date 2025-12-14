@@ -4,12 +4,12 @@
 	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
-	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+	import YearInfo2025 from 'tatorscout/years/2025.js';
 	import { match as matchCase } from 'ts-utils/match';
 
 	interface Props {
 		match: TBAMatch;
-		scouting: Scouting.MatchScoutingData;
+		scouting: Scouting.MatchScoutingExtended;
 		team: TBATeam;
 		event: TBAEvent;
 		style?: string;
@@ -60,17 +60,7 @@
 				}
 			}
 
-			const trace = TraceSchema.safeParse(JSON.parse(scouting.data.trace || '[]'));
-
-			if (!trace.success) {
-				console.error('Could not parse trace');
-				return;
-			}
-
-			const res = Trace.score.parse2025(
-				trace.data as TraceArray,
-				(scouting.data.alliance || 'red') as 'red' | 'blue'
-			);
+			const res = YearInfo2025.parse(scouting.trace);
 
 			const chart = new Chart(canvas, {
 				type: 'bar',

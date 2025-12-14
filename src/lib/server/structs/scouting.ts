@@ -3,7 +3,7 @@ import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct, StructStream } from 'drizzle-struct/back-end';
 import { z } from 'zod';
-import { attemptAsync, resolveAll } from 'ts-utils/check';
+import { attempt, attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
 import { eq, and, inArray } from 'drizzle-orm';
 import { Session } from './session';
@@ -11,6 +11,9 @@ import { Permissions } from './permissions';
 import terminal from '../utils/terminal';
 import { Logs } from './log';
 import { Account } from './account';
+import { Trace } from 'tatorscout/trace';
+import { debounce } from 'ts-utils';
+import { FIRST } from './FIRST';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -45,6 +48,88 @@ export namespace Scouting {
 	});
 
 	export type MatchScoutingData = typeof MatchScouting.sample;
+
+	export class MatchScoutingExtended {
+		public static from(scouting: MatchScoutingData) {
+			return attempt(() => {
+				return new MatchScoutingExtended(scouting, Trace.parse(scouting.data.trace).unwrap());
+			});
+		}
+
+		// just to mimic the frontend writable
+		public readonly data: {
+			scouting: MatchScoutingData;
+			trace: Trace;
+		};
+
+		constructor(scouting: MatchScoutingData, trace: Trace) {
+			this.data = {
+				scouting,
+				trace
+			};
+		}
+
+		get team() {
+			return Number(this.data.scouting.data.team);
+		}
+
+		get matchNumber() {
+			return Number(this.data.scouting.data.matchNumber);
+		}
+
+		get compLevel() {
+			return this.data.scouting.data.compLevel;
+		}
+
+		get trace() {
+			return this.data.trace;
+		}
+
+		get scouting() {
+			return this.data.scouting;
+		}
+
+		get year() {
+			return Number(this.data.scouting.data.year);
+		}
+
+		get eventKey() {
+			return this.data.scouting.data.eventKey;
+		}
+
+		get averageVelocity() {
+			return this.data.trace.averageVelocity();
+		}
+
+		get secondsNotMoving() {
+			return this.data.trace.secondsNotMoving();
+		}
+
+		get id() {
+			return String(this.data.scouting.data.id);
+		}
+
+		getChecks() {
+			return attempt(() => {
+				return z.array(z.string()).parse(JSON.parse(this.data.scouting.data.checks || '[]'));
+			});
+		}
+
+		getSliders() {
+			return attempt(() => {
+				return z
+					.record(
+						z.string(),
+						z.object({
+							value: z.number(),
+							text: z.string(),
+							color: z.string().default('#000000')
+						})
+					)
+					.parse(JSON.parse(this.data.scouting.data.sliders || '{}'));
+			});
+		}
+	}
 
 	MatchScouting.queryListen('from-team', async (event, data) => {
 		if (!event.locals.account) return new Error('Not logged in');
@@ -205,6 +290,23 @@ export namespace Scouting {
 			includeArchived: true
 		}).pipe((d) => d.setArchive(false));
 	});
+
+	// Generates the match scouting summary after a delay to debounce multiple rapid submissions
+	const genDebounce = debounce(
+		(...args: unknown[]) => {
+			const [match] = args as [MatchScoutingData];
+			if (![2024, 2025].includes(match.data.year)) return;
+			FIRST.generateSummary(match.data.eventKey, match.data.year as 2024 | 2025);
+		},
+		5 * 1000 * 60
+	);
+
+	MatchScouting.on('create', genDebounce);
+	MatchScouting.on('delete', genDebounce);
+	MatchScouting.on('update', genDebounce);
+	MatchScouting.on('archive', genDebounce);
+	MatchScouting.on('restore', genDebounce);
+	MatchScouting.on('restore-version', genDebounce);
 
 	export const getMatchScouting = (data: {
 		eventKey: string;

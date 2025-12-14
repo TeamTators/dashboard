@@ -2,12 +2,11 @@
 	import { MatchCanvas } from '$lib/model/match-canvas';
 	import type { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import { TraceSchema, type TraceArray } from 'tatorscout/trace';
 	import rangeSlider from 'range-slider-input';
 	import { writable, type Writable } from 'svelte/store';
 
 	interface Props {
-		scouting: Scouting.MatchScoutingData;
+		scouting: Scouting.MatchScoutingExtended;
 		// event: TBAEvent;
 		focus?: Writable<'auto' | 'teleop' | 'endgame' | 'all'>;
 		classes?: string;
@@ -32,20 +31,14 @@
 		if (!ctx) throw new Error('Could not get 2d context');
 
 		// canvas = new Canvas(ctx);
-		const trace = TraceSchema.safeParse(JSON.parse(scouting.data.trace || '[]'));
-		if (trace.success) {
-			matchCanvas = new MatchCanvas(trace.data as TraceArray, Number(scouting.data.year), ctx);
-			matchCanvas.draw();
-			matchCanvas.canvas.height = 500;
-			matchCanvas.canvas.width = 1000;
+		matchCanvas = new MatchCanvas(scouting.trace, Number(scouting.year), ctx);
+		matchCanvas.draw();
+		matchCanvas.canvas.height = 500;
+		matchCanvas.canvas.width = 1000;
 
-			matchCanvas.background['img'].addEventListener('load', () => {
-				matchCanvas?.draw();
-			});
-		} else {
-			console.error(trace.error);
-		}
-
+		matchCanvas.background['img'].addEventListener('load', () => {
+			matchCanvas?.draw();
+		});
 		const s = rangeSlider(slider, {
 			max: matchCanvas?.trace.length || 0,
 			step: 1,

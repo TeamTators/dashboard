@@ -19,6 +19,14 @@
 	const partners = $derived(data.partners);
 	const opponents = $derived(data.opponents);
 	const scouting = $derived(data.scouting);
+	let scoutingData = $state({
+		partner1: new Scouting.MatchScoutingExtendedArr([]),
+		partner2: new Scouting.MatchScoutingExtendedArr([]),
+		partner3: new Scouting.MatchScoutingExtendedArr([]),
+		opponent1: new Scouting.MatchScoutingExtendedArr([]),
+		opponent2: new Scouting.MatchScoutingExtendedArr([]),
+		opponent3: new Scouting.MatchScoutingExtendedArr([])
+	});
 	$effect(() => nav(event.tba));
 
 	// const selectTeams = (partners: number[], opponents: number[]) => {
@@ -129,6 +137,21 @@
 			scouting.opponent3,
 			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent3
 		);
+
+		for (const [key, point] of Object.entries(scouting)) {
+			const res = Scouting.MatchScoutingExtendedArr.fromArr(
+				point.filter(
+					(sc) =>
+						sc.data.eventKey === event.tba.key &&
+						sc.data.team === strategy.data[key as keyof typeof strategy.data]
+				)
+			);
+			if (res.isOk()) {
+				scoutingData[key as keyof typeof scoutingData] = res.value;
+			} else {
+				console.error('Failed to parse scouting data for', key, ':', res.error);
+			}
+		}
 
 		return () => {
 			window.removeEventListener('resize', onresize);
@@ -324,7 +347,7 @@
 	team: number,
 	data: Strategy.PartnerData,
 	position: TeamPosition,
-	scouting: Scouting.MatchScoutingArr
+	scouting: Scouting.MatchScoutingExtendedArr
 )}
 	<div class="card layer-1 mb-3 grid-item max-height-item">
 		<div class="card-body">
@@ -388,7 +411,7 @@
 	team: number,
 	data: Strategy.OpponentData,
 	position: TeamPosition,
-	scouting: Scouting.MatchScoutingArr
+	scouting: Scouting.MatchScoutingExtendedArr
 )}
 	<div class="card layer-1 mb-3 grid-item max-height-item">
 		<div class="card-body">
@@ -483,15 +506,15 @@
 			<!-- <div class="grid"> -->
 			<div class="col-md-6">
 				<h2 class="mb-3">Partners</h2>
-				{@render partner(Number($strategy.partner1), partners[0], 'p1', scouting.partner1)}
-				{@render partner(Number($strategy.partner2), partners[1], 'p2', scouting.partner2)}
-				{@render partner(Number($strategy.partner3), partners[2], 'p3', scouting.partner3)}
+				{@render partner(Number($strategy.partner1), partners[0], 'p1', scoutingData.partner1)}
+				{@render partner(Number($strategy.partner2), partners[1], 'p2', scoutingData.partner2)}
+				{@render partner(Number($strategy.partner3), partners[2], 'p3', scoutingData.partner3)}
 			</div>
 			<div class="col-md-6">
 				<h2 class="mb-3">Opponents</h2>
-				{@render opponent(Number($strategy.opponent1), opponents[0], 'o1', scouting.opponent1)}
-				{@render opponent(Number($strategy.opponent2), opponents[1], 'o2', scouting.opponent2)}
-				{@render opponent(Number($strategy.opponent3), opponents[2], 'o3', scouting.opponent3)}
+				{@render opponent(Number($strategy.opponent1), opponents[0], 'o1', scoutingData.opponent1)}
+				{@render opponent(Number($strategy.opponent2), opponents[1], 'o2', scoutingData.opponent2)}
+				{@render opponent(Number($strategy.opponent3), opponents[2], 'o3', scoutingData.opponent3)}
 			</div>
 
 			<!-- </div> -->

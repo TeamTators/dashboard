@@ -1,7 +1,7 @@
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { z } from 'zod';
 import terminal from '$lib/server/utils/terminal';
-import { TraceSchema } from 'tatorscout/trace';
+import { Trace, TraceSchema } from 'tatorscout/trace';
 import { ServerCode } from 'ts-utils/status';
 import { Account } from '$lib/server/structs/account';
 import { Err, resolveAll } from 'ts-utils/check';
@@ -104,7 +104,7 @@ export const POST = async (event) => {
 			scoutGroup: group,
 			prescouting,
 			remote,
-			trace: JSON.stringify(trace),
+			trace: Trace.parse(JSON.stringify(trace)).unwrap().serialize(),
 			checks: JSON.stringify(checks),
 			alliance: alliance ? alliance : 'unknown',
 			year
@@ -131,7 +131,7 @@ export const POST = async (event) => {
 			prescouting,
 			remote,
 			scoutGroup: group,
-			trace: JSON.stringify(trace),
+			trace: Trace.parse(JSON.stringify(trace)).unwrap().serialize(),
 			checks: JSON.stringify(checks),
 			scoutUsername: scout,
 			alliance: alliance ? alliance : 'unknown',

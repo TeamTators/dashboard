@@ -11,7 +11,7 @@
 		team: number;
 		event: string;
 		comments: Scouting.TeamCommentsArr;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { team, event, comments, scouting }: Props = $props();
@@ -27,10 +27,10 @@
 		return comments.subscribe((data) => {
 			commentProxy.set(
 				data.map((c) => {
-					const match = scouting.data.find((s) => s.data.id === c.data.matchScoutingId);
+					const match = scouting.data.find((s) => s.id === c.data.matchScoutingId);
 					return {
 						comment: c,
-						match: match ? `${match.data.compLevel}${match.data.matchNumber}` : 'unknown'
+						match: match ? `${match.compLevel}${match.matchNumber}` : 'unknown'
 					};
 				})
 			);

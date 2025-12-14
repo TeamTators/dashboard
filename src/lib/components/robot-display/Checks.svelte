@@ -3,10 +3,9 @@
 	import type { BootstrapColor } from 'colors/color';
 	import { onMount } from 'svelte';
 	import { capitalize, fromCamelCase } from 'ts-utils/text';
-	import { z } from 'zod';
 
 	interface Props {
-		scouting: Scouting.MatchScoutingData;
+		scouting: Scouting.MatchScoutingExtended;
 		classes?: string;
 	}
 
@@ -28,10 +27,9 @@
 	};
 
 	onMount(() => {
-		return scouting.subscribe((data) => {
+		return scouting.subscribe(() => {
 			try {
-				const c = data.checks || '[]';
-				checks = z.array(z.string()).parse(JSON.parse(c));
+				checks = scouting.getChecks().unwrap();
 				// checks.set(parsed);
 			} catch (error) {
 				console.error(error);

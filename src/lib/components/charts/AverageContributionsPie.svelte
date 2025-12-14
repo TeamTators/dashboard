@@ -8,7 +8,7 @@
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 		matches: TBAMatch[];
 	}
 

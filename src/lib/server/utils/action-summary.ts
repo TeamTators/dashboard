@@ -4,7 +4,7 @@
 // rows are the teams
 // each cell is filled with the amount of all actions summed
 
-import { Trace, TraceSchema, type TraceArray, type Action } from 'tatorscout/trace';
+import { Trace, type Action, type P } from 'tatorscout/trace';
 import { Event, Team, Match } from './tba';
 import { Scouting } from '../structs/scouting';
 import { attemptAsync } from 'ts-utils/check';
@@ -12,7 +12,7 @@ import { Table } from './google-summary';
 
 export const actionSummary = (eventKey: string, actions: Action[]) => {
 	return attemptAsync(async () => {
-		const cache = new Map<number, { trace: TraceArray; match: Scouting.MatchScoutingData }[]>();
+		const cache = new Map<number, { trace: Trace; match: Scouting.MatchScoutingData }[]>();
 
 		const getAllTraces = async (team: Team) => {
 			const cached = cache.get(team.tba.team_number);
@@ -21,7 +21,7 @@ export const actionSummary = (eventKey: string, actions: Action[]) => {
 				await Scouting.getTeamScouting(team.tba.team_number, event.tba.key)
 			).unwrap();
 			const data = matchScouting.map((s) => ({
-				trace: TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray,
+				trace: Trace.parse(s.data.trace).unwrap(),
 				match: s
 			}));
 			cache.set(team.tba.team_number, data);
@@ -54,11 +54,11 @@ export const actionSummary = (eventKey: string, actions: Action[]) => {
 				);
 			});
 			if (!matchTrace) return;
-			return matchTrace.trace.reduce((acc, point) => {
+			return matchTrace.trace.points.reduce((acc, point) => {
 				const [, , , action] = point;
 				if (!action) return acc;
 
-				if (['teleop'].includes(Trace.getSection(point)) && actions.includes(action)) {
+				if (['teleop'].includes(String(Trace.getSection(point as P))) && actions.includes(action)) {
 					// console.log('Action found:', action, acc);
 					return acc + 1;
 				}

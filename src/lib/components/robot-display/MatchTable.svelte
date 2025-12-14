@@ -7,7 +7,7 @@
 	interface Props {
 		event: TBAEvent;
 		team: TBATeam;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { team, event, scouting }: Props = $props();
@@ -26,13 +26,13 @@
 		}
 	};
 
-	const generateFlagColor = (match?: Scouting.MatchScoutingData) => {
+	const generateFlagColor = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'danger';
 		// TODO: Implement flag color
 		return 'success';
 	};
 
-	const generateFlagTitle = (match?: Scouting.MatchScoutingData) => {
+	const generateFlagTitle = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'No Scouting data';
 		// TODO: Parse checks
 		return 'Scouting data available';
@@ -58,11 +58,9 @@
 
 	let table: HTMLTableElement;
 
-	const findMatch = (scouting: Scouting.MatchScoutingData[], match: TBAMatch) => {
+	const findMatch = (scouting: Scouting.MatchScoutingExtended[], match: TBAMatch) => {
 		return scouting.find((m) => {
-			return (
-				m.data.compLevel === match.tba.comp_level && m.data.matchNumber === match.tba.match_number
-			);
+			return m.compLevel === match.tba.comp_level && m.matchNumber === match.tba.match_number;
 		});
 	};
 </script>

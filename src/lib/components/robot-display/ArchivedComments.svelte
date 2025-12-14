@@ -10,7 +10,7 @@
 		team: number;
 		event: string;
 		comments: Scouting.TeamCommentsData[];
-		scouting: Scouting.MatchScoutingData[];
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { comments, scouting }: Props = $props();
@@ -26,7 +26,7 @@
 				return {
 					comment: c,
 					match: String(
-						scouting.find((s) => s.data.id === c.data.matchScoutingId)?.data.matchNumber ??
+						scouting.data.find((s) => s.scouting.data.id === c.data.matchScoutingId)?.matchNumber ??
 							'unknown'
 					)
 				};

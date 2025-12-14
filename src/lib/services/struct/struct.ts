@@ -2010,7 +2010,11 @@ export class Struct<T extends Blank> {
 			if (!parsed.data) {
 				throw new DataError('No data returned');
 			}
-			return returnType.parse(parsed.data);
+			const datares = returnType.safeParse(parsed.data);
+
+			if (datares.success) return datares.data;
+			console.log('Parse data errors:', datares.error.errors);
+			throw new Error('Invalid return data: ' + datares.error.message);
 		});
 	}
 

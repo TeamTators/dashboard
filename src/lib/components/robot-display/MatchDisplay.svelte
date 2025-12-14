@@ -14,11 +14,10 @@
 	import type { Strategy } from '$lib/model/strategy';
 	import { goto } from '$app/navigation';
 	import Slider from './Slider.svelte';
-	import { Trace as T, TraceSchema, type TraceArray } from 'tatorscout/trace';
 
 	interface Props {
 		match: TBAMatch;
-		scouting?: Scouting.MatchScoutingData;
+		scouting?: Scouting.MatchScoutingExtended;
 		team: TBATeam;
 		// focus: Focus;
 		event: TBAEvent;
@@ -32,7 +31,7 @@
 
 	onMount(() => {
 		if (scouting) {
-			scouting.getVersions().then((res) => {
+			scouting.scouting.getVersions().then((res) => {
 				if (res.isErr()) return console.error(res.error);
 				versions.set(res.value.data);
 			});
@@ -41,10 +40,7 @@
 
 	const avgvelocity = () => {
 		if (!scouting) return 0;
-		const trace = TraceSchema.safeParse(JSON.parse(scouting.data.trace || '[]'));
-		if (!trace.success) return 0;
-		const traceData = trace.data;
-		return T.velocity.average(traceData as TraceArray).toFixed(2);
+		return scouting.averageVelocity.toFixed(2);
 	};
 </script>
 
@@ -55,7 +51,7 @@
 				{#if scout}
 					<h4>Scouted by: {scout}</h4>
 				{:else}
-					<h4>Scouted by: {scouting.data.scoutUsername}</h4>
+					<h4>Scouted by: {scouting.scouting.data.scoutUsername}</h4>
 				{/if}
 			</div>
 		</div>
@@ -147,7 +143,7 @@
 									'Are you sure you want to archive this scouting data? (It can still be restored)'
 								)
 							) {
-								scouting?.setArchive(true);
+								scouting?.scouting.setArchive(true);
 							}
 						}}
 					>
