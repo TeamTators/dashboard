@@ -4996,6 +4996,10 @@ packages:
     resolution: {tarball: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4}
     version: 1.0.0
 
+  ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11:
+    resolution: {tarball: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11}
+    version: 1.0.0
+
   ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e3d13149e420c7b9fe046cbcf9df6eef1b1864e8:
     resolution: {tarball: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e3d13149e420c7b9fe046cbcf9df6eef1b1864e8}
     version: 1.0.0
@@ -9016,7 +9020,7 @@ snapshots:
       expr-eval: 2.0.2
       node-html-parser: 7.0.1
       prettier: 3.6.2
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e3d13149e420c7b9fe046cbcf9df6eef1b1864e8(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       typescript: 5.9.2
       vite-node: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       vitest: 2.1.9(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
@@ -10123,7 +10127,7 @@ snapshots:
   redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/1e612b476d486f0e002b6e4fd92b379a81102416(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
     dependencies:
       redis: 5.8.2
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e3d13149e420c7b9fe046cbcf9df6eef1b1864e8(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       uuid: 11.1.0
       vitest: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       zod: 3.25.76
@@ -10148,7 +10152,7 @@ snapshots:
   redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/d3b228def595096d6252e89ee9fb1c10f583eadf(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
     dependencies:
       redis: 5.8.2
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/e3d13149e420c7b9fe046cbcf9df6eef1b1864e8(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       uuid: 11.1.0
       vitest: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       zod: 3.25.76
@@ -10678,7 +10682,7 @@ snapshots:
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@5.38.10)
       svelte: 5.38.10
       ts-node: 10.9.2(@types/node@22.18.3)(typescript@5.9.2)
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
       typescript: 5.9.2
       uuid: 11.1.0
       zod: 3.25.76
@@ -10763,6 +10767,28 @@ snapshots:
       yn: 3.1.1
 
   ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
+    dependencies:
+      typescript: 5.9.2
+      vitest: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)
+    transitivePeerDependencies:
+      - '@edge-runtime/vm'
+      - '@types/debug'
+      - '@types/node'
+      - '@vitest/browser'
+      - '@vitest/ui'
+      - happy-dom
+      - jsdom
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  ts-utils@https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1):
     dependencies:
       typescript: 5.9.2
       vitest: 3.2.4(@types/node@22.18.3)(sass-embedded@1.92.1)(sass@1.92.1)

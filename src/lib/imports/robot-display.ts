@@ -13,7 +13,7 @@ export default (event: TBAEvent) => {
 					type: 'material-icons',
 					name: 'event'
 				}
-			}
+			},
 		],
 		priority: 0
 	});
@@ -114,6 +114,14 @@ export default (event: TBAEvent) => {
 				icon: {
 					type: 'material-icons',
 					name: 'people'
+				}
+			},
+			{
+				name: 'Subscriptions',
+				href: `/dashboard/event/${event.key}/subscriptions`,
+				icon: {
+					type: 'material-icons',
+					name: 'notifications'
 				}
 			}
 		]
