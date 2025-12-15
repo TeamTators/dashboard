@@ -15,7 +15,7 @@
 		style?: string;
 	}
 
-	const { scouting, team, event, match, style }: Props = $props();
+	const { scouting, team, match, style }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 

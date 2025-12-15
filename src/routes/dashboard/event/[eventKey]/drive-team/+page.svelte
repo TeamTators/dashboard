@@ -1,11 +1,9 @@
 <script lang="ts">
 	import nav from '$lib/imports/robot-display.js';
-	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba';
+	import { TBAMatch, TBATeam } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
-	import { dateString } from 'ts-utils/clock';
 	import { Loop } from 'ts-utils/loop';
 	import { Countdown } from '$lib/utils/countdown.js';
-	import { browser } from '$app/environment';
 
 	const { data } = $props();
 	const event = $derived(data.event);

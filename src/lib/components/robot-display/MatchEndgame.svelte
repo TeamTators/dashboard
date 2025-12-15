@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
 	import { Match2025Schema } from 'tatorscout/tba';
 	import { TBAEvent, TBATeam, TBAMatch } from '$lib/utils/tba';
 	import z from 'zod';
@@ -11,7 +10,7 @@
 		classes?: string;
 	}
 
-	const { match, team, event, classes }: Props = $props();
+	const { match, team }: Props = $props();
 
 	type MatchSchema = z.infer<typeof Match2025Schema>;
 

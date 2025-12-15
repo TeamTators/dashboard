@@ -24,31 +24,31 @@
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const teams = $derived(data.teams.map((t) => new TBATeam(t, event)));
 
-	let unsavedChanged = $state(false);
+	// let unsavedChanged = $state(false);
 
-	const testUnsaved = () => {
-		if (matches.length !== $updateMatches.length) {
-			return (unsavedChanged = true);
-		}
+	// const testUnsaved = () => {
+	// 	if (matches.length !== $updateMatches.length) {
+	// 		return (unsavedChanged = true);
+	// 	}
 
-		for (let i = 0; i < matches.length; i++) {
-			const match = matches[i];
-			const updatedMatch = $updateMatches[i];
-			if (
-				match.tba.alliances.red.team_keys[0] !== `frc${updatedMatch.red1}` ||
-				match.tba.alliances.red.team_keys[1] !== `frc${updatedMatch.red2}` ||
-				match.tba.alliances.red.team_keys[2] !== `frc${updatedMatch.red3}` ||
-				match.tba.alliances.blue.team_keys[0] !== `frc${updatedMatch.blue1}` ||
-				match.tba.alliances.blue.team_keys[1] !== `frc${updatedMatch.blue2}` ||
-				match.tba.alliances.blue.team_keys[2] !== `frc${updatedMatch.blue3}` ||
-				match.tba.match_number !== updatedMatch.number ||
-				match.tba.comp_level !== updatedMatch.compLevel
-			) {
-				return (unsavedChanged = true);
-			}
-		}
-		return (unsavedChanged = false);
-	};
+	// 	for (let i = 0; i < matches.length; i++) {
+	// 		const match = matches[i];
+	// 		const updatedMatch = $updateMatches[i];
+	// 		if (
+	// 			match.tba.alliances.red.team_keys[0] !== `frc${updatedMatch.red1}` ||
+	// 			match.tba.alliances.red.team_keys[1] !== `frc${updatedMatch.red2}` ||
+	// 			match.tba.alliances.red.team_keys[2] !== `frc${updatedMatch.red3}` ||
+	// 			match.tba.alliances.blue.team_keys[0] !== `frc${updatedMatch.blue1}` ||
+	// 			match.tba.alliances.blue.team_keys[1] !== `frc${updatedMatch.blue2}` ||
+	// 			match.tba.alliances.blue.team_keys[2] !== `frc${updatedMatch.blue3}` ||
+	// 			match.tba.match_number !== updatedMatch.number ||
+	// 			match.tba.comp_level !== updatedMatch.compLevel
+	// 		) {
+	// 			return (unsavedChanged = true);
+	// 		}
+	// 	}
+	// 	return (unsavedChanged = false);
+	// };
 
 	type Row = {
 		red1: number;

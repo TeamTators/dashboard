@@ -1,6 +1,5 @@
 import { Account } from '$lib/model/account.js';
 import { Permissions } from '$lib/model/permissions.js';
-import { z } from 'zod';
 
 export const load = (event) => {
 	return {

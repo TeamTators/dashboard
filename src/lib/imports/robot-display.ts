@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { Navbar } from '$lib/model/navbar';
 import type { TBAEvent } from 'tatorscout/tba';
 
@@ -115,6 +114,14 @@ export default (event: TBAEvent) => {
 				icon: {
 					type: 'material-icons',
 					name: 'people'
+				}
+			},
+			{
+				name: 'Subscriptions',
+				href: `/dashboard/event/${event.key}/subscriptions`,
+				icon: {
+					type: 'material-icons',
+					name: 'notifications'
 				}
 			}
 		]

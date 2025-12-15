@@ -16,8 +16,7 @@
 	"sessions": {
 		"auto_sign_in": "username",
 		"duration": 604800000,
-		"password_request_lifetime": 3600000,
-		"fingerprint_secret": "your_fingerprint_secret"
+		"password_request_lifetime": 3600000
 	},
 	"redis": {
 		"url": "redis://localhost:6379",
@@ -70,8 +69,7 @@
 	"tba_webhook": {
 		"path": "../tba-webhooks",
 		"port": 3000,
-		"redis_name": "tba-webhooks",
-		"secret": "your_webhook_secret"
+		"redis_name": "tba-webhooks"
 	},
 	"potato": {
 		"enabled": true

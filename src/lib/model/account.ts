@@ -93,6 +93,14 @@ export namespace Account {
 		})
 	);
 
+	export const getSelfAsync = () => {
+		return attemptAsync(async () => {
+			const res = await Account.send('self', {}, z.unknown()).unwrap();
+			if (!res) throw new Error('Failed to fetch self account data');
+			return Account.Generator(res);
+		});
+	};
+
 	export const getSelf = (): SingleWritable<typeof Account.data.structure> => {
 		attemptAsync(async () => {
 			const data = await Account.send('self', {}, Account.getZodSchema());

@@ -4,16 +4,9 @@
 // rows are the teams
 // each cell is filled with the amount of all actions summed
 
-import {
-	Trace,
-	TraceSchema,
-	type TraceArray,
-	type Action2025,
-	type Action
-} from 'tatorscout/trace';
+import { Trace, TraceSchema, type TraceArray, type Action } from 'tatorscout/trace';
 import { Event, Team, Match } from './tba';
 import { Scouting } from '../structs/scouting';
-import { teamsFromMatch } from 'tatorscout/tba';
 import { attemptAsync } from 'ts-utils/check';
 import { Table } from './google-summary';
 

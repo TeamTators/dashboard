@@ -1,7 +1,6 @@
 import { actionSummary } from '$lib/server/utils/action-summary.js';
 import { fail } from '@sveltejs/kit';
-import { auth } from '$lib/server/utils/google-summary';
-import type { Action2025, Action } from 'tatorscout/trace';
+import type { Action } from 'tatorscout/trace';
 import { ServerCode } from 'ts-utils/status';
 
 export const GET = async (event) => {

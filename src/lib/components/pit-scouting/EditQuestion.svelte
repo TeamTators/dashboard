@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { prompt } from '$lib/utils/prompts';
-	import { DataArr } from '$lib/services/struct/data-arr';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		question: Scouting.PIT.QuestionData;

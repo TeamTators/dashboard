@@ -1,12 +1,8 @@
 import { Event } from '../src/lib/server/utils/tba';
-import { openStructs } from '../src/lib/server/cli/struct';
+import { openStructs } from '../cli/struct';
 import { Struct } from 'drizzle-struct/back-end';
 import { DB } from '../src/lib/server/db';
 import { Random } from 'ts-utils/math';
-import { match, matchInstance } from 'ts-utils/match';
-import { toType, toZodType } from '../src/lib/utils/generate-type';
-import fs from 'fs';
-import path from 'path';
 
 export default async () => {
 	await openStructs();
@@ -39,20 +35,4 @@ export default async () => {
 		default:
 			console.log('This is the default case');
 	}
-
-	const someValue = match<'a' | 'b' | 'c', number>(thing)
-		.case('a', () => 1)
-		.case('b', () => 2)
-		.case('c', () => 3)
-		.default(() => 4)
-		.exec()
-		.unwrap();
-
-	class MyThing {}
-
-	const nextValue = match(typeof someValue)
-		.case('string', (s) => 'hi')
-		.case('number', () => 5)
-		.exec()
-		.unwrap();
 };

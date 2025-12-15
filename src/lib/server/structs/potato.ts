@@ -4,7 +4,7 @@ import { Account } from './account';
 import { attemptAsync } from 'ts-utils/check';
 import { Scouting } from './scouting';
 import { FIRST } from './FIRST';
-import { desc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import terminal from '../utils/terminal';
 import { Permissions } from './permissions';

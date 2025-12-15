@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Account } from '$lib/server/structs/account';
 import { ServerCode } from 'ts-utils/status';
-import { json, error, fail } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { EventEmitter } from 'ts-utils/event-emitter';
 
 // xhr only for now

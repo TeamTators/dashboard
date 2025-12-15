@@ -1,8 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { Account } from '$lib/model/account';
-	import { alert } from '$lib/utils/prompts';
-
 	const goBack = () => {
 		window.history.back();
 	};

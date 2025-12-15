@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Card from '$lib/components/bootstrap/Card.svelte';
 	import { date } from 'ts-utils/clock';
 	const { data } = $props();
 	const events = data.events;

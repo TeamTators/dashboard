@@ -1,5 +1,5 @@
 import type { Client } from 'pg';
-import { attempt, attemptAsync } from 'ts-utils/check';
+import { attemptAsync } from 'ts-utils/check';
 import { z } from 'zod';
 import { Stream } from 'ts-utils/stream';
 

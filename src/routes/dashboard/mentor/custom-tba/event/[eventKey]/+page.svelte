@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import DatePicker from '$lib/components/general/DatePicker.svelte';
 	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
-	import { validate } from 'uuid';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));

@@ -6,10 +6,6 @@
 	import { writable } from 'svelte/store';
 	import { afterNavigate } from '$app/navigation';
 	import { sleep } from 'ts-utils/sleep';
-	import MatchComments from '$lib/components/robot-display/MatchComments.svelte';
-	import Checks from '$lib/components/robot-display/Checks.svelte';
-	import MatchActions from '$lib/components/robot-display/MatchActions.svelte';
-	import MatchContribution from '$lib/components/charts/MatchContribution.svelte';
 	import type { TBAMatch } from '$lib/utils/tba.js';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';

@@ -1,7 +1,5 @@
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Event, Team } from '$lib/server/utils/tba.js';
-import { fail } from '@sveltejs/kit';
-import type { TBATeam } from 'tatorscout/tba';
 
 export const load = async (event) => {
 	const { year, teamNumber } = event.params;

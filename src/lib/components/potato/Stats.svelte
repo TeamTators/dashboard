@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Stats from './Stat.svelte';
 	import { Potato } from '$lib/model/potato';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		potato: Potato.FriendData;

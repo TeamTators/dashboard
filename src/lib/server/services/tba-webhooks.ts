@@ -1,7 +1,7 @@
+import { attempt } from 'ts-utils';
 import redis from './redis';
 import { EventEmitter } from 'ts-utils/event-emitter';
 import { z } from 'zod';
-import { str } from '../utils/env';
 
 export namespace TBAWebhooks {
 	export const messageSchemas = {
@@ -158,8 +158,16 @@ export namespace TBAWebhooks {
 	export const once = em.once.bind(em);
 
 	export const init = (name: string) => {
-		const service = redis.createListener(name, messageSchemas);
-		service.init().unwrap();
-		return service;
+		return attempt(() => {
+			const service = redis.createListener(name, messageSchemas);
+			service.init().unwrap();
+			return service;
+		});
 	};
+
+	export namespace Types {
+		export type Schemas = keyof typeof messageSchemas;
+
+		export type Schema<K extends Schemas> = z.infer<(typeof messageSchemas)[K]>;
+	}
 }

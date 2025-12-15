@@ -81,14 +81,9 @@
 					"type": "integer",
 					"minimum": 0,
 					"description": "Password reset request lifetime in milliseconds"
-				},
-				"fingerprint_secret": {
-					"type": "string",
-					"minLength": 1,
-					"description": "Secret for fingerprinting sessions"
 				}
 			},
-			"required": ["duration", "password_request_lifetime", "fingerprint_secret"],
+			"required": ["duration", "password_request_lifetime"],
 			"additionalProperties": false
 		},
 		"redis": {
@@ -317,14 +312,9 @@
 				"redis_name": {
 					"type": "string",
 					"description": "Redis instance name for the webhook"
-				},
-				"secret": {
-					"type": "string",
-					"minLength": 1,
-					"description": "Secret for validating webhook requests"
 				}
 			},
-			"required": ["path", "port", "redis_name", "secret"],
+			"required": ["path", "port", "redis_name"],
 			"additionalProperties": false
 		},
 		"potato": {

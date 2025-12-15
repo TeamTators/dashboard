@@ -1,8 +1,6 @@
-import { DB } from '$lib/server/db/index.js';
 import { Scouting } from '$lib/server/structs/scouting';
 import * as TBA from '$lib/server/utils/tba';
 import { redirect, fail } from '@sveltejs/kit';
-import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 import { ServerCode } from 'ts-utils/status';
 
 export const load = async (event) => {

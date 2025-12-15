@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from '$lib/services/struct/data-arr';
-	import { onMount } from 'svelte';
 	import type { TBAEvent, TBATeam } from 'tatorscout/tba';
 	import Question from './Question.svelte';
 	import { Account } from '$lib/model/account';
@@ -16,7 +14,7 @@
 		answerAccounts: Account.AccountData[];
 	}
 
-	const { group, section, team, event, questions, answers, answerAccounts }: Props = $props();
+	const { group, questions, answers, answerAccounts }: Props = $props();
 </script>
 
 <ul class="list-group border-0 layer-2">

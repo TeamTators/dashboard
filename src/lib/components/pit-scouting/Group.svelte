@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
-	import { onMount } from 'svelte';
 	import Question from './Question.svelte';
 
 	interface Props {
@@ -12,12 +11,6 @@
 	}
 
 	const { group, team, questions, answers }: Props = $props();
-
-	let questionIds: string[] = $state([]);
-
-	$effect(() => {
-		questionIds = Array.from(new Set(questions.map((q) => String(q.data.id))));
-	});
 </script>
 
 <div class="card layer-1">

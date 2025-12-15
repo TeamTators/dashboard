@@ -2,11 +2,8 @@
 	import nav from '$lib/imports/robot-display.js';
 	import EditSection from '$lib/components/pit-scouting/EditSection.svelte';
 	import { Scouting } from '$lib/model/scouting';
-	import { notify, prompt, select } from '$lib/utils/prompts';
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
-	import { TBAEvent } from '$lib/utils/tba.js';
 	import { goto } from '$app/navigation';
 
 	const { data = $bindable() } = $props();

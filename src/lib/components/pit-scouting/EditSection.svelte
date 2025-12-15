@@ -19,7 +19,7 @@
 		const name = await prompt('Group Name');
 		if (!name) return;
 
-		const res = await Scouting.PIT.Groups.new({
+		await Scouting.PIT.Groups.new({
 			name,
 			sectionId: id,
 			order: $groups.length

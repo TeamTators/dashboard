@@ -1,0 +1,72 @@
+<mjml>
+	<mj-body background-color="#f4f4f4">
+		<mj-section>
+			<mj-column>
+				<mj-image
+					width="100px"
+					src="https://tatorscout.org/assets/favicon.png"
+					alt="Tatorscout Logo"
+				/>
+				<mj-divider border-color="#0057b8" />
+				<mj-text
+					font-size="24px"
+					font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+					color="#222"
+					font-weight="bold"
+				>
+					Unsubscription Confirmed
+				</mj-text>
+				<mj-text font-size="16px" color="#333"> Hello {{ username }}, </mj-text>
+				<mj-text font-size="16px" color="#333">
+					You have successfully unsubscribed from Tatorscout webhook notifications. We're sorry to
+					see you go!
+				</mj-text>
+			</mj-column>
+		</mj-section>
+
+		<!-- Unsubscription Details -->
+		<mj-section background-color="#ffffff" padding="20px">
+			<mj-column>
+				<mj-text font-size="18px" color="#222" font-weight="bold"> Unsubscription Details </mj-text>
+
+				<mj-text font-size="15px" color="#333">
+					<strong>Webhook Type:</strong> {{ webhook_type }}
+				</mj-text>
+
+				<mj-text font-size="15px" color="#333">
+					<strong>Unsubscribed:</strong> {{ unsubscribe_date }}
+				</mj-text>
+
+				<mj-text font-size="15px" color="#333">
+					<strong>Originally Created:</strong> {{ created_date }}
+				</mj-text>
+			</mj-column>
+		</mj-section>
+
+		<mj-section>
+			<mj-column>
+				<!-- Action Buttons -->
+				<mj-button background-color="#28a745" color="#fff" href="{{resubscribe_url}}">
+					Resubscribe to This Webhook
+				</mj-button>
+
+				<mj-button background-color="#6c757d" color="#fff" href="{{manage_subscriptions_url}}">
+					Manage Other Subscriptions
+				</mj-button>
+
+				<!-- Footer -->
+				<mj-divider border-color="#cccccc" />
+				<mj-text font-size="12px" color="#aaa" align="center">
+					This is an automated confirmation email. You're receiving this because you just
+					unsubscribed from TBA webhook notifications.<br />
+					If this was done in error, please resubscribe using the link above.
+				</mj-text>
+
+				<mj-text font-size="11px" color="#999" align="center">
+					The Blue Alliance Webhook Notification System<br />
+					{{ timestamp }}
+				</mj-text>
+			</mj-column>
+		</mj-section>
+	</mj-body>
+</mjml>

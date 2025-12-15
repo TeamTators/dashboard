@@ -8,7 +8,6 @@
 	import '@uppy/webcam/css/style.min.css';
 	import ImageEditor from '@uppy/image-editor';
 	import Compressor from '@uppy/compressor';
-	import type { BasePlugin, Body, Meta, PluginOpts, Uppy } from '@uppy/core';
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
