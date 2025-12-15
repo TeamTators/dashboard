@@ -41,4 +41,10 @@ export namespace Webhooks {
 			}).unwrap();
 		});
 	};
+
+	export const test = (sub: SubscriptionData) => {
+		return Subscriptions.call('test', {
+			id: sub.data.id,
+		});
+	}
 }

@@ -13,7 +13,7 @@ export default (event: TBAEvent) => {
 					type: 'material-icons',
 					name: 'event'
 				}
-			},
+			}
 		],
 		priority: 0
 	});

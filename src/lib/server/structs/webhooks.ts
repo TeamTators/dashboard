@@ -11,6 +11,8 @@ import { sendEmail } from '../services/email';
 import { domain } from '../utils/env';
 import { Event, type Match } from '../utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
+import { CallListener } from '../services/struct-listeners';
+import z from 'zod';
 // import { freqEst, getDesc } from '$lib/utils/webhooks';
 
 export namespace Webhooks {
@@ -26,14 +28,48 @@ export namespace Webhooks {
 		}
 	});
 
+	CallListener.on('test', Subscriptions, z.object({
+		id: z.string(),
+	}), async (event, data) => {
+		if (!event.locals.account) {
+			return {
+				success: false,
+				message: 'Not authenticated'
+			}
+		}
+
+		const sub = await Subscriptions.fromId(data.id).unwrap();
+		if (!sub) {
+			return {
+				success: false,
+				message: 'Subscription not found'
+			}
+		}
+		if (sub.data.accountId !== event.locals.account.id) {
+			return {
+				success: false,
+				message: 'Not authorized to test this subscription'
+			}
+		}
+		return {
+			success: false,
+			message: 'Not implemented'
+		}
+
+		// doNotify(sub.data.type as TBAWebhooks.Types.Schemas, JSON.parse('{}'), { id: 'test' } as any)(sub).unwrap();
+	});
+
 	Subscriptions.on('create', async (s) => {
-		const exists = await Subscriptions.get({
-			accountId: s.data.accountId,
-			type: s.data.type,
-			args: s.data.args,
-		}, {
-			type: 'all',
-		});
+		const exists = await Subscriptions.get(
+			{
+				accountId: s.data.accountId,
+				type: s.data.type,
+				args: s.data.args
+			},
+			{
+				type: 'all'
+			}
+		);
 		if (exists.isOk() && exists.value.length > 1) {
 			// already exists
 			await s.delete();
@@ -310,7 +346,9 @@ export namespace Webhooks {
 				const whData = await run(data).unwrap();
 				let event: Event;
 				if (type === 'match_video') {
-					event = await Event.getEvent((data as TBAWebhooks.Types.Schema<'match_video'>).match.event_key).unwrap();
+					event = await Event.getEvent(
+						(data as TBAWebhooks.Types.Schema<'match_video'>).match.event_key
+					).unwrap();
 				} else {
 					event = await Event.getEvent((data as any).event_key).unwrap();
 				}
@@ -322,15 +360,13 @@ export namespace Webhooks {
 					const d = data as TBAWebhooks.Types.Schema<'match_video'>;
 					match = matches.find(
 						(m) =>
-							m.tba.comp_level === d.match.comp_level &&
-							m.tba.match_number === d.match.match_number
+							m.tba.comp_level === d.match.comp_level && m.tba.match_number === d.match.match_number
 					);
 				} else if (type === 'match_score') {
 					const d = data as TBAWebhooks.Types.Schema<'match_score'>;
 					match = matches.find(
 						(m) =>
-							m.tba.comp_level === d.match.comp_level &&
-							m.tba.match_number === d.match.match_number
+							m.tba.comp_level === d.match.comp_level && m.tba.match_number === d.match.match_number
 					);
 				} else if (type === 'upcoming_match') {
 					const d = data as TBAWebhooks.Types.Schema<'upcoming_match'>;
@@ -351,7 +387,7 @@ export namespace Webhooks {
 						and(
 							inArray(
 								Subscriptions.table.args,
-								teams.map(t => `${event.tba.key}:team:${t}`)
+								teams.map((t) => `${event.tba.key}:team:${t}`)
 							),
 							eq(Subscriptions.table.type, type)
 						)
@@ -366,7 +402,7 @@ export namespace Webhooks {
 					})
 				);
 			});
-		}
+		};
 	};
 
 	export const init = (name: string) => {

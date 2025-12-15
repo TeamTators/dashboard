@@ -11,6 +11,8 @@
 	import { type ICellRendererParams } from 'ag-grid-community';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { CheckboxEditorModule } from 'ag-grid-community';
+	import Navbar from '$lib/components/general/Navbar.svelte';
+	import SideNav from '$lib/components/general/SideNav.svelte';
 
 	let subscriptions = $state(Webhooks.Subscriptions.arr());
 
@@ -27,8 +29,12 @@
 	});
 </script>
 
+<Navbar title={__APP_ENV__.name} />
+
+<SideNav id="subscriptions-side-nav" />
+
 <div class="container">
-	<div class="row mb-3">
+	<div class="row mb-3 mt-3">
 		<div class="col">
 			<h2>Subscriptions</h2>
 			<p>
