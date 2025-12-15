@@ -20,7 +20,7 @@ export namespace Webhooks {
 	});
 
 	export type SubscriptionData = typeof Subscriptions.sample;
-	export type SubscriptionDaraArr = ReturnType<typeof Subscriptions.arr>;
+	export type SubscriptionDataArr = ReturnType<typeof Subscriptions.arr>;
 
 	export const subscribe = (
 		type: string,
@@ -44,7 +44,7 @@ export namespace Webhooks {
 
 	export const test = (sub: SubscriptionData) => {
 		return Subscriptions.call('test', {
-			id: sub.data.id,
+			id: sub.data.id
 		});
-	}
+	};
 }

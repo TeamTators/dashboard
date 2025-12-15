@@ -5,10 +5,8 @@
 	import { onDestroy, onMount } from 'svelte';
 	import Grid from '$lib/components/general/Grid.svelte';
 	import { freqEst, getDesc } from '$lib/utils/webhooks';
-	import { ButtonCellRenderer } from '$lib/utils/ag-grid/buttons';
 	import { capitalize, fromSnakeCase } from 'ts-utils';
 	import { useCommandStack } from '$lib/services/event-stack';
-	import { type ICellRendererParams } from 'ag-grid-community';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { CheckboxEditorModule } from 'ag-grid-community';
 	import Navbar from '$lib/components/general/Navbar.svelte';

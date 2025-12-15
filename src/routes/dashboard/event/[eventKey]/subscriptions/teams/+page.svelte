@@ -9,7 +9,6 @@
 	import { capitalize, fromSnakeCase, resolveAll } from 'ts-utils';
 	import { freqEst, getDesc } from '$lib/utils/webhooks';
 	import nav from '$lib/imports/robot-display';
-	import { teamsFromMatch } from 'tatorscout/tba';
 
 	const eventKey = String(page.params.eventKey);
 	let event: TBAEvent | undefined = $state(undefined);

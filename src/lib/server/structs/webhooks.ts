@@ -28,36 +28,41 @@ export namespace Webhooks {
 		}
 	});
 
-	CallListener.on('test', Subscriptions, z.object({
-		id: z.string(),
-	}), async (event, data) => {
-		if (!event.locals.account) {
-			return {
-				success: false,
-				message: 'Not authenticated'
+	CallListener.on(
+		'test',
+		Subscriptions,
+		z.object({
+			id: z.string()
+		}),
+		async (event, data) => {
+			if (!event.locals.account) {
+				return {
+					success: false,
+					message: 'Not authenticated'
+				};
 			}
-		}
 
-		const sub = await Subscriptions.fromId(data.id).unwrap();
-		if (!sub) {
+			const sub = await Subscriptions.fromId(data.id).unwrap();
+			if (!sub) {
+				return {
+					success: false,
+					message: 'Subscription not found'
+				};
+			}
+			if (sub.data.accountId !== event.locals.account.id) {
+				return {
+					success: false,
+					message: 'Not authorized to test this subscription'
+				};
+			}
 			return {
 				success: false,
-				message: 'Subscription not found'
-			}
-		}
-		if (sub.data.accountId !== event.locals.account.id) {
-			return {
-				success: false,
-				message: 'Not authorized to test this subscription'
-			}
-		}
-		return {
-			success: false,
-			message: 'Not implemented'
-		}
+				message: 'Not implemented'
+			};
 
-		// doNotify(sub.data.type as TBAWebhooks.Types.Schemas, JSON.parse('{}'), { id: 'test' } as any)(sub).unwrap();
-	});
+			// doNotify(sub.data.type as TBAWebhooks.Types.Schemas, JSON.parse('{}'), { id: 'test' } as any)(sub).unwrap();
+		}
+	);
 
 	Subscriptions.on('create', async (s) => {
 		const exists = await Subscriptions.get(
