@@ -216,11 +216,7 @@ export const summarize = async (eventKey: string) => {
 		const getAverageVelocity = memoize(
 			async (team: Team) => {
 				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
-				return average(
-					matchScouting.map(
-						(s) => s.averageVelocity
-					)
-				);
+				return average(matchScouting.map((s) => s.averageVelocity));
 			},
 			(team: Team) => `averageVelocity_${team.tba.team_number}`
 		);

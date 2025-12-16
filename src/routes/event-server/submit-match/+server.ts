@@ -12,11 +12,14 @@ export const POST = async (event) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');
 
-	const res = (message: string, status: ServerCode) =>
-		new Response(JSON.stringify({ message }), { status });
+	const res = (success: boolean, message: string, status: ServerCode) =>
+		new Response(JSON.stringify({ success, message }), { status });
 
-	if (String(header) !== str('EVENT_SERVER_API_KEY', true)) {
-		return res('Invalid API key', 401);
+	if (
+		String(header) !== str('EVENT_SERVER_API_KEY', true) &&
+		!event.locals.account?.data.verified
+	) {
+		return res(false, 'Invalid API key', 401);
 	}
 
 	const body = await event.request.json();
@@ -51,7 +54,7 @@ export const POST = async (event) => {
 
 	if (!parsed.success) {
 		terminal.warn('Invalid request body', parsed.error.message);
-		return res('Invalid request body: ' + parsed.error.message, 400);
+		return res(false, 'Invalid request body: ' + parsed.error.message, 400);
 	}
 
 	const {
@@ -95,9 +98,20 @@ export const POST = async (event) => {
 
 	if (exists.isErr()) {
 		terminal.error('Error getting match scouting', exists.error);
-		return res('Internal server error', 500);
+		return res(false, 'Internal server error', 500);
 	}
 	if (exists.value) {
+		if (
+			exists.value.data.trace === JSON.stringify(trace) &&
+			exists.value.data.checks === JSON.stringify(checks) &&
+			exists.value.data.sliders === JSON.stringify(sliders) &&
+			exists.value.data.scoutGroup === group &&
+			exists.value.data.remote === remote &&
+			exists.value.data.prescouting === prescouting &&
+			exists.value.data.alliance === (alliance ? alliance : 'unknown')
+		) {
+			return res(true, 'No changes detected', 200);
+		}
 		matchScoutingId = exists.value.id;
 		const update = await exists.value.update({
 			scoutId: scout,
@@ -107,11 +121,12 @@ export const POST = async (event) => {
 			trace: Trace.parse(JSON.stringify(trace)).unwrap().serialize(),
 			checks: JSON.stringify(checks),
 			alliance: alliance ? alliance : 'unknown',
-			year
+			year,
+			sliders: JSON.stringify(sliders)
 		});
 		if (update.isErr()) {
 			terminal.error('Error updating match scouting', update.error);
-			return res('Internal server error', 500);
+			return res(false, 'Internal server error', 500);
 		} else {
 			Logs.log({
 				struct: Scouting.MatchScouting.name,
@@ -140,7 +155,7 @@ export const POST = async (event) => {
 		});
 		if (create.isErr()) {
 			terminal.error('Error creating match scouting', create.error);
-			return res('Internal server error', 500);
+			return res(false, 'Internal server error', 500);
 		} else {
 			Logs.log({
 				struct: Scouting.MatchScouting.name,
@@ -184,8 +199,8 @@ export const POST = async (event) => {
 
 	if (commentRes.isErr()) {
 		terminal.error('Error creating comments', commentRes.error);
-		return res('Internal server error', 500);
+		return res(false, 'Internal server error', 500);
 	}
 
-	return res('Success', 200);
+	return res(true, 'Success', 200);
 };
