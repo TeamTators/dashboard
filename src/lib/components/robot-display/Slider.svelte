@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import { z } from 'zod';
 
 	interface Props {
-		scouting: Scouting.MatchScoutingData;
+		scouting: Scouting.MatchScoutingExtended;
 		classes?: string;
 	}
 
@@ -18,18 +17,9 @@
 	} = $state({});
 
 	const render = () => {
-		const parsed = z
-			.record(
-				z.string(),
-				z.object({
-					value: z.number(),
-					text: z.string(),
-					color: z.string().default('#000000')
-				})
-			)
-			.safeParse(JSON.parse(String(scouting.data.sliders)));
-		if (parsed.success) {
-			sliders = parsed.data;
+		const parsed = scouting.getSliders();
+		if (parsed.isOk()) {
+			sliders = parsed.value;
 		} else {
 			console.error('Failed to parse sliders', parsed.error);
 		}
@@ -42,7 +32,7 @@
 	});
 </script>
 
-<div>
+<div class={classes}>
 	<h5 class="text-center">Sliders</h5>
 	<ul class="list">
 		{#each Object.entries(sliders) as [key, slider]}

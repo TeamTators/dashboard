@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import type { TBAEvent, TBATeam } from 'tatorscout/tba';
 	import { capitalize } from 'ts-utils/text';
 	import { Account } from '$lib/model/account';
 
@@ -27,7 +26,7 @@
 		}
 
 		import('bootstrap').then((bs) => {
-			const tt = bs.Tooltip.getOrCreateInstance(tooltip);
+			bs.Tooltip.getOrCreateInstance(tooltip);
 		});
 	});
 

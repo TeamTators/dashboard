@@ -86,6 +86,7 @@ jobs:
           echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
           echo "OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "OAUTH2_CLIENT_SECRET=1234567890" >> .env
+          echo "TBA_WEBHOOK_SECRET=webhook_secret" >> .env
           export $(cat .env | xargs)
 
       - name: Run migrations

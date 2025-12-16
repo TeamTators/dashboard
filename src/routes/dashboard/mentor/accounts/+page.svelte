@@ -1,22 +1,21 @@
 <script lang="ts">
-	import { confirm, select, alert } from '$lib/utils/prompts.js';
-	import { Permissions } from '$lib/model/permissions';
+	import { confirm, alert } from '$lib/utils/prompts.js';
 	import { capitalize, fromSnakeCase } from 'ts-utils/text';
 
 	const { data } = $props();
 	const accounts = $derived(data.accounts);
-	const roles = $derived(data.roles);
+	// const roles = $derived(data.roles);
 
 	const refresh = () => {
 		location.reload();
 	};
 
-	const roleColors = {
-		Member: 'primary',
-		Scout: 'info',
-		Admin: 'warning',
-		Mentor: 'success'
-	};
+	// const roleColors = {
+	// 	Member: 'primary',
+	// 	Scout: 'info',
+	// 	Admin: 'warning',
+	// 	Mentor: 'success'
+	// };
 </script>
 
 <div class="container-fluid">

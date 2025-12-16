@@ -3,8 +3,6 @@
 	import Progress from '../charts/Progress.svelte';
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
-	import { DataArr } from '$lib/services/struct/data-arr';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		teams: TBATeam[];
@@ -12,7 +10,7 @@
 		event: TBAEvent;
 		staticY?: number;
 		matches: TBAMatch[];
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	let { teamNumber, teams, event, staticY = $bindable(), matches, scouting }: Props = $props();

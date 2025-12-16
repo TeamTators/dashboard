@@ -10,7 +10,7 @@
 	const data = $derived(
 		Object.entries(scouts).reduce(
 			(cur, acc) => {
-				const [id, user] = acc;
+				const [_, user] = acc;
 				if (cur[user]) {
 					cur[user] += 1;
 				} else {

@@ -1,6 +1,4 @@
-import { auth } from '$lib/server/utils/google-summary.js';
-
-export const GET = (event) => {
+export const GET = () => {
 	// console.log('webhook ping event');
 	// auth(event);
 	// console.log('Success!');
