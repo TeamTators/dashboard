@@ -13,6 +13,7 @@ import { Event } from '../utils/tba';
 import { Scouting } from './scouting';
 import { Trace } from 'tatorscout/trace';
 import { DataAction, PropertyAction } from 'drizzle-struct/types';
+import terminal from '../utils/terminal';
 
 export namespace FIRST {
 	export const EventSummary = new Struct({
@@ -59,6 +60,7 @@ export namespace FIRST {
 			}
 			const res = await generateSummary(data.eventKey, data.year as 2024 | 2025);
 			if (res.isErr()) {
+				terminal.error(res.error);
 				return {
 					success: false,
 					message: 'Failed to generate summary'
