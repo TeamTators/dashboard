@@ -93,6 +93,15 @@ export default (event: TBAEvent) => {
 			// 	}
 			// },
 			{
+				name: 'Score Calculator',
+				href: 'https://frc.ohlinis.me/',
+				icon: {
+					type: 'material-icons',
+					name: 'calculate',
+				},
+				external: true
+			},
+			{
 				name: 'Qualifications Strategy',
 				href: 'https://padlet.com/tatorscout/bordie-strategy-sheet-xvmkd3uf631sg64s',
 				icon: {
