@@ -1,10 +1,7 @@
-import { FIRST } from '$lib/server/structs/FIRST.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
-import { and, eq } from 'drizzle-orm';
 import * as TBA from '$lib/server/utils/tba';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
-import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
 import { Account } from '$lib/server/structs/account.js';
 import terminal from '$lib/server/utils/terminal.js';
 

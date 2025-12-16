@@ -1,14 +1,12 @@
 <script lang="ts">
-	import DateInput from '../forms/DateInput.svelte';
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Scouting } from '$lib/model/scouting';
 
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 		matches: TBAMatch[];
 	}
 
@@ -43,7 +41,7 @@
 		return scouting.subscribe((s) => {
 			const autoRes = Scouting.averageAutoScore(s, event.tba.year);
 			const teleRes = Scouting.averageTeleopScore(s, event.tba.year);
-			const endRes = Scouting.averageEndgameScore(matches, team.tba.team_number, event.tba.year);
+			const _endRes = Scouting.averageEndgameScore(matches, team.tba.team_number, event.tba.year);
 			const secondsRes = Scouting.averageSecondsNotMoving(s);
 
 			auto = autoRes.isErr() ? 0 : autoRes.value;
@@ -53,8 +51,9 @@
 		});
 	});
 </script>
-
-<table class="table">
+<div class="table-container table-responsive">
+	
+<table class="table table-striped">
 	<tbody>
 		<tr>
 			<td>Rank:</td>
@@ -104,3 +103,11 @@
 		</tr> -->
 	</tbody>
 </table>
+</div>
+
+<style>
+	.table-container {
+		max-height: 100%;
+		overflow-y: auto;
+	}
+</style>

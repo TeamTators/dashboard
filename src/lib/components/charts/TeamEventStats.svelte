@@ -3,14 +3,14 @@
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
-	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+	import { Trace, type P } from 'tatorscout/trace';
 	import { copyCanvas } from '$lib/utils/clipboard';
 
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
 		staticY?: number;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 		matches: TBAMatch[];
 	}
 
@@ -23,22 +23,22 @@
 
 	onMount(() => {
 		scouting.sort((a, b) => {
-			if (a.data.compLevel === b.data.compLevel)
-				return Number(a.data.matchNumber) - Number(b.data.matchNumber);
+			if (a.compLevel === b.compLevel) return Number(a.matchNumber) - Number(b.matchNumber);
 			const order = ['qm', 'qf', 'sf', 'f'];
-			return order.indexOf(String(a.data.compLevel)) - order.indexOf(String(b.data.compLevel));
+			return order.indexOf(String(a.compLevel)) - order.indexOf(String(b.compLevel));
 		});
 
 		return scouting.subscribe(async (data) => {
 			if (chart) chart.destroy();
 			try {
 				const counts = data.map((s) => {
-					const trace = TraceSchema.parse(JSON.parse(s.data.trace || '[]')) as TraceArray;
-
-					const sectionCounts = trace.reduce(
+					const sectionCounts = s.trace.points.reduce(
 						(acc, curr) => {
 							if (!curr[3]) return acc;
-							const section = Trace.getSection(curr);
+							const section = Trace.getSection(curr as P);
+							if (!section) {
+								return acc;
+							}
 							if (!acc[section]) acc[section] = {};
 							acc[section][curr[3] as string] = (acc[section][curr[3] as string] || 0) + 1;
 							return acc;

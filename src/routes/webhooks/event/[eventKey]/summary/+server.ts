@@ -1,6 +1,5 @@
 import { summarize } from '$lib/server/utils/google-summary.js';
 import { fail } from '@sveltejs/kit';
-import { auth } from '$lib/server/utils/google-summary';
 import { ServerCode } from 'ts-utils/status';
 
 export const GET = async (event) => {

@@ -4,13 +4,26 @@
 	import ArchivedComments from '$lib/components/robot-display/ArchivedComments.svelte';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba';
 	import { Scouting } from '$lib/model/scouting';
+	import { onMount } from 'svelte';
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
 	const teams = $derived(data.teams.map((t) => new TBATeam(t, event)));
 	const comments = $derived(data.comments.map((c) => Scouting.TeamComments.Generator(c)));
-	const scouting = $derived(data.comments.map((c) => Scouting.MatchScouting.Generator(c)));
+	const scouting = $derived(
+		Scouting.MatchScouting.arr(data.scouting.map((c) => Scouting.MatchScouting.Generator(c)))
+	);
+	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
 
 	$effect(() => nav(event.tba));
+
+	onMount(() => {
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		if (res.isOk()) {
+			scoutingArr = res.value;
+		} else {
+			console.error('Failed to parse scouting data:', res.error);
+		}
+	});
 </script>
 
 <div class="container-fluid">
@@ -33,7 +46,7 @@
 				team={team.tba.team_number}
 				event={event.tba.key}
 				comments={comments.filter((c) => c.data.team === team.tba.team_number)}
-				{scouting}
+				scouting={scoutingArr.clone().filter((s) => s.team === team.tba.team_number)}
 			/>
 		</div>
 	{/each}

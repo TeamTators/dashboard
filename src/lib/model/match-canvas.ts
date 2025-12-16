@@ -4,7 +4,7 @@ import { Container } from 'canvas/container';
 import { Path } from 'canvas/path';
 import { Circle } from 'canvas/circle';
 import { Img } from 'canvas/image';
-import { type TraceArray, type Action, Trace } from 'tatorscout/trace';
+import { type Action, Trace, type TraceArray } from 'tatorscout/trace';
 import type { Focus } from '$lib/types/robot-display';
 
 const generateAction = (x: number, y: number, action: Action | 'blank', color: string) => {
@@ -65,21 +65,55 @@ export class MatchCanvas {
 	public readonly canvas: Canvas;
 	public readonly container = new Container();
 	public readonly background: Img;
-	public trace: TraceArray;
 
 	constructor(
-		trace: TraceArray,
+		public readonly traceObj: Trace | TraceArray,
 		public readonly year: number,
 		public readonly ctx: CanvasRenderingContext2D
 	) {
-		this.trace = Trace.expand(trace);
-		this.max = this.trace.length;
+		// this.max = this.trace.points.length;
+		if (traceObj instanceof Trace) {
+			this.max = traceObj.points.length;
+		} else {
+			this.max = traceObj.length;
+		}
 		this.canvas = new Canvas(ctx);
 		this.canvas.ratio = 2;
 		// this.canvas.adaptable = true;
 		this.background = new Img(`/field/${year}.png`);
 
 		this.init();
+	}
+
+	get trace(): TraceArray {
+		if (this.traceObj instanceof Trace) {
+			return this.traceObj.points as TraceArray;
+		}
+		return this.traceObj;
+	}
+
+	set trace(trace: Trace | TraceArray) {
+		if (trace instanceof Trace) {
+			if (this.traceObj instanceof Trace) {
+				Object.assign(this, {
+					traceObj: trace
+				});
+			} else {
+				Object.assign(this, {
+					traceObj: trace.points
+				});
+			}
+		} else {
+			if (this.traceObj instanceof Trace) {
+				Object.assign(this, {
+					traceObj: new Trace(trace)
+				});
+			} else {
+				Object.assign(this, {
+					traceObj: trace
+				});
+			}
+		}
 	}
 
 	init() {
@@ -89,16 +123,21 @@ export class MatchCanvas {
 		this.background.height = 1;
 		this.background.x = 0;
 		this.background.y = 0;
+
+		const trace = this.trace instanceof Trace ? this.trace.points : this.trace;
+
 		// start at 1 to skip the first point, a path is drawn between two points, so we're starting with the second
-		for (let i = 1; i < this.trace.length; i++) {
-			const a = this.trace[i - 1];
+		for (let i = 1; i < trace.length; i++) {
+			const a = trace[i - 1];
 			const [, x1, y1, a1] = a;
-			const b = this.trace[i];
+			const b = trace[i];
 			const [, x2, y2, a2] = b;
 
 			// Need the i == 1 check otherwise every action will be drawn twice
 			if (a1 && i == 1) {
-				this.container.children.push(generateAction(x1, y1, a1, ACTION_COLORS[a1]));
+				this.container.children.push(
+					generateAction(x1, y1, a1 as Action | 'blank', ACTION_COLORS[a1 as Action])
+				);
 			}
 			const path = new Path([
 				[x1, y1],
@@ -118,7 +157,9 @@ export class MatchCanvas {
 			this.container.children.push(path);
 
 			if (a2) {
-				this.container.children.push(generateAction(x2, y2, a2, ACTION_COLORS[a2]));
+				this.container.children.push(
+					generateAction(x2, y2, a2 as Action | 'blank', ACTION_COLORS[a2 as Action])
+				);
 			}
 		}
 		this.canvas.add(this.background, this.container);
@@ -140,7 +181,10 @@ export class MatchCanvas {
 	}
 
 	endgame() {
-		this.between(135 * 4, this.trace.length);
+		this.between(
+			135 * 4,
+			this.trace instanceof Trace ? this.trace.points.length : this.trace.length
+		);
 	}
 
 	hideActions() {

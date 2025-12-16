@@ -21,12 +21,15 @@
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
+	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
+	import Ranking from '$lib/components/robot-display/Ranking.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
 	const teams = $derived(data.teams.map((t) => new TBATeam(t, event)));
 	const team = $derived(new TBATeam(data.team, event));
 	const scouting = $derived(data.scouting);
+	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
 	const comments = $derived(data.comments);
 	const answers = $derived(data.answers);
 	const questions = $derived(data.questions);
@@ -53,8 +56,9 @@
 			width: 2,
 			height: 1,
 			lg: {
-				width: 4,
-				height: 1
+				width: 3,
+				height: 1,
+				order: 3,
 			},
 			md: {
 				width: 4,
@@ -82,7 +86,7 @@
 			width: 4,
 			height: 1,
 			lg: {
-				width: 8,
+				width: 6,
 				height: 1
 			},
 			md: {
@@ -199,14 +203,14 @@
 		},
 		id: 'progress',
 		size: {
-			width: 4,
+			width: 6,
 			height: 1,
 			xl: {
 				width: 6,
-				height: 1
+				height: 1,
 			},
 			lg: {
-				width: 6,
+				width: 8,
 				height: 1
 			},
 			md: {
@@ -363,7 +367,7 @@
 			width: 2,
 			height: 1,
 			lg: {
-				width: 4,
+				width: 3,
 				height: 1
 			},
 			md: {
@@ -389,10 +393,10 @@
 		id: 'radar_chart',
 		size: {
 			width: 4,
-			height: 1,
+			height: 2,
 			lg: {
 				width: 6,
-				height: 1
+				height: 2
 			},
 			md: {
 				width: 6,
@@ -400,6 +404,64 @@
 			},
 			sm: {
 				width: 6,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
+	const startLocation = new Dashboard.Card({
+		name: 'Start Location Heatmap',
+		icon: {
+			type: 'material-icons',
+			name: 'place'
+		},
+		id: 'start_location_heatmap',
+		size: {
+			width: 2,
+			height: 1,
+			lg: {
+				width: 4,
+				height: 1
+			},
+			md: {
+				width: 4,
+				height: 1
+			},
+			sm: {
+				width: 4,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
+	const ranking = new Dashboard.Card({
+		name: 'Ranking',
+		icon: {
+			type: 'material-icons',
+			name: 'format_list_numbered'
+		},
+		id: 'ranking',
+		size: {
+			width: 2,
+			height: 1,
+			lg: {
+				width: 4,
+				height: 1
+			},
+			md: {
+				width: 4,
+				height: 1
+			},
+			sm: {
+				width: 4,
 				height: 1
 			},
 			xs: {
@@ -457,10 +519,11 @@
 			id: 'robot-display'
 		});
 
-		contributions = Scouting.averageContributions(scouting.data);
+		contributions = Scouting.averageContributions(scoutingArr.data);
 	});
 
 	let scroller: HTMLDivElement;
+	let contributionSub = () => {};
 
 	afterNavigate(() => {
 		const btn = scroller.querySelector(`[data-team="${team.tba.team_number}"]`);
@@ -473,6 +536,19 @@
 				})
 			);
 		}
+
+		
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		if (res.isErr()) {
+			console.error('Failed to create extended scouting array:', res.error);
+		} else {
+			scoutingArr.set(res.value.data);
+			scoutingArr = res.value;
+		}
+		contributionSub();
+		contributionSub = scoutingArr.subscribe(() => {
+			contributions = Scouting.averageContributions(scoutingArr.data);
+		});
 	});
 
 	onMount(() => {
@@ -504,8 +580,16 @@
 			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
 		);
 
-		const contributionSub = scouting.subscribe((s) => {
-			contributions = Scouting.averageContributions(s);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		if (res.isErr()) {
+			console.error('Failed to create extended scouting array:', res.error);
+		} else {
+			scoutingArr.set(res.value.data);
+			scoutingArr = res.value;
+		}
+		contributionSub();
+		contributionSub = scoutingArr.subscribe(() => {
+			contributions = Scouting.averageContributions(scoutingArr.data);
 		});
 
 		return () => {
@@ -637,9 +721,24 @@
 					{/key}
 				{/snippet}
 			</Card>
+			<Card card={picturesCard}>
+				{#snippet body()}
+					<PictureDisplay {team} {event} teamPictures={pictures} />
+				{/snippet}
+			</Card>
 			<Card card={checksSummary}>
 				{#snippet body()}
 					<ChecksSummary checks={checksSum} />
+				{/snippet}
+			</Card>
+			<Card card={summary}>
+				{#snippet body()}
+					<EventSummary {matches} {team} {event} scouting={scoutingArr} />
+				{/snippet}
+			</Card>
+			<Card card={ranking}>
+				{#snippet body()}
+					<Ranking {event} team={team.tba.team_number} />
 				{/snippet}
 			</Card>
 			<Card card={progress}>
@@ -657,25 +756,20 @@
 						bind:this={progressChart}
 						{team}
 						{event}
-						{scouting}
+						scouting={scoutingArr}
 						{matches}
 						defaultView={'points'}
 					/>
 				{/snippet}
 			</Card>
-			<Card card={summary}>
-				{#snippet body()}
-					<EventSummary {matches} {team} {event} {scouting} />
-				{/snippet}
-			</Card>
-			<Card card={picturesCard}>
-				{#snippet body()}
-					<PictureDisplay {team} {event} teamPictures={pictures} />
-				{/snippet}
-			</Card>
 			<Card card={commentsCard}>
 				{#snippet body()}
-					<TeamComments team={team.tba.team_number} event={event.tba.key} {comments} {scouting} />
+					<TeamComments
+						team={team.tba.team_number}
+						event={event.tba.key}
+						{comments}
+						scouting={scoutingArr}
+					/>
 				{/snippet}
 			</Card>
 			<!-- <Card card={actionHeatmap}>
@@ -698,7 +792,7 @@
 			</Card>
 			<Card card={matchViewer}>
 				{#snippet body()}
-					<MatchTable {team} {event} {scouting} />
+					<MatchTable {team} {event} scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 			<Card card={eventStats}>
@@ -712,12 +806,18 @@
 					>
 						<i class="material-icons">copy_all</i>
 					</button>
-					<TeamEventStats bind:this={teamEventStatsChart} {team} {event} {scouting} {matches} />
+					<TeamEventStats
+						bind:this={teamEventStatsChart}
+						{team}
+						{event}
+						scouting={scoutingArr}
+						{matches}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={averageContributionsTable}>
 				{#snippet body()}
-					<AverageContributions {team} {event} {scouting} {matches} />
+					<AverageContributions {team} {event} scouting={scoutingArr} {matches} />
 				{/snippet}
 			</Card>
 			<Card card={averageContributionsPie}>
@@ -735,7 +835,7 @@
 						bind:this={averageContributionsPieChart}
 						{team}
 						{event}
-						{scouting}
+						scouting={scoutingArr}
 						{matches}
 					/>
 				{/snippet}
@@ -743,6 +843,11 @@
 			<Card card={scoutSummary}>
 				{#snippet body()}
 					<ScoutSummary scouts={scoutingAccounts} />
+				{/snippet}
+			</Card>
+			<Card card={startLocation}>
+				{#snippet body()}
+					<StartLocationHeatmap {team} {event} />
 				{/snippet}
 			</Card>
 		{/key}

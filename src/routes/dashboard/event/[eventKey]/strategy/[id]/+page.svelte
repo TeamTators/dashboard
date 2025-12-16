@@ -19,37 +19,45 @@
 	const partners = $derived(data.partners);
 	const opponents = $derived(data.opponents);
 	const scouting = $derived(data.scouting);
+	let scoutingData = $state({
+		partner1: new Scouting.MatchScoutingExtendedArr([]),
+		partner2: new Scouting.MatchScoutingExtendedArr([]),
+		partner3: new Scouting.MatchScoutingExtendedArr([]),
+		opponent1: new Scouting.MatchScoutingExtendedArr([]),
+		opponent2: new Scouting.MatchScoutingExtendedArr([]),
+		opponent3: new Scouting.MatchScoutingExtendedArr([])
+	});
 	$effect(() => nav(event.tba));
 
-	const selectTeams = (partners: number[], opponents: number[]) => {
-		if (partners.length !== 3) {
-			console.log(partners);
-			return alert('You must select 3 partners');
-		}
-		if (opponents.length !== 3) {
-			console.log(opponents);
-			return alert('You must select 3 opponents');
-		}
+	// const selectTeams = (partners: number[], opponents: number[]) => {
+	// 	if (partners.length !== 3) {
+	// 		console.log(partners);
+	// 		return alert('You must select 3 partners');
+	// 	}
+	// 	if (opponents.length !== 3) {
+	// 		console.log(opponents);
+	// 		return alert('You must select 3 opponents');
+	// 	}
 
-		if (!partners.includes(2122)) {
-			console.log(partners);
-			return alert('The Tators must be one of the partners');
-		}
+	// 	if (!partners.includes(2122)) {
+	// 		console.log(partners);
+	// 		return alert('The Tators must be one of the partners');
+	// 	}
 
-		strategy.update((s) => ({
-			...s,
-			alliance: 'red',
-			matchNumber: -1,
-			compLevel: 'na',
-			type: 'custom',
-			partner1: partners[0],
-			partner2: partners[1],
-			partner3: partners[2],
-			opponent1: opponents[0],
-			opponent2: opponents[1],
-			opponent3: opponents[2]
-		}));
-	};
+	// 	strategy.update((s) => ({
+	// 		...s,
+	// 		alliance: 'red',
+	// 		matchNumber: -1,
+	// 		compLevel: 'na',
+	// 		type: 'custom',
+	// 		partner1: partners[0],
+	// 		partner2: partners[1],
+	// 		partner3: partners[2],
+	// 		opponent1: opponents[0],
+	// 		opponent2: opponents[1],
+	// 		opponent3: opponents[2]
+	// 	}));
+	// };
 
 	const selectMatch = (match: TBAMatch) => {
 		const teams = teamsFromMatch(match.tba);
@@ -97,7 +105,7 @@
 	};
 
 	onMount(() => {
-		const unsub = strategy.subscribe((s) => {
+		const unsub = strategy.subscribe(() => {
 			render++;
 		});
 
@@ -129,6 +137,21 @@
 			scouting.opponent3,
 			(sc) => sc.data.eventKey === event.tba.key && sc.data.team === strategy.data.opponent3
 		);
+
+		for (const [key, point] of Object.entries(scouting)) {
+			const res = Scouting.MatchScoutingExtendedArr.fromArr(
+				point.filter(
+					(sc) =>
+						sc.data.eventKey === event.tba.key &&
+						sc.data.team === strategy.data[key as keyof typeof strategy.data]
+				)
+			);
+			if (res.isOk()) {
+				scoutingData[key as keyof typeof scoutingData] = res.value;
+			} else {
+				console.error('Failed to parse scouting data for', key, ':', res.error);
+			}
+		}
 
 		return () => {
 			window.removeEventListener('resize', onresize);
@@ -254,7 +277,7 @@
 			selected={teams.find((t) => t.tba.team_number === team)}
 			onSelect={async (selectedTeam) => {
 				if (selectedTeam.tba.team_number === team) return;
-				const { partner1, partner2, partner3, opponent1, opponent2, opponent3 } = $strategy;
+				const { partner1, partner2, partner3 /*opponent1, opponent2, opponent3*/ } = $strategy;
 				const tators = [partner1, partner2, partner3].filter((t) => t === 2122).length;
 
 				const partner = async () => {
@@ -324,7 +347,7 @@
 	team: number,
 	data: Strategy.PartnerData,
 	position: TeamPosition,
-	scouting: Scouting.MatchScoutingArr
+	scouting: Scouting.MatchScoutingExtendedArr
 )}
 	<div class="card layer-1 mb-3 grid-item max-height-item">
 		<div class="card-body">
@@ -388,7 +411,7 @@
 	team: number,
 	data: Strategy.OpponentData,
 	position: TeamPosition,
-	scouting: Scouting.MatchScoutingArr
+	scouting: Scouting.MatchScoutingExtendedArr
 )}
 	<div class="card layer-1 mb-3 grid-item max-height-item">
 		<div class="card-body">
@@ -483,15 +506,15 @@
 			<!-- <div class="grid"> -->
 			<div class="col-md-6">
 				<h2 class="mb-3">Partners</h2>
-				{@render partner(Number($strategy.partner1), partners[0], 'p1', scouting.partner1)}
-				{@render partner(Number($strategy.partner2), partners[1], 'p2', scouting.partner2)}
-				{@render partner(Number($strategy.partner3), partners[2], 'p3', scouting.partner3)}
+				{@render partner(Number($strategy.partner1), partners[0], 'p1', scoutingData.partner1)}
+				{@render partner(Number($strategy.partner2), partners[1], 'p2', scoutingData.partner2)}
+				{@render partner(Number($strategy.partner3), partners[2], 'p3', scoutingData.partner3)}
 			</div>
 			<div class="col-md-6">
 				<h2 class="mb-3">Opponents</h2>
-				{@render opponent(Number($strategy.opponent1), opponents[0], 'o1', scouting.opponent1)}
-				{@render opponent(Number($strategy.opponent2), opponents[1], 'o2', scouting.opponent2)}
-				{@render opponent(Number($strategy.opponent3), opponents[2], 'o3', scouting.opponent3)}
+				{@render opponent(Number($strategy.opponent1), opponents[0], 'o1', scoutingData.opponent1)}
+				{@render opponent(Number($strategy.opponent2), opponents[1], 'o2', scoutingData.opponent2)}
+				{@render opponent(Number($strategy.opponent3), opponents[2], 'o3', scoutingData.opponent3)}
 			</div>
 
 			<!-- </div> -->

@@ -12,7 +12,6 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
-	import { Component } from 'ag-grid-community';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -30,6 +29,7 @@
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
+	let teamScoutingData: (Scouting.MatchScoutingExtendedArr | undefined)[] = $state([]);
 	const matches = $derived(data.matches);
 
 	$effect(() => nav(event.tba));
@@ -88,6 +88,16 @@
 	});
 
 	onMount(() => {
+		teamScoutingData = teamScouting.map((ts) => {
+			const res = Scouting.MatchScoutingExtendedArr.fromArr(ts);
+			if (res.isOk()) {
+				return res.value;
+			} else {
+				console.error('Failed to parse scouting data for team:', res.error);
+				return undefined;
+			}
+		});
+
 		const search = new URLSearchParams(location.search);
 		view = (search.get('view') as 'progress' | 'stats') || 'progress';
 
@@ -127,7 +137,7 @@
 		const unsub = selectedTeams.subscribe((st) =>
 			st.map((team, i) => {
 				const color = colors[i % colors.length];
-				const scoutingData = teamScouting[i];
+				const scoutingData = teamScoutingData[i];
 				if (!scoutingData) {
 					return {
 						label: String(team.team.tba.team_number),
@@ -302,14 +312,14 @@
 										</button>
 									</div>
 									<div style="height: 300px;">
-										{#if teamScouting[i]}
+										{#if teamScoutingData[i]}
 											{#if view === 'progress'}
 												<Progress
 													bind:this={team.component}
 													team={team.team}
 													{event}
 													bind:staticY
-													scouting={teamScouting[i]}
+													scouting={teamScoutingData[i]}
 													{matches}
 												/>
 											{:else}
@@ -318,7 +328,7 @@
 													team={team.team}
 													{event}
 													bind:staticY
-													scouting={teamScouting[i]}
+													scouting={teamScoutingData[i]}
 													{matches}
 												/>
 											{/if}

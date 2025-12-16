@@ -4,7 +4,7 @@
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
-	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+	import YearInfo2025 from 'tatorscout/years/2025.js';
 	import { match as matchCase } from 'ts-utils/match';
 
 	interface Props {
@@ -12,11 +12,11 @@
 		event: TBAEvent;
 		matches: TBAMatch[];
 		staticY?: number;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 		defaultView?: 'frequency' | 'points';
 	}
 
-	let { team, event, matches, staticY = $bindable(), scouting, defaultView }: Props = $props();
+	let { team, matches, staticY = $bindable(), scouting, defaultView }: Props = $props();
 
 	let view = $state(defaultView);
 
@@ -37,20 +37,19 @@
 	let pointDataset: datasetType;
 
 	onMount(() => {
+		console.log('SCOUTING DATA:', scouting);
+
 		scouting.sort((a, b) => {
-			if (a.data.compLevel === b.data.compLevel)
-				return Number(a.data.matchNumber) - Number(b.data.matchNumber);
+			if (a.compLevel === b.compLevel) return Number(a.matchNumber) - Number(b.matchNumber);
 			const order = ['qm', 'qf', 'sf', 'f'];
-			return order.indexOf(String(a.data.compLevel)) - order.indexOf(String(b.data.compLevel));
+			return order.indexOf(String(a.compLevel)) - order.indexOf(String(b.compLevel));
 		});
 
 		return scouting.subscribe(async (data) => {
 			if (chart) chart.destroy();
 			try {
 				const countsPerMatch = data.map((d) => {
-					const trace = TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray;
-
-					return trace.reduce(
+					return d.trace.points.reduce(
 						(acc, curr) => {
 							if (!curr[3]) return acc;
 							if (
@@ -68,14 +67,9 @@
 
 				const score = data.map((s) => {
 					const match = matches.find(
-						(m) =>
-							m.tba.match_number === s.data.matchNumber && m.tba.comp_level === s.data.compLevel
+						(m) => m.tba.match_number === s.matchNumber && m.tba.comp_level === s.compLevel
 					);
-					const trace = TraceSchema.parse(JSON.parse(s.data.trace || '[]')) as TraceArray;
-					const traceScore = Trace.score.parse2025(
-						trace,
-						(s.data.alliance || 'red') as 'red' | 'blue'
-					);
+					const traceScore = YearInfo2025.parse(s.data.trace);
 					if (!match)
 						return {
 							traceScore,
@@ -149,7 +143,7 @@
 					};
 				});
 
-				const labels = data.map((d) => `${d.data.compLevel}${d.data.matchNumber}`);
+				const labels = data.map((d) => `${d.compLevel}${d.matchNumber}`);
 				const actionKeys = [
 					'cl1', // Level 1
 					'cl2', // Level 2
@@ -301,6 +295,8 @@
 	});
 </script>
 
+<div class="chart-container">
+
 <button
 	class="btn btn-primary"
 	onclick={() => {
@@ -312,4 +308,17 @@
 	{view === 'frequency' ? 'Viewing: Frequency' : 'Viewing: Points'}
 </button>
 
-<canvas bind:this={canvas} class="h-100 w-100"></canvas>
+<canvas bind:this={canvas} class="w-100"></canvas>
+
+</div>
+
+<style>
+	.chart-container {
+		position: relative;
+		height: 250px;
+	}
+
+	.chart-container canvas {
+		max-height: 100%;
+	}
+</style>

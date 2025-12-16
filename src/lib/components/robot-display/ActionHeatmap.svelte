@@ -5,7 +5,6 @@
 	import { MatchCanvas } from '$lib/model/match-canvas';
 	import { type Focus } from '$lib/types/robot-display';
 	import type { TBAEvent, TBATeam } from '$lib/utils/tba';
-	import { DataArr } from '$lib/services/struct/data-arr';
 
 	interface Props {
 		team: TBATeam;
@@ -19,7 +18,9 @@
 
 	const { team, focus, event }: Props = $props();
 
-	let matches = $state(new DataArr(Scouting.MatchScouting, []));
+	let matches: Scouting.MatchScoutingExtendedArr = $state(
+		new Scouting.MatchScoutingExtendedArr([])
+	);
 	let canvas: HTMLCanvasElement;
 
 	let c: MatchCanvas;
@@ -38,8 +39,7 @@
 			.filter(Boolean)
 			// casted as string because sveltekit doesn't recognize filter(Boolean) as a type guard
 			.map((t) => {
-				const arr = JSON.parse(t as string) as TraceArray;
-				return arr.filter((p) => {
+				return t.points.filter((p) => {
 					const [i, , , a] = p;
 					if (!a) return false;
 					if (!actions.includes(a)) {
@@ -49,7 +49,7 @@
 					if (focus.teleop) return i >= 20 * 4 && i < 20 * 4 + 135 * 4;
 					if (focus.endgame) return i >= 20 * 4 + 135 * 4;
 					return false;
-				});
+				}) as TraceArray;
 			})
 			.flat();
 	});
@@ -58,7 +58,7 @@
 		const ctx = canvas.getContext('2d');
 		if (!ctx) throw new Error('Could not get 2d context');
 
-		matches = Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key);
+		matches = Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key).unwrap();
 
 		c = new MatchCanvas(array, event.tba.year, ctx);
 
