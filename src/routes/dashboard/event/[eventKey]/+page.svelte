@@ -7,6 +7,7 @@
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { confirm } from '$lib/utils/prompts.js';
+	import StdtoMeanDotplot from '$lib/components/charts/StdtoMeanDotplot.svelte';
 	const { data = $bindable() } = $props();
 	const event = $derived(data.event);
 	const teams = $derived(data.teams);
@@ -85,6 +86,9 @@
 							</button>
 						</div>
 					</div>
+				</div>
+				<div class="row md-5 col-6">
+						<StdtoMeanDotplot />
 				</div>
 				{#each summaries as row, k}
 					<div class="row mb-5">
