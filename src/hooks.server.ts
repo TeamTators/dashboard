@@ -22,8 +22,6 @@ import '$lib/server/utils/files';
 import '$lib/server/index';
 import { createStructEventService } from '$lib/server/services/struct-event';
 import ignore from 'ignore';
-import { sse } from '$lib/server/services/sse';
-import { sleep } from 'ts-utils/sleep';
 // import { signFingerprint } from '$lib/server/utils/fingerprint';
 import redis from '$lib/server/services/redis';
 import { config } from '$lib/server/utils/env';

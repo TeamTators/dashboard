@@ -1,162 +1,111 @@
 <script lang="ts">
 	import nav from '$lib/imports/robot-display.js';
-	import Card from '$lib/components/dashboard/Card.svelte';
-	import { Dashboard } from '$lib/model/dashboard';
-	import DB from '$lib/components/dashboard/Dashboard.svelte';
-	import { Navbar } from '$lib/model/navbar.js';
+	import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
+	import { onMount } from 'svelte';
+	import { FIRST } from '$lib/model/FIRST.js';
+	import { tomorrow, after } from 'ts-utils/clock';
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
-	import { Scouting } from '$lib/model/scouting.js';
-	import { confirm } from '$lib/utils/prompts.js';
 	const { data = $bindable() } = $props();
-	const event = $derived(data.event);
-	const teams = $derived(data.teams);
-	const matches = $derived(data.matches);
-	const summaries = $derived(data.summaries);
+	const event = $derived(new TBAEvent(data.event));
 
-	$effect(() => nav(event));
+	let summary:
+		| {
+				[group: string]: {
+					[item: string]: {
+						team: number;
+						value: number;
+					}[];
+				};
+		  }
+		| undefined = $state(undefined);
 
-	const dashboard = $derived(
-		new Dashboard.Dashboard({
-			name: event.name,
-			cards: [],
-			id: 'event-dashboard'
-		})
-	);
+	let teams: TBATeam[] = $state([]);
 
-	const eventSummaries: {
-		component: EventSummary | undefined;
-	}[] = $derived(
-		summaries
-			.map((s) => s.labels)
-			.flat() // now the length is number of rows * number of labels per row, hence we can index it with k * i
-			.map(() => ({
-				component: undefined as EventSummary | undefined
-			}))
-	);
+	$effect(() => nav(event.tba));
+
+	onMount(() => {
+		event
+			.getTeams(
+				false,
+				// tomorrow
+				tomorrow()
+			)
+			.then((res) => {
+				if (res.isOk()) {
+					teams = res.value;
+				}
+			});
+		setTimeout(() => {
+			FIRST.getSummary(event.tba.key, event.tba.year as 2024 | 2025, {
+				// 10 minutes
+				cacheExpires: after(10 * 60 * 1000)
+			}).then((res) => {
+				if (res.isOk()) {
+					summary = res.value.pivot().teamsRanked();
+				} else {
+					console.error('Error fetching event summary:', res.error);
+				}
+			});
+		});
+	});
 </script>
 
-<DB {dashboard}>
-	{#snippet body()}
+<div class="ws-nowrap scroll-x p-3 mb-3">
+	{#each teams as t}
 		<a
-			href="https://docs.google.com/spreadsheets/d/1ntbCYyqMxMLbD6R0rVxfx_sIgq0mrYtXbbh2Wb5iuok/edit?gid=722231706#gid=722231706"
 			type="button"
-			target="_blank"
-			class="btn btn-primary"
+			href="/dashboard/event/{event.tba.key}/team/{t.tba.team_number}"
+			class="btn mx-2 btn-primary"
+			data-team={t.tba.team_number}
 		>
-			Picklist Spreadsheet
+			{t.tba.team_number}
 		</a>
-		<div style="grid-column: span var(--grid-size);">
-			<div class="ws-nowrap p-3 scroll-x" style="width: 100% !important;">
-				{#each teams as team}
-					<a
-						href="/dashboard/event/{event.key}/team/{team.team_number}"
-						type="button"
-						class="btn btn-primary mx-2"
-					>
-						{team.team_number}
-					</a>
-				{/each}
+	{/each}
+</div>
+
+<div class="container-fluid">
+	{#if summary}
+		{#each Object.entries(summary) as [group, items]}
+			<hr />
+			<div class="row mb-3">
+				<h3>{group}</h3>
 			</div>
-			<div class="container-fluid">
+			{#each Object.entries(items) as [item, teams]}
 				<div class="row mb-3">
-					<div class="col">
-						<div class="d-flex">
-							<button
-								type="button"
-								class="btn btn-warning me-2"
-								onclick={async () => {
-									if (await confirm('Are you sure you want to archive all practice matches?')) {
-										Scouting.setPracticeArchive(event.key, true);
-									}
-								}}
-							>
-								Archive All Practice Matches
-							</button>
-							<button
-								type="button"
-								class="btn btn-warning me-2"
-								onclick={async () => {
-									if (await confirm('Are you sure you want to unarchive all practice matches?')) {
-										Scouting.setPracticeArchive(event.key, false);
-									}
-								}}
-							>
-								Unarchive All Practice Matches
-							</button>
+					<div class="card layer-2 px-0 mx-0 w-100">
+						<div class="card-header">
+							<h5 class="card-title mb-0">{item}</h5>
 						</div>
-					</div>
-				</div>
-				{#each summaries as row, k}
-					<div class="row mb-5">
-						{#if k !== 0}
-							<hr />
-						{/if}
-						<h2 class="text-primary">{row.title}</h2>
-						{#each row.labels as label, i}
-							<div class="d-flex align-items-center mb-1 justify-content-between">
-								<h5>{label}</h5>
-								<button
-									type="button"
-									class="btn btn-sm btn-secondary ms-2"
-									onclick={() => {
-										if (eventSummaries[k * i].component) {
-											eventSummaries[k * i].component?.copy(true);
-										}
-									}}
-								>
-									<i class="material-icons">copy_all</i>
-								</button>
-							</div>
-							<div class="scroll-x mb-1">
+						<div class="card-body px-0 mx-0">
+							<div class="scroller w-100">
 								<div class="chart-container">
 									<EventSummary
-										bind:this={eventSummaries[k * i].component}
-										labels={Object.entries(row.data)
-											.sort((a, b) => {
-												const A = a[1][i];
-												const B = b[1][i];
-												if (isNaN(A)) {
-													return 1;
-												}
-												if (isNaN(B)) {
-													return -1;
-												}
-												return B - A;
-											})
-											.map((v) => v[0])}
 										datasets={[
 											{
-												label,
-												data: Object.entries(row.data)
-													.sort((a, b) => {
-														const A = a[1][i];
-														const B = b[1][i];
-														if (isNaN(A)) {
-															return 1;
-														}
-														if (isNaN(B)) {
-															return -1;
-														}
-														return B - A;
-													})
-													.map((v) => v[1][i])
+												label: 'Teams',
+												data: teams.map((t) => t.value)
 											}
 										]}
+										labels={teams.map((t) => String(t.team))}
 									/>
 								</div>
 							</div>
-						{/each}
+						</div>
 					</div>
-				{/each}
-			</div>
-		</div>
-	{/snippet}
-</DB>
+				</div>
+			{/each}
+		{/each}
+	{/if}
+</div>
 
 <style>
+	.scroller {
+		overflow-x: auto;
+	}
+
 	.chart-container {
-		min-width: 1500px !important;
-		width: 100vw;
-		height: 100%;
+		min-width: 100vw;
+		width: 1500px;
+		padding: 1rem;
 	}
 </style>

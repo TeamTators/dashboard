@@ -1,11 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import * as TBA from '$lib/server/utils/tba';
-import { Struct } from 'drizzle-struct/back-end';
 import { DB } from '$lib/server/db';
 import { generateScoutGroups, testAssignments } from 'tatorscout/scout-groups';
 import { resolveAll } from 'ts-utils/check';
 import { TBA as _TBA } from '$lib/server/structs/TBA';
-import { Scouting } from '$lib/server/structs/scouting';
 
 describe('Scout Groups', async () => {
 	resolveAll(

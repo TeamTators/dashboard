@@ -1,5 +1,4 @@
 import { Account } from '$lib/server/structs/account.js';
-import { Session } from '$lib/server/structs/session.js';
 import terminal from '$lib/server/utils/terminal.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';

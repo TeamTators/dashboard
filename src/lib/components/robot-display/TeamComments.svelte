@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { FIRST } from '$lib/model/FIRST';
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import Grid from '../general/Grid.svelte';
-	import type { INumberFilterParams, ITextFilterParams } from 'ag-grid-community';
 	import { onMount } from 'svelte';
 	import { Account } from '$lib/model/account';
 	import { alert, prompt, confirm, notify } from '$lib/utils/prompts';
@@ -14,7 +11,7 @@
 		team: number;
 		event: string;
 		comments: Scouting.TeamCommentsArr;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { team, event, comments, scouting }: Props = $props();
@@ -30,10 +27,10 @@
 		return comments.subscribe((data) => {
 			commentProxy.set(
 				data.map((c) => {
-					const match = scouting.data.find((s) => s.data.id === c.data.matchScoutingId);
+					const match = scouting.data.find((s) => s.id === c.data.matchScoutingId);
 					return {
 						comment: c,
-						match: match ? `${match.data.compLevel}${match.data.matchNumber}` : 'unknown'
+						match: match ? `${match.compLevel}${match.matchNumber}` : 'unknown'
 					};
 				})
 			);

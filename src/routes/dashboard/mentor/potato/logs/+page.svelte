@@ -24,12 +24,12 @@
 		location.search = params.toString();
 	};
 
-	const setLimit = (limit: number) => {
-		const params = new URLSearchParams(location.search);
-		params.set('page', '1');
-		params.set('limit', limit.toString());
-		location.search = params.toString();
-	};
+	// const setLimit = (limit: number) => {
+	// 	const params = new URLSearchParams(location.search);
+	// 	params.set('page', '1');
+	// 	params.set('limit', limit.toString());
+	// 	location.search = params.toString();
+	// };
 </script>
 
 <div class="container">

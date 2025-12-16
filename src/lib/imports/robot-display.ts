@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { Navbar } from '$lib/model/navbar';
 import type { TBAEvent } from 'tatorscout/tba';
 

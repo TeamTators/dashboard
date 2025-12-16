@@ -1,8 +1,4 @@
 import * as TBA from '$lib/server/utils/tba';
-import { z } from 'zod';
-import { ServerCode } from 'ts-utils/status';
-import { Session } from '$lib/server/structs/session';
-import { Permissions } from '$lib/server/structs/permissions';
 
 export const GET = async (event) => {
 	const year = parseInt(event.params.year);

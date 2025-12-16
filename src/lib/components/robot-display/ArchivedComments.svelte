@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import Grid from '../general/Grid.svelte';
-	import { onMount } from 'svelte';
 	import { confirm, notify } from '$lib/utils/prompts';
 	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
@@ -11,10 +10,10 @@
 		team: number;
 		event: string;
 		comments: Scouting.TeamCommentsData[];
-		scouting: Scouting.MatchScoutingData[];
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
-	const { team, event, comments, scouting }: Props = $props();
+	const { comments, scouting }: Props = $props();
 
 	let commentProxy: Writable<
 		{
@@ -27,7 +26,7 @@
 				return {
 					comment: c,
 					match: String(
-						scouting.find((s) => s.data.id === c.data.matchScoutingId)?.data.matchNumber ??
+						scouting.data.find((s) => s.scouting.data.id === c.data.matchScoutingId)?.matchNumber ??
 							'unknown'
 					)
 				};

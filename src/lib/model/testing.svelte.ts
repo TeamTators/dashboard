@@ -381,7 +381,7 @@ export namespace Test {
 						return;
 					}
 
-					const version = versions.value[0];
+					const version = versions.value.data[0];
 					if (version.data.name !== uniqueName) {
 						tests.readVersion.update('failure', 'Name does not match');
 						return;

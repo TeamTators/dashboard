@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import type { BootstrapColor } from 'colors/color';
-	import { TraceSchema } from 'tatorscout/trace';
-	import { actions } from 'tatorscout/trace';
+	import YearInfo2025 from 'tatorscout/years/2025.js';
+	import YearInfo2024 from 'tatorscout/years/2024.js';
+
+	const actions = {
+		...YearInfo2024.actions,
+		...YearInfo2025.actions
+	};
 
 	interface Props {
-		scouting: Scouting.MatchScoutingData;
+		scouting: Scouting.MatchScoutingExtended;
 		classes?: string;
 	}
 
@@ -14,8 +18,7 @@
 
 	$effect(() => {
 		try {
-			const trace = TraceSchema.parse(JSON.parse(scouting.data.trace || '[]'));
-			actionObj = trace.reduce(
+			actionObj = scouting.trace.points.reduce(
 				(acc, curr) => {
 					if (!curr[3]) return acc;
 					if (acc[curr[3]]) {

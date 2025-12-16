@@ -76,7 +76,7 @@ export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expire
 			if (!force) {
 				await TBARequestCache.new({
 					url,
-					response: JSON.stringify(res),
+					response: JSON.stringify(res.value),
 					expires
 				});
 			}

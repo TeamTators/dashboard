@@ -21,8 +21,7 @@ export default z.object({
 	sessions: z.object({
 		auto_sign_in: z.string().optional(),
 		duration: z.number().min(1),
-		password_request_lifetime: z.number().min(1),
-		fingerprint_secret: z.string().min(1)
+		password_request_lifetime: z.number().min(1)
 	}),
 	redis: z.object({
 		url: z.string().url(),
@@ -75,8 +74,7 @@ export default z.object({
 	tba_webhook: z.object({
 		path: z.string().min(1),
 		port: z.number().min(1).max(65535),
-		redis_name: z.string().min(1),
-		secret: z.string().min(1)
+		redis_name: z.string().min(1)
 	}),
 	potato: z.object({
 		enabled: z.boolean()

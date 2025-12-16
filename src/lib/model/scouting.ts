@@ -6,12 +6,14 @@ import { browser } from '$app/environment';
 import { attempt, attemptAsync, resolveAll } from 'ts-utils/check';
 import { z } from 'zod';
 import { Account } from './account';
-import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+import { Trace } from 'tatorscout/trace';
 import { $Math } from 'ts-utils/math';
 import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
 import { match } from 'ts-utils/match';
 import { Batch } from 'ts-utils/batch';
+import { WritableArray, WritableBase } from '$lib/utils/writables';
+import YearInfo2025 from 'tatorscout/years/2025.js';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -41,52 +43,141 @@ export namespace Scouting {
 	export type MatchScoutingArr = DataArr<typeof MatchScouting.data.structure>;
 	export type MatchScoutingHistory = StructDataVersion<typeof MatchScouting.data.structure>;
 
-	export const getAverageVelocity = (data: MatchScoutingData[]) => {
-		return Trace.velocity.average(
-			data.map((d) => TraceSchema.parse(JSON.parse(d.data.trace || '[]'))).flat() as TraceArray
-		);
+	export class MatchScoutingExtended extends WritableBase<{
+		trace: Trace;
+		scouting: MatchScoutingData;
+	}> {
+		static from(scouting: MatchScoutingData) {
+			return attempt(() => {
+				const trace = Trace.parse(scouting.data.trace).unwrap();
+				return new MatchScoutingExtended(scouting, trace);
+			});
+		}
+
+		constructor(scouting: MatchScoutingData, trace: Trace) {
+			super({
+				scouting,
+				trace
+			});
+
+			// pipe all events into this class
+			this.onAllUnsubscribe(scouting.subscribe(() => this.inform()));
+		}
+
+		get team() {
+			return Number(this.data.scouting.data.team);
+		}
+
+		get matchNumber() {
+			return Number(this.data.scouting.data.matchNumber);
+		}
+
+		get compLevel() {
+			return this.data.scouting.data.compLevel;
+		}
+
+		get trace() {
+			return this.data.trace;
+		}
+
+		get scouting() {
+			return this.data.scouting;
+		}
+
+		get year() {
+			return Number(this.data.scouting.data.year);
+		}
+
+		get eventKey() {
+			return this.data.scouting.data.eventKey;
+		}
+
+		get averageVelocity() {
+			return this.data.trace.averageVelocity();
+		}
+
+		get secondsNotMoving() {
+			return this.data.trace.secondsNotMoving();
+		}
+
+		get id() {
+			return String(this.data.scouting.data.id);
+		}
+
+		getChecks() {
+			return attempt(() => {
+				return z.array(z.string()).parse(JSON.parse(this.data.scouting.data.checks || '[]'));
+			});
+		}
+
+		getSliders() {
+			return attempt(() => {
+				return z
+					.record(
+						z.string(),
+						z.object({
+							value: z.number(),
+							text: z.string(),
+							color: z.string().default('#000000')
+						})
+					)
+					.parse(JSON.parse(this.data.scouting.data.sliders || '{}'));
+			});
+		}
+	}
+
+	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
+		static fromArr(arr: MatchScoutingArr) {
+			return attempt(() => {
+				const ms = arr.data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
+				const extendedArr = new MatchScoutingExtendedArr(ms);
+				extendedArr.onAllUnsubscribe(arr.subscribe(() => extendedArr.inform()));
+				return extendedArr;
+			});
+		}
+
+		constructor(arr: MatchScoutingExtended[]) {
+			super(arr);
+		}
+
+		clone() {
+			return new MatchScoutingExtendedArr([...this.data]);
+		}
+	}
+
+	export const getAverageVelocity = (data: MatchScoutingExtended[]) => {
+		return $Math.average(data.map((d) => d.data.trace.averageVelocity()));
 	};
 
 	export const getArchivedMatches = (team: number, eventKey: string) => {
-		return MatchScouting.query(
-			'archived-matches',
-			{ team, eventKey },
-			{
-				asStream: false,
-				satisfies: (d) => d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
-			}
-		);
+		return attempt(() => {
+			const matches = MatchScouting.query(
+				'archived-matches',
+				{ team, eventKey },
+				{
+					asStream: false,
+					satisfies: (d) =>
+						d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
+				}
+			);
+
+			return MatchScoutingExtendedArr.fromArr(matches).unwrap();
+		});
 	};
 
-	export const averageAutoScore = (data: MatchScoutingData[], year: number) => {
+	export const averageAutoScore = (data: MatchScoutingExtended[], year: number) => {
 		return attempt(() => {
 			if (year === 2025) {
-				return $Math.average(
-					data.map(
-						(d) =>
-							Trace.score.parse2025(
-								TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-								d.data.alliance as 'red' | 'blue'
-							).auto.total
-					)
-				);
+				return $Math.average(data.map((d) => YearInfo2025.parse(d.data.trace).auto.total));
 			}
 			return 0;
 		});
 	};
 
-	export const averageTeleopScore = (data: MatchScoutingData[], year: number) => {
+	export const averageTeleopScore = (data: MatchScoutingExtended[], year: number) => {
 		return attempt(() => {
 			if (year === 2025) {
-				const teles = data.map(
-					(d) =>
-						Trace.score.parse2025(
-							TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-							d.data.alliance as 'red' | 'blue'
-						).teleop
-				);
-
-				return $Math.average(teles.map((t) => t.total));
+				return $Math.average(data.map((d) => YearInfo2025.parse(d.data.trace).teleop.total));
 			}
 			return 0;
 		});
@@ -142,12 +233,10 @@ export namespace Scouting {
 		prk: number;
 	}
 
-	export const averageContributions = (data: MatchScoutingData[]): Contribution => {
+	export const averageContributions = (data: MatchScoutingExtended[]): Contribution => {
 		return attempt(() => {
 			const coralCounts = data.map((d) => {
-				const trace = TraceSchema.parse(JSON.parse(d.data.trace || '[]'));
-
-				const actionObj = trace.reduce(
+				const actionObj = d.data.trace.points.reduce(
 					(acc, curr) => {
 						if (!curr[3]) return acc;
 						if (['cl1', 'cl2', 'cl3', 'cl4', 'brg', 'prc', 'shc', 'dpc', 'prk'].includes(curr[3])) {
@@ -190,28 +279,26 @@ export namespace Scouting {
 		}).unwrap();
 	};
 
-	export const averageSecondsNotMoving = (data: MatchScoutingData[]) => {
+	export const averageSecondsNotMoving = (data: MatchScoutingExtended[]) => {
 		return attempt(() => {
-			return $Math.average(
-				data.map((d) =>
-					Trace.secondsNotMoving(
-						TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-						false
-					)
-				)
-			);
+			return $Math.average(data.map((d) => d.data.trace.secondsNotMoving()));
 		});
 	};
 
 	export const scoutingFromTeam = (team: number, eventKey: string) => {
-		return MatchScouting.query(
-			'from-team',
-			{ team, eventKey },
-			{
-				asStream: false,
-				satisfies: (d) => d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
-			}
-		);
+		return attempt(() => {
+			const ms = MatchScouting.query(
+				'from-team',
+				{ team, eventKey },
+				{
+					asStream: false,
+					satisfies: (d) =>
+						d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
+				}
+			);
+
+			return MatchScoutingExtendedArr.fromArr(ms).unwrap();
+		});
 	};
 
 	export const preScouting = (team: number, eventKey: string) => {
@@ -254,16 +341,9 @@ export namespace Scouting {
 	export type TeamCommentsData = StructData<typeof TeamComments.data.structure>;
 	export type TeamCommentsArr = DataArr<typeof TeamComments.data.structure>;
 
-	export const parseTrace = (trace: string) => {
-		return attempt<TraceArray>(() => {
-			return z
-				.array(z.tuple([z.number(), z.number(), z.number(), z.string()]))
-				.parse(JSON.parse(trace)) as TraceArray;
-		});
-	};
 
 	export const MatchSchema = z.object({
-		trace: TraceSchema,
+		trace: z.unknown(),
 		eventKey: z.string(),
 		match: z.number().int(),
 		team: z.number().int(),
