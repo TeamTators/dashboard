@@ -341,7 +341,6 @@ export namespace Scouting {
 	export type TeamCommentsData = StructData<typeof TeamComments.data.structure>;
 	export type TeamCommentsArr = DataArr<typeof TeamComments.data.structure>;
 
-
 	export const MatchSchema = z.object({
 		trace: z.unknown(),
 		eventKey: z.string(),
