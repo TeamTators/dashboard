@@ -87,13 +87,15 @@ export namespace Dashboard {
 		}
 
 		get orderedCards() {
-			const a =  new WritableArray(
+			const a = new WritableArray(
 				[...this.config.cards].sort((a, b) => a.getOrder() - b.getOrder())
 			);
 
-			a.onAllUnsubscribe(this.subscribe(() => {
-				a.set([...this.config.cards].sort((a, b) => a.getOrder() - b.getOrder()));
-			}));
+			a.onAllUnsubscribe(
+				this.subscribe(() => {
+					a.set([...this.config.cards].sort((a, b) => a.getOrder() - b.getOrder()));
+				})
+			);
 
 			return a;
 		}
@@ -153,11 +155,11 @@ export namespace Dashboard {
 				icon: Icon;
 				id: string;
 				size: {
-					xs?: { width: number; height: number, order?: number;  };
-					sm?: { width: number; height: number, order?: number;  };
-					md?: { width: number; height: number, order?: number;  };
-					lg?: { width: number; height: number, order?: number;  };
-					xl?: { width: number; height: number, order?: number;  };
+					xs?: { width: number; height: number; order?: number };
+					sm?: { width: number; height: number; order?: number };
+					md?: { width: number; height: number; order?: number };
+					lg?: { width: number; height: number; order?: number };
+					xl?: { width: number; height: number; order?: number };
 					width: number;
 					height: number;
 				};

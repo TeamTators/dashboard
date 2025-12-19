@@ -89,7 +89,7 @@
 					headerName: 'Type',
 					field: 'comment.data.type',
 					filter: 'agTextColumnFilter',
-					width: 100,
+					width: 100
 				},
 				{
 					headerName: 'Match',

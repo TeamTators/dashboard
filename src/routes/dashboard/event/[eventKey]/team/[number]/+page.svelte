@@ -58,14 +58,14 @@
 			lg: {
 				width: 3,
 				height: 1,
-				order: 3,
+				order: 3
 			},
 			md: {
 				width: 4,
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -90,11 +90,11 @@
 				height: 1
 			},
 			md: {
-				width: 6,
+				width: 7,
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -152,7 +152,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -185,7 +185,7 @@
 				height: 1
 			},
 			sm: {
-				width: 8,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -207,7 +207,7 @@
 			height: 1,
 			xl: {
 				width: 6,
-				height: 1,
+				height: 1
 			},
 			lg: {
 				width: 8,
@@ -218,7 +218,7 @@
 				height: 1
 			},
 			sm: {
-				width: 8,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -251,7 +251,7 @@
 				height: 1
 			},
 			sm: {
-				width: 8,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -284,7 +284,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -317,7 +317,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -346,7 +346,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -375,7 +375,7 @@
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -399,11 +399,11 @@
 				height: 2
 			},
 			md: {
-				width: 6,
+				width: 5,
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -424,15 +424,15 @@
 			width: 2,
 			height: 1,
 			lg: {
-				width: 4,
+				width: 8,
 				height: 1
 			},
 			md: {
-				width: 4,
+				width: 8,
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -461,7 +461,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -537,7 +537,6 @@
 			);
 		}
 
-		
 		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
 		if (res.isErr()) {
 			console.error('Failed to create extended scouting array:', res.error);

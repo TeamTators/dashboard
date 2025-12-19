@@ -296,20 +296,18 @@
 </script>
 
 <div class="chart-container">
+	<button
+		class="btn btn-primary"
+		onclick={() => {
+			view = view === 'frequency' ? 'points' : 'frequency';
+			chart.data.datasets = view === 'frequency' ? frequencyDataset : pointDataset;
+			chart.update();
+		}}
+	>
+		{view === 'frequency' ? 'Viewing: Frequency' : 'Viewing: Points'}
+	</button>
 
-<button
-	class="btn btn-primary"
-	onclick={() => {
-		view = view === 'frequency' ? 'points' : 'frequency';
-		chart.data.datasets = view === 'frequency' ? frequencyDataset : pointDataset;
-		chart.update();
-	}}
->
-	{view === 'frequency' ? 'Viewing: Frequency' : 'Viewing: Points'}
-</button>
-
-<canvas bind:this={canvas} class="w-100"></canvas>
-
+	<canvas bind:this={canvas} class="w-100"></canvas>
 </div>
 
 <style>

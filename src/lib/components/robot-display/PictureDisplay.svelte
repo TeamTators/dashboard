@@ -77,7 +77,7 @@
 								class="d-block w-100"
 								alt="Team {team.tba.team_number}"
 								style="max-height: 200px; object-fit: contain;"
-								/>
+							/>
 						</div>
 					{/each}
 				</div>

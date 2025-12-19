@@ -15,7 +15,7 @@
 
 	onMount(() => {
 		dashboard.init();
-	})
+	});
 </script>
 
 <div class="container-fluid layer-1">
