@@ -51,22 +51,26 @@
 	});
 </script>
 
-
-
-<div class="ws-nowrap scroll-x p-3 mb-3">
-	{#each teams as t}
-		<a
-			type="button"
-			href="/dashboard/event/{event.tba.key}/team/{t.tba.team_number}"
-			class="btn mx-2 btn-primary"
-			data-team={t.tba.team_number}
-		>
-			{t.tba.team_number}
-		</a>
-	{/each}
-</div>
-
 <div class="container-fluid">
+	<div class="row mb-3">
+		<h1>
+			Event Summary for {event.tba.name} | <span class="text-muted">{event.tba.key}</span>
+		</h1>
+	</div>
+	<div class="row mb-3">
+		<div class="ws-nowrap scroll-x p-3 mb-3">
+			{#each teams as t}
+				<a
+					type="button"
+					href="/dashboard/event/{event.tba.key}/team/{t.tba.team_number}"
+					class="btn mx-2 btn-primary"
+					data-team={t.tba.team_number}
+				>
+					{t.tba.team_number}
+				</a>
+			{/each}
+		</div>
+	</div>
 	<div class="row mb-3">
 		<div class="col">
 			<div class="d-flex">
