@@ -65,7 +65,7 @@
 				height: 1
 			},
 			sm: {
-				width: 5,
+				width: 6,
 				height: 1
 			},
 			xs: {
@@ -90,11 +90,11 @@
 				height: 1
 			},
 			md: {
-				width: 8,
+				width: 6,
 				height: 1
 			},
 			sm: {
-				width: 7,
+				width: 6,
 				height: 1
 			},
 			xs: {
@@ -218,7 +218,7 @@
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 8,
 				height: 1
 			},
 			xs: {
@@ -251,7 +251,7 @@
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 8,
 				height: 1
 			},
 			xs: {
@@ -375,7 +375,7 @@
 				height: 1
 			},
 			sm: {
-				width: 5,
+				width: 6,
 				height: 1
 			},
 			xs: {
