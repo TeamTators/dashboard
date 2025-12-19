@@ -54,9 +54,9 @@
 	});
 </script>
 
-<div class="container-fluid h-100">
-	<div class="d-flex flex-column flex-md-row h-auto h-md-100">
-		<div class="col-12 col-md-4 order-1 order-md-2 p-2 h-auto h-md-75">
+<div class="container-fluid">
+	<div class="row mb-3">
+		<div class="col-12 col-md-4 d-flex justify-content-center w-100">
 			<FileUploader
 				multiple={true}
 				message="Upload Pictures"
@@ -65,46 +65,45 @@
 				bind:this={uploadComponent}
 			/>
 		</div>
-
-		<div class="col-12 col-md-8 order-2 order-md-1 p-2 h-auto h-md-100">
-			{#if pictures.length > 0}
-				<div id="carousel-{team.tba.team_number}" class="carousel slide h-100">
-					<div class="carousel-inner h-100">
-						{#each pictures as picture, i}
-							<div class="carousel-item {i === 0 ? 'active' : ''} h-100">
-								<img
-									src={picture}
-									alt="Team {team.tba.team_number}"
-									class="d-block w-100 h-100"
-									style="object-fit: contain;"
-								/>
-							</div>
-						{/each}
-					</div>
-					<button
-						class="carousel-control-prev"
-						type="button"
-						data-bs-target="#carousel-{team.tba.team_number}"
-						data-bs-slide="prev"
-					>
-						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-						<span class="visually-hidden">Previous</span>
-					</button>
-					<button
-						class="carousel-control-next"
-						type="button"
-						data-bs-target="#carousel-{team.tba.team_number}"
-						data-bs-slide="next"
-					>
-						<span class="carousel-control-next-icon" aria-hidden="true"></span>
-						<span class="visually-hidden">Next</span>
-					</button>
+	</div>
+	<div class="row mb-3">
+		{#if pictures.length > 0}
+			<div id="carousel-{team.tba.team_number}" class="carousel slide">
+				<div class="carousel-inner">
+					{#each pictures as picture, i}
+						<div class="carousel-item {i === 0 ? 'active' : ''}">
+							<img
+								src={picture}
+								class="d-block w-100"
+								alt="Team {team.tba.team_number}"
+								style="max-height: 200px; object-fit: contain;"
+							/>
+						</div>
+					{/each}
 				</div>
-			{:else}
-				<div class="d-flex justify-content-center align-items-center h-100 text-muted">
-					No photos uploaded
-				</div>
-			{/if}
-		</div>
+				<button
+					class="carousel-control-prev"
+					type="button"
+					data-bs-target="#carousel-{team.tba.team_number}"
+					data-bs-slide="prev"
+				>
+					<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Previous</span>
+				</button>
+				<button
+					class="carousel-control-next"
+					type="button"
+					data-bs-target="#carousel-{team.tba.team_number}"
+					data-bs-slide="next"
+				>
+					<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Next</span>
+				</button>
+			</div>
+		{:else}
+			<div class="d-flex justify-content-center align-items-center text-muted">
+				No photos uploaded
+			</div>
+		{/if}
 	</div>
 </div>

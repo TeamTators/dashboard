@@ -5,6 +5,7 @@
 	import { FIRST } from '$lib/model/FIRST.js';
 	import { tomorrow, after } from 'ts-utils/clock';
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
+	import { Scouting } from '$lib/model/scouting.js';
 	const { data = $bindable() } = $props();
 	const event = $derived(new TBAEvent(data.event));
 
@@ -50,20 +51,62 @@
 	});
 </script>
 
-<div class="ws-nowrap scroll-x p-3 mb-3">
-	{#each teams as t}
-		<a
-			type="button"
-			href="/dashboard/event/{event.tba.key}/team/{t.tba.team_number}"
-			class="btn mx-2 btn-primary"
-			data-team={t.tba.team_number}
-		>
-			{t.tba.team_number}
-		</a>
-	{/each}
-</div>
-
 <div class="container-fluid">
+	<div class="row mb-3">
+		<h1>
+			Event Summary for {event.tba.name} | <span class="text-muted">{event.tba.key}</span>
+		</h1>
+	</div>
+	<div class="row mb-3">
+		<div class="ws-nowrap scroll-x p-3 mb-3">
+			{#each teams as t}
+				<a
+					type="button"
+					href="/dashboard/event/{event.tba.key}/team/{t.tba.team_number}"
+					class="btn mx-2 btn-primary"
+					data-team={t.tba.team_number}
+				>
+					{t.tba.team_number}
+				</a>
+			{/each}
+		</div>
+	</div>
+	<div class="row mb-3">
+		<div class="col">
+			<div class="d-flex">
+				<a
+					href="https://docs.google.com/spreadsheets/d/1ntbCYyqMxMLbD6R0rVxfx_sIgq0mrYtXbbh2Wb5iuok/edit?gid=722231706#gid=722231706"
+					type="button"
+					target="_blank"
+					class="btn btn-primary me-2"
+				>
+					Picklist Spreadsheet
+				</a>
+				<button
+					type="button"
+					class="btn btn-warning me-2"
+					onclick={async () => {
+						if (await confirm('Are you sure you want to archive all practice matches?')) {
+							Scouting.setPracticeArchive(event.tba.key, true);
+						}
+					}}
+				>
+					Archive All Practice Matches
+				</button>
+				<button
+					type="button"
+					class="btn btn-warning me-2"
+					onclick={async () => {
+						if (await confirm('Are you sure you want to unarchive all practice matches?')) {
+							Scouting.setPracticeArchive(event.tba.key, false);
+						}
+					}}
+				>
+					Unarchive All Practice Matches
+				</button>
+			</div>
+		</div>
+	</div>
 	{#if summary}
 		{#each Object.entries(summary) as [group, items]}
 			<hr />

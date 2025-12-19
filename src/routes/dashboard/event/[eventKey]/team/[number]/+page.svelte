@@ -56,15 +56,16 @@
 			width: 2,
 			height: 1,
 			lg: {
-				width: 4,
-				height: 1
+				width: 3,
+				height: 1,
+				order: 3
 			},
 			md: {
 				width: 4,
 				height: 1
 			},
 			sm: {
-				width: 5,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -85,15 +86,15 @@
 			width: 4,
 			height: 1,
 			lg: {
-				width: 8,
+				width: 6,
 				height: 1
 			},
 			md: {
-				width: 8,
+				width: 7,
 				height: 1
 			},
 			sm: {
-				width: 7,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -151,7 +152,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -184,7 +185,7 @@
 				height: 1
 			},
 			sm: {
-				width: 8,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -202,14 +203,14 @@
 		},
 		id: 'progress',
 		size: {
-			width: 4,
+			width: 6,
 			height: 1,
 			xl: {
 				width: 6,
 				height: 1
 			},
 			lg: {
-				width: 6,
+				width: 8,
 				height: 1
 			},
 			md: {
@@ -217,7 +218,7 @@
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -250,7 +251,7 @@
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -283,7 +284,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -316,7 +317,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -345,7 +346,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -356,25 +357,25 @@
 	});
 
 	const checksSummary = new Dashboard.Card({
-		name: 'Checks Summary',
+		name: 'Check Summary',
 		icon: {
 			type: 'material-icons',
 			name: 'check'
 		},
 		id: 'checks_summary',
 		size: {
-			width: 4,
+			width: 2,
 			height: 1,
 			lg: {
-				width: 6,
+				width: 3,
 				height: 1
 			},
 			md: {
-				width: 6,
+				width: 4,
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -392,17 +393,17 @@
 		id: 'radar_chart',
 		size: {
 			width: 4,
-			height: 1,
+			height: 2,
 			lg: {
 				width: 6,
-				height: 1
+				height: 2
 			},
 			md: {
-				width: 6,
+				width: 5,
 				height: 1
 			},
 			sm: {
-				width: 6,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -423,15 +424,15 @@
 			width: 2,
 			height: 1,
 			lg: {
-				width: 4,
+				width: 8,
 				height: 1
 			},
 			md: {
-				width: 4,
+				width: 8,
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -460,7 +461,7 @@
 				height: 1
 			},
 			sm: {
-				width: 4,
+				width: 12,
 				height: 1
 			},
 			xs: {
@@ -522,6 +523,7 @@
 	});
 
 	let scroller: HTMLDivElement;
+	let contributionSub = () => {};
 
 	afterNavigate(() => {
 		const btn = scroller.querySelector(`[data-team="${team.tba.team_number}"]`);
@@ -534,6 +536,18 @@
 				})
 			);
 		}
+
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		if (res.isErr()) {
+			console.error('Failed to create extended scouting array:', res.error);
+		} else {
+			scoutingArr.set(res.value.data);
+			scoutingArr = res.value;
+		}
+		contributionSub();
+		contributionSub = scoutingArr.subscribe(() => {
+			contributions = Scouting.averageContributions(scoutingArr.data);
+		});
 	});
 
 	onMount(() => {
@@ -565,16 +579,17 @@
 			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
 		);
 
-		const contributionSub = scoutingArr.subscribe(() => {
-			contributions = Scouting.averageContributions(scoutingArr.data);
-		});
-
 		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
 		if (res.isErr()) {
 			console.error('Failed to create extended scouting array:', res.error);
 		} else {
+			scoutingArr.set(res.value.data);
 			scoutingArr = res.value;
 		}
+		contributionSub();
+		contributionSub = scoutingArr.subscribe(() => {
+			contributions = Scouting.averageContributions(scoutingArr.data);
+		});
 
 		return () => {
 			offScouting();
@@ -674,14 +689,76 @@
 		</div>
 
 		{#key team}
-			<Card card={summary}>
+			<Card card={radarChart}>
 				{#snippet body()}
-					<EventSummary {matches} {team} {event} scouting={scoutingArr} />
+					{#key contributions}
+						<button
+							type="button"
+							class="btn btn-secondary copy-btn"
+							onclick={() => {
+								radarChartComp?.copy(true);
+							}}
+						>
+							<i class="material-icons">copy_all</i>
+						</button>
+						<RadarChart
+							bind:this={radarChartComp}
+							{team}
+							data={{
+								'Level 1': contributions.cl1,
+								'Level 2': contributions.cl2,
+								'Level 3': contributions.cl3,
+								'Level 4': contributions.cl4,
+								Barge: contributions.brg,
+								Processor: contributions.prc
+							}}
+							opts={{
+								max: 10,
+								min: 0
+							}}
+						/>
+					{/key}
 				{/snippet}
 			</Card>
 			<Card card={picturesCard}>
 				{#snippet body()}
 					<PictureDisplay {team} {event} teamPictures={pictures} />
+				{/snippet}
+			</Card>
+			<Card card={checksSummary}>
+				{#snippet body()}
+					<ChecksSummary checks={checksSum} />
+				{/snippet}
+			</Card>
+			<Card card={summary}>
+				{#snippet body()}
+					<EventSummary {matches} {team} {event} scouting={scoutingArr} />
+				{/snippet}
+			</Card>
+			<Card card={ranking}>
+				{#snippet body()}
+					<Ranking {event} team={team.tba.team_number} />
+				{/snippet}
+			</Card>
+			<Card card={progress}>
+				{#snippet body()}
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							progressChart?.copy(true);
+						}}
+					>
+						<i class="material-icons">copy_all</i>
+					</button>
+					<Progress
+						bind:this={progressChart}
+						{team}
+						{event}
+						scouting={scoutingArr}
+						{matches}
+						defaultView={'points'}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={commentsCard}>
@@ -715,27 +792,6 @@
 			<Card card={matchViewer}>
 				{#snippet body()}
 					<MatchTable {team} {event} scouting={scoutingArr} />
-				{/snippet}
-			</Card>
-			<Card card={progress}>
-				{#snippet body()}
-					<button
-						type="button"
-						class="btn btn-secondary copy-btn"
-						onclick={() => {
-							progressChart?.copy(true);
-						}}
-					>
-						<i class="material-icons">copy_all</i>
-					</button>
-					<Progress
-						bind:this={progressChart}
-						{team}
-						{event}
-						scouting={scoutingArr}
-						{matches}
-						defaultView={'points'}
-					/>
 				{/snippet}
 			</Card>
 			<Card card={eventStats}>
@@ -788,50 +844,9 @@
 					<ScoutSummary scouts={scoutingAccounts} />
 				{/snippet}
 			</Card>
-			<Card card={checksSummary}>
-				{#snippet body()}
-					<ChecksSummary checks={checksSum} />
-				{/snippet}
-			</Card>
-			<Card card={radarChart}>
-				{#snippet body()}
-					{#key contributions}
-						<button
-							type="button"
-							class="btn btn-secondary copy-btn"
-							onclick={() => {
-								radarChartComp?.copy(true);
-							}}
-						>
-							<i class="material-icons">copy_all</i>
-						</button>
-						<RadarChart
-							bind:this={radarChartComp}
-							{team}
-							data={{
-								'Level 1': contributions.cl1,
-								'Level 2': contributions.cl2,
-								'Level 3': contributions.cl3,
-								'Level 4': contributions.cl4,
-								Barge: contributions.brg,
-								Processor: contributions.prc
-							}}
-							opts={{
-								max: 10,
-								min: 0
-							}}
-						/>
-					{/key}
-				{/snippet}
-			</Card>
 			<Card card={startLocation}>
 				{#snippet body()}
 					<StartLocationHeatmap {team} {event} />
-				{/snippet}
-			</Card>
-			<Card card={ranking}>
-				{#snippet body()}
-					<Ranking {event} team={team.tba.team_number} />
 				{/snippet}
 			</Card>
 		{/key}

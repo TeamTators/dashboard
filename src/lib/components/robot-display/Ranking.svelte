@@ -49,7 +49,8 @@
 
 <style>
 	.table-container {
-		overflow-x: scroll;
+		overflow-y: scroll;
 		height: 100%;
+		overflow-x: hidden;
 	}
 </style>

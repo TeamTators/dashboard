@@ -37,6 +37,8 @@
 	let pointDataset: datasetType;
 
 	onMount(() => {
+		console.log('SCOUTING DATA:', scouting);
+
 		scouting.sort((a, b) => {
 			if (a.compLevel === b.compLevel) return Number(a.matchNumber) - Number(b.matchNumber);
 			const order = ['qm', 'qf', 'sf', 'f'];
@@ -293,15 +295,28 @@
 	});
 </script>
 
-<button
-	class="btn btn-primary"
-	onclick={() => {
-		view = view === 'frequency' ? 'points' : 'frequency';
-		chart.data.datasets = view === 'frequency' ? frequencyDataset : pointDataset;
-		chart.update();
-	}}
->
-	{view === 'frequency' ? 'Viewing: Frequency' : 'Viewing: Points'}
-</button>
+<div class="chart-container">
+	<button
+		class="btn btn-primary"
+		onclick={() => {
+			view = view === 'frequency' ? 'points' : 'frequency';
+			chart.data.datasets = view === 'frequency' ? frequencyDataset : pointDataset;
+			chart.update();
+		}}
+	>
+		{view === 'frequency' ? 'Viewing: Frequency' : 'Viewing: Points'}
+	</button>
 
-<canvas bind:this={canvas} class="h-100 w-100"></canvas>
+	<canvas bind:this={canvas} class="w-100"></canvas>
+</div>
+
+<style>
+	.chart-container {
+		position: relative;
+		height: 250px;
+	}
+
+	.chart-container canvas {
+		max-height: 100%;
+	}
+</style>
