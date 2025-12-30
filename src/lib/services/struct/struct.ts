@@ -83,8 +83,6 @@ export enum FetchActions {
 	// Retrieve = 'retrieve',
 }
 
-// TODO: Batching?
-
 /**
  * Error if the data is an invalid state
  *
@@ -1000,7 +998,7 @@ export class Struct<T extends Blank> {
 	 * @param {StructData<T & GlobalCols>} data
 	 * @returns {StructDataProxy<T & GlobalCols>}
 	 */
-	Stage(data: StructData<T & GlobalCols>) {
+	Stage(data: StructData<(T & GlobalCols) | T>) {
 		return new StructDataStage(data);
 	}
 
@@ -1102,7 +1100,13 @@ export class Struct<T extends Blank> {
 				data?: unknown;
 			};
 			if (__APP_ENV__.struct_batching.enabled) {
-				res = await StructBatching.add(this.data.name, action, data, date).unwrap();
+				// res = await StructBatching.add(this.data.name, action, data, date).unwrap();
+				[res] = await StructBatching.add({
+					struct: this as any,
+					data,
+					date,
+					type: action
+				}).unwrap();
 			} else {
 				res = z
 					.object({
@@ -1673,7 +1677,6 @@ export class Struct<T extends Blank> {
 				cache: config?.cache
 			});
 			const data = await res.unwrap().json();
-			console.log('Recieved from-id data:', data);
 			const parsed = z
 				.object({
 					success: z.boolean(),
@@ -2007,7 +2010,11 @@ export class Struct<T extends Blank> {
 			if (!parsed.data) {
 				throw new DataError('No data returned');
 			}
-			return returnType.parse(parsed.data);
+			const datares = returnType.safeParse(parsed.data);
+
+			if (datares.success) return datares.data;
+			console.log('Parse data errors:', datares.error.errors);
+			throw new Error('Invalid return data: ' + datares.error.message);
 		});
 	}
 

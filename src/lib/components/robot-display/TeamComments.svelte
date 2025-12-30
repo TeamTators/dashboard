@@ -1,20 +1,18 @@
 <script lang="ts">
-	import { FIRST } from '$lib/model/FIRST';
 	import { Scouting } from '$lib/model/scouting';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import Grid from '../general/Grid.svelte';
-	import type { INumberFilterParams, ITextFilterParams } from 'ag-grid-community';
 	import { onMount } from 'svelte';
 	import { Account } from '$lib/model/account';
 	import { alert, prompt, confirm, notify } from '$lib/utils/prompts';
 	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
+	import { RowAutoHeightModule, TextFilterModule, NumberFilterModule } from 'ag-grid-community';
 
 	interface Props {
 		team: number;
 		event: string;
 		comments: Scouting.TeamCommentsArr;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { team, event, comments, scouting }: Props = $props();
@@ -30,10 +28,10 @@
 		return comments.subscribe((data) => {
 			commentProxy.set(
 				data.map((c) => {
-					const match = scouting.data.find((s) => s.data.id === c.data.matchScoutingId);
+					const match = scouting.data.find((s) => s.id === c.data.matchScoutingId);
 					return {
 						comment: c,
-						match: match ? `${match.data.compLevel}${match.data.matchNumber}` : 'unknown'
+						match: match ? `${match.compLevel}${match.matchNumber}` : 'unknown'
 					};
 				})
 			);
@@ -68,28 +66,36 @@
 		Add Comment
 	</button>
 	<Grid
-		rowNumbers={true}
 		opts={{
 			columnDefs: [
 				{
 					headerName: 'Comment',
 					field: 'comment.data.comment',
-					filter: 'agTextColumnFilter'
+					filter: 'agTextColumnFilter',
+					wrapText: true,
+					autoHeight: true,
+					cellStyle: {
+						'line-height': '1.4',
+						'white-space': 'normal'
+					}
 				},
 				{
 					headerName: 'Account',
 					field: 'comment.data.scoutUsername',
-					filter: 'agTextColumnFilter'
+					filter: 'agTextColumnFilter',
+					width: 150
 				},
 				{
 					headerName: 'Type',
 					field: 'comment.data.type',
-					filter: 'agTextColumnFilter'
+					filter: 'agTextColumnFilter',
+					width: 100
 				},
 				{
 					headerName: 'Match',
 					field: 'match',
-					filter: 'agNumberColumnFilter'
+					filter: 'agNumberColumnFilter',
+					width: 120
 				}
 			],
 			onCellContextMenu: (e) => {
@@ -143,8 +149,9 @@
 			},
 			preventDefaultOnContextMenu: true
 		}}
-		height={400}
+		height="100%"
 		data={commentProxy}
+		modules={[RowAutoHeightModule, TextFilterModule, NumberFilterModule]}
 	/>
 </div>
 

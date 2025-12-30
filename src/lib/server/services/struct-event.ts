@@ -56,6 +56,7 @@ export const createStructEventService = (struct: Struct<Blank, string>) => {
 		data: StructData<typeof struct.data.structure, typeof struct.data.name>
 	) => {
 		if (!struct.frontend) return;
+		if (struct.data.name === 'event_summary') return; // Summaries are not sent over SSE
 		// console.log(sse);
 		sse.each(async (connection) => {
 			if (struct.name === 'test') {

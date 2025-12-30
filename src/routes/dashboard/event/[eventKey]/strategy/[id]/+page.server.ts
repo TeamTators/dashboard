@@ -1,7 +1,7 @@
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Strategy } from '$lib/server/structs/strategy.js';
 import { Event } from '$lib/server/utils/tba.js';
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { resolveAll } from 'ts-utils/check';
 import { ServerCode } from 'ts-utils/status';
 

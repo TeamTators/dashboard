@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Scouting } from '$lib/model/scouting';
 
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 		matches: TBAMatch[];
 	}
 
-	const { team, event, scouting, matches }: Props = $props();
+	const { scouting }: Props = $props();
 
 	let cl1 = $state(0);
 	let cl2 = $state(0);

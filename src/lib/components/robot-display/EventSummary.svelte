@@ -1,14 +1,12 @@
 <script lang="ts">
-	import DateInput from '../forms/DateInput.svelte';
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Scouting } from '$lib/model/scouting';
 
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
-		scouting: Scouting.MatchScoutingArr;
+		scouting: Scouting.MatchScoutingExtendedArr;
 		matches: TBAMatch[];
 	}
 
@@ -43,7 +41,7 @@
 		return scouting.subscribe((s) => {
 			const autoRes = Scouting.averageAutoScore(s, event.tba.year);
 			const teleRes = Scouting.averageTeleopScore(s, event.tba.year);
-			const endRes = Scouting.averageEndgameScore(matches, team.tba.team_number, event.tba.year);
+			const _endRes = Scouting.averageEndgameScore(matches, team.tba.team_number, event.tba.year);
 			const secondsRes = Scouting.averageSecondsNotMoving(s);
 
 			auto = autoRes.isErr() ? 0 : autoRes.value;
@@ -54,47 +52,48 @@
 	});
 </script>
 
-<table class="table">
-	<tbody>
-		<tr>
-			<td>Rank:</td>
-			<td>{rank}</td>
-		</tr>
-		<tr>
-			<td>Record:</td>
-			<td>{record}</td>
-		</tr>
-		<tr>
-			<td>Played:</td>
-			<td>{played}</td>
-		</tr>
-		<tr>
-			<td>Average Velocity:</td>
-			<td class="ws-nowrap">
-				{#if $scouting.length}
-					{Scouting.getAverageVelocity($scouting).toFixed(2)} ft/s
-				{:else}
-					No data
-				{/if}
-			</td>
-		</tr>
-		<tr>
-			<td>Average Auto Score:</td>
-			<td>{auto.toFixed(2)}</td>
-		</tr>
-		<tr>
-			<td>Average Teleop Score:</td>
-			<td>{teleop.toFixed(2)}</td>
-		</tr>
-		<tr>
-			<td>Average Endgame Score:</td>
-			<td>{endgame.toFixed(2)}</td>
-		</tr>
-		<tr>
-			<td>Average Seconds Not Moving:</td>
-			<td>{averageSecondsNotMoving.toFixed(2)}s</td>
-		</tr>
-		<!-- <tr>
+<div class="table-container table-responsive">
+	<table class="table table-striped">
+		<tbody>
+			<tr>
+				<td>Rank:</td>
+				<td>{rank}</td>
+			</tr>
+			<tr>
+				<td>Record:</td>
+				<td>{record}</td>
+			</tr>
+			<tr>
+				<td>Played:</td>
+				<td>{played}</td>
+			</tr>
+			<tr>
+				<td>Average Velocity:</td>
+				<td class="ws-nowrap">
+					{#if $scouting.length}
+						{Scouting.getAverageVelocity($scouting).toFixed(2)} ft/s
+					{:else}
+						No data
+					{/if}
+				</td>
+			</tr>
+			<tr>
+				<td>Average Auto Score:</td>
+				<td>{auto.toFixed(2)}</td>
+			</tr>
+			<tr>
+				<td>Average Teleop Score:</td>
+				<td>{teleop.toFixed(2)}</td>
+			</tr>
+			<tr>
+				<td>Average Endgame Score:</td>
+				<td>{endgame.toFixed(2)}</td>
+			</tr>
+			<tr>
+				<td>Average Seconds Not Moving:</td>
+				<td>{averageSecondsNotMoving.toFixed(2)}s</td>
+			</tr>
+			<!-- <tr>
 			<td>Drivebase:</td>
 			<td>{drivebase}</td>
 		</tr>
@@ -102,5 +101,13 @@
 			<td>Weight:</td>
 			<td>{weight}</td>
 		</tr> -->
-	</tbody>
-</table>
+		</tbody>
+	</table>
+</div>
+
+<style>
+	.table-container {
+		max-height: 100%;
+		overflow-y: auto;
+	}
+</style>

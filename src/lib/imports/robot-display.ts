@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { Navbar } from '$lib/model/navbar';
 import type { TBAEvent } from 'tatorscout/tba';
 
@@ -37,6 +36,14 @@ export default (event: TBAEvent) => {
 				icon: {
 					type: 'material-icons',
 					name: 'archive'
+				}
+			},
+			{
+				name: 'Upload Match Data',
+				href: `/dashboard/event/${event.key}/upload-match`,
+				icon: {
+					type: 'material-icons',
+					name: 'upload_file'
 				}
 			}
 		]
@@ -85,6 +92,15 @@ export default (event: TBAEvent) => {
 			// 		name: 'assessment'
 			// 	}
 			// },
+			{
+				name: 'Score Calculator',
+				href: 'https://frc.ohlinis.me/',
+				icon: {
+					type: 'material-icons',
+					name: 'calculate',
+				},
+				external: true
+			},
 			{
 				name: 'Qualifications Strategy',
 				href: 'https://padlet.com/tatorscout/bordie-strategy-sheet-xvmkd3uf631sg64s',

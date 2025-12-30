@@ -3,16 +3,14 @@ import { config } from 'dotenv';
 import { getOldTables, testAll } from './old-tables';
 import { Account } from '../../src/lib/server/structs/account';
 import backup from '../backup';
-import restore from '../restore';
 import cliProgress from 'cli-progress';
-import terminal from '../../src/lib/server/utils/terminal';
-import { prompt } from '../../src/lib/server/cli/utils';
+import { prompt } from '../../cli/utils';
 import { Logs } from '../../src/lib/server/structs/log';
 import { attemptAsync, resolveAll } from 'ts-utils/check';
 import { Scouting } from '../../src/lib/server/structs/scouting';
 import { z } from 'zod';
 import { Struct } from 'drizzle-struct/back-end';
-import { openStructs } from '../../src/lib/server/cli/struct';
+import { openStructs } from '../../cli/struct';
 import { postBuild } from '../../src/lib/server/index';
 import { num, str } from '../../src/lib/server/utils/env';
 
@@ -36,10 +34,6 @@ const initDB = async () => {
 
 	await DB.connect();
 	return DB;
-};
-
-const reset = () => {
-	return restore();
 };
 
 export default async () => {
@@ -92,11 +86,11 @@ export default async () => {
 					email: a.email,
 					key: a.key,
 					salt: a.salt,
-					picture: a.picture || '/',
 					verified: false,
 					firstName: a.first_name,
 					lastName: a.last_name,
-					verification: ''
+					verification: '',
+					lastLogin: new Date().toISOString()
 				},
 				{
 					source: 'migration'
@@ -211,7 +205,9 @@ export default async () => {
 				trace: JSON.stringify(trace),
 				checks: ms.checks,
 				scoutUsername: a.username || '',
-				alliance: '' // TODO: Calculate alliance
+				alliance: '', // TODO: Calculate alliance
+				year: Number(ms.event_key.slice(0, 4)),
+				sliders: '[]'
 			});
 
 			if (dataRes.isErr()) return;

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import { onMount } from 'svelte';
 	import { Account } from '$lib/model/account';
 	import { capitalize } from 'ts-utils/text';
 	import { writable } from 'svelte/store';

@@ -30,6 +30,13 @@
 				scales: {
 					y: {
 						beginAtZero: true
+					},
+					x: {
+						ticks: {
+							autoSkip: false,
+							maxRotation: 90,
+							minRotation: 0
+						}
 					}
 				},
 				maintainAspectRatio: false
@@ -43,4 +50,4 @@
 	});
 </script>
 
-<canvas bind:this={canvas}></canvas>
+<canvas bind:this={canvas} style="width: 100%; height: 100%;"></canvas>
