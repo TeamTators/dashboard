@@ -44,7 +44,7 @@
 			}).then((res) => {
 				if (res.isOk()) {
 					summary = res.value.pivot().teamsRanked();
-					console.log('Event Summary:', summary);
+					//console.log('Event Summary:', summary);
 				} else {
 					console.error('Error fetching event summary:', res.error);
 				}

@@ -30,7 +30,8 @@
             }]};
 
     const render = () => {
-        if (!summary?.['Average Velocity']) {
+        console.log(summary.Stats?.['Average Velocity']);
+        if (!summary?.Stats?.['Average Velocity']) {
             return; 
         }
 
@@ -40,12 +41,11 @@
 
         data = {datasets: []};
 
-        for (const [, teams] of Object.entries(summary['Average Velocity'])) {
-            if (!teams.length) continue;
-            
+        for (const [, teams] of Object.entries(summary.Stats?.['Average Velocity'])) {
+
             data.datasets.push({
-                label: teams[0].team.toString(),
-                data: [{ x: teams[0].value, y: 5 }],
+                label: teams.team.toString(),
+                data: [{ x: teams.value, y: 5 }],
                 backgroundColor: 'rgb(255, 99, 132)'
             });
         }
