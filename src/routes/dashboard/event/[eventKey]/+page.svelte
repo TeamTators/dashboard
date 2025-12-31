@@ -44,6 +44,7 @@
 			}).then((res) => {
 				if (res.isOk()) {
 					summary = res.value.pivot().teamsRanked();
+					console.log('Event Summary:', summary);
 				} else {
 					console.error('Error fetching event summary:', res.error);
 				}
@@ -109,6 +110,9 @@
 		</div>
 	</div>
 	{#if summary}
+		<div class="row md-5 col-6">
+			<StdtoMeanDotplot {summary} />
+		</div>
 		{#each Object.entries(summary) as [group, items]}
 			<hr />
 			<div class="row mb-3">
