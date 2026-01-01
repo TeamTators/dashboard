@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import Trace from './Trace.svelte';
+	// import Trace from './Trace.svelte';
 	import { TBAEvent, TBATeam, TBAMatch } from '$lib/utils/tba';
 	import { writable } from 'svelte/store';
 	import MatchComments from './MatchComments.svelte';
@@ -14,6 +14,7 @@
 	import type { Strategy } from '$lib/model/strategy';
 	import { goto } from '$app/navigation';
 	import Slider from './Slider.svelte';
+	import TraceHTML from './TraceHTML.svelte';
 
 	interface Props {
 		match: TBAMatch;
@@ -129,7 +130,7 @@
 			</div>
 		</div>
 		<div class="row mb-3">
-			<Trace {scouting} />
+			<TraceHTML {scouting}  />
 		</div>
 		<div class="row mb-3">
 			<div class="col-12">
@@ -181,7 +182,7 @@
 								{:else}
 									Unknown date
 								{/if}
-								<Trace {scouting} classes="layer-1 flex-1" />
+								<TraceHTML {scouting}  />
 								<button
 									type="button"
 									class="btn btn-success"
