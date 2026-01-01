@@ -846,7 +846,7 @@
 			</Card>
 			<Card card={startLocation}>
 				{#snippet body()}
-					<StartLocationHeatmap {team} {event} />
+					<StartLocationHeatmap scouting={scoutingArr} year={event.tba.year} />
 				{/snippet}
 			</Card>
 		{/key}

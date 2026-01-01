@@ -130,7 +130,7 @@
 			</div>
 		</div>
 		<div class="row mb-3">
-			<TraceHTML {scouting}  />
+			<TraceHTML {scouting} />
 		</div>
 		<div class="row mb-3">
 			<div class="col-12">
@@ -182,7 +182,7 @@
 								{:else}
 									Unknown date
 								{/if}
-								<TraceHTML {scouting}  />
+								<TraceHTML {scouting} />
 								<button
 									type="button"
 									class="btn btn-success"
