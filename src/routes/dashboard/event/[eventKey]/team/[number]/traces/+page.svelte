@@ -1,6 +1,6 @@
 <script lang="ts">
 	import nav from '$lib/imports/robot-display.js';
-	import Trace from '$lib/components/robot-display/Trace.svelte';
+	import Trace from '$lib/components/robot-display/TraceHTML.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { writable } from 'svelte/store';
@@ -149,14 +149,15 @@
 		{#key scouting}
 			{#if scouting.length}
 				{#each $scoutingArr as s}
-					<div class="col-3">
-						<h3>
-							{s.compLevel}{s.matchNumber} - {s.eventKey}
-							<button type="button" class="btn" onclick={() => open(s)}>
-								<i class="material-icons">visibility</i>
-							</button>
-						</h3>
-						<Trace scouting={s} {focus} />
+					<div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+						<div class="card layer-1">
+							<div class="card-body">
+								<h5 class="card-title">
+									{s.compLevel}{s.matchNumber} - {s.eventKey}
+								</h5>
+								<Trace scouting={s} {focus} />
+							</div>
+						</div>
 					</div>
 				{/each}
 			{:else}
