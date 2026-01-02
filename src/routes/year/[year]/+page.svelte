@@ -32,7 +32,6 @@
 	</div>
 </div>
 
-
 <style>
 	.card {
 		height: 100px;
