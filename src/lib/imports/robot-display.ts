@@ -132,6 +132,14 @@ export default (event: TBAEvent) => {
 					type: 'material-icons',
 					name: 'people'
 				}
+			},
+			{
+				name: 'Simulator',
+				href: `/year/${event.year}/simulator`,
+				icon: {
+					type: 'material-icons',
+					name: 'sports_motorsports'
+				}
 			}
 		]
 	});
