@@ -10,16 +10,17 @@
 	const { data = $bindable() } = $props();
 	const event = $derived(new TBAEvent(data.event));
 
-	let summary:
-		| {
-				[group: string]: {
-					[item: string]: {
-						team: number;
-						value: number;
-					}[];
-				};
-		  }
-		| undefined = $state(undefined);
+	type Summary = {
+		[group: string]: {
+			[item: string]: {
+				team: number;
+				value: number;
+			}[];
+		};
+	} | undefined;
+
+	let summary: Summary = $state(undefined);
+	let unrankedSummary: Summary = $state(undefined);
 
 	let teams: TBATeam[] = $state([]);
 
@@ -44,7 +45,8 @@
 			}).then((res) => {
 				if (res.isOk()) {
 					summary = res.value.pivot().teamsRanked();
-					//console.log('Event Summary:', summary);
+					unrankedSummary = res.value.pivot().teamSorted();
+					//console.log('Event Summary:', unrankedSummary);
 				} else {
 					console.error('Error fetching event summary:', res.error);
 				}
@@ -109,10 +111,12 @@
 			</div>
 		</div>
 	</div>
-	{#if summary}
+	{#if unrankedSummary}
 		<div class="row md-5 col-6">
-			<StdtoMeanDotplot {summary} />
+			<StdtoMeanDotplot summary={unrankedSummary} />
 		</div>
+	{/if}
+	{#if summary}
 		{#each Object.entries(summary) as [group, items]}
 			<hr />
 			<div class="row mb-3">

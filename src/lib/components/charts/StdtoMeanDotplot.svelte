@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
     import { Scouting } from '$lib/model/scouting';
 	import type { ChartData } from 'chart.js';
+	import { number } from 'zod';
 
     let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
@@ -29,9 +30,10 @@
                 backgroundColor: 'rgb(255, 99, 132)'
             }]};
 
+    let total: Array<{ team: number; value: number }> = [];
+
     const render = () => {
-        console.log(summary.Stats?.['Average Velocity']);
-        if (!summary?.Stats?.['Average Velocity']) {
+        if (!summary?.Stats?.['Average Total Points']) {
             return; 
         }
 
@@ -41,11 +43,16 @@
 
         data = {datasets: []};
 
-        for (const [, teams] of Object.entries(summary.Stats?.['Average Velocity'])) {
+        for (const [, teams] of Object.entries(summary.Stats?.['Average Total Points'])) {
+
+            total.push({team: teams.team, value: teams.value});
+        }
+
+        for (const [, teams] of Object.entries(summary.Stats?.['Average Point Deviation'])) {
 
             data.datasets.push({
                 label: teams.team.toString(),
-                data: [{ x: teams.value, y: 5 }],
+                data: [{ x: total.find(t => t.team === teams.team)?.value || 0, y: teams.value }],
                 backgroundColor: 'rgb(255, 99, 132)'
             });
         }
