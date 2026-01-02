@@ -415,14 +415,13 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                         this.currentAngle += this.currentSpinVelocity * deltaTime;
                     }
 
-                    // Move current position towards target (time-based)
                     const moveX = (dx / distance) * this.currentVelocity * deltaTime;
                     const moveY = (dy / distance) * this.currentVelocity * deltaTime;
 
                     this.currentPos[0] += moveX;
                     this.currentPos[1] += moveY;
                 } else {
-                    // Reached target - stop linear movement but allow manual rotation
+                    // Reached target
                     this.currentVelocity = 0;
                     
                     // Check for manual rotation with arrow keys or tap rotation even when stationary
@@ -445,7 +444,6 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                             this.currentSpinVelocity = targetSpinVelocity;
                         }
                         
-                        // Apply spin velocity to angle (time-based)
                         this.currentAngle += this.currentSpinVelocity * deltaTime;
                     } else if (tapRotation) {
                         // Tap rotation when stationary - rotate towards targetAngle
@@ -496,12 +494,10 @@ export class Simulator extends WritableBase<SimulatorConfig> {
             }
 
             if (this.currentPos) this.points.push([...this.currentPos]);
-            // Keep trail for 3 seconds at 60fps
             if (this.points.length > 180) {
                 this.points.shift();
             }
 
-            // Convert feet to pixels for rendering
             const rect = this.target?.getBoundingClientRect();
             if (!rect) {
                 this.animationId = requestAnimationFrame(animate);
@@ -523,15 +519,9 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                 const robotWidth = feetToPixelX(this.config.width);
                 const robotHeight = feetToPixelY(this.config.height);
                 
-                // Position and rotate the entire robot group
                 robotGroup.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${this.currentAngle}rad)`;
                 robotGroup.style.transformOrigin = '0 0';
 
-                // Update robot component sizes and positions (relative to center)
-                const halfWidth = robotWidth / 2;
-                const halfHeight = robotHeight / 2;
-                
-                // Main chassis
                 robotChassis.setAttribute("width", (robotWidth * 0.8).toString());
                 robotChassis.setAttribute("height", (robotHeight * 0.8).toString());
                 robotChassis.setAttribute("x", (-robotWidth * 0.4).toString());
@@ -543,7 +533,6 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                 robotBumper.setAttribute("x", (-robotWidth / 2).toString());
                 robotBumper.setAttribute("y", (-robotHeight / 2).toString());
                 
-                // Direction arrow
                 const arrowSize = Math.min(robotWidth, robotHeight) * 0.25;
                 const arrowPoints = [
                     `${robotWidth * 0.3},0`, // tip
@@ -551,8 +540,6 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                     `${robotWidth * 0.1},${arrowSize/2}`  // bottom base
                 ].join(' ');
                 directionArrow.setAttribute("points", arrowPoints);
-                
-                // Center dot
                 centerDot.setAttribute("cx", "0");
                 centerDot.setAttribute("cy", "0");
                 centerDot.setAttribute("r", String(Math.min(robotWidth, robotHeight) * 0.08));
@@ -565,11 +552,9 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                 targetCircle.setAttribute("cy", targetY.toString());
             }
             
-            // Continue animation loop
             this.animationId = requestAnimationFrame(animate);
         };
         
-        // Start the animation loop
         this.animationId = requestAnimationFrame(animate);
 
         return () => {
@@ -577,13 +562,10 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                 cancelAnimationFrame(this.animationId);
                 this.animationId = undefined;
             }
-            // Remove mouse event listeners
             this.target?.removeEventListener('mousedown', mouseDown);
             this.target?.removeEventListener('mousemove', mouseMove);
             this.target?.removeEventListener('mouseup', mouseUp);
             this.target?.removeEventListener('mouseleave', mouseLeave);
-            
-            // Remove touch event listeners
             this.target?.removeEventListener('touchstart', touchStart);
             this.target?.removeEventListener('touchmove', touchMove);
             this.target?.removeEventListener('touchend', touchEnd);
