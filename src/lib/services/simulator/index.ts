@@ -33,11 +33,6 @@ export class Simulator extends WritableBase<SimulatorConfig> {
     isLeftArrowPressed: boolean = false;
     isRightArrowPressed: boolean = false;
     
-    // Two-finger rotation tracking
-    twoFingerPositions: Map<number, Point2D> = new Map();
-    lastFingerPosition: Point2D | undefined = undefined;
-    previousAngle: number | undefined = undefined;
-    
     animationId: number | undefined = undefined;
     lastTime: number = 0;
 
@@ -122,15 +117,6 @@ export class Simulator extends WritableBase<SimulatorConfig> {
             e.preventDefault();
             for (const touch of e.changedTouches) {
                 this.activePointers.add(touch.identifier);
-                
-                const rect = this.target?.getBoundingClientRect();
-                if (rect) {
-                    const xPixels = touch.clientX - rect.left;
-                    const yPixels = touch.clientY - rect.top;
-                    const xFeet = (xPixels / rect.width) * FIELD_WIDTH;
-                    const yFeet = (yPixels / rect.height) * FIELD_LENGTH;
-                    this.twoFingerPositions.set(touch.identifier, [xFeet, yFeet]);
-                }
             }
             
             // First touch controls position
@@ -138,8 +124,8 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                 setPos(e.touches[0].clientX, e.touches[0].clientY);
             }
             
-            // Second touch controls angle
-            if (e.touches.length >= 2) {
+            // Second touch sets facing direction
+            if (e.touches.length >= 2 && this.currentPos) {
                 const rect = this.target?.getBoundingClientRect();
                 if (rect) {
                     const touch = e.touches[1];
@@ -148,49 +134,23 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                     const xFeet = (xPixels / rect.width) * FIELD_WIDTH;
                     const yFeet = (yPixels / rect.height) * FIELD_LENGTH;
                     
-                    // Calculate angle from bottom-left corner of field to finger
-                    const currentFingerAngle = Math.atan2(yFeet, xFeet);
-                    
-                    // Store for animation loop to use
-                    this.lastFingerPosition = [xFeet, yFeet];
-                    
-                    // If we have a previous angle, calculate the difference and apply
-                    if (this.previousAngle !== undefined) {
-                        let angleDiff = currentFingerAngle - this.previousAngle;
-                        // Normalize angle difference to [-π, π]
-                        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-                        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-                        
-                        // Apply rotation to target angle with sensitivity multiplier
-                        this.targetAngle -= angleDiff * this.config.rotationSensitivity * 4;
-                    }
-                    
-                    this.previousAngle = currentFingerAngle;
+                    // Calculate angle from robot position to tap point
+                    const dx = xFeet - this.currentPos[0];
+                    const dy = yFeet - this.currentPos[1];
+                    this.targetAngle = Math.atan2(dy, dx);
                 }
             }
         }
         const touchMove = (e: TouchEvent) => {
             e.preventDefault();
-            for (const touch of e.touches) {
-                if (this.activePointers.has(touch.identifier)) {
-                    const rect = this.target?.getBoundingClientRect();
-                    if (rect) {
-                        const xPixels = touch.clientX - rect.left;
-                        const yPixels = touch.clientY - rect.top;
-                        const xFeet = (xPixels / rect.width) * FIELD_WIDTH;
-                        const yFeet = (yPixels / rect.height) * FIELD_LENGTH;
-                        this.twoFingerPositions.set(touch.identifier, [xFeet, yFeet]);
-                    }
-                }
-            }
             
             // First touch controls position
             if (e.touches.length >= 1) {
                 setPos(e.touches[0].clientX, e.touches[0].clientY);
             }
             
-            // Second touch controls angle
-            if (e.touches.length >= 2) {
+            // Second touch updates facing direction
+            if (e.touches.length >= 2 && this.currentPos) {
                 const rect = this.target?.getBoundingClientRect();
                 if (rect) {
                     const touch = e.touches[1];
@@ -199,24 +159,10 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                     const xFeet = (xPixels / rect.width) * FIELD_WIDTH;
                     const yFeet = (yPixels / rect.height) * FIELD_LENGTH;
                     
-                    // Calculate angle from bottom-left corner of field to finger
-                    const currentFingerAngle = Math.atan2(yFeet, xFeet);
-                    
-                    // Store for animation loop to use
-                    this.lastFingerPosition = [xFeet, yFeet];
-                    
-                    // If we have a previous angle, calculate the difference and apply
-                    if (this.previousAngle !== undefined) {
-                        let angleDiff = currentFingerAngle - this.previousAngle;
-                        // Normalize angle difference to [-π, π]
-                        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-                        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-                        
-                        // Apply rotation to target angle with sensitivity multiplier
-                        this.targetAngle -= angleDiff * this.config.rotationSensitivity * 4;
-                    }
-                    
-                    this.previousAngle = currentFingerAngle;
+                    // Calculate angle from robot position to tap point
+                    const dx = xFeet - this.currentPos[0];
+                    const dy = yFeet - this.currentPos[1];
+                    this.targetAngle = Math.atan2(dy, dx);
                 }
             }
         }
@@ -224,13 +170,6 @@ export class Simulator extends WritableBase<SimulatorConfig> {
             e.preventDefault();
             for (const touch of e.changedTouches) {
                 this.activePointers.delete(touch.identifier);
-                this.twoFingerPositions.delete(touch.identifier);
-            }
-            
-            // Reset rotation tracking when no fingers are touching
-            if (this.activePointers.size === 0) {
-                this.lastFingerPosition = undefined;
-                this.previousAngle = undefined;
             }
         }
         
@@ -284,16 +223,39 @@ export class Simulator extends WritableBase<SimulatorConfig> {
         targetCircle.setAttribute("fill", Color.fromBootstrap('primary').toString('rgb'));
         svg.appendChild(targetCircle);
 
-        const currentPosIcon = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        currentPosIcon.setAttribute("fill", Color.fromBootstrap('info').toString('rgb'));
-        svg.appendChild(currentPosIcon);
+        // Robot group for easy positioning and rotation
+        const robotGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        svg.appendChild(robotGroup);
+        
+        // Robot chassis (main body)
+        const robotChassis = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        robotChassis.setAttribute("fill", "#2d3748");
+        robotChassis.setAttribute("stroke", "#1a202c");
+        robotChassis.setAttribute("stroke-width", "2");
+        robotChassis.setAttribute("rx", "3");
+        robotGroup.appendChild(robotChassis);
 
-        // Create orientation arrow to show robot's facing direction
-        const orientationArrow = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        orientationArrow.setAttribute("fill", Color.fromBootstrap('warning').toString('rgb'));
-        orientationArrow.setAttribute("stroke", "#000");
-        orientationArrow.setAttribute("stroke-width", "1");
-        svg.appendChild(orientationArrow);
+        // Robot bumper (perimeter around chassis)
+        const robotBumper = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        robotBumper.setAttribute("fill", "none");
+        robotBumper.setAttribute("stroke", "#e53e3e");
+        robotBumper.setAttribute("stroke-width", "3");
+        robotBumper.setAttribute("rx", "4");
+        robotGroup.appendChild(robotBumper);
+
+        // Direction indicator arrow
+        const directionArrow = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        directionArrow.setAttribute("fill", "#fbbf24");
+        directionArrow.setAttribute("stroke", "#f59e0b");
+        directionArrow.setAttribute("stroke-width", "1");
+        robotGroup.appendChild(directionArrow);
+        
+        // Robot center dot
+        const centerDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        centerDot.setAttribute("fill", "#60a5fa");
+        centerDot.setAttribute("stroke", "#3b82f6");
+        centerDot.setAttribute("stroke-width", "1");
+        robotGroup.appendChild(centerDot);
 
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("fill", "none");
@@ -352,10 +314,10 @@ export class Simulator extends WritableBase<SimulatorConfig> {
 
                     // Check for manual rotation with arrow keys
                     const manualRotation = this.isLeftArrowPressed || this.isRightArrowPressed;
-                    // Check if using two-finger rotation
-                    const twoFingerRotation = this.activePointers.size === 2 && this.twoFingerPositions.size === 2;
-                    // Check if spinning should be prevented (no shift, two-finger rotation, or more than 2 touches)
-                    const preventSpinning = !this.isShiftPressed || twoFingerRotation || this.activePointers.size > 2;
+                    // Check if using tap-based rotation (second finger touching)
+                    const tapRotation = this.activePointers.size >= 2;
+                    // Check if spinning should be prevented (no shift, tap rotation, or more than 2 touches)
+                    const preventSpinning = !this.isShiftPressed || tapRotation || this.activePointers.size > 2;
                     
                     if (manualRotation) {
                         // Manual rotation with arrow keys (time-based)
@@ -377,8 +339,8 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                         
                         // Apply spin velocity to angle (time-based)
                         this.currentAngle += this.currentSpinVelocity * deltaTime;
-                    } else if (twoFingerRotation) {
-                        // Two-finger rotation - rotate towards targetAngle using spin velocity
+                    } else if (tapRotation) {
+                        // Tap-based rotation - rotate towards targetAngle using spin velocity
                         let angleDiff = this.targetAngle - this.currentAngle;
                         
                         // Normalize angle difference to [-π, π]
@@ -403,7 +365,7 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                         this.currentAngle += this.currentSpinVelocity * deltaTime;
                         
                         // Stop spinning if we're close enough to target angle
-                        if (Math.abs(angleDiff) < 0.05) { // ~3 degrees
+                        if (Math.abs(angleDiff) < 0.1) { // ~6 degrees
                             this.currentSpinVelocity = 0;
                             this.currentAngle = this.targetAngle;
                         }
@@ -463,8 +425,8 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                     // Reached target - stop linear movement but allow manual rotation
                     this.currentVelocity = 0;
                     
-                    // Check for manual rotation with arrow keys or two-finger rotation even when stationary
-                    const twoFingerRotation = this.activePointers.size === 2 && this.twoFingerPositions.size === 2;
+                    // Check for manual rotation with arrow keys or tap rotation even when stationary
+                    const tapRotation = this.activePointers.size >= 2;
                     
                     if (this.isLeftArrowPressed || this.isRightArrowPressed) {
                         let desiredSpinDirection = 0;
@@ -485,8 +447,8 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                         
                         // Apply spin velocity to angle (time-based)
                         this.currentAngle += this.currentSpinVelocity * deltaTime;
-                    } else if (twoFingerRotation) {
-                        // Two-finger rotation when stationary - rotate towards targetAngle
+                    } else if (tapRotation) {
+                        // Tap rotation when stationary - rotate towards targetAngle
                         let angleDiff = this.targetAngle - this.currentAngle;
                         
                         // Normalize angle difference to [-π, π]
@@ -560,30 +522,40 @@ export class Simulator extends WritableBase<SimulatorConfig> {
                 const currentY = feetToPixelY(this.currentPos[1]);
                 const robotWidth = feetToPixelX(this.config.width);
                 const robotHeight = feetToPixelY(this.config.height);
-
-                currentPosIcon.setAttribute("width", robotWidth.toString());
-                currentPosIcon.setAttribute("height", robotHeight.toString());
-
-                currentPosIcon.setAttribute("x", (currentX - robotWidth / 2).toString());
-                currentPosIcon.setAttribute("y", (currentY - robotHeight / 2).toString());
-                // adjust for spin
-                currentPosIcon.style.transform = `rotate(${this.currentAngle}rad)`;
-                currentPosIcon.style.transformOrigin = `${currentX}px ${currentY}px`;
                 
-                // Update orientation arrow - create triangle pointing in robot's front direction
-                const arrowSize = Math.min(robotWidth, robotHeight) * 0.3;
-                const frontOffset = robotWidth * 0.35; // Position arrow towards front of robot
+                // Position and rotate the entire robot group
+                robotGroup.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${this.currentAngle}rad)`;
+                robotGroup.style.transformOrigin = '0 0';
+
+                // Update robot component sizes and positions (relative to center)
+                const halfWidth = robotWidth / 2;
+                const halfHeight = robotHeight / 2;
                 
-                // Create triangle points for arrow (pointing right, which is 0 degrees)
-                const points = [
-                    `${currentX + frontOffset + arrowSize},${currentY}`, // tip
-                    `${currentX + frontOffset - arrowSize/2},${currentY - arrowSize/2}`, // top base
-                    `${currentX + frontOffset - arrowSize/2},${currentY + arrowSize/2}`  // bottom base
+                // Main chassis
+                robotChassis.setAttribute("width", (robotWidth * 0.8).toString());
+                robotChassis.setAttribute("height", (robotHeight * 0.8).toString());
+                robotChassis.setAttribute("x", (-robotWidth * 0.4).toString());
+                robotChassis.setAttribute("y", (-robotHeight * 0.4).toString());
+                
+                // Bumper around the perimeter
+                robotBumper.setAttribute("width", robotWidth.toString());
+                robotBumper.setAttribute("height", robotHeight.toString());
+                robotBumper.setAttribute("x", (-robotWidth / 2).toString());
+                robotBumper.setAttribute("y", (-robotHeight / 2).toString());
+                
+                // Direction arrow
+                const arrowSize = Math.min(robotWidth, robotHeight) * 0.25;
+                const arrowPoints = [
+                    `${robotWidth * 0.3},0`, // tip
+                    `${robotWidth * 0.1},${-arrowSize/2}`, // top base
+                    `${robotWidth * 0.1},${arrowSize/2}`  // bottom base
                 ].join(' ');
+                directionArrow.setAttribute("points", arrowPoints);
                 
-                orientationArrow.setAttribute("points", points);
-                orientationArrow.style.transform = `rotate(${this.currentAngle}rad)`;
-                orientationArrow.style.transformOrigin = `${currentX}px ${currentY}px`;
+                // Center dot
+                centerDot.setAttribute("cx", "0");
+                centerDot.setAttribute("cy", "0");
+                centerDot.setAttribute("r", String(Math.min(robotWidth, robotHeight) * 0.08));
             }
 
             if (this.targetPos) {
