@@ -32,29 +32,21 @@
 	const teamScouting = $derived(data.teamScouting);
 	let teamScoutingData: (Scouting.MatchScoutingExtendedArr | undefined)[] = $state([]);
 	const matches = $derived(data.matches);
+	type RadarData = {
+		'Level 1': number;
+		'Level 2': number;
+		'Level 3': number;
+		'Level 4': number;
+		Barge: number;
+		Processor: number;
+	};
+	let radarData: RadarData[] = $state([]);
 
 	$effect(() => nav(event.tba));
 
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
 	let view: 'progress' | 'radar' | 'stats' = $state('progress');
-
-	//let contribution = $state(Scouting.averageContributions([]));
-
-	const colors: {
-		border: string;
-		background: string;
-	}[] = [
-		new Color(255, 99, 132),
-		new Color(54, 162, 235),
-		new Color(75, 192, 192),
-		new Color(153, 102, 255),
-		new Color(255, 159, 64),
-		new Color(199, 199, 199)
-	].map((c) => ({
-		border: c.clone().setAlpha(1).toString('rgba'),
-		background: c.clone().setAlpha(0.2).toString('rgba')
-	}));
 
 	const sort = (
 		a: {
@@ -102,18 +94,16 @@
 		view = (search.get('view') as 'progress' | 'radar' | 'stats') || 'progress';
 
 		const unsub = selectedTeams.subscribe((st) =>
-			st.map((team, i) => {
-				const color = colors[i % colors.length];
+			radarData = st.map((team, i) => {
 				const scoutingData = teamScoutingData[i];
 				if (!scoutingData) {
 					return {
-						label: String(team.team.tba.team_number),
-						data: [0, 0, 0, 0, 0, 0],
-						backgroundColor: color.background,
-						borderColor: color.border,
-						borderWidth: 1,
-						pointBackgroundColor: color.background,
-						pointBorderColor: color.border
+						'Level 1': 0,
+						'Level 2': 0,
+						'Level 3': 0,
+						'Level 4': 0,
+						Barge: 0,
+						Processor: 0
 					};
 				}
 				const contribution = Scouting.averageContributions(scoutingData.data) || {
@@ -126,20 +116,12 @@
 				};
 
 				return {
-					label: String(team.team.tba.team_number),
-					data: [
-						contribution.cl1,
-						contribution.cl2,
-						contribution.cl3,
-						contribution.cl4,
-						contribution.brg,
-						contribution.prc
-					],
-					backgroundColor: color.background,
-					borderColor: color.border,
-					borderWidth: 1,
-					pointBackgroundColor: color.background,
-					pointBorderColor: color.border
+					'Level 1': contribution.cl1,
+					'Level 2': contribution.cl2,
+					'Level 3': contribution.cl3,
+					'Level 4': contribution.cl4,
+					Barge: contribution.brg,
+					Processor: contribution.prc
 				};
 			})
 		);
@@ -288,14 +270,7 @@
 												{#if view === 'radar'}
 													<RadarChart
 														team={team.team}
-														data={{
-															'Level 1': contribution.cl1,
-															'Level 2': contribution.cl2,
-															'Level 3': contribution.cl3,
-															'Level 4': contribution.cl4,
-															Barge: contribution.brg,
-															Processor: contribution.prc
-														}}
+														data={radarData[i]}
 														opts={{
 															max: 10,
 															min: 0
