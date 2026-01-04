@@ -97,7 +97,7 @@ export default (event: TBAEvent) => {
 				href: 'https://frc.ohlinis.me/',
 				icon: {
 					type: 'material-icons',
-					name: 'calculate',
+					name: 'calculate'
 				},
 				external: true
 			},
