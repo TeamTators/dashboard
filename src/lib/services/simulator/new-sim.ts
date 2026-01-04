@@ -1,6 +1,6 @@
 import { WritableBase } from "$lib/utils/writables";
 import type { Point2D } from "math/point";
-import { EventEmitter } from 'ts-utils';
+import { ComplexEventEmitter, EventEmitter } from 'ts-utils';
 
 export type Pose = {
     position: Point2D; // [feetX, feetY]
@@ -20,6 +20,34 @@ export type RobotState = {
     prevVelocity: Point2D; // [feet/sX, feet/sY]
     angularVelocity: number; // rad/s
     prevAngularVelocity: number; // rad/s
+    
+    // Trace execution state
+    activeTrace: {
+        points: Array<{position: Point2D; orientation: number}>; // resolved orientations in radians
+        segments: Array<{
+            startPoint: Point2D;
+            endPoint: Point2D;
+            distance: number;
+            startOrientation: number;
+            endOrientation: number;
+            cumulativeDistance: number;
+        }>;
+        totalDistance: number;
+        currentSegmentIndex: number;
+        currentDistance: number;
+        accelPhaseEnd: number;
+        constPhaseEnd: number;
+        decelPhaseStart: number;
+        emitter: ComplexEventEmitter<{
+            done: void;
+            position: [Pose, {
+                velocity: [number, number];
+                speed: number;
+                angularVelocity: number;
+            }]; // Pose, velocities
+        }>; // ComplexEventEmitter
+        lastEmitTime: number;
+    } | undefined;
 };
 
 export type RobotConfig = {
@@ -77,6 +105,9 @@ export class Simulator extends WritableBase<RobotState> {
             prevPose: undefined,
             prevVelocity: [0, 0],
             prevAngularVelocity: 0,
+            
+            // trace state
+            activeTrace: undefined,
         });
 
         this.robot = new Robot(robotConfig);
@@ -442,9 +473,7 @@ export class Simulator extends WritableBase<RobotState> {
 
             const dt = (thisTick - lastTick) / 1000;
             lastTick = thisTick;
-            const targetState = this.targetState;
-            const currentState = this.currentState;
-        
+            
             // Store previous state
             this.update(state => ({
                 ...state,
@@ -452,6 +481,16 @@ export class Simulator extends WritableBase<RobotState> {
                 prevVelocity: state.velocity,
                 prevAngularVelocity: state.angularVelocity,
             }));
+
+            // Handle active trace - this bypasses all other target logic
+            if (this.data.activeTrace) {
+                this.executeTraceStep(thisTick);
+                return;
+            }
+
+            // Normal target-following logic
+            const targetState = this.targetState;
+            const currentState = this.currentState;
 
             if (targetState.position) {
                 if (currentState.pose) {
@@ -667,36 +706,36 @@ export class Simulator extends WritableBase<RobotState> {
                 }
             }
 
-            if (currentState.pose) {
-                for (const goto of this.gotos) {
-                    let reachedPosition = false;
-                    if (goto.pose.position) {
-                        const dx = goto.pose.position[0] - currentState.pose.position[0];
-                        const dy = goto.pose.position[1] - currentState.pose.position[1];
-                        const distance = Math.hypot(dx, dy);
-                        if (distance < (goto.positionTolerance ?? 0.5)) {
-                            reachedPosition = true;
-                        }
-                    } else {
-                        reachedPosition = true;
-                    }
-                    let reachedOrientation = false;
-                    if (goto.pose.orientation !== undefined) {
-                        let angleDiff = goto.pose.orientation - currentState.pose.orientation;
-                        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-                        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-                        if (Math.abs(angleDiff) < (goto.orientationTolerance ?? (5 * Math.PI / 180))) {
-                            reachedOrientation = true;
-                        }
-                    } else {
-                        reachedOrientation = true;
-                    }
+            // if (currentState.pose) {
+            //     for (const goto of this.gotos) {
+            //         let reachedPosition = false;
+            //         if (goto.pose.position) {
+            //             const dx = goto.pose.position[0] - currentState.pose.position[0];
+            //             const dy = goto.pose.position[1] - currentState.pose.position[1];
+            //             const distance = Math.hypot(dx, dy);
+            //             if (distance < (goto.positionTolerance ?? 0.5)) {
+            //                 reachedPosition = true;
+            //             }
+            //         } else {
+            //             reachedPosition = true;
+            //         }
+            //         let reachedOrientation = false;
+            //         if (goto.pose.orientation !== undefined) {
+            //             let angleDiff = goto.pose.orientation - currentState.pose.orientation;
+            //             while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+            //             while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+            //             if (Math.abs(angleDiff) < (goto.orientationTolerance ?? (5 * Math.PI / 180))) {
+            //                 reachedOrientation = true;
+            //             }
+            //         } else {
+            //             reachedOrientation = true;
+            //         }
 
-                    if (reachedPosition && reachedOrientation) {
-                        goto.resolve();
-                    }
-                }
-            }
+            //         if (reachedPosition && reachedOrientation) {
+            //             goto.resolve();
+            //         }
+            //     }
+            // }
         };
 
         let doRun = true;
@@ -728,6 +767,78 @@ export class Simulator extends WritableBase<RobotState> {
         }
 
         return this.stop;
+    }
+
+    private executeTraceStep(currentTime: number) {
+        const trace = this.data.activeTrace!;
+        const currentState = this.currentState;
+        
+        if (!currentState.pose) return;
+
+        // Check if we've reached the current target segment
+        const currentSegment = trace.segments[trace.currentSegmentIndex];
+        if (currentSegment) {
+            const distanceToTarget = Math.hypot(
+                currentState.pose.position[0] - currentSegment.endPoint[0],
+                currentState.pose.position[1] - currentSegment.endPoint[1]
+            );
+            
+            if (distanceToTarget < 0.1) { // Within tolerance
+                // Move to next segment
+                this.update(state => ({
+                    ...state,
+                    activeTrace: {
+                        ...trace,
+                        currentSegmentIndex: trace.currentSegmentIndex + 1,
+                    }
+                }));
+                
+                if (trace.currentSegmentIndex + 1 >= trace.segments.length) {
+                    // Trace complete
+                    trace.emitter.emit('done');
+                    this.update(state => ({
+                        ...state,
+                        activeTrace: undefined,
+                        targetPosition: undefined,
+                        targetOrientation: undefined,
+                        targetFacing: undefined,
+                    }));
+                    return;
+                }
+            }
+        }
+
+        // Update current distance along path
+        const currentSegmentIndex = Math.min(trace.currentSegmentIndex, trace.segments.length - 1);
+        const segment = trace.segments[currentSegmentIndex];
+        
+        if (segment) {
+            const segmentStart = currentSegmentIndex === 0 ? 0 : trace.segments[currentSegmentIndex - 1].cumulativeDistance;
+            const distanceAlongSegment = Math.hypot(
+                currentState.pose.position[0] - segment.startPoint[0],
+                currentState.pose.position[1] - segment.startPoint[1]
+            );
+            
+            this.update(state => ({
+                ...state,
+                activeTrace: {
+                    ...trace,
+                    currentDistance: segmentStart + distanceAlongSegment,
+                }
+            }));
+
+            // Set target for physics engine
+            this.update(state => ({
+                ...state,
+                targetPosition: segment.endPoint,
+                targetOrientation: segment.endOrientation,
+                targetFacing: undefined,
+                faceTarget: false,
+            }));
+        }
+
+        // emit the closest point
+        
     }
 
     stop: () => void = () => {
@@ -824,17 +935,17 @@ export class Simulator extends WritableBase<RobotState> {
 
 
 
-    private gotos: {
-        resolve: () => void;
-        reject: (reason?: string) => void;
-        pose: {
-            position?: Point2D;
-            orientation?: number; // deg
-        }
-        positionTolerance?: number; // feet
-        orientationTolerance?: number; // deg
-        slowDown?: boolean;
-    }[] = [];
+    // private gotos: {
+    //     resolve: () => void;
+    //     reject: (reason?: string) => void;
+    //     pose: {
+    //         position?: Point2D;
+    //         orientation?: number; // deg
+    //     }
+    //     positionTolerance?: number; // feet
+    //     orientationTolerance?: number; // deg
+    //     slowDown?: boolean;
+    // }[] = [];
 
     // goto(pose: {
     //     position?: Point2D;
@@ -869,8 +980,129 @@ export class Simulator extends WritableBase<RobotState> {
 
     runTrace(points: {
         position: Point2D;
-        orientation?: number; // use the last point's orientation if undefined
-    }[], config: {}) {}
+        orientation?: number; // use the next defined orientation if undefined
+    }[]) {
+        const emitter = new ComplexEventEmitter<{
+            done: void;
+            position: [Pose, {
+                velocity: [number, number];
+                speed: number;
+                angularVelocity: number;
+            },
+            number
+        ]; // Pose, velocities
+        }>();
+
+        if (!this.running) {
+            throw new Error("Simulator must be running to execute trace");
+        }
+
+        if (points.length === 0) {
+            emitter.emit('done');
+            return emitter;
+        }
+
+        // Resolve orientations - use next defined orientation if current is undefined
+        const resolvedPoints = points.map((point, i) => {
+            let orientation = point.orientation;
+            if (orientation === undefined) {
+                // Find next defined orientation
+                for (let j = i + 1; j < points.length; j++) {
+                    if (points[j].orientation !== undefined) {
+                        orientation = points[j].orientation;
+                        break;
+                    }
+                }
+                // If no future orientation found, use current robot orientation
+                if (orientation === undefined) {
+                    orientation = (this.data.currentPose?.orientation ?? 0) * (180 / Math.PI); // Convert to degrees
+                }
+            }
+            return {
+                position: point.position,
+                orientation: orientation * (Math.PI / 180), // Convert to radians
+            };
+        });
+
+        // Calculate path segments and total distance
+        const segments: Array<{
+            startPoint: Point2D;
+            endPoint: Point2D;
+            distance: number;
+            startOrientation: number;
+            endOrientation: number;
+            cumulativeDistance: number;
+        }> = [];
+
+        let totalDistance = 0;
+        const startPos = this.data.currentPose?.position ?? resolvedPoints[0].position;
+        const startOrient = this.data.currentPose?.orientation ?? resolvedPoints[0].orientation;
+
+        for (let i = 0; i < resolvedPoints.length; i++) {
+            const start = i === 0 ? startPos : resolvedPoints[i - 1].position;
+            const end = resolvedPoints[i].position;
+            const startO = i === 0 ? startOrient : resolvedPoints[i - 1].orientation;
+            const endO = resolvedPoints[i].orientation;
+            
+            const segmentDistance = Math.hypot(end[0] - start[0], end[1] - start[1]);
+            totalDistance += segmentDistance;
+            
+            segments.push({
+                startPoint: start,
+                endPoint: end,
+                distance: segmentDistance,
+                startOrientation: startO,
+                endOrientation: endO,
+                cumulativeDistance: totalDistance,
+            });
+        }
+
+        // Calculate trapezoidal velocity profile for entire trace
+        const maxVel = this.robot.data.maxVelocity;
+        const accel = this.robot.data.acceleration;
+        const decel = this.robot.data.deceleration;
+        
+        // Calculate phases
+        const accelDistance = (maxVel * maxVel) / (2 * accel);
+        const decelDistance = (maxVel * maxVel) / (2 * decel);
+        const totalAccelDecelDistance = accelDistance + decelDistance;
+        
+        let accelPhaseEnd: number;
+        let constPhaseEnd: number;
+        let decelPhaseStart: number;
+        
+        if (totalDistance <= totalAccelDecelDistance) {
+            // No constant velocity phase - just accel then decel
+            const meetingPoint = totalDistance * accel / (accel + decel);
+            accelPhaseEnd = meetingPoint;
+            constPhaseEnd = meetingPoint;
+            decelPhaseStart = meetingPoint;
+        } else {
+            // Full trapezoidal profile
+            accelPhaseEnd = accelDistance;
+            decelPhaseStart = totalDistance - decelDistance;
+            constPhaseEnd = decelPhaseStart;
+        }
+
+        // Set up trace state in the existing event loop
+        this.update(state => ({
+            ...state,
+            activeTrace: {
+                points: resolvedPoints,
+                segments: segments,
+                totalDistance: totalDistance,
+                currentSegmentIndex: 0,
+                currentDistance: 0,
+                accelPhaseEnd: accelPhaseEnd,
+                constPhaseEnd: constPhaseEnd,
+                decelPhaseStart: decelPhaseStart,
+                emitter: emitter,
+                lastEmitTime: 0,
+            }
+        }));
+
+        return emitter;
+    }
 }
 
 export class Robot extends WritableBase<RobotConfig> {}

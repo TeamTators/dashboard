@@ -14,7 +14,8 @@ export type State = {
 
 export class Point {
     resolvedState: State | undefined;
-    state?: State;
+    doByState?: State;
+    doHereState?: State;
 
     constructor(
         public position: Point2D,
@@ -22,13 +23,13 @@ export class Point {
         public tick: number
     ) {}
 
-    setState(config: {
+    setDoByState(config: {
         duration: number;
         config: RobotConfig;
         comment: string;
         vision: boolean;
     }) {
-        this.state = {
+        this.doByState = {
             position: this.position,
             orientation: this.orientation,
             duration: config.duration,
@@ -37,14 +38,31 @@ export class Point {
             vision: config.vision,
         }
 
-        return this.state;
+        return this.doByState;
     }
 
+    setDoHereState(config: {
+        duration: number;
+        config: RobotConfig;
+        comment: string;
+        vision: boolean;
+    }) {
+        this.doHereState = {
+            position: this.position,
+            orientation: this.orientation,
+            duration: config.duration,
+            config: config.config,
+            comment: config.comment,
+            vision: config.vision,
+        }
+
+        return this.doHereState;
+    }
 
 }
 
 export type SimulatorControllerState = {
-    state: 'tracing' | 'state-config' | 'running';
+    state: 'tracing' | 'state-config' | 'running' | 'idle';
     states: State[];
 };
 
@@ -58,7 +76,7 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
     }
 
     get states() {
-        return this.points.filter(p => p.state).map(p => p.state!);
+        return this.points.filter(p => p.doByState).map(p => p.doByState!);
     }
 
     init(target: HTMLDivElement) {
@@ -90,19 +108,19 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
                     .input('duration', {
                         type: 'number',
                         label: 'Duration (ms)',
-                        value: p.state ? p.state.duration.toString() : '1000',
+                        value: p.doByState ? p.doByState.duration.toString() : '1000',
                         required: true,
                     })
                     .input('comment', {
                         type: 'textarea',
                         label: 'Comment',
-                        value: p.state ? p.state.comment : '',
+                        value: p.doByState ? p.doByState.comment : '',
                         required: false,
                     })
                     .input('vision', {
                         type: 'radio',
                         label: 'Enable Vision',
-                        value: p.state ? p.state.vision.toString() : 'true',
+                        value: p.doByState ? p.doByState.vision.toString() : 'true',
                         required: false,
                         options: [
                             { label: 'Enable Vision', value: 'true' },
@@ -112,37 +130,37 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
                     .input('maxVelocity',  {
                         type: 'number',
                         label: 'Max Velocity (ft/s)',
-                        value: p.state ? p.state.config.maxVelocity.toString() : this.sim.robot.data.maxVelocity.toString(),
+                        value: p.doByState ? p.doByState.config.maxVelocity.toString() : this.sim.robot.data.maxVelocity.toString(),
                         required: true,
                     })
                     .input('acceleration', {
                         type: 'number',
                         label: 'Acceleration (ft/s²)',
-                        value: p.state ? p.state.config.acceleration.toString() : this.sim.robot.data.acceleration.toString(),
+                        value: p.doByState ? p.doByState.config.acceleration.toString() : this.sim.robot.data.acceleration.toString(),
                         required: true,
                     })
                     .input('maxAngularVelocity', {
                         type: 'number',
                         label: 'Max Angular Velocity (°/s)',
-                        value: p.state ? p.state.config.maxAngularVelocity.toString() : this.sim.robot.data.maxAngularVelocity.toString(),
+                        value: p.doByState ? p.doByState.config.maxAngularVelocity.toString() : this.sim.robot.data.maxAngularVelocity.toString(),
                         required: true,
                     })
                     .input('angularAcceleration', {
                         type: 'number',
                         label: 'Angular Acceleration (°/s²)',
-                        value: p.state ? p.state.config.angularAcceleration.toString() : this.sim.robot.data.angularAcceleration.toString(),
+                        value: p.doByState ? p.doByState.config.angularAcceleration.toString() : this.sim.robot.data.angularAcceleration.toString(),
                         required: true,
                     })
                     .input('deceleration', {
                         type: 'number',
                         label: 'Deceleration (ft/s²)',
-                        value: p.state ? p.state.config.deceleration.toString() : this.sim.robot.data.deceleration.toString(),
+                        value: p.doByState ? p.doByState.config.deceleration.toString() : this.sim.robot.data.deceleration.toString(),
                         required: true,
                     })
                     .input('angularDeceleration', {
                         type: 'number',
                         label: 'Angular Deceleration (°/s²)',
-                        value: p.state ? p.state.config.angularDeceleration.toString() : this.sim.robot.data.angularDeceleration.toString(),
+                        value: p.doByState ? p.doByState.config.angularDeceleration.toString() : this.sim.robot.data.angularDeceleration.toString(),
                         required: true,
                     })
                     .prompt({
@@ -152,7 +170,7 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
                     .unwrap();
 
                 if (res) {
-                    p.setState({
+                    p.setDoByState({
                         duration: Number(res.value.duration),
                         comment: res.value.comment,
                         vision: res.value.vision === 'true',
@@ -178,7 +196,7 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
             }
             circle.onmouseout = () => {
                 circle.setAttribute('r', '.1');
-                if (p.state) {
+                if (p.doByState) {
                     circle.setAttribute('fill', 'green');
                 } else {
                     circle.setAttribute('fill', 'red');
@@ -189,6 +207,10 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
 
         return () => {
             target.removeChild(svg);
+            this.update(state => ({
+                ...state,
+                state: 'idle',
+            }))
         }
     }
 
@@ -232,4 +254,80 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
     //         }
     //     };
     // }
+
+    async run(debug: boolean) {
+        if (!this.sim.running) {
+            throw new Error("Simulator must be running to execute controller");
+        }
+        if (this.data.state !== 'idle') {
+            throw new Error("SimulatorController must be in 'idle' state to run");
+        }
+
+        this.update(state => ({
+            ...state,
+            state: 'running',
+        }));
+
+        // Create trace segments based on doHereState markers
+        const traceSegments: Array<{
+            points: Point[];
+            doHereState?: State;
+        }> = [];
+
+        let currentSegment: Point[] = [];
+        
+        for (const point of this.points) {
+            currentSegment.push(point);
+            
+            if (point.doHereState) {
+                // End current segment with this doHereState
+                traceSegments.push({
+                    points: [...currentSegment],
+                    doHereState: point.doHereState,
+                });
+                currentSegment = [];
+            }
+        }
+        
+        // Add final segment if there are remaining points
+        if (currentSegment.length > 0) {
+            traceSegments.push({
+                points: currentSegment,
+            });
+        }
+
+        // Execute each trace segment
+        for (let segmentIndex = 0; segmentIndex < traceSegments.length; segmentIndex++) {
+            const segment = traceSegments[segmentIndex];
+            await this.executeTraceSegment(segment, debug);
+        }
+    }
+
+    private async executeTraceSegment(segment: {
+        points: Point[];
+        doHereState?: State;
+    }, debug: boolean): Promise<void> {
+        const log = (...args: unknown[]) => {
+            if (debug) {
+                console.log('[Controller]', ...args);
+            }
+        };
+
+        if (segment.points.length === 0) return;
+
+        // Create trace for simulator
+        const tracePoints = segment.points.map(p => ({
+            position: p.position,
+            orientation: p.orientation, // Already in degrees from Point class
+        }));
+
+        // Execute the trace
+        log(`Executing trace segment with ${tracePoints.length} points`);
+        const traceEmitter = this.sim.runTrace(tracePoints);
+        
+
+        let currentIndex = 0;
+
+        traceEmitter.on('position', (data) => {});
+    }
 }
