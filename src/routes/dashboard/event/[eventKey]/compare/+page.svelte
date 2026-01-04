@@ -12,6 +12,7 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
+	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -36,10 +37,9 @@
 
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
-	let view: 'progress' | 'stats' = $state('progress');
+	let view: 'progress' | 'radar' | 'stats' = $state('progress');
 
-	let chartCanvas: HTMLCanvasElement;
-	let chartInstance: Chart;
+	//let contribution = $state(Scouting.averageContributions([]));
 
 	const colors: {
 		border: string;
@@ -99,40 +99,7 @@
 		});
 
 		const search = new URLSearchParams(location.search);
-		view = (search.get('view') as 'progress' | 'stats') || 'progress';
-
-		chartInstance = new Chart(chartCanvas, {
-			type: 'radar',
-			data: {
-				labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Barge', 'Processor'],
-				datasets: dataset
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				plugins: {
-					legend: {
-						position: 'right'
-					}
-				},
-				scales: {
-					r: {
-						min: 0,
-						max: 10,
-						grid: {
-							color: 'rgba(60, 60, 60, 1)'
-						},
-						angleLines: {
-							color: 'rgba(60, 60, 60, 1)'
-						},
-						ticks: {
-							color: 'rgba(102, 102, 102, 1)',
-							backdropColor: 'rgba(0, 0, 0, 0)'
-						}
-					}
-				}
-			}
-		});
+		view = (search.get('view') as 'progress' | 'radar' | 'stats') || 'progress';
 
 		const unsub = selectedTeams.subscribe((st) =>
 			st.map((team, i) => {
@@ -179,7 +146,6 @@
 
 		return () => {
 			unsub();
-			chartInstance.destroy();
 		};
 	});
 
@@ -269,6 +235,16 @@
 							<input
 								type="radio"
 								class="btn-check"
+								id="radar-view"
+								autocomplete="off"
+								checked
+								bind:group={view}
+								value="radar"
+							/>
+							<label class="btn btn-outline-primary h-min" for="radar-view">Radar Chart</label>
+							<input
+								type="radio"
+								class="btn-check"
 								id="stats-view"
 								autocomplete="off"
 								bind:group={view}
@@ -279,20 +255,6 @@
 					</div>
 				</div>
 				<div class="row mb-3">
-					<div class="col-md-4 mb-3">
-						<div class="card layer-2">
-							<div class="card-body">
-								<h5 class="card-title">Radar Chart</h5>
-								<div style="height: 300px;">
-									<canvas bind:this={chartCanvas} style="height: 400px;"></canvas>
-									<!-- <RadarChart
-										{teamScouting} 
-										{scouting}
-										/>-->
-								</div>
-							</div>
-						</div>
-					</div>
 					{#each $selectedTeams as team, i}
 						<div class="col-md-4 mb-3">
 							<div class="card layer-2">
@@ -323,14 +285,32 @@
 													{matches}
 												/>
 											{:else}
-												<TeamEventStats
-													bind:this={team.component}
-													team={team.team}
-													{event}
-													bind:staticY
-													scouting={teamScoutingData[i]}
-													{matches}
-												/>
+												{#if view === 'radar'}
+													<RadarChart
+														team={team.team}
+														data={{
+															'Level 1': contribution.cl1,
+															'Level 2': contribution.cl2,
+															'Level 3': contribution.cl3,
+															'Level 4': contribution.cl4,
+															Barge: contribution.brg,
+															Processor: contribution.prc
+														}}
+														opts={{
+															max: 10,
+															min: 0
+														}}
+													/>
+												{:else}
+													<TeamEventStats
+														bind:this={team.component}
+														team={team.team}
+														{event}
+														bind:staticY
+														scouting={teamScoutingData[i]}
+														{matches}
+													/>
+												{/if}
 											{/if}
 										{:else}
 											No data found :(
