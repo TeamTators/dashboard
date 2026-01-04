@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { SimulatorController } from '$lib/services/simulator/controller';
 	import { Simulator, type RobotConfig } from '$lib/services/simulator/new-sim.ts';
 	import { onMount } from 'svelte';
 
@@ -15,13 +16,23 @@
 			length: (120 / 4) / 12,
 		});
 
-	let app: Simulator | undefined = $state(undefined);
+	let sim: Simulator | undefined = $state(undefined);
+    let controller: SimulatorController | undefined = $state(undefined);
+
+    const stop = () => {
+        sim?.stop();
+        controller?.init(target);
+    }
 
 	onMount(() => {
-		app = new Simulator(Number(page.params.year), target, robotConfig);
-		app.init();
-		app.robot.subscribe(config => robotConfig = config);
-		return app.start(true);
+		sim = new Simulator(Number(page.params.year), target, robotConfig);
+		sim.init();
+		sim.robot.subscribe(config => robotConfig = config);
+        controller = new SimulatorController(sim, {
+            states: [],
+            state: 'tracing',
+        });
+		return sim.start(true);
 	});
 </script>
 
@@ -40,6 +51,9 @@
 				>
 					<i class="material-icons">settings</i> Config
 				</button>
+                <button type="button" class="btn btn-primary" onclick={stop}>
+                    Controller
+                </button>
 			</div>
 
 			<div class="collapse mb-3" id="configPanel">
@@ -56,7 +70,7 @@
 								min="5"
 								max="20"
 								step="1"
-								oninput={(e) => app?.setConfig({ maxVelocity: Number(e.currentTarget.value) })}
+								oninput={(e) => sim?.setConfig({ maxVelocity: Number(e.currentTarget.value) })}
 							/>
 						</div>
 						<div class="col-lg-6 col-md-12">
@@ -70,7 +84,7 @@
 								min="5"
 								max="15"
 								step="1"
-								oninput={(e) => app?.setConfig({ acceleration: Number(e.currentTarget.value) })}
+								oninput={(e) => sim?.setConfig({ acceleration: Number(e.currentTarget.value) })}
 							/>
 						</div>
 						<div class="col-lg-6 col-md-12">
@@ -84,7 +98,7 @@
 								min="90"
 								max="720"
 								step="1"
-								oninput={(e) => app?.setConfig({ maxAngularVelocity: Number(e.currentTarget.value) })}
+								oninput={(e) => sim?.setConfig({ maxAngularVelocity: Number(e.currentTarget.value) })}
 							/>
 						</div>
 						<div class="col-lg-6 col-md-12">
@@ -98,7 +112,7 @@
 								min="1000"
 								max="2000"
 								step="1"
-								oninput={(e) => app?.setConfig({ angularAcceleration: Number(e.currentTarget.value) })}
+								oninput={(e) => sim?.setConfig({ angularAcceleration: Number(e.currentTarget.value) })}
 							/>
 						</div>
 						<div class="col-lg-6 col-md-12">
@@ -112,7 +126,7 @@
 								min="26"
 								max="34"
 								step="0.1"
-								oninput={(e) => app?.setConfig({ width: Number(e.currentTarget.value) / 12 })}
+								oninput={(e) => sim?.setConfig({ width: Number(e.currentTarget.value) / 12 })}
 							/>
 						</div>
 						<div class="col-lg-6 col-md-12">
@@ -126,7 +140,7 @@
 								min="26"
 								max="34"
 								step="0.1"
-								oninput={(e) => app?.setConfig({ length: Number(e.currentTarget.value) / 12 })}
+								oninput={(e) => sim?.setConfig({ length: Number(e.currentTarget.value) / 12 })}
 							/>
 						</div>
 						<div class="col-12">
