@@ -52,7 +52,7 @@ export const POST = async (event: RequestEvent) => {
 				})
 			)
 		})
-		.safeParse(decompress(Buffer.from(body)));
+		.safeParse(decompress(Buffer.from(body)).unwrap());
 
 	if (!parsed.success) {
 		terminal.warn('Invalid request body', parsed.error.message);
