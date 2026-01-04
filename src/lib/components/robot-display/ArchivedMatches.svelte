@@ -2,7 +2,7 @@
 	import { Scouting } from '$lib/model/scouting';
 	import type { TBATeam, TBAEvent } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
-	import Trace from './Trace.svelte';
+	import Trace from './TraceHTML.svelte';
 	import { confirm } from '$lib/utils/prompts';
 
 	interface Props {
