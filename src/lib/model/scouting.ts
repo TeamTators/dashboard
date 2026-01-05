@@ -124,6 +124,10 @@ export namespace Scouting {
 					.parse(JSON.parse(this.data.scouting.data.sliders || '{}'));
 			});
 		}
+
+		checksSummary() {
+			// return how many times a check was triggered
+		}
 	}
 
 	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
@@ -142,6 +146,10 @@ export namespace Scouting {
 
 		clone() {
 			return new MatchScoutingExtendedArr([...this.data]);
+		}
+
+		checksSummary() {
+			// checks summary for all matches
 		}
 	}
 
