@@ -124,10 +124,6 @@ export namespace Scouting {
 					.parse(JSON.parse(this.data.scouting.data.sliders || '{}'));
 			});
 		}
-
-		checksSummary() {
-			// return how many times a check was triggered
-		}
 	}
 
 	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
