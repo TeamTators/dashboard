@@ -13,6 +13,8 @@
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
+	import EventSummary from '$lib/components/robot-display/EventSummary.svelte';
+	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -46,7 +48,7 @@
 
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
-	let view: 'progress' | 'radar' | 'stats' = $state('progress');
+	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' = $state('progress');
 
 	const sort = (
 		a: {
@@ -91,7 +93,7 @@
 		});
 
 		const search = new URLSearchParams(location.search);
-		view = (search.get('view') as 'progress' | 'radar' | 'stats') || 'progress';
+		view = (search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum') || 'progress';
 
 		const unsub = selectedTeams.subscribe((st) =>
 			radarData = st.map((team, i) => {
@@ -217,6 +219,15 @@
 							<input
 								type="radio"
 								class="btn-check"
+								id="stats-view"
+								autocomplete="off"
+								bind:group={view}
+								value="stats"
+							/>
+							<label class="btn btn-outline-primary h-min" for="stats-view">Event Stats</label>
+							<input
+								type="radio"
+								class="btn-check"
 								id="radar-view"
 								autocomplete="off"
 								checked
@@ -227,12 +238,23 @@
 							<input
 								type="radio"
 								class="btn-check"
-								id="stats-view"
+								id="eventSum-view"
 								autocomplete="off"
+								checked
 								bind:group={view}
-								value="stats"
+								value="eventSum"
 							/>
-							<label class="btn btn-outline-primary h-min" for="stats-view">Event Stats</label>
+							<label class="btn btn-outline-primary h-min" for="eventSum-view">Event Summary</label>
+							<input
+								type="radio"
+								class="btn-check"
+								id="checkSum-view"
+								autocomplete="off"
+								checked
+								bind:group={view}
+								value="checkSum"
+							/>
+							<label class="btn btn-outline-primary h-min" for="checkSum-view">Check Summary</label>
 						</div>
 					</div>
 				</div>
@@ -266,8 +288,7 @@
 													scouting={teamScoutingData[i]}
 													{matches}
 												/>
-											{:else}
-												{#if view === 'radar'}
+											{:else if view === 'radar'}
 													<RadarChart
 														team={team.team}
 														data={radarData[i]}
@@ -276,16 +297,23 @@
 															min: 0
 														}}
 													/>
-												{:else}
-													<TeamEventStats
-														bind:this={team.component}
-														team={team.team}
-														{event}
-														bind:staticY
-														scouting={teamScoutingData[i]}
-														{matches}
-													/>
-												{/if}
+											{:else if view === 'eventSum'}
+												<EventSummary 
+													{matches} 
+													team={team.team} 
+													{event} 
+													scouting={teamScoutingData[i]} />
+											{:else if view === 'checkSum'}
+												<!-- <ChecksSummary checks={checksSum} /> -->
+											{:else}
+												<TeamEventStats
+													bind:this={team.component}
+													team={team.team}
+													{event}
+													bind:staticY
+													scouting={teamScoutingData[i]}
+													{matches}
+												/>
 											{/if}
 										{:else}
 											No data found :(
