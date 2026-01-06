@@ -15,6 +15,7 @@
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import EventSummary from '$lib/components/robot-display/EventSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
+	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -48,7 +49,7 @@
 
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
-	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' = $state('progress');
+	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action' = $state('progress');
 
 	const sort = (
 		a: {
@@ -93,11 +94,12 @@
 		});
 
 		const search = new URLSearchParams(location.search);
-		view = (search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum') || 'progress';
+		view = (search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action') || 'progress';
 
 		const unsub = selectedTeams.subscribe((st) =>
 			radarData = st.map((team, i) => {
 				const scoutingData = teamScoutingData[i];
+				console.log('scoutingData:', scoutingData);
 				if (!scoutingData) {
 					return {
 						'Level 1': 0,
@@ -255,6 +257,16 @@
 								value="checkSum"
 							/>
 							<label class="btn btn-outline-primary h-min" for="checkSum-view">Check Summary</label>
+							<input
+								type="radio"
+								class="btn-check"
+								id="action-view"
+								autocomplete="off"
+								checked
+								bind:group={view}
+								value="action"
+							/>
+							<label class="btn btn-outline-primary h-min" for="action-view">Action Heatmap</label>
 						</div>
 					</div>
 				</div>
@@ -304,7 +316,13 @@
 													{event} 
 													scouting={teamScoutingData[i]} />
 											{:else if view === 'checkSum'}
-												<!-- <ChecksSummary checks={checksSum} /> -->
+												<!-- <ChecksSummary 
+												 checks={teamScoutingData[i].data.checksSum} /> -->
+											{:else if view === 'action'}
+												<!-- <ActionHeatmap
+													team={team.team}
+													scouting={teamScoutingData[i]}
+												/> -->
 											{:else}
 												<TeamEventStats
 													bind:this={team.component}
