@@ -25,6 +25,7 @@ import ignore from 'ignore';
 // import { signFingerprint } from '$lib/server/utils/fingerprint';
 import redis from '$lib/server/services/redis';
 import { config } from '$lib/server/utils/env';
+import createTree from '../scripts/create-route-tree';
 
 (async () => {
 	await redis.init();
@@ -34,6 +35,7 @@ import { config } from '$lib/server/utils/env';
 			createStructEventService(struct);
 		}
 	});
+	await createTree();
 })();
 
 // if (env.LOG === 'true') {
@@ -44,15 +46,15 @@ const sessionIgnore = ignore();
 sessionIgnore.add(`
 /account
 /status
-/sse
-/struct
+/api/sse
+/api/struct
 /test
 /favicon.ico
 /robots.txt
-/oauth
+/api/oauth
 /email
-/analytics
-/fp
+/api/analytics
+/api/fp
 `);
 
 export const handle: Handle = async ({ event, resolve }) => {
