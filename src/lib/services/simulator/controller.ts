@@ -105,6 +105,16 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
             circle.style.cursor = 'pointer';
             circle.addEventListener('click', async () => {
                 const res = await new Form()
+                    .input('Do By or Do Here', {
+                        type: 'radio',
+                        label: 'Set State Type',
+                        value: 'doBy',
+                        required: true,
+                        options: [
+                            { label: 'Do By State', value: 'doBy' },
+                            { label: 'Do Here State', value: 'doHere' },
+                        ]
+                    })
                     .input('duration', {
                         type: 'number',
                         label: 'Duration (ms)',
@@ -169,8 +179,24 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
                     })
                     .unwrap();
 
-                if (res) {
+                if (res.value['Do By or Do Here'] === 'doBy') {
                     p.setDoByState({
+                        duration: Number(res.value.duration),
+                        comment: res.value.comment,
+                        vision: res.value.vision === 'true',
+                        config: {
+                            maxVelocity: Number(res.value.maxVelocity),
+                            acceleration: Number(res.value.acceleration),
+                            maxAngularVelocity: Number(res.value.maxAngularVelocity),
+                            angularAcceleration: Number(res.value.angularAcceleration),
+                            deceleration: Number(res.value.deceleration),
+                            angularDeceleration: Number(res.value.angularDeceleration),
+                            length: this.sim.robot.data.length,
+                            width: this.sim.robot.data.width,
+                        }
+                    });
+                } else {
+                    p.setDoHereState({
                         duration: Number(res.value.duration),
                         comment: res.value.comment,
                         vision: res.value.vision === 'true',
@@ -214,59 +240,26 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
         }
     }
 
-    // run(debug: boolean) {
-    //     const stop = this.sim.start(debug);
-    //     const runStates = async () => {
-    //         const renderedPoints = this.points.map((p, i, a) => {
-    //             const nextState = a.slice(i).find(ps => ps.state);
-    //             return {
-    //                 position: p.position, // always use point position
-    //                 orientation: nextState?.orientation,
-    //             }
-    //         });
-
-
-    //         let currentStatePromise: Promise<void> = Promise.resolve();
-    //         for (let i = 0; i < renderedPoints.length; i++) {
-    //             const p = this.points[i];
-    //             // find next state, inclusive
-    //             const nextStateIndex = this.points.slice(i).findIndex(p => p.state);
-    //             if (nextStateIndex !== -1) {
-    //                 const nextState = this.points[i + nextStateIndex].state!;
-    //                 this.sim.setConfig(nextState.config);
-    //             }
-    //             if (i === nextStateIndex) { // at a state point
-    //                 await currentStatePromise; // wait for current state to complete
-    //                 // start next state timer
-    //                 const nextState = this.points.slice(i + 1).findIndex(p => p.state);
-    //                 if (nextState !== -1) {
-    //                     const state = this.points[i + 1 + nextState].state!;
-    //                     currentStatePromise = new Promise<void>(resolve => {
-    //                         setTimeout(() => {
-    //                             resolve();
-    //                             p.resolvedState = state;
-    //                         }, state.duration);
-    //                     });
-    //                 }
-    //             }
-
-    //             await this.sim.goto(renderedPoints[i]);
-    //         }
-    //     };
-    // }
-
     async run(debug: boolean) {
         if (!this.sim.running) {
             throw new Error("Simulator must be running to execute controller");
-        }
-        if (this.data.state !== 'idle') {
-            throw new Error("SimulatorController must be in 'idle' state to run");
         }
 
         this.update(state => ({
             ...state,
             state: 'running',
         }));
+
+        this.sim.set({
+            ...this.sim.data,
+            currentPose: {
+                position: this.points[0].position,
+                orientation: this.points[0].orientation,
+            },
+            prevPose: undefined,
+            prevAngularVelocity: 0,
+            prevVelocity: [0, 0],
+        });
 
         // Create trace segments based on doHereState markers
         const traceSegments: Array<{
@@ -306,28 +299,15 @@ export class SimulatorController extends WritableBase<SimulatorControllerState> 
     private async executeTraceSegment(segment: {
         points: Point[];
         doHereState?: State;
-    }, debug: boolean): Promise<void> {
+    }, debug: boolean) {
         const log = (...args: unknown[]) => {
             if (debug) {
                 console.log('[Controller]', ...args);
             }
         };
+        log('Starting trace segment execution', segment);
 
         if (segment.points.length === 0) return;
 
-        // Create trace for simulator
-        const tracePoints = segment.points.map(p => ({
-            position: p.position,
-            orientation: p.orientation, // Already in degrees from Point class
-        }));
-
-        // Execute the trace
-        log(`Executing trace segment with ${tracePoints.length} points`);
-        const traceEmitter = this.sim.runTrace(tracePoints);
-        
-
-        let currentIndex = 0;
-
-        traceEmitter.on('position', (data) => {});
     }
 }

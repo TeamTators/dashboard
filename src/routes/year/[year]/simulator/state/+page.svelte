@@ -41,6 +41,8 @@
 		<div class="col-12">
 			<div class="d-flex justify-content-between align-items-center mb-2">
 				<h4>Robot Simulator</h4>
+				<div class="btn-group">
+
 				<button
 					class="btn btn-outline-secondary"
 					type="button"
@@ -54,6 +56,17 @@
                 <button type="button" class="btn btn-primary" onclick={stop}>
                     Controller
                 </button>
+				<button
+					class="btn btn-outline-secondary"
+					type="button"
+					onclick={() => {
+						sim?.start(true);
+						controller?.run(true);
+					}}
+				>
+					<i class="material-icons">play</i> Run
+				</button>
+				</div>
 			</div>
 
 			<div class="collapse mb-3" id="configPanel">
