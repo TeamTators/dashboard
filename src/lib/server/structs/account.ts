@@ -126,6 +126,13 @@ export namespace Account {
 		}
 	});
 
+	export const verify = (account: AccountData) => {
+		return account.update({
+			verified: true,
+			verification: ''
+		});
+	};
+
 	export const isAdmin = (account: AccountData) => {
 		return attemptAsync(async () => {
 			return (

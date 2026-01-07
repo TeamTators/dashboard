@@ -314,9 +314,10 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 *
 	 * @returns {void}
 	 */
-	reverse(): void {
+	reverse() {
 		this._reverse = !this._reverse;
 		this.inform();
+		return this;
 	}
 
 	/**
@@ -330,9 +331,10 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 * store.sort((a, b) => a - b);
 	 * ```
 	 */
-	sort(fn: (a: T, b: T) => number): void {
+	sort(fn: (a: T, b: T) => number) {
 		this._sort = fn;
 		this.inform();
+		return this;
 	}
 
 	/**
@@ -346,9 +348,10 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 * store.filter(n => n % 2 === 0);
 	 * ```
 	 */
-	filter(fn: (item: T) => boolean): void {
+	filter(fn: (item: T) => boolean) {
 		this._filter = fn;
 		this.inform();
+		return this;
 	}
 
 	/**
