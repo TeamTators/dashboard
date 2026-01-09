@@ -48,9 +48,6 @@
 				})
 			);
 		}
-	});
-
-	onMount(() => {
 		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
 		if (res.isOk()) {
 			scoutingArr = res.value;
