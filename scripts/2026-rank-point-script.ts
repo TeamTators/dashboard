@@ -14,11 +14,12 @@ export default async (eventKey: string, year: string) => {
 
     const rankPointAvg = async (team: Team) => {
         const events = await Event.getTeamEvents(targetYear, team.tba.team_number).unwrap();
+
         
         const result = [];
         for (const e of events) {
-            team.event = e;
-            const t = await team.getStatus().unwrap();
+            const newTeam = new Team(team.tba, e);
+            const t = await newTeam.getStatus().unwrap();
             if (!t?.qual?.ranking.sort_orders) return;
             result.push(t?.qual?.ranking.sort_orders[0]);
         }
