@@ -9,13 +9,27 @@ export default async (eventKey: string, year: string) => {
     const targetYear = parseInt(year, 10);
 
     const teams = await event.getTeams().unwrap();
+    //console.log(teams[0]);
+    //console.log(teams[0].event.tba);
 
-    const myFn = async (team: Team) => {
-        // get all events from the year "year"
+    const rankPointAvg = async (team: Team) => {
+        const events = await Event.getTeamEvents(targetYear, team.tba.team_number).unwrap();
+        
+        const result = [];
+        for (const e of events) {
+            team.event = e;
+            const t = await team.getStatus().unwrap();
+            if (!t?.qual?.ranking.sort_orders) return;
+            result.push(t?.qual?.ranking.sort_orders[0]);
+        }
+
+        const avg = result.reduce((sum, v) => sum + v, 0) / result.length;
+        return [team.tba.team_number, avg.toFixed(3)];
         // identify rank point average
         // identify rank points they got the most, sorted
+        
     };
 
-    const results = await Promise.all(teams.map(myFn));
-    console.log(results);
+    const results = await Promise.all(teams.map(rankPointAvg));
+    console.log("Rank Point Average:", results);
 };

@@ -361,7 +361,7 @@ export class Team {
 
 	constructor(
 		public readonly tba: T,
-		public readonly event: Event,
+		public event: Event,
 		public readonly data?: StructData<typeof TBA.Teams.data.structure>
 	) {}
 
