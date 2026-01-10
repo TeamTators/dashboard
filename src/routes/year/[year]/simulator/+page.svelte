@@ -5,22 +5,22 @@
 
 	let target: HTMLDivElement;
 	let robotConfig: RobotConfig = $state({
-			maxVelocity: 17,
-			maxAngularVelocity: 360,
-			acceleration: 10,
-			angularAcceleration: 1080, 
-			deceleration: 10,
-			angularDeceleration: 1080, 
-			width: (120 / 4) / 12,
-			length: (120 / 4) / 12,
-		});
+		maxVelocity: 17,
+		maxAngularVelocity: 360,
+		acceleration: 10,
+		angularAcceleration: 1080,
+		deceleration: 10,
+		angularDeceleration: 1080,
+		width: 120 / 4 / 12,
+		length: 120 / 4 / 12
+	});
 
 	let app: Simulator | undefined = $state(undefined);
 
 	onMount(() => {
 		app = new Simulator(Number(page.params.year), target, robotConfig);
 		app.init();
-		app.robot.subscribe(config => robotConfig = config);
+		app.robot.subscribe((config) => (robotConfig = config));
 		return app.start(true);
 	});
 </script>
@@ -84,7 +84,8 @@
 								min="90"
 								max="720"
 								step="1"
-								oninput={(e) => app?.setConfig({ maxAngularVelocity: Number(e.currentTarget.value) })}
+								oninput={(e) =>
+									app?.setConfig({ maxAngularVelocity: Number(e.currentTarget.value) })}
 							/>
 						</div>
 						<div class="col-lg-6 col-md-12">
@@ -98,7 +99,8 @@
 								min="1000"
 								max="2000"
 								step="1"
-								oninput={(e) => app?.setConfig({ angularAcceleration: Number(e.currentTarget.value) })}
+								oninput={(e) =>
+									app?.setConfig({ angularAcceleration: Number(e.currentTarget.value) })}
 							/>
 						</div>
 						<div class="col-lg-6 col-md-12">
