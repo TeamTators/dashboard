@@ -31,25 +31,12 @@ export default async (eventKey: string, year: string) => {
 
     const rankPointCount = async (team: Team) => {
         const events = await Event.getTeamEvents(targetYear, team.tba.team_number).unwrap();
-        
         let rp1 = 0;
         let rp2 = 0;
         let rp3 = 0;
-        let rp1t = 0;
-        let rp2t = 0;
-        let rp3t = 0;
-        let matchest = 0;
+        let totalmatches = 0;
         let eventExist = true;
         let alliance: 'blue' | 'red' | null = null;
-
-        type RPResult = [
-            eventName: string,
-            "autoBonus", number,
-            "coralBonus", number,
-            "bargeBonus", number,
-            "totalMatches", number
-        ];
-        const result: RPResult[] = [];
 
         for (let j=0; j<events.length; j++) {
             const newTeam = new Team(team.tba, events[j]);
@@ -60,27 +47,25 @@ export default async (eventKey: string, year: string) => {
                 if (!res.isOk()) {eventExist = false; continue;}
                 const matches = res.value;
                 if (!matches.score_breakdown) continue;
+
                 if (matches.alliances.blue.team_keys.includes(team.tba.key)) {alliance = 'blue';} 
                     else if (matches.alliances.red.team_keys.includes(team.tba.key)) {alliance = 'red';} 
                     else {console.log("No alliance found");}
                 if (!alliance) continue;
-                if (matches.score_breakdown[alliance].autoBonusAchieved) {rp1++; rp1t++;}
-                if (matches.score_breakdown[alliance].coralBonusAchieved) {rp2++; rp2t++;}
-                if (matches.score_breakdown[alliance].bargeBonusAchieved) {rp3++; rp3t++;}
+
+                if (matches.score_breakdown[alliance].autoBonusAchieved) rp1++;
+                if (matches.score_breakdown[alliance].coralBonusAchieved) rp2++;
+                if (matches.score_breakdown[alliance].bargeBonusAchieved) rp3++;
                 alliance = null;
             }
             if (!eventExist) {eventExist = true; continue;}
-            result.push([events[j].tba.name, "autoBonus", rp1, "coralBonus", rp2, "bargeBonus", rp3, "totalMatches", m.length]);
-            matchest += m.length;
-            rp1 = 0;
-            rp2 = 0;
-            rp3 = 0;    
+            totalmatches += m.length;
         }
-        return ["Team Number: " + String(team.tba.team_number) + " " + team.tba.nickname, "total", ["autoBonus", rp1t, "coralBonus", rp2t, "bargeBonus", rp3t, "totalMatches", matchest],result];
+        return ["Team Number: " + String(team.tba.team_number) + " " + team.tba.nickname, "total", ["autoBonus", rp1, "coralBonus", rp2, "bargeBonus", rp3, "totalMatches", totalmatches]];
     };
 
     const results = await Promise.all(teams.map(rankPointAvg));
     const rankedResults = await Promise.all(teams.map(rankPointCount));
-    //console.log("Rank Point Average:", results);
+    console.log("Rank Point Average:", results);
     console.log("Rank Point Count:", rankedResults);
 };
