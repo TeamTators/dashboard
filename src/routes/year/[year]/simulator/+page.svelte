@@ -145,16 +145,18 @@
 				<div class="row">
 					<div class="col-md-6">
 						<ul class="mb-0">
-							<li><strong>Movement:</strong> Tap/click to set target position</li>
-							<li><strong>Rotation:</strong> Arrow keys ← → or second finger tap</li>
-							<li><strong>Auto-rotate:</strong> Hold Shift while moving to face direction</li>
+							<li><strong>Movement:</strong> Left-click/tap to set target position</li>
+							<li><strong>Rotation:</strong> Right-click or two-finger tap to set orientation</li>
+							<li><strong>Face Target:</strong> Double-click + drag to toggle auto-facing mode</li>
+							<li><strong>Face Point:</strong> Double-click on field to set facing target</li>
 						</ul>
 					</div>
 					<div class="col-md-6">
 						<ul class="mb-0">
-							<li><strong>Field Centric:</strong> Place second finger where robot should face</li>
-							<li><strong>Smooth Motion:</strong> Trapezoidal acceleration/deceleration</li>
-							<li><strong>Visual:</strong> Yellow arrow shows robot orientation</li>
+							<li><strong>Clear Targets:</strong> Double-click on robot or press Space</li>
+							<li><strong>Stop All:</strong> Press Escape to clear everything</li>
+							<li><strong>Physics:</strong> Realistic acceleration/deceleration curves</li>
+							<li><strong>Visual:</strong> Yellow arrow shows robot front direction</li>
 						</ul>
 					</div>
 				</div>
