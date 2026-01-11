@@ -7,9 +7,11 @@ import { Random } from 'ts-utils/math';
 export default async () => {
 	await openStructs();
 	await Struct.buildAll(DB);
-	const data = (await Event.getEvent('2025utwv')).unwrap();
-	const m = (await data.getMatches()).unwrap().find((m) => m.teams.includes(2122));
-	console.log(JSON.stringify(m?.tba.score_breakdown, null, 2));
+	const data = await Event.getEvent('2024utwv').unwrap();
+	const matches = await data.getMatches().unwrap();
+	console.log(JSON.stringify(matches, null, 2));
+	// const m = (await data.getMatches()).unwrap().find((m) => m.teams.includes(2122));
+	// console.log(JSON.stringify(m?.tba.score_breakdown, null, 2));
 	// fs.writeFileSync(
 	// 	path.join(__dirname, 'data.ts'),
 	// 	`

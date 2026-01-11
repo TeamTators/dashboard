@@ -9,7 +9,9 @@ import {
 	teamsFromMatch,
 	MediaSchema,
 	Match2025Schema,
+	Match2024Schema,
 	type TBAMatch2025,
+	type TBAMatch2024,
 	type TBAMatch
 } from 'tatorscout/tba';
 import { attempt, attemptAsync, resolveAll, type Result } from 'ts-utils/check';
@@ -336,8 +338,12 @@ export class Match {
 	//     });
 	// }
 
-	asYear<Y extends 2025>(year: Y): Result<Y extends 2025 ? TBAMatch2025 : never> {
+	asYear<Y extends 2025 | 2024>(year: Y): Result<Y extends 2025 ? TBAMatch2025 : Y extends 2024 ? TBAMatch2024 : never> {
 		return attempt(() => {
+			if (year === 2024) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				return Match2024Schema.parse(this.tba) as any;
+			}
 			if (year === 2025) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				return Match2025Schema.parse(this.tba) as any;
