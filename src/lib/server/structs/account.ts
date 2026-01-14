@@ -37,13 +37,13 @@ export namespace Account {
 		safes: ['key', 'salt', 'verification']
 	});
 
-	Account.on('update', async ({ from , to }) => {
+	Account.on('update', async ({ from, to }) => {
 		if (from.verified !== to.data.verified) {
 			if (to.data.verified) {
 				const has = await isAdmin(to).unwrap();
 				if (has) return;
 				await Admins.new({
-					accountId: to.id,
+					accountId: to.id
 				}).unwrap();
 			} else {
 				const exists = await Admins.fromProperty('accountId', to.id, {
