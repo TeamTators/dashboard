@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { Permissions } from './permissions';
 import { QueryListener } from '../services/struct-listeners';
 import { config, domain } from '../utils/env';
+import terminal from '../utils/terminal';
 
 export namespace Account {
 	export const Account = new Struct({
@@ -38,19 +39,25 @@ export namespace Account {
 	});
 
 	Account.on('update', async ({ from, to }) => {
-		if (from.verified !== to.data.verified) {
-			if (to.data.verified) {
-				const has = await isAdmin(to).unwrap();
-				if (has) return;
-				await Admins.new({
-					accountId: to.id
-				}).unwrap();
-			} else {
-				const exists = await Admins.fromProperty('accountId', to.id, {
-					type: 'single'
-				}).unwrap();
-				if (exists) await exists.delete().unwrap();
+		try {
+			if (from.verified !== to.data.verified) {
+				if (to.data.verified) {
+					const has = await Admins.fromProperty('accountId', to.id, {
+						type: 'single',
+					}).unwrap();
+					if (has) return;
+					await Admins.new({
+						accountId: to.id
+					}).unwrap();
+				} else {
+					const exists = await Admins.fromProperty('accountId', to.id, {
+						type: 'single'
+					}).unwrap();
+					if (exists) await exists.delete().unwrap();
+				}
 			}
+		} catch (error) {
+			terminal.error(error);
 		}
 	});
 
