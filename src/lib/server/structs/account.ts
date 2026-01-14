@@ -37,6 +37,8 @@ export namespace Account {
 		safes: ['key', 'salt', 'verification']
 	});
 
+	Account.on('update', ({ from , to }) => {});
+
 	QueryListener.on(
 		'search',
 		Account,
