@@ -61,11 +61,20 @@ export default async (eventKey: string, year: string) => {
             if (!eventExist) {eventExist = true; continue;}
             totalmatches += m.length;
         }
-        return ["Team Number: " + String(team.tba.team_number) + " " + team.tba.nickname, "total", ["autoBonus", rp1, "coralBonus", rp2, "bargeBonus", rp3, "totalMatches", totalmatches]];
+        // return ["Team Number: " + String(team.tba.team_number) + " " + team.tba.nickname, "total", ["autoBonus", rp1, "coralBonus", rp2, "bargeBonus", rp3, "totalMatches", totalmatches]];
+        return {
+            team: team.tba.team_number,
+            totalMatches: totalmatches,
+            rankPoints: {
+                autoBonus: rp1,
+                coralBonus: rp2,
+                bargeBonus: rp3
+            }
+        }
     };
 
     const results = await Promise.all(teams.map(rankPointAvg));
     const rankedResults = await Promise.all(teams.map(rankPointCount));
     console.log("Rank Point Average:", results);
-    console.log("Rank Point Count:", rankedResults);
+    console.log("Rank Point Count:", rankedResults.sort((a, b) => b.rankPoints.bargeBonus - a.rankPoints.bargeBonus));
 };
