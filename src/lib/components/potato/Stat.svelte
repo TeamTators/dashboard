@@ -10,7 +10,7 @@
 
 	const { name, stat, color, level }: Props = $props();
 
-	const max = Potato.Levels[Potato.getNextPhase(level)];
+	const max = $derived(Potato.Levels[Potato.getNextPhase(level)]);
 </script>
 
 <div class="mb-2">

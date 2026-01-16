@@ -18,7 +18,7 @@
 
 	let { team, matches, staticY = $bindable(), scouting, defaultView }: Props = $props();
 
-	let view = $state(defaultView);
+	let view = $derived(defaultView);
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
@@ -37,8 +37,6 @@
 	let pointDataset: datasetType;
 
 	onMount(() => {
-		console.log('SCOUTING DATA:', scouting);
-
 		scouting.sort((a, b) => {
 			if (a.compLevel === b.compLevel) return Number(a.matchNumber) - Number(b.matchNumber);
 			const order = ['qm', 'qf', 'sf', 'f'];

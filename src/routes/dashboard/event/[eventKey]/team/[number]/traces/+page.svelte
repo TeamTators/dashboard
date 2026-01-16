@@ -27,7 +27,7 @@
 	let scroller: HTMLDivElement;
 	let match: TBAMatch | undefined = $state(undefined);
 
-	const open = async (scouting: Scouting.MatchScoutingExtended) => {
+	const _open = async (scouting: Scouting.MatchScoutingExtended) => {
 		selectedScouting = scouting;
 		match = matches.find(
 			(m) => m.tba.match_number === scouting.matchNumber && m.tba.comp_level === scouting.compLevel

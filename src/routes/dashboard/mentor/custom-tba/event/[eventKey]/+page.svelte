@@ -39,7 +39,6 @@
 	let dateState: 'valid' | 'bad_order' | 'invalid_date' | 'ready' | 'invalid' = $state('ready');
 
 	const validateEventDates = () => {
-		console.log('Validating event dates:', start_date, end_date);
 		if (!start_date || !end_date) {
 			dateState = 'ready';
 			return false;
@@ -56,12 +55,12 @@
 		}
 		if (year && start.getFullYear() !== year) {
 			dateState = 'invalid';
-			console.error(`Start date year ${start.getFullYear()} does not match event year ${year}`);
+			// console.error(`Start date year ${start.getFullYear()} does not match event year ${year}`);
 			return false;
 		}
 		if (year && end.getFullYear() !== year) {
 			dateState = 'invalid';
-			console.error(`End date year ${end.getFullYear()} does not match event year ${year}`);
+			// console.error(`End date year ${end.getFullYear()} does not match event year ${year}`);
 			return false;
 		}
 		dateState = 'valid';
@@ -119,7 +118,7 @@
 				console.error('Failed to update event:', res.error);
 				return;
 			}
-			console.log('Event updated successfully:', res.value);
+			// console.log('Event updated successfully:', res.value);
 			location.reload(); // Reload the page to reflect changes
 		} else {
 			console.error('Form is not valid for submission');

@@ -584,7 +584,6 @@
 			console.error('Failed to create extended scouting array:', res.error);
 		} else {
 			scoutingArr.set(res.value.data);
-			scoutingArr = res.value;
 		}
 		contributionSub();
 		contributionSub = scoutingArr.subscribe(() => {

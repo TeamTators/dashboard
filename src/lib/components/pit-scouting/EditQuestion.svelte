@@ -8,17 +8,17 @@
 
 	const { question }: Props = $props();
 
-	let q = $state(question.data.question || '');
-	let description = $state(question.data.description || '');
-	let key = $state(question.data.key || '');
-	let type = $state(question.data.type || 'text');
+	let q = $derived(question.data.question || '');
+	let description = $derived(question.data.description || '');
+	let key = $derived(question.data.key || '');
+	let type = $derived(question.data.type || 'text');
 	let options: string[] = $state([]);
-	let order = $state(question.data.order || 0);
+	let order = $derived(question.data.order || 0);
 
-	{
+	$effect(() => {
 		const optionsData = Scouting.PIT.parseOptions(question);
 		if (optionsData.isOk()) options = optionsData.value;
-	}
+	});
 
 	// question
 	// key
