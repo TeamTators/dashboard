@@ -24,7 +24,7 @@ let account: Account.AccountData | undefined;
 const id = uuid();
 
 beforeAll(async () => {
-	await Struct.buildAll(DB).unwrap();
+	await Struct.buildAll(DB);
 	process.env.AUTO_SIGN_IN = undefined; // disable auto sign in for this test
 
 	account = await Account.createAccount({
