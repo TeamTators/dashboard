@@ -51,7 +51,7 @@ export const postBuild = async () => {
 			{
 				static: true
 			}
-		).unwrap();
+		);
 	}
 };
 
