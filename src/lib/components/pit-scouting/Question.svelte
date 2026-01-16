@@ -208,7 +208,6 @@
 			<select
 				class="form-select"
 				onchange={(e) => {
-					console.log('Select', e);
 					// value = [e.currentTarget.value];
 					value.set([e.currentTarget.value]);
 					updateAnswer();
