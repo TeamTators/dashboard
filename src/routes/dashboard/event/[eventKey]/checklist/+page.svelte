@@ -24,9 +24,10 @@
 	let uploadComponent: FileUploader;
 
 	onMount(() => {
-		uploadComponent.uppy.use(Webcam, { modes: ['picture'] });
-		uploadComponent.uppy.use(ImageEditor);
-		uploadComponent.uppy.use(Compressor, { quality: 0.4 });
+		const uppy = uploadComponent.getUppy();
+		uppy.use(Webcam, { modes: ['picture'] });
+		uppy.use(ImageEditor);
+		uppy.use(Compressor, { quality: 0.4 });
 
 		uploadComponent.on('load', (file) => {
 			if (!uploadTeam) return;

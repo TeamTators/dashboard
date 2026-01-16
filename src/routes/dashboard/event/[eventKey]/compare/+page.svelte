@@ -15,16 +15,18 @@
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = writable<
-		{
-			team: TBATeam;
-			component: Progress | TeamEventStats | undefined;
-		}[]
-	>(
-		data.selectedTeams.map((t) => ({
-			team: t,
-			component: undefined
-		}))
+	const selectedTeams = $derived(
+		writable<
+			{
+				team: TBATeam;
+				component: Progress | TeamEventStats | undefined;
+			}[]
+		>(
+			data.selectedTeams.map((t) => ({
+				team: t,
+				component: undefined
+			}))
+		)
 	);
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);

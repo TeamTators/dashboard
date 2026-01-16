@@ -14,7 +14,7 @@
 
 	type MatchSchema = z.infer<typeof Match2025Schema>;
 
-	const tba = match.tba as MatchSchema;
+	const tba = $derived(match.tba as MatchSchema);
 
 	type EndGameRobotKey = `endGameRobot${1 | 2 | 3}`;
 

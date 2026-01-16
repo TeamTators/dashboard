@@ -13,7 +13,7 @@
 
 	const { question, team, answers }: Props = $props();
 
-	let answer: Scouting.PIT.AnswerData | undefined = $state(
+	let answer: Scouting.PIT.AnswerData | undefined = $derived(
 		answers.data.find((a) => a.data.questionId === question.data.id && a.data.team === team)
 	);
 

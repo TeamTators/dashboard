@@ -14,8 +14,8 @@
 	}
 
 	const { scouting, style }: Props = $props();
-	let team = $state(scouting.team);
-	let event = $state(scouting.eventKey);
+	let team = $derived(scouting.team);
+	let event = $derived(scouting.eventKey);
 	let comments = $state(new DataArr(Scouting.TeamComments, []));
 
 	let render = $state(0);
