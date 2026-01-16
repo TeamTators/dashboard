@@ -14,7 +14,6 @@ export type Entitlement =
 	| 'view-checklist'
 	| 'manage-roles'
 	| 'manage-members'
-	| 'test-permission-view'
 	| 'test-permission-manage';
 export type Group =
 	| 'Roles'
