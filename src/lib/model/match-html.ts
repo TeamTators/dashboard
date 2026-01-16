@@ -7,6 +7,7 @@ import YearInfo2025 from 'tatorscout/years/2025.js';
 import { debounce } from 'ts-utils';
 import { isInside } from 'math/polygon';
 import type { Point2D } from 'math/point';
+import { catmullRom } from 'math/spline';
 
 const PATH_COLOR = Color.fromBootstrap('primary');
 
@@ -59,6 +60,7 @@ export class MatchHTML {
 	drawPath() {
 		if (!this.target) throw new Error('MatchHTML is not initialized');
 		if (!this.yearInfo) throw new Error('YearInfo is not set in MatchHTML');
+		console.log('From:', this.from, 'To:', this.to);
 
 		const svgNS = 'http://www.w3.org/2000/svg';
 		const svg = document.createElementNS(svgNS, 'svg');
@@ -69,21 +71,39 @@ export class MatchHTML {
 		this.target.appendChild(svg);
 
 		const path = document.createElementNS(svgNS, 'path');
+		const copy = this.match.trace.points.slice(this.from, this.to).filter((p) => p[1] !== 0 || p[2] !== 0);
+		const fn = catmullRom(
+			copy.map((p) => [p[1] * Number(this.target?.clientWidth), p[2] * Number( this.target?.clientHeight)]),
+		);
 		let d = '';
-		let start = this.from;
-		for (let i = this.from; i < this.to; i++) {
-			const point = this.match.trace.points[i];
-			const x = point[1] * this.target.clientWidth;
-			const y = point[2] * this.target.clientHeight;
+		// let start = this.from;
+		// for (let i = this.from; i < this.to; i++) {
+		// 	const point = this.match.trace.points[i];
+		// 	const x = point[1] * this.target.clientWidth;
+		// 	const y = point[2] * this.target.clientHeight;
+		// 	if (x === 0 && y === 0) {
+		// 		start = i + 1;
+		// 		continue;
+		// 	}
+		// 	if (i === start) {
+		// 		d += `M ${x} ${y} `;
+		// 	} else {
+		// 		d += `L ${x} ${y} `;
+		// 	}
+		// }
+		const RATE = 0.001;
+		let first = true;
+		for (let i = 0; i <= 1; i += RATE) {
+			const [x, y] = fn(i);
 			if (x === 0 && y === 0) {
-				start = i + 1;
 				continue;
 			}
-			if (i === start) {
+			if (first) {
 				d += `M ${x} ${y} `;
 			} else {
 				d += `L ${x} ${y} `;
 			}
+			first = false;
 		}
 		path.setAttribute('d', d);
 		path.setAttribute('stroke', PATH_COLOR.toString('rgb'));
@@ -103,8 +123,10 @@ export class MatchHTML {
 
 		for (let i = this.from; i < this.to; i++) {
 			const [, x, y, a] = this.match.trace.points[i];
+			// const point = this.match.trace.points[i];
+			// if (!point) continue;
+			// const [, x, y, a] = point;
 			if (!a) continue;
-
 			const actionEl = document.createElement('div');
 			actionEl.classList.add('action', 'hover-grow', 'no-select');
 			actionEl.style.position = 'absolute';

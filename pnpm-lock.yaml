@@ -219,8 +219,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       math:
-        specifier: git+https://github.com/tsaxking/calculations#v1.0.0
-        version: https://codeload.github.com/tsaxking/calculations/tar.gz/6f735b3ade72c81393ee5f07db93647c3d4fff91
+        specifier: github:tsaxking/calculations#v1.0.1
+        version: https://codeload.github.com/tsaxking/calculations/tar.gz/8dc28cd2f76df6e3a8f6c9745459309291f40279
       mime-types:
         specifier: ^3.0.1
         version: 3.0.2
