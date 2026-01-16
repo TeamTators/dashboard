@@ -245,9 +245,6 @@ importers:
       proper-lockfile:
         specifier: ^4.1.2
         version: 4.1.2
-      range-slider-input:
-        specifier: ^2.4.4
-        version: 2.4.5
       redis:
         specifier: ^5.7.0
         version: 5.10.0
@@ -3808,6 +3805,10 @@ packages:
     resolution: {tarball: https://codeload.github.com/tsaxking/calculations/tar.gz/6f735b3ade72c81393ee5f07db93647c3d4fff91}
     version: 1.0.0
 
+  math@https://codeload.github.com/tsaxking/calculations/tar.gz/8dc28cd2f76df6e3a8f6c9745459309291f40279:
+    resolution: {tarball: https://codeload.github.com/tsaxking/calculations/tar.gz/8dc28cd2f76df6e3a8f6c9745459309291f40279}
+    version: 1.0.0
+
   mdn-data@2.0.28:
     resolution: {integrity: sha512-aylIc7Z9y4yzHYAJNuESG3hfhC+0Ibp/MAMiaOZgNv4pmEdFyfZhhhny4MNiAfWdBQ1RQ2mfDWmM1x8SvGyp8g==}
 
@@ -4393,9 +4394,6 @@ packages:
   range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
-
-  range-slider-input@2.4.5:
-    resolution: {integrity: sha512-sH6nCzyxnXK8F3TiEiJ65faTatVihE4M8dJa3SrUXz5u2PuELRfQiQsoJTQlJQG2XVG1orOJjVsExPvj/j7KoA==}
 
   raw-body@2.5.3:
     resolution: {integrity: sha512-s4VSOf6yN0rvbRZGxs8Om5CWj6seneMwK3oDb4lWDH0UPhWcxwOWw5+qk24bxq87szX1ydrwylIOp2uG1ojUpA==}
@@ -7867,7 +7865,7 @@ snapshots:
     dependencies:
       colors: https://codeload.github.com/tsaxking/colors/tar.gz/033743f3dc346eb907160d770ba1bced183e4565
       material-icons: 1.13.14
-      math: https://codeload.github.com/tsaxking/calculations/tar.gz/6f735b3ade72c81393ee5f07db93647c3d4fff91
+      math: https://codeload.github.com/tsaxking/calculations/tar.gz/8dc28cd2f76df6e3a8f6c9745459309291f40279
       ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4(@types/node@22.19.3)(sass-embedded@1.96.0)(sass@1.96.0)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -9334,6 +9332,10 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
+  math@https://codeload.github.com/tsaxking/calculations/tar.gz/8dc28cd2f76df6e3a8f6c9745459309291f40279:
+    dependencies:
+      typescript: 5.9.3
+
   mdn-data@2.0.28: {}
 
   mdsvex@0.11.2(svelte@5.46.0):
@@ -10037,8 +10039,6 @@ snapshots:
 
   range-parser@1.2.1: {}
 
-  range-slider-input@2.4.5: {}
-
   raw-body@2.5.3:
     dependencies:
       bytes: 3.1.2
@@ -10635,7 +10635,7 @@ snapshots:
       eslint: 9.39.2
       eslint-config-prettier: 10.1.8(eslint@9.39.2)
       eslint-plugin-svelte: 2.46.1(eslint@9.39.2)(svelte@5.46.0)(ts-node@10.9.2(@types/node@22.19.3)(typescript@5.9.3))
-      math: https://codeload.github.com/tsaxking/calculations/tar.gz/6f735b3ade72c81393ee5f07db93647c3d4fff91
+      math: https://codeload.github.com/tsaxking/calculations/tar.gz/8dc28cd2f76df6e3a8f6c9745459309291f40279
       prettier: 3.7.4
       prettier-plugin-svelte: 3.4.1(prettier@3.7.4)(svelte@5.46.0)
       svelte: 5.46.0

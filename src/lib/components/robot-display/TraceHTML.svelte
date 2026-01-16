@@ -2,8 +2,8 @@
 	import { MatchHTML } from '$lib/model/match-html';
 	import type { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import rangeSlider from 'range-slider-input';
 	import type { Readable } from 'svelte/store';
+	import { RangeSlider } from '$lib/utils/form';
 
 	interface Props {
 		scouting: Scouting.MatchScoutingExtended;
@@ -21,31 +21,38 @@
 		trace.init(target);
 		trace.animate();
 
-		const s = rangeSlider(slider, {
-			max: trace.match.trace.points.length,
-			step: 1,
+		// const s = rangeSlider(slider, {
+		// 	max: trace.match.trace.points.length,
+		// 	step: 1,
+		// 	min: 0,
+		// 	value: [0, trace.match.trace.points.length],
+		// 	onInput: ([from, to]) => {
+		// 		trace.from = from;
+		// 		trace.to = to;
+		// 		trace.render();
+		// 	}
+		// });
+
+		const s = new RangeSlider({
+			target: slider,
 			min: 0,
-			value: [0, trace.match.trace.points.length],
-			onInput: ([from, to]) => {
-				trace.from = from;
-				trace.to = to;
-				trace.render();
-			}
+			max: trace.match.trace.points.length,
+			step: 1
 		});
 
 		return focus?.subscribe((f) => {
 			switch (f) {
 				case 'auto':
-					s.value([0, 15 * 4]);
+					s.set({ min: 0, max: 15 * 4 + 3 * 4 });
 					break;
 				case 'teleop':
-					s.value([15 * 4, 15 * 4 + 135 * 4]);
+					s.set({ min: 15 * 4 + 3 * 4, max: 15 * 4 + 100 * 4 });
 					break;
 				case 'endgame':
-					s.value([15 * 4 + 100 * 4, trace.match.trace.points.length]);
+					s.set({ min: 15 * 4 + 100 * 4, max: trace.match.trace.points.length });
 					break;
 				case 'all':
-					s.value([0, trace.match.trace.points.length]);
+					s.set({ min: 0, max: trace.match.trace.points.length });
 					break;
 			}
 		});
