@@ -43,15 +43,6 @@ export const postBuild = async () => {
 				verification: ''
 			})
 			.unwrap();
-
-		await Account.Admins.new(
-			{
-				accountId: res.id
-			},
-			{
-				static: true
-			}
-		).unwrap();
 	}
 };
 
