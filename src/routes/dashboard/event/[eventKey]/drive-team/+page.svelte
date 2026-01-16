@@ -14,7 +14,6 @@
 	let tatorAlliance: 'red' | 'blue' | undefined = $state(undefined);
 
 	const render = async () => {
-		console.log('rendering');
 		const matches = await event.getMatches(true, new Date());
 		if (matches.isErr()) return console.error(matches.error);
 

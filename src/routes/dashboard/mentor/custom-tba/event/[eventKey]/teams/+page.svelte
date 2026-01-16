@@ -206,7 +206,6 @@
 					onCellContextMenu: (event) => {
 						if (!event.event) return;
 						event.event.preventDefault();
-						console.log(event.event);
 						contextmenu(event.event as MouseEvent, {
 							options: [
 								`Manage ${event.data?.number} (${event.data?.tba?.nickname || 'Unknown'})`,

@@ -43,7 +43,7 @@ export namespace Account {
 			if (from.verified !== to.data.verified) {
 				if (to.data.verified) {
 					const has = await Admins.fromProperty('accountId', to.id, {
-						type: 'single',
+						type: 'single'
 					}).unwrap();
 					if (has) return;
 					await Admins.new({

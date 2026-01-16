@@ -20,7 +20,6 @@
 		const res = Scouting.PIT.parseAnswer(answer);
 		if (res.isOk()) {
 			value = res.value.join(', ');
-			console.log(answerAccounts);
 			const a = answerAccounts.find((a) => a.data.id === answer.data.accountId);
 			accountUsername = a?.data.username || 'unknown';
 		}

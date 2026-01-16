@@ -245,9 +245,6 @@ importers:
       proper-lockfile:
         specifier: ^4.1.2
         version: 4.1.2
-      range-slider-input:
-        specifier: ^2.4.4
-        version: 2.4.5
       redis:
         specifier: ^5.7.0
         version: 5.10.0
@@ -4397,9 +4394,6 @@ packages:
   range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
-
-  range-slider-input@2.4.5:
-    resolution: {integrity: sha512-sH6nCzyxnXK8F3TiEiJ65faTatVihE4M8dJa3SrUXz5u2PuELRfQiQsoJTQlJQG2XVG1orOJjVsExPvj/j7KoA==}
 
   raw-body@2.5.3:
     resolution: {integrity: sha512-s4VSOf6yN0rvbRZGxs8Om5CWj6seneMwK3oDb4lWDH0UPhWcxwOWw5+qk24bxq87szX1ydrwylIOp2uG1ojUpA==}
@@ -10044,8 +10038,6 @@ snapshots:
   random-bytes@1.0.0: {}
 
   range-parser@1.2.1: {}
-
-  range-slider-input@2.4.5: {}
 
   raw-body@2.5.3:
     dependencies:
