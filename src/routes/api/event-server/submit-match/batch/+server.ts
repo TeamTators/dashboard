@@ -2,19 +2,13 @@ import { z } from 'zod';
 import terminal from '$lib/server/utils/terminal';
 import { ServerCode } from 'ts-utils/status';
 import { str } from '$lib/server/utils/env.js';
+import { auth } from '$lib/server/utils/auth-api.js';
 
 export const POST = async (event) => {
-	const header = event.request.headers.get('X-API-KEY');
+	auth(event);
 
 	const res = (message: string, status: ServerCode) =>
 		new Response(JSON.stringify({ message }), { status });
-
-	if (
-		String(header) !== str('EVENT_SERVER_API_KEY', true) &&
-		!event.locals.account?.data.verified
-	) {
-		return res('Invalid API key', 401);
-	}
 
 	const body = await event.request.json();
 

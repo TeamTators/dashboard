@@ -1,32 +1,27 @@
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { z } from 'zod';
 import terminal from '$lib/server/utils/terminal';
-import { Trace, TraceSchema } from 'tatorscout/trace';
+import { Trace } from 'tatorscout/trace';
 import { ServerCode } from 'ts-utils/status';
 import { Account } from '$lib/server/structs/account';
 import { Err, resolveAll } from 'ts-utils/check';
 import { Logs } from '$lib/server/structs/log.js';
-import { str } from '$lib/server/utils/env.js';
+import { decompress } from '$lib/server/utils/compression';
+import type { RequestEvent } from './$types';
+import { auth } from '$lib/server/utils/auth-api.js';
 
-export const POST = async (event) => {
-	terminal.log('Event server request', event.request.url);
-	const header = event.request.headers.get('X-API-KEY');
+
+export const POST = async (event: RequestEvent) => {
+	auth(event);
 
 	const res = (success: boolean, message: string, status: ServerCode) =>
 		new Response(JSON.stringify({ success, message }), { status });
 
-	if (
-		String(header) !== str('EVENT_SERVER_API_KEY', true) &&
-		!event.locals.account?.data.verified
-	) {
-		return res(false, 'Invalid API key', 401);
-	}
-
-	const body = await event.request.json();
+	const body = await event.request.arrayBuffer();
 
 	const parsed = z
 		.object({
-			trace: TraceSchema,
+			trace: z.string(),
 			eventKey: z.string(),
 			match: z.number().int(),
 			team: z.number().int(),
@@ -50,7 +45,7 @@ export const POST = async (event) => {
 				})
 			)
 		})
-		.safeParse(body);
+		.safeParse(decompress(Buffer.from(body)).unwrap());
 
 	if (!parsed.success) {
 		terminal.warn('Invalid request body', parsed.error.message);
@@ -102,7 +97,7 @@ export const POST = async (event) => {
 	}
 	if (exists.value) {
 		if (
-			exists.value.data.trace === JSON.stringify(trace) &&
+			exists.value.data.trace === trace &&
 			exists.value.data.checks === JSON.stringify(checks) &&
 			exists.value.data.sliders === JSON.stringify(sliders) &&
 			exists.value.data.scoutGroup === group &&
@@ -118,7 +113,7 @@ export const POST = async (event) => {
 			scoutGroup: group,
 			prescouting,
 			remote,
-			trace: Trace.parse(JSON.stringify(trace)).unwrap().serialize(),
+			trace: Trace.parse(trace).unwrap().serialize(),
 			checks: JSON.stringify(checks),
 			alliance: alliance ? alliance : 'unknown',
 			year,
@@ -146,7 +141,7 @@ export const POST = async (event) => {
 			prescouting,
 			remote,
 			scoutGroup: group,
-			trace: Trace.parse(JSON.stringify(trace)).unwrap().serialize(),
+			trace: Trace.parse(trace).unwrap().serialize(),
 			checks: JSON.stringify(checks),
 			scoutUsername: scout,
 			alliance: alliance ? alliance : 'unknown',
