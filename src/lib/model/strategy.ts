@@ -5,6 +5,21 @@ import { sse } from '../services/sse';
 import { browser } from '$app/environment';
 
 export namespace Strategy {
+	export const MatchWhiteboards = new Struct({
+		name: 'match_whiteboards',
+		structure: {
+			eventKey: 'string',
+			matchNumber: 'number',
+			compLevel: 'string',
+			board: 'string',
+			name: 'string'
+		},
+		socket: sse,
+		browser,
+	});
+
+	export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;
+
 	// export const Whiteboards = new Struct({
 	// 	name: 'whiteboards',
 	// 	structure: {

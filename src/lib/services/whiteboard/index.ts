@@ -1,21 +1,33 @@
+import type { Strategy } from "$lib/model/strategy";
 import { contextmenu } from "$lib/utils/contextmenu";
+import { Stack } from "$lib/utils/stack";
 import { WritableBase } from "$lib/utils/writables";
 import { Color } from "colors/color";
 import type { Point2D } from "math/point";
+import { catmullRom } from 'math/spline';
+import type { TBAEvent, TBAMatch } from "tatorscout/tba";
+import { attempt, SimpleEventEmitter } from "ts-utils";
+import z from "zod";
 
 export type WhiteboardConfig = {
-    year: number;
     target: HTMLDivElement;
+    event: TBAEvent;
+    match: TBAMatch;
 }
 
 export type PathState = {
     points: Point2D[];
     color: string;
+    selected: boolean;
+    id: number;
 };
 
 export type WhiteboardState = {
     paths: Path[];
 };
+
+const CLICK_THRESHOLD = 100; // ms before mouseup to consider as click
+
 
 export class Path extends WritableBase<PathState> {
     constructor(
@@ -36,157 +48,335 @@ export class Path extends WritableBase<PathState> {
     
     remove() {
         this.whiteboard.update((wb) => {
-            wb.paths = wb.paths.filter(p => Object.is(p, this));
+            wb.paths = wb.paths.filter(p => p.data.id !== this.data.id);
             return wb;
         });
-        this.inform();
+        this.target.remove();
+        this.whiteboard.emit('update');
     }
 
     add(point: Point2D) {
         this.data.points.push(point);
         this.inform();
+        this.whiteboard.emit('update');
     }
 
     draw() {
-        this.target.setAttribute('stroke-linecap', 'rounded');
-        this.target.setAttribute('stroke-width', '10');
+        // const fn = catmullRom(this.points);
+        this.target.setAttribute('stroke-linecap', 'round');
+        this.target.setAttribute('stroke-width', '0.015');
         this.target.setAttribute('fill', 'none');
-        this.target.setAttribute('stroke', this.color);
+        if (this.data.selected) {
+            this.target.setAttribute('stroke', Color.fromName('yellow').setAlpha(0.8).toString('rgba'));
+        } else {
+            this.target.setAttribute('stroke', this.color);
+        }
         let d = '';
         for (let i = 0; i < this.points.length; i++) {
             const [x, y] = this.points[i];
-            d += `${i === 0 ? 'M' : 'L'} ${x * 2} ${y}`;
+            // SVG uses viewBox 0 0 1 1, so use normalized coordinates
+            d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
         }
-
+        // for (let i = 0; i < 1; i += 0.01) {
+        //     const [x, y] = fn(i);
+        //     d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+        // }
         this.target.setAttribute('d', d);
     }
 
     init() {
         const oncontextmenu = (e: PointerEvent) => {
+            this.select();
             e.preventDefault();
             contextmenu(e, {
-                options: [],
+                options: [
+                    'Options',
+                    {
+                        name: 'Cancel',
+                        icon: {
+                            type: 'material-icons',
+                            name: 'close',
+                        },
+                        action: () => {},
+                    },
+                    {
+                        name: 'Delete Path',
+                        icon: {
+                            type: 'material-icons',
+                            name: 'delete',
+                        },
+                        action: () => {
+                            this.remove();
+                        },
+                    }
+                ],
                 width: '100px',
             });
         };
         const unsub = this.subscribe(() => {
-            this.draw();
+            requestAnimationFrame(() => this.draw());
         });
+        this.target.addEventListener('click', oncontextmenu);
         this.target.addEventListener('contextmenu', oncontextmenu);
+
+        // Synthesize click from touch events for mobile
+        let touchStartTime: number | null = null;
+        let touchStartX: number | null = null;
+        let touchStartY: number | null = null;
+        const TOUCH_CLICK_THRESHOLD = 200; // ms
+        const TOUCH_MOVE_THRESHOLD = 10; // px
+
+        const onTouchStart = (e: TouchEvent) => {
+            if (e.touches.length === 1) {
+                touchStartTime = Date.now();
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        };
+        const onTouchEnd = (e: TouchEvent) => {
+            if (
+                touchStartTime !== null &&
+                e.changedTouches.length === 1 &&
+                touchStartX !== null &&
+                touchStartY !== null
+            ) {
+                const dt = Date.now() - touchStartTime;
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dt < TOUCH_CLICK_THRESHOLD && dist < TOUCH_MOVE_THRESHOLD) {
+                    // Synthesize click event
+                    oncontextmenu(new PointerEvent('click', {
+                        clientX: e.changedTouches[0].clientX,
+                        clientY: e.changedTouches[0].clientY,
+                    }));
+                }
+            }
+            touchStartTime = null;
+            touchStartX = null;
+            touchStartY = null;
+        };
+        this.target.addEventListener('touchstart', onTouchStart);
+        this.target.addEventListener('touchend', onTouchEnd);
+
         return () => {
+            this.target.removeEventListener('click', oncontextmenu);
             this.target.removeEventListener('contextmenu', oncontextmenu);
+            this.target.removeEventListener('touchstart', onTouchStart);
+            this.target.removeEventListener('touchend', onTouchEnd);
             unsub();
         };
+    }
+
+    select() {
+        this.whiteboard.clearSelection();
+        this.data.selected = true;
+        this.inform();
     }
 }
 
 export class Whiteboard extends WritableBase<WhiteboardState> {
+    private readonly em = new SimpleEventEmitter<'update'>();
+
+    public readonly on = this.em.on.bind(this.em);
+    public readonly off = this.em.off.bind(this.em);
+    public readonly once = this.em.once.bind(this.em);
+    public readonly emit = this.em.emit.bind(this.em);
+
+    public static from(config: WhiteboardConfig, data: Strategy.MatchWhiteboardData) {
+        return attempt(() => {
+            if (!data.data.board) throw new Error('No board data');
+            const rendered = z.object({
+                paths: z.array(z.object({
+                    points: z.array(z.tuple([z.number(), z.number()])),
+                    color: z.string(),
+                }))
+            }).parse(JSON.parse(data.data.board));
+
+            const wb = new Whiteboard(config, {
+                paths: [],
+            });
+            for (const pathData of rendered.paths) {
+                const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                wb.svg.appendChild(pathEl);
+                const path = new Path(wb, pathEl, {
+                    points: pathData.points,
+                    color: pathData.color,
+                    selected: false,
+                    id: wb.data.paths.length,
+                });
+                path.init();
+                wb.data.paths.push(path);
+            }
+            return wb;
+        });
+    }
+
+    public static blank() {
+        return {
+            paths: [],
+        }
+    }
+    
     public readonly svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    public readonly stack = new Stack({
+        name: 'whiteboard',
+    });
 
     constructor(
-        public readonly config: Whiteboard,
+        public readonly config: WhiteboardConfig,
         state: WhiteboardState,
     ) {
         super(state);
     }
 
+    get matchNumber(): number {
+        return this.config.match.match_number;
+    }
+
+    get compLevel(): string {
+        return this.config.match.comp_level;
+    }
+
     get year(): number {
-        return this.config.year;
+        return this.config.event.year;
     }
 
     get target(): HTMLDivElement {
         return this.config.target;
     }
 
+    get paths() {
+        return this.data.paths;
+    }
+
     init() {
+        Stack.use(this.stack);
         this.target.style.position = 'relative';
         this.target.style.width = '100%';
-        this.target.style.aspectRatio = '2 / 1';
+        this.target.style.height = '100%';
 
-        this.svg.setAttribute('viewbox', '100 50');
-
-        const field = create('img');
+        const field = document.createElement('img');
         field.src = `/assets/field/${this.year}.png`;
+        field.style.position = 'absolute';
+        field.style.top = '0';
+        field.style.left = '0';
+        field.style.width = '100%';
+        field.style.height = '100%';
+        this.target.append(field);
+
+        this.svg.setAttribute('viewBox', '0 0 2 1');
+        this.svg.style.position = 'absolute';
+        this.svg.style.top = '0';
+        this.svg.style.left = '0';
+        this.svg.style.width = '100%';
+        this.svg.style.height = '100%';
+        this.target.append(this.svg);
 
         let currentPath: Path | undefined = undefined;
         const deinit: (() => void)[] = [];
-
+        let timeout: ReturnType<typeof setTimeout> | null = null;
 
         const push = (point: Point2D) => {
             if (!currentPath) return;
-            currentPath.add(point);
+            const rect = this.target.getBoundingClientRect();
+            const normalizedX = (point[0] - rect.left) * 2 / rect.width;
+            const normalizedY = (point[1] - rect.top) / rect.height;
+            const normalizedPoint: Point2D = [normalizedX, normalizedY];
+            currentPath.add(normalizedPoint);
+        };
+
+        const createPath = (point: Point2D) => {
+            this.clearSelection();
+            const color = Color.fromName('gray').setAlpha(0.8).toString('rgba');
+            const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            this.svg.appendChild(pathEl);
+            const p = new Path(this, pathEl, {
+                points: [],
+                color,
+                selected: false,
+                id: this.data.paths.length,
+            });
+            deinit.push(p.init());
+            this.data.paths.push(p);
+            this.inform();
+            push(point);
+            this.pipe(p);
+
+            this.stack.push({
+                do: () => {
+                    this.data.paths.push(p);
+                    this.svg.appendChild(pathEl);
+                    p.inform();
+                },
+                undo: () => {
+                    this.data.paths = this.data.paths.filter(path => !Object.is(path, p));
+                    pathEl.remove();
+                    this.inform();
+                },
+                name: 'Add Path',
+            });
+
+            currentPath = p;
         };
 
         const down = (point: Point2D) => {
-            const color = Color.fromName('gray').setAlpha(0.8).toString('rgba')
-            const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            this.svg.appendChild(pathEl);
-
-            currentPath = new Path(this, pathEl, {
-                points: [],
-                color,
-            });
-            deinit.push(currentPath.init());
-            this.data.paths.push(currentPath);
-            this.inform();
-            push(point);
+            timeout = setTimeout(() => {
+                createPath(point);
+            }, CLICK_THRESHOLD);
         };
         const move = (point: Point2D) => {
-            push(point);
+            if (currentPath) {
+                push(point);
+            }
         };
         const up = (point: Point2D) => {
-            push(point);
-            currentPath = undefined;
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            // Only finish the path if it was actually started (i.e., user held long enough)
+            if (currentPath) {
+                push(point);
+                currentPath = undefined;
+
+                this.emit('update');
+            }
         };
 
         const mousedown = (e: MouseEvent) => {
-            down(
-                [
-                    e.clientX,
-                    e.clientY
-                ]
-            );
+            // not right click
+            if (e.button !== 0) return;
+            e.preventDefault();
+            down([e.clientX, e.clientY]);
         };
         const mousemove = (e: MouseEvent) => {
-            move(
-                [
-                    e.clientX,
-                    e.clientY
-                ]
-            );
+            e.preventDefault();
+            move([e.clientX, e.clientY]);
         };
         const mouseup = (e: MouseEvent) => {
-            up(
-                [
-                    e.clientX,
-                    e.clientY
-                ]
-            );
+            e.preventDefault();
+            up([e.clientX, e.clientY]);
         };
 
         const touchstart = (e: TouchEvent) => {
-            down(
-                [
-                    e.touches[0].clientX,
-                    e.touches[1].clientY,
-                ]
-            );
+            e.preventDefault();
+            if (e.touches.length > 0) {
+                down([e.touches[0].clientX, e.touches[0].clientY]);
+            }
         };
         const touchmove = (e: TouchEvent) => {
-            move(
-                [
-                    e.touches[0].clientX,
-                    e.touches[1].clientY,
-                ]
-            );
+            e.preventDefault();
+            if (e.touches.length > 0) {
+                move([e.touches[0].clientX, e.touches[0].clientY]);
+            }
         };
         const touchend = (e: TouchEvent) => {
-            up(
-                [
-                    e.touches[0].clientX,
-                    e.touches[1].clientY,
-                ]
-            );
+            e.preventDefault();
+            // Use changedTouches for end event
+            if (e.changedTouches.length > 0) {
+                up([e.changedTouches[0].clientX, e.changedTouches[0].clientY]);
+            }
         };
 
         this.target.addEventListener('mousedown', mousedown);
@@ -197,7 +387,7 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
         this.target.addEventListener('touchend', touchend);
         this.target.addEventListener('touchcancel', touchend);
 
-        return () => {
+        this.deinit = () => {
             this.target.removeEventListener('mousedown', mousedown);
             this.target.removeEventListener('mousemove', mousemove);
             this.target.removeEventListener('mouseup', mouseup);
@@ -206,6 +396,44 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
             this.target.removeEventListener('touchend', touchend);
             this.target.removeEventListener('touchcancel', touchend);
             for (const fn of deinit) fn();
+            this.target.innerHTML = '';
         };
+        return this.deinit;
     }
+
+    deinit = () => {}
+
+    clearSelection() {
+        this.update((wb) => {
+            for (const path of wb.paths) {
+                path.data.selected = false;
+                path.inform();
+            }
+            return wb;
+        });
+    }
+
+    clear() {
+        this.update((wb) => {
+            for (const path of wb.paths) {
+                path.target.remove();
+            }
+            wb.paths = [];
+            return wb;
+        });
+    }
+
+    serialize() {
+        const round = (num: number) => {
+            return num.toFixed(3);
+        };
+        const rendered = {
+            paths: this.data.paths.map(p => ({
+                points: p.points,
+                color: p.color,
+            })).filter((p, i, a) => p.points.length > 0 && a.findIndex(other => JSON.stringify(other.points) === JSON.stringify(p.points)) === i),
+        };
+        return `{"paths": [${rendered.paths.map(p => `{"points": [${p.points.map(pt => `[${round(pt[0])}, ${round(pt[1])}]`).join(', ')}],"color": "${p.color}"}`).join(', ')}]}`;
+    }
+
 }

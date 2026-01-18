@@ -59,5 +59,6 @@
 		"config.json": "jsonc",
 		"config.*.json": "jsonc"
 	},
-	"excalidraw.theme": "dark"
+	"excalidraw.theme": "dark",
+	"chat.extensionUnification.enabled": true
 }
