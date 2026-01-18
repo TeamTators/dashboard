@@ -9,7 +9,12 @@ export const GET = async (event) => {
 		}).await()
 	).unwrap();
 
-	return new Response(JSON.stringify(accounts.map((a) => a.data)), {
+	return new Response(JSON.stringify(accounts.map((a) => ({
+		id: a.id,
+		username: a.data.username,
+		firstName: a.data.firstName,
+		lastName: a.data.lastName,
+	}))), {
 		headers: {
 			'Content-Type': 'application/json'
 		}
