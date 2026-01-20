@@ -421,7 +421,7 @@
 		},
 		id: 'start_location_heatmap',
 		size: {
-			width: 2,
+			width: 4,
 			height: 1,
 			lg: {
 				width: 8,

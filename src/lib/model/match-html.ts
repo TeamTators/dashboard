@@ -205,8 +205,10 @@ export class StartLocation {
 		}
 		target.style.position = 'relative';
 		target.style.overflow = 'hidden';
-		target.style.width = '100%';
-		target.style.aspectRatio = '1 / 1';
+		target.style.maxWidth = '100%';
+		target.style.maxHeight = '100%';
+		target.style.margin = 'auto';
+		target.style.aspectRatio = '2/1';
 		const img = document.createElement('img');
 		img.src = `/assets/field/${this.year}.png`;
 		img.style.position = 'absolute';
