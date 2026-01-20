@@ -871,7 +871,7 @@
 			</Card>
 			<Card card={actionHeatmap}>
 				{#snippet body()}
-					<ActionHeatmap	scouting={scoutingArr} yearInfo={YearInfo2025} year={event.tba.year} />
+					<ActionHeatmap scouting={scoutingArr} yearInfo={YearInfo2025} year={event.tba.year} />
 				{/snippet}
 			</Card>
 		{/key}

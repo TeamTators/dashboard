@@ -71,9 +71,14 @@ export class MatchHTML {
 		this.target.appendChild(svg);
 
 		const path = document.createElementNS(svgNS, 'path');
-		const copy = this.match.trace.points.slice(this.from, this.to).filter((p) => p[1] !== 0 || p[2] !== 0);
+		const copy = this.match.trace.points
+			.slice(this.from, this.to)
+			.filter((p) => p[1] !== 0 || p[2] !== 0);
 		const fn = catmullRom(
-			copy.map((p) => [p[1] * Number(this.target?.clientWidth), p[2] * Number( this.target?.clientHeight)]),
+			copy.map((p) => [
+				p[1] * Number(this.target?.clientWidth),
+				p[2] * Number(this.target?.clientHeight)
+			])
 		);
 		let d = '';
 		// let start = this.from;
@@ -306,7 +311,7 @@ export class ActionHeatmap<A extends string> {
 		legend.style.right = '5%';
 		legend.style.top = '50%';
 		legend.style.transform = 'translateY(-50%)';
-		const {colors} = PATH_COLOR.compliment(Object.keys(this.yearInfo.actions).length);
+		const { colors } = PATH_COLOR.compliment(Object.keys(this.yearInfo.actions).length);
 		const keys = Object.keys(this.yearInfo.actions);
 		for (let i = 0; i < keys.length; i++) {
 			const item = document.createElement('div');
@@ -319,10 +324,9 @@ export class ActionHeatmap<A extends string> {
 			colorBox.style.width = '16px';
 			colorBox.style.height = '16px';
 			const color = colors[i] || PATH_COLOR;
-			colorBox.style.backgroundColor =
-				color.toString('rgb');
+			colorBox.style.backgroundColor = color.toString('rgb');
 			colorBox.style.marginRight = '8px';
-	
+
 			if (this._filter.includes(keys[i] as A)) {
 				colorBox.style.border = '1px solid white';
 				colorBox.style.opacity = '0.7';
@@ -340,7 +344,6 @@ export class ActionHeatmap<A extends string> {
 			label.style.marginRight = '8px';
 			item.appendChild(label);
 
-
 			colorBox.onclick = () => {
 				if (this._filter.includes(keys[i] as A)) {
 					this._filter = this._filter.filter((a) => a !== keys[i]);
@@ -351,9 +354,8 @@ export class ActionHeatmap<A extends string> {
 			};
 
 			legend.appendChild(item);
-		}	
+		}
 		this.target.appendChild(legend);
-
 
 		const container = document.createElement('div');
 		container.classList.add('heatmap-item');
@@ -390,9 +392,13 @@ export class ActionHeatmap<A extends string> {
 				actionEl.style.transform = 'translate(-50%, -50%)';
 				actionEl.style.width = '3%';
 				actionEl.style.aspectRatio = '1 / 1';
-				actionEl.style.backgroundColor = colors[
-					Object.keys(this.yearInfo.actions).indexOf(a as keyof typeof this.yearInfo.actions)
-				]?.clone().setAlpha(0.5).toString('rgba') || PATH_COLOR.clone().setAlpha(0.5).toString('rgba');
+				actionEl.style.backgroundColor =
+					colors[
+						Object.keys(this.yearInfo.actions).indexOf(a as keyof typeof this.yearInfo.actions)
+					]
+						?.clone()
+						.setAlpha(0.5)
+						.toString('rgba') || PATH_COLOR.clone().setAlpha(0.5).toString('rgba');
 				actionEl.style.borderRadius = '50%';
 				actionEl.style.zIndex = '2';
 

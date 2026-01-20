@@ -21,8 +21,12 @@
 	export const filter = (...actions: Actions[]) => {
 		h.filter(...actions);
 	};
+
+	let target: HTMLDivElement;
+
+	onMount(() => {
+		return h.init(target);
+	});
 </script>
 
-<div {@attach (div) => {
-	h.init(div);
-}}></div>
+<div bind:this={target}></div>
