@@ -484,11 +484,11 @@
 			width: 2,
 			height: 1,
 			xl: {
-				width: 3,
+				width: 4,
 				height: 1
 			},
 			lg: {
-				width: 3,
+				width: 4,
 				height: 1
 			},
 			md: {

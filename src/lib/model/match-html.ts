@@ -285,11 +285,83 @@ export class ActionHeatmap<A extends string> {
 
 	init(target: HTMLDivElement) {
 		if (this.target) throw new Error('ActionHeatmap is already initialized');
-		this.target = target
-		target.style.position = 'relative';
+		this.target = target;
+		target.style.display = 'flex';
 		target.style.overflow = 'hidden';
+		target.style.height = '100%';
 		target.style.width = '100%';
-		target.style.aspectRatio = '1 / 1';
+		this.render();
+	}
+
+	render() {
+		if (!this.target) throw new Error('ActionHeatmap is not initialized');
+		this.target.querySelectorAll('.heatmap-item').forEach((a) => a.remove());
+
+		const legend = document.createElement('div');
+		legend.classList.add('heatmap-item');
+		legend.style.display = 'flex';
+		legend.style.flexDirection = 'column';
+		legend.style.position = 'absolute';
+		// legend.style.top = '10px';
+		legend.style.right = '5%';
+		legend.style.top = '50%';
+		legend.style.transform = 'translateY(-50%)';
+		const {colors} = PATH_COLOR.compliment(Object.keys(this.yearInfo.actions).length);
+		const keys = Object.keys(this.yearInfo.actions);
+		for (let i = 0; i < keys.length; i++) {
+			const item = document.createElement('div');
+			item.classList.add('heatmap-item');
+			item.style.display = 'flex';
+			item.style.alignItems = 'center';
+			item.style.marginBottom = '4px';
+
+			const colorBox = document.createElement('div');
+			colorBox.style.width = '16px';
+			colorBox.style.height = '16px';
+			const color = colors[i] || PATH_COLOR;
+			colorBox.style.backgroundColor =
+				color.toString('rgb');
+			colorBox.style.marginRight = '8px';
+	
+			if (this._filter.includes(keys[i] as A)) {
+				colorBox.style.border = '1px solid white';
+				colorBox.style.opacity = '0.7';
+			} else {
+				colorBox.style.border = '1px solid black';
+				colorBox.style.opacity = '0.3';
+			}
+
+			// colorBox.dataset.bsTooltip = this.yearInfo.actions[keys[i] as A];
+			// colorBox.title = this.yearInfo.actions[keys[i] as A];
+			item.appendChild(colorBox);
+
+			const label = document.createElement('span');
+			label.textContent = this.yearInfo.actions[keys[i] as A];
+			label.style.marginRight = '8px';
+			item.appendChild(label);
+
+
+			colorBox.onclick = () => {
+				if (this._filter.includes(keys[i] as A)) {
+					this._filter = this._filter.filter((a) => a !== keys[i]);
+				} else {
+					this._filter.push(keys[i] as A);
+				}
+				this.render();
+			};
+
+			legend.appendChild(item);
+		}	
+		this.target.appendChild(legend);
+
+
+		const container = document.createElement('div');
+		container.classList.add('heatmap-item');
+		container.style.position = 'relative';
+		container.style.maxWidth = '80%';
+		container.style.aspectRatio = '2 / 1';
+		container.style.overflow = 'hidden';
+		this.target.appendChild(container);
 
 		const img = document.createElement('img');
 		img.src = `/assets/field/${this.year}.png`;
@@ -300,34 +372,46 @@ export class ActionHeatmap<A extends string> {
 		img.style.height = '100%';
 		img.style.objectFit = 'contain';
 		img.style.zIndex = '0';
-		target.appendChild(img);
+		container.appendChild(img);
 
-		this.render();
-	}
-
-	render() {
-		if (!this.target) throw new Error('ActionHeatmap is not initialized');
-		this.target.querySelectorAll('.action').forEach((a) => a.remove());
-
+		let i = 0;
 		for (const m of this.matches.data) {
 			for (const p of m.trace.points) {
 				const [, x, y, a] = p;
 				if (!a) continue;
+				i++;
 				if (this._filter.length > 0 && !this._filter.includes(a as A)) continue;
 
 				const actionEl = document.createElement('div');
-				actionEl.classList.add('action');
+				actionEl.classList.add('heatmap-item', 'animate__animated', 'animate__bounceIn');
 				actionEl.style.position = 'absolute';
-				actionEl.style.left = `${x * this.target.clientWidth - 10}px`;
-				actionEl.style.top = `${y * this.target.clientHeight - 10}px`;
+				actionEl.style.left = `${x * 100}%`;
+				actionEl.style.top = `${y * 100}%`;
+				actionEl.style.transform = 'translate(-50%, -50%)';
 				actionEl.style.width = '3%';
 				actionEl.style.aspectRatio = '1 / 1';
-				actionEl.style.backgroundColor = PATH_COLOR.toString('rgb');
+				actionEl.style.backgroundColor = colors[
+					Object.keys(this.yearInfo.actions).indexOf(a as keyof typeof this.yearInfo.actions)
+				]?.clone().setAlpha(0.5).toString('rgba') || PATH_COLOR.clone().setAlpha(0.5).toString('rgba');
 				actionEl.style.borderRadius = '50%';
 				actionEl.style.zIndex = '2';
-				actionEl.style.opacity = '0.3';
-				this.target.appendChild(actionEl);
+
+				actionEl.dataset.bsTooltip = this.yearInfo.actions[a as A];
+				actionEl.title = this.yearInfo.actions[a as A];
+				actionEl.classList.add('hover-grow', 'hover-grow-xl', 'no-select');
+
+				setTimeout(() => {
+					container.appendChild(actionEl);
+				}, i * 2);
 			}
 		}
+
+		import('bootstrap').then(({ Tooltip }) => {
+			if (!this.target) return;
+			const tooltipTriggerList = Array.from(this.target.querySelectorAll('[data-bs-tooltip]'));
+			for (const tooltipTriggerEl of tooltipTriggerList) {
+				Tooltip.getOrCreateInstance(tooltipTriggerEl);
+			}
+		});
 	}
 }

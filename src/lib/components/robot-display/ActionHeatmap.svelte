@@ -16,16 +16,13 @@
 
 	const { scouting, yearInfo, year }: Props = $props();
 
-	let target: HTMLDivElement;
 	const h = $derived(new ActionHeatmap(scouting, yearInfo, year));
 
 	export const filter = (...actions: Actions[]) => {
 		h.filter(...actions);
 	};
-
-	onMount(() => {
-		h.init(target);
-	});
 </script>
 
-<div bind:this={target}></div>
+<div {@attach (div) => {
+	h.init(div);
+}}></div>
