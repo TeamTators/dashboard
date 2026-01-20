@@ -285,7 +285,11 @@ export class ActionHeatmap<A extends string> {
 
 	init(target: HTMLDivElement) {
 		if (this.target) throw new Error('ActionHeatmap is already initialized');
-		this.target = target;
+		this.target = target
+		target.style.position = 'relative';
+		target.style.overflow = 'hidden';
+		target.style.width = '100%';
+		target.style.aspectRatio = '1 / 1';
 
 		const img = document.createElement('img');
 		img.src = `/assets/field/${this.year}.png`;
@@ -294,6 +298,7 @@ export class ActionHeatmap<A extends string> {
 		img.style.left = '0';
 		img.style.width = '100%';
 		img.style.height = '100%';
+		img.style.objectFit = 'contain';
 		img.style.zIndex = '0';
 		target.appendChild(img);
 
