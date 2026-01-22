@@ -914,6 +914,16 @@ export namespace Scouting {
 				const res = resolveAll(
 					await Promise.all([
 						Questions.new({
+							question: 'What do you do in endgame?',
+							groupId: overview.id,
+							key: 'endgame_action',
+							description: 'Did the robot climb, and if so to what level? Did it do anything before then?',
+							type: 'textarea',
+							options: '[]',
+							order: 0
+
+						}),
+						Questions.new({
 							question: 'What is your favorite part of the robot, or what are you most proud of?',
 							groupId: overview.id,
 							key: 'favorite',
