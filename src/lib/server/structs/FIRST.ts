@@ -122,8 +122,10 @@ export namespace FIRST {
 			if (res) {
 				if (year === 2024) {
 					return Summary2024.deserialize(res.data.summary).unwrap();
-				} else {
+				} else if (year === 2025) {
 					return Summary2025.deserialize(res.data.summary).unwrap();
+				} else {
+					throw new Error('Invalid year');
 				}
 			} else {
 				const summary = await generateSummary(eventKey, year).unwrap();
