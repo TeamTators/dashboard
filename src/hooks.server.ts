@@ -26,6 +26,7 @@ import ignore from 'ignore';
 import redis from '$lib/server/services/redis';
 import { config } from '$lib/server/utils/env';
 import createTree from '../scripts/create-route-tree';
+import { sse } from '$lib/server/services/sse';
 
 (async () => {
 	await redis.init();
@@ -105,6 +106,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	event.locals.session = session.value;
+	const sseId = event.request.headers.get('X-SSE');
+	if (sseId) {
+		const connection = sse.getConnection(sseId);
+		if (connection) {
+			event.locals.sse = connection;
+		}
+	}
 
 	const autoSignIn = config.sessions.auto_sign_in;
 
