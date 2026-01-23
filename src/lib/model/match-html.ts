@@ -71,9 +71,14 @@ export class MatchHTML {
 		this.target.appendChild(svg);
 
 		const path = document.createElementNS(svgNS, 'path');
-		const copy = this.match.trace.points.slice(this.from, this.to).filter((p) => p[1] !== 0 || p[2] !== 0);
+		const copy = this.match.trace.points
+			.slice(this.from, this.to)
+			.filter((p) => p[1] !== 0 || p[2] !== 0);
 		const fn = catmullRom(
-			copy.map((p) => [p[1] * Number(this.target?.clientWidth), p[2] * Number( this.target?.clientHeight)]),
+			copy.map((p) => [
+				p[1] * Number(this.target?.clientWidth),
+				p[2] * Number(this.target?.clientHeight)
+			])
 		);
 		let d = '';
 		// let start = this.from;
