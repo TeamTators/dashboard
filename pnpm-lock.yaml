@@ -156,7 +156,7 @@ importers:
         specifier: ^0.38.4
         version: 0.38.4(@types/pg@8.16.0)(@types/react@19.2.7)(pg@8.16.3)(postgres@3.4.7)(react@19.2.3)
       drizzle-struct:
-        specifier: github:tsaxking/drizzle-struct#v1.0.25
+        specifier: github:tsaxking/drizzle-struct#v1.0.26
         version: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d108e431fcc3fbaf9c2ef94a846ff965a7ada03f(@types/node@22.19.3)(@types/pg@8.16.0)(@types/react@19.2.7)(react@19.2.3)(sass-embedded@1.96.0)(sass@1.96.0)
       drizzle-zod:
         specifier: ^0.6.1
