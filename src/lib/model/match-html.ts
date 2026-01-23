@@ -64,7 +64,6 @@ export class MatchHTML {
 	drawPath() {
 		if (!this.target) throw new Error('MatchHTML is not initialized');
 		if (!this.yearInfo) throw new Error('YearInfo is not set in MatchHTML');
-		console.log('From:', this.from, 'To:', this.to);
 
 		const svgNS = 'http://www.w3.org/2000/svg';
 		const svg = document.createElementNS(svgNS, 'svg');
@@ -408,7 +407,6 @@ export class ActionHeatmap<A extends string> {
 
 		let i = 0;
 		for (const m of this.matches.data) {
-			console.log('Rendering match', m.matchNumber);
 			for (const p of m.trace.points) {
 				const [, x, y, a] = p;
 				if (!a) continue;
