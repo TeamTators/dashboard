@@ -298,8 +298,14 @@ export class ActionHeatmap<A extends string> {
 		this.render();
 	}
 
+	private readonly timeouts: ReturnType<typeof setTimeout>[] = [];
+
 	render() {
 		if (!this.target) throw new Error('ActionHeatmap is not initialized');
+		for (const to of this.timeouts) {
+			clearTimeout(to);
+			this.timeouts.splice(this.timeouts.indexOf(to), 1);
+		}
 		this.target.querySelectorAll('.heatmap-item').forEach((a) => a.remove());
 
 		const legend = document.createElement('div');
@@ -406,9 +412,12 @@ export class ActionHeatmap<A extends string> {
 				actionEl.title = this.yearInfo.actions[a as A];
 				actionEl.classList.add('hover-grow', 'hover-grow-xl', 'no-select');
 
-				setTimeout(() => {
+				const to = setTimeout(() => {
 					container.appendChild(actionEl);
-				}, i * 2);
+					this.timeouts.splice(this.timeouts.indexOf(to), 1);
+				}, i * 2)
+
+				this.timeouts.push(to);
 			}
 		}
 
