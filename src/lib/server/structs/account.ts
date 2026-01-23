@@ -38,28 +38,28 @@ export namespace Account {
 		safes: ['key', 'salt', 'verification']
 	});
 
-	// Account.on('update', async ({ from, to }) => {
-	// 	try {
-	// 		if (from.verified !== to.data.verified) {
-	// 			if (to.data.verified) {
-	// 				const has = await Admins.fromProperty('accountId', to.id, {
-	// 					type: 'single'
-	// 				}).unwrap();
-	// 				if (has) return;
-	// 				await Admins.new({
-	// 					accountId: to.id
-	// 				}).unwrap();
-	// 			} else {
-	// 				const exists = await Admins.fromProperty('accountId', to.id, {
-	// 					type: 'single'
-	// 				}).unwrap();
-	// 				if (exists) await exists.delete().unwrap();
-	// 			}
-	// 		}
-	// 	} catch (error) {
-	// 		terminal.warn(error);
-	// 	}
-	// });
+	Account.on('update', async ({ from, to }) => {
+		try {
+			if (from.verified !== to.data.verified) {
+				if (to.data.verified) {
+					const has = await Admins.fromProperty('accountId', to.id, {
+						type: 'single'
+					}).unwrap();
+					if (has) return;
+					await Admins.new({
+						accountId: to.id
+					}).unwrap();
+				} else {
+					const exists = await Admins.fromProperty('accountId', to.id, {
+						type: 'single'
+					}).unwrap();
+					if (exists) await exists.delete().unwrap();
+				}
+			}
+		} catch (error) {
+			terminal.warn(error);
+		}
+	});
 
 	QueryListener.on(
 		'search',
