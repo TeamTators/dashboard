@@ -57,7 +57,7 @@ export namespace Account {
 				}
 			}
 		} catch (error) {
-			terminal.error(error);
+			terminal.warn(error);
 		}
 	});
 

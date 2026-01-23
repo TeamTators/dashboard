@@ -156,8 +156,8 @@ importers:
         specifier: ^0.38.4
         version: 0.38.4(@types/pg@8.16.0)(@types/react@19.2.7)(pg@8.16.3)(postgres@3.4.7)(react@19.2.3)
       drizzle-struct:
-        specifier: github:tsaxking/drizzle-struct#2025-09-09-TK-FromIds
-        version: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/9fa1727f7b2cb3f4924e3357b11da7c2bf4103ef(@types/node@22.19.3)(@types/pg@8.16.0)(@types/react@19.2.7)(react@19.2.3)(sass-embedded@1.96.0)(sass@1.96.0)
+        specifier: github:tsaxking/drizzle-struct#v1.0.26
+        version: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d108e431fcc3fbaf9c2ef94a846ff965a7ada03f(@types/node@22.19.3)(@types/pg@8.16.0)(@types/react@19.2.7)(react@19.2.3)(sass-embedded@1.96.0)(sass@1.96.0)
       drizzle-zod:
         specifier: ^0.6.1
         version: 0.6.1(drizzle-orm@0.38.4(@types/pg@8.16.0)(@types/react@19.2.7)(pg@8.16.3)(postgres@3.4.7)(react@19.2.3))(zod@3.25.76)
@@ -2956,8 +2956,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/9fa1727f7b2cb3f4924e3357b11da7c2bf4103ef:
-    resolution: {tarball: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/9fa1727f7b2cb3f4924e3357b11da7c2bf4103ef}
+  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d108e431fcc3fbaf9c2ef94a846ff965a7ada03f:
+    resolution: {tarball: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d108e431fcc3fbaf9c2ef94a846ff965a7ada03f}
     version: 1.0.0
 
   drizzle-zod@0.6.1:
@@ -5301,6 +5301,9 @@ packages:
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
+
+  xxhash-wasm@1.1.0:
+    resolution: {integrity: sha512-147y/6YNh+tlp6nd/2pWq38i9h6mz/EuQ6njIrmW8D1BS5nCqs0P6DG+m6zTGnNz5I+uhZ0SHxBs9BsPrwcKDA==}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -8214,7 +8217,7 @@ snapshots:
       postgres: 3.4.7
       react: 19.2.3
 
-  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/9fa1727f7b2cb3f4924e3357b11da7c2bf4103ef(@types/node@22.19.3)(@types/pg@8.16.0)(@types/react@19.2.7)(react@19.2.3)(sass-embedded@1.96.0)(sass@1.96.0):
+  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d108e431fcc3fbaf9c2ef94a846ff965a7ada03f(@types/node@22.19.3)(@types/pg@8.16.0)(@types/react@19.2.7)(react@19.2.3)(sass-embedded@1.96.0)(sass@1.96.0):
     dependencies:
       '@eslint/compat': 1.4.1(eslint@9.39.2)
       '@msgpack/msgpack': 3.0.0-beta3
@@ -8242,6 +8245,7 @@ snapshots:
       ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4(@types/node@22.19.3)(sass-embedded@1.96.0)(sass@1.96.0)
       typescript: 5.9.3
       uuid: 11.1.0
+      xxhash-wasm: 1.1.0
       zod: 3.25.76
     transitivePeerDependencies:
       - '@aws-sdk/client-rds-data'
@@ -11099,6 +11103,8 @@ snapshots:
   ws@8.18.3: {}
 
   xtend@4.0.2: {}
+
+  xxhash-wasm@1.1.0: {}
 
   y18n@5.0.8: {}
 
