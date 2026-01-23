@@ -4,6 +4,7 @@ import type { Scouting } from './scouting';
 import { Color } from 'colors/color';
 import YearInfo2024 from 'tatorscout/years/2024.js';
 import YearInfo2025 from 'tatorscout/years/2025.js';
+import YearInfo2026 from 'tatorscout/years/2026.js';
 import { debounce } from 'ts-utils';
 import { isInside } from 'math/polygon';
 import type { Point2D } from 'math/point';
@@ -51,6 +52,9 @@ export class MatchHTML {
 				break;
 			case 2025:
 				this.yearInfo = YearInfo2025;
+				break;
+			case 2026:
+				this.yearInfo = YearInfo2026;
 				break;
 			default:
 				throw new Error(`YearInfo for year ${this.match.year} is not implemented`);
@@ -274,10 +278,10 @@ export class StartLocation {
 
 export class ActionHeatmap<A extends string> {
 	target: HTMLDivElement | undefined;
+	yearInfo: YearInfo | undefined;
 
 	constructor(
 		public readonly matches: Scouting.MatchScoutingExtendedArr,
-		public readonly yearInfo: YearInfo<{}, {}, A>,
 		public readonly year: number
 	) {}
 
@@ -295,6 +299,20 @@ export class ActionHeatmap<A extends string> {
 		target.style.overflow = 'hidden';
 		target.style.height = '100%';
 		target.style.width = '100%';
+
+		switch (this.year) {
+			case 2024:
+				this.yearInfo = YearInfo2024;
+				break;
+			case 2025:
+				this.yearInfo = YearInfo2025;
+				break;
+			case 2026:
+				this.yearInfo = YearInfo2026;
+				break;
+			default:
+				throw new Error(`YearInfo for year ${this.year} is not implemented`);
+		}
 		this.render();
 	}
 
@@ -302,6 +320,7 @@ export class ActionHeatmap<A extends string> {
 
 	render() {
 		if (!this.target) throw new Error('ActionHeatmap is not initialized');
+		if (!this.yearInfo) throw new Error("ActionHeatmap doesn't have yearInfo");
 		for (const to of this.timeouts) {
 			clearTimeout(to);
 			this.timeouts.splice(this.timeouts.indexOf(to), 1);
@@ -415,7 +434,7 @@ export class ActionHeatmap<A extends string> {
 				const to = setTimeout(() => {
 					container.appendChild(actionEl);
 					this.timeouts.splice(this.timeouts.indexOf(to), 1);
-				}, i * 2)
+				}, i * 2);
 
 				this.timeouts.push(to);
 			}

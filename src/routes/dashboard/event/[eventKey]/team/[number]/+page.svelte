@@ -24,7 +24,6 @@
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
-	import YearInfo2025 from 'tatorscout/years/2025.js';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
