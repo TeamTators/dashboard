@@ -314,6 +314,10 @@ export class ActionHeatmap<A extends string> {
 				throw new Error(`YearInfo for year ${this.year} is not implemented`);
 		}
 		this.render();
+
+		return this.matches.subscribe(() => {
+			this.render();
+		});
 	}
 
 	private readonly timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -331,6 +335,7 @@ export class ActionHeatmap<A extends string> {
 		legend.classList.add('heatmap-item');
 		legend.style.display = 'flex';
 		legend.style.flexDirection = 'column';
+		legend.style.justifyContent = 'end';
 		legend.style.position = 'absolute';
 		// legend.style.top = '10px';
 		legend.style.right = '5%';
@@ -340,10 +345,15 @@ export class ActionHeatmap<A extends string> {
 		const keys = Object.keys(this.yearInfo.actions);
 		for (let i = 0; i < keys.length; i++) {
 			const item = document.createElement('div');
-			item.classList.add('heatmap-item');
+			item.classList.add('heatmap-item', 'd-flex', 'justify-content-end');
 			item.style.display = 'flex';
 			item.style.alignItems = 'center';
 			item.style.marginBottom = '4px';
+
+			const label = document.createElement('span');
+			label.textContent = this.yearInfo.actions[keys[i] as A];
+			label.style.marginRight = '8px';
+			item.appendChild(label);
 
 			const colorBox = document.createElement('div');
 			colorBox.style.width = '16px';
@@ -363,11 +373,6 @@ export class ActionHeatmap<A extends string> {
 			// colorBox.dataset.bsTooltip = this.yearInfo.actions[keys[i] as A];
 			// colorBox.title = this.yearInfo.actions[keys[i] as A];
 			item.appendChild(colorBox);
-
-			const label = document.createElement('span');
-			label.textContent = this.yearInfo.actions[keys[i] as A];
-			label.style.marginRight = '8px';
-			item.appendChild(label);
 
 			colorBox.onclick = () => {
 				if (this._filter.includes(keys[i] as A)) {
@@ -403,6 +408,7 @@ export class ActionHeatmap<A extends string> {
 
 		let i = 0;
 		for (const m of this.matches.data) {
+			console.log('Rendering match', m.matchNumber);
 			for (const p of m.trace.points) {
 				const [, x, y, a] = p;
 				if (!a) continue;
