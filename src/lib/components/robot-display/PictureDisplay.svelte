@@ -61,7 +61,7 @@
 			<FileUploader
 				multiple={true}
 				message="Upload Pictures"
-				usage="images"
+				allowedFileTypes={['image/*']}
 				endpoint={`/upload`}
 				bind:this={uploadComponent}
 			/>
