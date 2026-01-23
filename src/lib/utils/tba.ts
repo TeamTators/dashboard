@@ -102,7 +102,7 @@ export class TBAEvent {
 		return attemptAsync(async () => {
 			if (TBAEvent._events.size) return Array.from(TBAEvent._events.values());
 			const events = (
-				await get('/tba/events/' + year, force, z.array(EventSchema), expires)
+				await get('/api/tba/events/' + year, force, z.array(EventSchema), expires)
 			).unwrap();
 			const e = events.map((e) => new TBAEvent(e));
 			TBAEvent._events = new Map(e.map((e) => [e.tba.key, e]));
@@ -115,7 +115,7 @@ export class TBAEvent {
 			const has = TBAEvent._events.get(eventKey);
 			if (has) return has;
 			const event = (
-				await get('/tba/event/' + eventKey + '/simple', force, EventSchema, expires)
+				await get('/api/tba/event/' + eventKey + '/simple', force, EventSchema, expires)
 			).unwrap();
 			return new TBAEvent(event);
 		});
@@ -123,7 +123,7 @@ export class TBAEvent {
 
 	public static createEvent(data: z.infer<typeof EventSchema>) {
 		return post(
-			'/tba/event',
+			'/api/tba/event',
 			data,
 			z.object({
 				success: z.boolean(),
@@ -141,7 +141,7 @@ export class TBAEvent {
 			if (this._matches) return this._matches;
 			const matches = (
 				await get(
-					'/tba/event/' + this.tba.key + `/matches/simple`,
+					'/api/tba/event/' + this.tba.key + `/matches/simple`,
 					force,
 					z.array(MatchSchema),
 					expires
@@ -160,7 +160,7 @@ export class TBAEvent {
 			if (this._teams) return this._teams;
 			const teams = (
 				await get(
-					'/tba/event/' + this.tba.key + `/teams/simple`,
+					'/api/tba/event/' + this.tba.key + `/teams/simple`,
 					force,
 					z.array(TeamSchema),
 					expires
@@ -174,7 +174,7 @@ export class TBAEvent {
 
 	update(data: z.infer<typeof EventSchema>) {
 		return post(
-			'/tba/event/' + this.tba.key + '/simple',
+			'/api/tba/event/' + this.tba.key + '/simple',
 			data,
 			z.object({
 				success: z.boolean(),
@@ -185,7 +185,7 @@ export class TBAEvent {
 
 	setTeams(teams: z.infer<typeof TeamSchema>[]) {
 		return post(
-			'/tba/event/' + this.tba.key + '/teams/simple',
+			'/api/tba/event/' + this.tba.key + '/teams/simple',
 			teams,
 			z.object({
 				success: z.boolean(),
@@ -204,7 +204,7 @@ export class TBAEvent {
 		}[]
 	) {
 		return post(
-			'/tba/event/' + this.tba.key + '/matches/simple',
+			'/api/tba/event/' + this.tba.key + '/matches/simple',
 			matches,
 			z.object({
 				success: z.boolean(),
@@ -289,7 +289,7 @@ export class TBATeam {
 		return attemptAsync(async () => {
 			if (this._media) return this._media;
 			const res = await get(
-				`/tba/event/${this.event.tba.key}/teams/${this.tba.team_number}/media`,
+				`/api/tba/event/${this.event.tba.key}/teams/${this.tba.team_number}/media`,
 				force,
 				z.array(MediaSchema),
 				expires
@@ -305,7 +305,7 @@ export class TBATeam {
 		return attemptAsync(async () => {
 			if (this._status) return this._status;
 			const res = await get(
-				`/tba/event/${this.event.tba.key}/teams/${this.tba.team_number}/status`,
+				`/api/tba/event/${this.event.tba.key}/teams/${this.tba.team_number}/status`,
 				force,
 				TeamEventStatusSchema,
 				expires
