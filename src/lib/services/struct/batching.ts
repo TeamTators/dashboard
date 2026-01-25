@@ -35,7 +35,7 @@ export namespace StructBatching {
 			if (data.isOk()) {
 				log(`Processing ${data.value.data.length} pending struct batching items...`);
 				for (const item of data.value.data) {
-					log(awaiting, item.data.id);
+					log('Checking if already awaiting:', item.data.id, awaiting);
 					if (awaiting.has(item.data.id)) continue;
 					batcher.add(item);
 				}
