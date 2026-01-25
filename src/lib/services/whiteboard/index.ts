@@ -62,10 +62,10 @@ export class Path extends WritableBase<PathState> {
     }
 
     draw() {
-        // const fn = catmullRom(this.points);
         this.target.setAttribute('stroke-linecap', 'round');
-        this.target.setAttribute('stroke-width', '0.015');
+        this.target.setAttribute('stroke-width', '0.01');
         this.target.setAttribute('fill', 'none');
+        this.target.setAttribute('filter', 'drop-shadow(0 0 0.005 white)');
         if (this.data.selected) {
             this.target.setAttribute('stroke', Color.fromName('yellow').setAlpha(0.8).toString('rgba'));
         } else {
@@ -77,7 +77,9 @@ export class Path extends WritableBase<PathState> {
             // SVG uses viewBox 0 0 1 1, so use normalized coordinates
             d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
         }
-        // for (let i = 0; i < 1; i += 0.01) {
+        // const fn = catmullRom(this.points);
+        // const points = 2 * this.points.length; // More points for smoother curves
+        // for (let i = 0; i < 1; i +=  1 / points) {
         //     const [x, y] = fn(i);
         //     d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
         // }
@@ -288,7 +290,7 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 
         const createPath = (point: Point2D) => {
             this.clearSelection();
-            const color = Color.fromName('gray').setAlpha(0.8).toString('rgba');
+            const color = Color.fromName('white').setAlpha(0.8).toString('rgba');
             const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             this.svg.appendChild(pathEl);
             const p = new Path(this, pathEl, {

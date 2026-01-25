@@ -227,7 +227,9 @@
 			<div class="row mb-3">
 				<div class="col-6">
 					<button type="button" class="btn btn-outline-success w-100" onclick={async () => {
-						const name = await prompt('Enter a name for the new whiteboard:');
+						const name = await prompt('Enter a name for the new whiteboard:', {
+							default: `Match ${match?.tba.comp_level.toUpperCase()} ${match?.tba.match_number} Whiteboard`,
+						});
 						if (!name) return;
 						if (!match) return;
 
