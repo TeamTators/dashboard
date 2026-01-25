@@ -60,11 +60,14 @@
 
 		tatorAlliance = match.tba.alliances.red.team_keys.includes('frc2122') ? 'red' : 'blue';
 
-		whiteboards = Strategy.MatchWhiteboards.get({
-			eventKey: event.tba.key,
-		}, {
-			type: 'all',
-		});
+		whiteboards = Strategy.MatchWhiteboards.get(
+			{
+				eventKey: event.tba.key
+			},
+			{
+				type: 'all'
+			}
+		);
 	};
 
 	const countdown = new Countdown(new Date(2025, 3, 14, 0, 0, 0));
@@ -75,9 +78,7 @@
 		loop.start();
 
 		const offUpdate = Strategy.MatchWhiteboards.on('update', (wb) => {
-			if (
-				wb.data.id && currentMatchWhiteboard?.data.id === wb.data.id
-			) {
+			if (wb.data.id && currentMatchWhiteboard?.data.id === wb.data.id) {
 				if (lastBoardState === wb.data.board) return;
 				open(wb);
 			}
@@ -105,11 +106,14 @@
 		offSave();
 		currentMatchWhiteboard = wb;
 		whiteboard?.deinit();
-		const renderRes = Whiteboard.from({
-			target: whiteboardEl,
-			event: event.tba,
-			match: match.tba,
-		}, wb);
+		const renderRes = Whiteboard.from(
+			{
+				target: whiteboardEl,
+				event: event.tba,
+				match: match.tba
+			},
+			wb
+		);
 		if (renderRes.isErr()) {
 			return alert('Error loading whiteboard. Contact support.');
 		}
@@ -120,7 +124,7 @@
 			whiteboard.svg.appendChild(p.target);
 			p.draw();
 		}
-	}
+	};
 
 	const save = debounce(() => {
 		if (!whiteboard) return;
@@ -131,7 +135,7 @@
 
 		currentMatchWhiteboard.update((d) => ({
 			...d,
-			board: serialized,
+			board: serialized
 		}));
 	}, 100);
 
@@ -226,54 +230,63 @@
 			</div>
 			<div class="row mb-3">
 				<div class="col-6">
-					<button type="button" class="btn btn-outline-success w-100" onclick={async () => {
-						const name = await prompt('Enter a name for the new whiteboard:', {
-							default: `Match ${match?.tba.comp_level.toUpperCase()} ${match?.tba.match_number} Whiteboard`,
-						});
-						if (!name) return;
-						if (!match) return;
+					<button
+						type="button"
+						class="btn btn-outline-success w-100"
+						onclick={async () => {
+							const name = await prompt('Enter a name for the new whiteboard:', {
+								default: `Match ${match?.tba.comp_level.toUpperCase()} ${match?.tba.match_number} Whiteboard`
+							});
+							if (!name) return;
+							if (!match) return;
 
-						const onNew = (wb: Strategy.MatchWhiteboardData) => {
-							clearTimeout(timeout);
-							Strategy.MatchWhiteboards.off('new', onNew);
+							const onNew = (wb: Strategy.MatchWhiteboardData) => {
+								clearTimeout(timeout);
+								Strategy.MatchWhiteboards.off('new', onNew);
 
-							open(wb);
-						};
+								open(wb);
+							};
 
-						Strategy.MatchWhiteboards.on('new', onNew);
+							Strategy.MatchWhiteboards.on('new', onNew);
 
-						const timeout = setTimeout(() => {
-							Strategy.MatchWhiteboards.off('new', onNew);
-							alert('Timed out waiting for whiteboard creation. Please try again.');
-						}, 1000 * 10); // 10 seconds
+							const timeout = setTimeout(() => {
+								Strategy.MatchWhiteboards.off('new', onNew);
+								alert('Timed out waiting for whiteboard creation. Please try again.');
+							}, 1000 * 10); // 10 seconds
 
-						const res = await Strategy.MatchWhiteboards.new({
-							eventKey: event.tba.key,
-							matchNumber: match.tba.match_number,
-							compLevel: match.tba.comp_level,
-							board: JSON.stringify(Whiteboard.blank()),
-							name,
-						});
+							const res = await Strategy.MatchWhiteboards.new({
+								eventKey: event.tba.key,
+								matchNumber: match.tba.match_number,
+								compLevel: match.tba.comp_level,
+								board: JSON.stringify(Whiteboard.blank()),
+								name
+							});
 
-						if (res.isErr()) {
-							return alert('Error creating whiteboard. Please try again.');
-						}
-					}}>
+							if (res.isErr()) {
+								return alert('Error creating whiteboard. Please try again.');
+							}
+						}}
+					>
 						New <i class="material-icons">add</i>
 					</button>
 				</div>
 				<div class="col-6">
-					<button type="button" disabled={$whiteboards.length === 0} class="btn btn-outline-success w-100" onclick={async () => {
-						if (!match) return;
-						if (!whiteboardEl) return;
-						const res = await select('Select Whiteboard', whiteboards.data, {
-							render: (wb) => `${wb.data.name} (${wb.data.compLevel}${wb.data.matchNumber})`,
-							title: 'Load Whiteboard',
-						});
-						if (res) {
-							open(res);
-						}
-					}}>
+					<button
+						type="button"
+						disabled={$whiteboards.length === 0}
+						class="btn btn-outline-success w-100"
+						onclick={async () => {
+							if (!match) return;
+							if (!whiteboardEl) return;
+							const res = await select('Select Whiteboard', whiteboards.data, {
+								render: (wb) => `${wb.data.name} (${wb.data.compLevel}${wb.data.matchNumber})`,
+								title: 'Load Whiteboard'
+							});
+							if (res) {
+								open(res);
+							}
+						}}
+					>
 						Load <i class="material-icons">cached</i> ({$whiteboards.length})
 					</button>
 				</div>
@@ -289,48 +302,70 @@
 			{/if}
 			<div class="row mb-3">
 				<div class="col-md-5 col-4">
-					<button type="button" class="btn btn-outline-secondary w-100" onclick={() => whiteboard?.stack.undo()}>
+					<button
+						type="button"
+						class="btn btn-outline-secondary w-100"
+						onclick={() => whiteboard?.stack.undo()}
+					>
 						<i class="material-icons">undo</i>
 					</button>
 				</div>
 				<div class="col-md-2 col-4">
-					<button type="button" class="btn btn-info w-100" onclick={() => {
-						infoModal.show();
-					}}>
+					<button
+						type="button"
+						class="btn btn-info w-100"
+						onclick={() => {
+							infoModal.show();
+						}}
+					>
 						<i class="material-icons">info</i>
 					</button>
 				</div>
 				<div class="col-md-5 col-4">
-					<button type="button" class="btn btn-outline-secondary w-100" onclick={() => whiteboard?.stack.redo()}>
+					<button
+						type="button"
+						class="btn btn-outline-secondary w-100"
+						onclick={() => whiteboard?.stack.redo()}
+					>
 						<i class="material-icons">redo</i>
 					</button>
 				</div>
 			</div>
 			<div class="row mb-3">
-				<div style="
+				<div
+					style="
 					position: relative;
 					width: 100%;
 					aspect-ratio: 2 / 1;
-				">
-					<div style="
+				"
+				>
+					<div
+						style="
 						position: absolute;
 						top: 0;
 						left: 0;
 						width: 100%;
 						height: 100%;
-					">
-					<div bind:this={whiteboardEl} {@attach (div) => {
-						if (!match) return;
-						whiteboard = new Whiteboard({
-							target: div,
-							event: event.tba,
-							match: match.tba,
-						}, {
-							paths: [],
-						});
-						unsub = whiteboard.init();
-					}}></div>
-				</div>
+					"
+					>
+						<div
+							bind:this={whiteboardEl}
+							{@attach (div) => {
+								if (!match) return;
+								whiteboard = new Whiteboard(
+									{
+										target: div,
+										event: event.tba,
+										match: match.tba
+									},
+									{
+										paths: []
+									}
+								);
+								unsub = whiteboard.init();
+							}}
+						></div>
+					</div>
 					<a
 						href="/dashboard/event/{event.tba.key}/team/{teams.find(
 							(t) => t.tba.key === match?.tba.alliances.blue.team_keys[0]
@@ -445,6 +480,26 @@
 	</div>
 </div>
 
+<Modal bind:this={infoModal} title="Whiteboard Info">
+	{#snippet body()}
+		<div class="alert alert-info mb-3" style="font-size: 1.1em;">
+			<strong>Instructions:</strong><br />
+			<ul style="margin-bottom: 0;">
+				<li>
+					Draw on the field by clicking and dragging (or touching and dragging) on the whiteboard
+					area.
+				</li>
+				<li>Tap or click near a path to select it. The selected path will be highlighted.</li>
+				<li>Tap or click a selected path to open options (e.g., delete).</li>
+				<li>Use the <b>Undo</b> and <b>Redo</b> buttons to revert or reapply changes.</li>
+				<li>
+					Use <b>New</b> to create a new whiteboard, or <b>Load</b> to switch between saved boards.
+				</li>
+			</ul>
+		</div>
+	{/snippet}
+</Modal>
+
 <style>
 	.card {
 		background-color: rgba(255, 255, 255, 0.3);
@@ -471,19 +526,3 @@
 		background-color: rgba(0, 0, 255, 0.2);
 	}
 </style>
-
-
-<Modal bind:this={infoModal} title="Whiteboard Info">
-	{#snippet body()}
-		<div class="alert alert-info mb-3" style="font-size: 1.1em;">
-			<strong>Instructions:</strong><br>
-			<ul style="margin-bottom: 0;">
-				<li>Draw on the field by clicking and dragging (or touching and dragging) on the whiteboard area.</li>
-				<li>Tap or click near a path to select it. The selected path will be highlighted.</li>
-				<li>Tap or click a selected path to open options (e.g., delete).</li>
-				<li>Use the <b>Undo</b> and <b>Redo</b> buttons to revert or reapply changes.</li>
-				<li>Use <b>New</b> to create a new whiteboard, or <b>Load</b> to switch between saved boards.</li>
-			</ul>
-		</div>
-	{/snippet}
-</Modal>

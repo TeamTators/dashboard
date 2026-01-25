@@ -15,7 +15,7 @@ export namespace Strategy {
 			name: 'string'
 		},
 		socket: sse,
-		browser,
+		browser
 	});
 
 	export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;

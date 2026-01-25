@@ -15,7 +15,7 @@ export namespace Strategy {
 			matchNumber: integer('match_number').notNull(),
 			compLevel: text('comp_level').notNull(),
 			board: text('board').notNull(),
-			name: text('name').notNull(),
+			name: text('name').notNull()
 		}
 	});
 
