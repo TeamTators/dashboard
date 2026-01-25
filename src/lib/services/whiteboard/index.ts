@@ -4,7 +4,7 @@ import { Stack } from '$lib/utils/stack';
 import { WritableBase } from '$lib/utils/writables';
 import { Color } from 'colors/color';
 import type { Point2D } from 'math/point';
-import { catmullRom } from 'math/spline';
+// import { catmullRom } from 'math/spline';
 import type { TBAEvent, TBAMatch } from 'tatorscout/tba';
 import { attempt, SimpleEventEmitter } from 'ts-utils';
 import z from 'zod';
@@ -179,7 +179,7 @@ export class Path extends WritableBase<PathState> {
 }
 
 export class Whiteboard extends WritableBase<WhiteboardState> {
-	private readonly em = new SimpleEventEmitter<'update'>();
+	private readonly em = new SimpleEventEmitter<'update' | 'destroy'>();
 
 	public readonly on = this.em.on.bind(this.em);
 	public readonly off = this.em.off.bind(this.em);
@@ -212,7 +212,7 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 					selected: false,
 					id: wb.data.paths.length
 				});
-				path.init();
+				wb.on('destroy', path.init());
 				wb.data.paths.push(path);
 			}
 			return wb;
@@ -395,6 +395,7 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 		this.target.addEventListener('touchcancel', touchend);
 
 		this.deinit = () => {
+			Stack.current = undefined;
 			this.target.removeEventListener('mousedown', mousedown);
 			this.target.removeEventListener('mousemove', mousemove);
 			this.target.removeEventListener('mouseup', mouseup);
@@ -404,6 +405,7 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 			this.target.removeEventListener('touchcancel', touchend);
 			for (const fn of deinit) fn();
 			this.target.innerHTML = '';
+			this.emit('destroy');
 		};
 		return this.deinit;
 	}
@@ -434,17 +436,24 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 		const round = (num: number) => {
 			return num.toFixed(3);
 		};
+		const uniquePoints = new Set<string>();
 		const rendered = {
 			paths: this.data.paths
-				.map((p) => ({
-					points: p.points,
-					color: p.color
-				}))
-				.filter(
-					(p, i, a) =>
-						p.points.length > 0 &&
-						a.findIndex((other) => JSON.stringify(other.points) === JSON.stringify(p.points)) === i
-				)
+				.map((p) => {
+					const uniquePointsArray: Point2D[] = [];
+					for (const pt of p.points) {
+						const pointString = JSON.stringify(pt);
+						if (!uniquePoints.has(pointString)) {
+							uniquePoints.add(pointString);
+							uniquePointsArray.push(pt);
+						}
+					}
+					return {
+						points: uniquePointsArray,
+						color: p.color
+					};
+				})
+				.filter((p) => p.points.length > 0)
 		};
 		return `{"paths": [${rendered.paths.map((p) => `{"points": [${p.points.map((pt) => `[${round(pt[0])}, ${round(pt[1])}]`).join(', ')}],"color": "${p.color}"}`).join(', ')}]}`;
 	}

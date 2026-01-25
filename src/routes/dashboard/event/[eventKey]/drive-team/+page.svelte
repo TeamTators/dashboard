@@ -88,6 +88,8 @@
 			loop.stop();
 			countdown.stop();
 			offUpdate();
+			unsub();
+			offSave();
 		};
 	});
 
