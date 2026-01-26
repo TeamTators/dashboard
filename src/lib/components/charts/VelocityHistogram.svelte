@@ -1,32 +1,47 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Chart, BarController, BarElement, CategoryScale, LinearScale } from 'chart.js';
+	import type { TBAMatch } from 'tatorscout/tba';
+	import type { Scouting } from '$lib/model/scouting';
 
   Chart.register(BarController, BarElement, CategoryScale, LinearScale);
 
-  export let matches: any[]; // array of match objects
-  export let bins = 10;      
+  	interface Props {
+		  scouting: Scouting.MatchScoutingExtendedArr;
+		  bins?: number;
+	  }
+
+	const { scouting, bins }: Props = $props();
+  
 
   let canvas: HTMLCanvasElement;
   let chart: Chart;              
-  const maxVelocity = Math.max(...matches.flatMap(m => m.velocityMap()));
-  const bucketSize = maxVelocity / bins;
+  //const maxVelocity = Math.max(...matches.flatMap(m => m.velocityMap()));
+  //const bucketSize = maxVelocity / bins;
 
     
-  const labels = Array.from({ length: bins }, (_, i) => {
-        const start = (i * bucketSize).toFixed(1);
-        const end = ((i + 1) * bucketSize).toFixed(1);
-        return `${start}–${end} fps`;
-  });
+  // const labels = Array.from({ length: bins }, (_, i) => {
+  //      const start = (i * bucketSize).toFixed(1);
+  //      const end = ((i + 1) * bucketSize).toFixed(1);
+  //      return `${start}–${end} fps`;
+  //});
 
-  chart = new Chart(canvas, {
+  const render = () => {
+		if (chart) {
+			chart.destroy();
+		}
+
+		chart = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels,           // X-axis
+      labels: [1,2,4,8,16,32,64],          
       datasets: [{
-        label: 'Velocity Distribution (Event)',
-        data: eventBuckets,  // Y-axis
-        backgroundColor: '#2c2442ff'
+        label: 'Velocity Histogram (Event)',
+        data: [65, 59, 80, 81, 56, 55, 40],  
+        
+				backgroundColor: 'rgba(255, 206, 86, 0.2)',
+				borderColor: 'rgba(255, 206, 86, 1)',
+        borderWidth: 1
       }]
     },
     options: {
@@ -37,6 +52,16 @@
       }
     }
   });
+	};
+
+	onMount(() => {
+		render();
+		return () => {
+			if (chart) {
+				chart.destroy();
+			}
+		};
+	});
 
 </script>
 
