@@ -60,8 +60,7 @@ export namespace Scouting {
 				trace
 			});
 
-			// pipe all events into this class
-			this.onAllUnsubscribe(scouting.subscribe(() => this.inform()));
+			this.pipe(scouting);
 		}
 
 		get team() {
@@ -142,6 +141,14 @@ export namespace Scouting {
 
 		clone() {
 			return new MatchScoutingExtendedArr([...this.data]);
+		}
+
+		velocityHistogram() {
+			const w = new WritableBase<number[]>([]);
+			w.onAllUnsubscribe(this.subscribe((data) => {
+				// Kynlee, you work here
+			}));
+			return w;
 		}
 	}
 
