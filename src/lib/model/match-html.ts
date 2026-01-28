@@ -389,7 +389,7 @@ export class ActionHeatmap<A extends string> {
 		const container = document.createElement('div');
 		container.classList.add('heatmap-item');
 		container.style.position = 'relative';
-		container.style.maxWidth = '80%';
+		container.style.maxWidth = '100%';
 		container.style.aspectRatio = '2 / 1';
 		container.style.overflow = 'hidden';
 		this.target.appendChild(container);
@@ -397,13 +397,20 @@ export class ActionHeatmap<A extends string> {
 		const img = document.createElement('img');
 		img.src = `/assets/field/${this.year}.png`;
 		img.style.position = 'absolute';
-		img.style.top = '0';
+		img.style.bottom = '0';
 		img.style.left = '0';
 		img.style.width = '100%';
-		img.style.height = '100%';
-		img.style.objectFit = 'contain';
 		img.style.zIndex = '0';
 		container.appendChild(img);
+
+		const imgContainer = document.createElement('div');
+		imgContainer.style.position = 'absolute';
+		imgContainer.style.bottom = '0';
+		imgContainer.style.left = '0';
+		imgContainer.style.width = '100%';
+		imgContainer.style.height = img.style.height;
+		imgContainer.style.aspectRatio = '2 / 1';
+		container.appendChild(imgContainer);
 
 		let i = 0;
 		for (const m of this.matches.data) {
@@ -436,7 +443,7 @@ export class ActionHeatmap<A extends string> {
 				actionEl.classList.add('hover-grow', 'hover-grow-xl', 'no-select');
 
 				const to = setTimeout(() => {
-					container.appendChild(actionEl);
+					imgContainer.appendChild(actionEl);
 					this.timeouts.splice(this.timeouts.indexOf(to), 1);
 				}, i * 2);
 
