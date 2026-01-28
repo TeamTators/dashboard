@@ -885,7 +885,7 @@
 			</Card>
 			<Card card={velocityHistogram}>
 				{#snippet body()}
-					<VelocityHistogram scouting={scoutingArr} bins={10}/>
+					<VelocityHistogram scouting={scoutingArr} bins={10} />
 				{/snippet}
 			</Card>
 		{/key}

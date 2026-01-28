@@ -103,6 +103,10 @@ export namespace Scouting {
 			return String(this.data.scouting.data.id);
 		}
 
+		velocityHistogram(bins: number) {
+			return this.trace.velocityHistogram(bins);
+		}
+
 		getChecks() {
 			return attempt(() => {
 				return z.array(z.string()).parse(JSON.parse(this.data.scouting.data.checks || '[]'));
@@ -143,12 +147,40 @@ export namespace Scouting {
 			return new MatchScoutingExtendedArr([...this.data]);
 		}
 
-		velocityHistogram() {
-			const w = new WritableBase<number[]>([]);
-			w.onAllUnsubscribe(this.subscribe((data) => {
-				// Kynlee, you work here
-			}));
-			return w;
+		velocityHistogram(bins: number) {
+			// kynlee, comment through this code
+			const histogramWritable = new WritableBase<{
+				labels: number[];
+				bins: number[];
+			}>({
+				labels: [],
+				bins: []
+			});
+			histogramWritable.onAllUnsubscribe(
+				this.subscribe((matches) => {
+					// rerender the histogram whenever the match array has changed
+					let labels: number[] = [];
+					const histogram: number[] = new Array<number>(bins).fill(0);
+					for (const match of matches) {
+						const matchHistogram = match.velocityHistogram(bins);
+						if (
+							matchHistogram.labels[matchHistogram.labels.length - 1] >
+							(labels[labels.length - 1] || 0)
+						) {
+							labels = matchHistogram.labels;
+						}
+						for (let i = 0; i < matchHistogram.bins.length; i++) {
+							histogram[i] += matchHistogram.bins[i];
+						}
+					}
+
+					histogramWritable.set({
+						bins: histogram,
+						labels
+					});
+				})
+			);
+			return histogramWritable;
 		}
 	}
 
