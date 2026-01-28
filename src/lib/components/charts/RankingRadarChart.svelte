@@ -31,7 +31,7 @@
 
 					for (const [group, value] of Object.entries(ranking)) {
 						for (const [name, rank] of Object.entries(value)) {
-							rendered[group + ': ' + name] = rank;
+							rendered[group + ': ' + name] = max - rank;
 						}
 					}
 
