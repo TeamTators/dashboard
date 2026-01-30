@@ -15,7 +15,7 @@
 	onMount(() => {
 		const heatmap = new StartLocation(scouting, year);
 
-		heatmap.init(target);
+		return heatmap.init(target);
 	});
 </script>
 

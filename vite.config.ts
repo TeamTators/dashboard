@@ -26,7 +26,8 @@ export default defineConfig({
 			'sophie.tatorscout.org',
 			'landon.tatorscout.org',
 			'anvita.tatorscout.org',
-			'daniel.tatorscout.org'
+			'daniel.tatorscout.org',
+			'kynlee.tatorscout.org'
 		]
 	},
 	define: {

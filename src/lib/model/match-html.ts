@@ -283,6 +283,8 @@ export class MatchHTML {
  * start.init(containerEl);
  */
 export class StartLocation {
+	target: HTMLElement | undefined;
+
 	/**
 	 * @param {Scouting.MatchScoutingExtendedArr} matches Match collection store.
 	 * @param {number} year Field year used for zones and field image.
@@ -300,10 +302,13 @@ export class StartLocation {
 		if (!browser) {
 			throw new Error('StartLocation can only be used in the browser');
 		}
+		this.target = target;
 		target.style.position = 'relative';
 		target.style.overflow = 'hidden';
-		target.style.width = '100%';
-		target.style.aspectRatio = '1 / 1';
+		target.style.maxWidth = '100%';
+		target.style.maxHeight = '100%';
+		target.style.margin = 'auto';
+		target.style.aspectRatio = '2/1';
 		const img = document.createElement('img');
 		img.src = `/assets/field/${this.year}.png`;
 		img.style.position = 'absolute';
@@ -313,6 +318,16 @@ export class StartLocation {
 		img.style.height = '100%';
 		img.style.zIndex = '0';
 		target.appendChild(img);
+
+		this.render();
+		return this.matches.subscribe(() => {
+			this.render();
+		});
+	}
+
+	render() {
+		if (!this.target) return;
+		this.target.querySelectorAll('.start-zone').forEach((el) => el.remove());
 
 		const zones: Point2D[][] = [];
 
@@ -351,6 +366,7 @@ export class StartLocation {
 
 		for (const z of zones) {
 			const zoneEl = document.createElement('div');
+			zoneEl.classList.add('start-zone');
 			zoneEl.style.position = 'absolute';
 			zoneEl.style.top = '0';
 			zoneEl.style.left = '0';
@@ -359,7 +375,7 @@ export class StartLocation {
 			zoneEl.style.zIndex = '1';
 			zoneEl.style.backgroundColor = PATH_COLOR.clone().setAlpha(0.3).toString('rgba');
 			zoneEl.style.clipPath = `polygon(${z.map((p) => `${p[0] * 100}% ${p[1] * 100}%`).join(', ')})`;
-			target.appendChild(zoneEl);
+			this.target.appendChild(zoneEl);
 		}
 	}
 }
