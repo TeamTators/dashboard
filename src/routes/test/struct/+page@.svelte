@@ -5,7 +5,6 @@
 	import '$lib/model/testing.svelte';
 	import '$lib/model/checklists';
 	import '$lib/model/FIRST';
-	import '$lib/model/match-canvas';
 	import '$lib/model/potato';
 	import '$lib/model/scouting';
 	import '$lib/model/strategy';

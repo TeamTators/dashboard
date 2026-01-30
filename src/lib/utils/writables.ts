@@ -22,7 +22,7 @@ export class WritableBase<T> implements Writable<T> {
 	 * @param {number} [_config.debounceMs=0] - Debounce delay in milliseconds for updates
 	 */
 	constructor(
-		public data: T,
+		private _data: T,
 		private _config?: {
 			debounceMs?: number;
 		}
@@ -30,6 +30,15 @@ export class WritableBase<T> implements Writable<T> {
 		this._informDebounced = debounce(() => {
 			this._informImmediate();
 		}, this._config?.debounceMs ?? 0);
+	}
+
+	get data(): T {
+		return this._data;
+	}
+
+	set data(value: T) {
+		this._data = value;
+		this.inform();
 	}
 
 	/**
@@ -110,7 +119,6 @@ export class WritableBase<T> implements Writable<T> {
 	 */
 	set(value: T): void {
 		this.data = value;
-		this.inform();
 	}
 
 	/**
@@ -138,7 +146,7 @@ export class WritableBase<T> implements Writable<T> {
 	/**
 	 * Registers a callback to execute when all subscribers have unsubscribed
 	 *
-	 * @param {() => void} _callback - Function to call when all subscribers are removed
+	 * @param {() => void} cb - Function to call when all subscribers are removed
 	 * @returns {void}
 	 * @example
 	 * ```typescript
@@ -147,8 +155,18 @@ export class WritableBase<T> implements Writable<T> {
 	 * });
 	 * ```
 	 */
-	onAllUnsubscribe(_callback: () => void): void {
-		this._onAllUnsubscribeCallbacks.add(_callback);
+	onAllUnsubscribe(cb: () => void): void {
+		this._onAllUnsubscribeCallbacks.add(cb);
+	}
+
+	/**
+	 * Pipes updates from the target writable into this writable
+	 * Once piped, this writable will receive updates from the target
+	 * Once this writable has no subscribers, the pipe subscription will be unsubscribed
+	 * @param {Writable<unknown>} target - The writable store to pipe from
+	 */
+	pipe(target: Writable<unknown>): void {
+		this.onAllUnsubscribe(target.subscribe(() => this.inform()));
 	}
 }
 
@@ -388,18 +406,56 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	}
 
 	/**
-	 * Removes the first occurrence of the specified item from the array
-	 *
-	 * @param {T} item - Item to remove from the array
+	 * Removes items from the array based on a predicate function
+	 * @param fn - Predicate function to determine which items to remove
 	 * @returns {void}
+	 * @example
+	 * ```typescript
+	 * // Remove items matching a condition
+	 * store.remove(item => item.id === targetId);
+	 * ```
 	 */
-	remove(item: T): void {
+	remove(fn: (item: T) => boolean): void;
+	/**
+	 * Removes specific items from the array
+	 * @param items - The items to remove
+	 * @returns {void}
+	 * @example
+	 * ```typescript
+	 * // Remove a specific item
+	 * store.remove(targetItem);
+	 * // Remove multiple items
+	 * store.remove(item1, item2, item3);
+	 * ```
+	 */
+	remove(...items: T[]): void;
+	/**
+	 * Removes items from the array based on a predicate function or specific items
+	 * @param items - Predicate function or specific items to remove
+	 * @returns {void}
+	 * @example
+	 * ```typescript
+	 * // Remove items matching a condition
+	 * store.remove(item => item.id === targetId);
+	 *
+	 * // Remove specific items
+	 * store.remove(targetItem);
+	 * store.remove(item1, item2, item3);
+	 * ```
+	 */
+	remove(...items: (T | ((item: T) => boolean))[]): void {
+		// If first argument is a function, treat it as a predicate
+		if (items.length === 1 && typeof items[0] === 'function') {
+			const predicate = items[0] as (item: T) => boolean;
+			this.update((arr) => {
+				return arr.filter((i) => !predicate(i));
+			});
+			return;
+		}
+
+		// Otherwise, remove all specified items
 		this.update((arr) => {
-			const index = arr.indexOf(item);
-			if (index !== -1) {
-				arr.splice(index, 1);
-			}
-			return arr;
+			return arr.filter((item) => !(items as T[]).includes(item));
 		});
 	}
 }

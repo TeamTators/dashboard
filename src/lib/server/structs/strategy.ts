@@ -8,6 +8,19 @@ import { Permissions } from './permissions';
 import { z } from 'zod';
 
 export namespace Strategy {
+	export const MatchWhiteboards = new Struct({
+		name: 'match_whiteboards',
+		structure: {
+			eventKey: text('event_key').notNull(),
+			matchNumber: integer('match_number').notNull(),
+			compLevel: text('comp_level').notNull(),
+			board: text('board').notNull(),
+			name: text('name').notNull()
+		}
+	});
+
+	export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;
+
 	export const Whiteboards = new Struct({
 		name: 'whiteboards',
 		structure: {
@@ -259,3 +272,4 @@ export const _strategyTable = Strategy.Strategy.table;
 export const _strategyAlliancesTable = Strategy.Alliances.table;
 export const _strategyPartnersTable = Strategy.Partners.table;
 export const _strategyOpponentsTable = Strategy.Opponents.table;
+export const _matchWhiteboardsTable = Strategy.MatchWhiteboards.table;

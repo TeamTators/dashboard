@@ -62,7 +62,6 @@
 	const selectMatch = (match: TBAMatch) => {
 		const teams = teamsFromMatch(match.tba);
 		if (!teams.includes(2122)) {
-			console.log(teams);
 			return alert('You must create a strategy for a team the Tators are in');
 		}
 

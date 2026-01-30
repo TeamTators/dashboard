@@ -438,7 +438,7 @@ export namespace Test {
 						}, 1000);
 
 						const onData = (data: TestData) => {
-							console.log('archived', data);
+							// console.log('archived', data);
 							if (data.data.name === uniqueName) {
 								finish();
 							}

@@ -11,7 +11,7 @@
 
 	const { body, dashboard }: Props = $props();
 
-	const cards = dashboard.orderedCards;
+	const cards = $derived(dashboard.orderedCards);
 
 	onMount(() => {
 		dashboard.init();
