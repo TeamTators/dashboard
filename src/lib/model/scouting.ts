@@ -172,7 +172,19 @@ export namespace Scouting {
 		}
 
 		checksSummary() {
-			// checks summary for all matches
+			const summary = new WritableBase<Record<string, number>>({});
+			summary.pipe(this);
+			setTimeout(() => {
+				const result: Record<string, number> = {};
+				this.each((ms) => {
+					const checks = ms.getChecks();
+					checks.each((check) => {
+						result[check] = (result[check] || 0) + 1;
+					});
+				});
+				summary.set(result);
+			});
+			return summary;
 		}
 	}
 
