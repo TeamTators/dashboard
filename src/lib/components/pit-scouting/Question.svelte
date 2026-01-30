@@ -41,9 +41,12 @@
 
 	const retrieveAnswer = () => {
 		if (answer) return;
-		Scouting.PIT.Answers.fromProperty('questionId', question.data.id || '', {
-			type: 'stream'
-		})
+		Scouting.PIT.Answers.get(
+			{ questionId: question.data.id || '' },
+			{
+				type: 'stream'
+			}
+		)
 			.await()
 			.then((res) => {
 				if (res.isErr()) return console.error(res.error);

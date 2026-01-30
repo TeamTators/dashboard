@@ -35,25 +35,25 @@ export const postBuild = async () => {
 		const ADMIN_FIRST_NAME = config.admin.first_name;
 		const ADMIN_LAST_NAME = config.admin.last_name;
 
-	const admin = await Account.Account.get({ username: ADMIN_USERNAME }, { type: 'single' });
-	if (admin.isErr()) {
-		terminal.error(`Failed to find admin account: ${admin.error}`);
-		return;
-	}
-	if (!admin.value) {
-		terminal.log('No admin account found, creating one...');
-		const res = await Account.createAccount(
-			{
-				username: ADMIN_USERNAME,
-				email: ADMIN_EMAIL,
-				password: ADMIN_PASSWORD,
-				firstName: ADMIN_FIRST_NAME,
-				lastName: ADMIN_LAST_NAME
-			},
-			{
-				canUpdate: false
-			}
-		).unwrap();
+		const admin = await Account.Account.get({ username: ADMIN_USERNAME }, { type: 'single' });
+		if (admin.isErr()) {
+			terminal.error(`Failed to find admin account: ${admin.error}`);
+			return;
+		}
+		if (!admin.value) {
+			terminal.log('No admin account found, creating one...');
+			const res = await Account.createAccount(
+				{
+					username: ADMIN_USERNAME,
+					email: ADMIN_EMAIL,
+					password: ADMIN_PASSWORD,
+					firstName: ADMIN_FIRST_NAME,
+					lastName: ADMIN_LAST_NAME
+				},
+				{
+					canUpdate: false
+				}
+			).unwrap();
 
 			await res
 				.update({

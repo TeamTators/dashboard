@@ -19,9 +19,12 @@
 	let sections = $state(new DataArr(Scouting.PIT.Sections, []));
 
 	onMount(() => {
-		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, {
-			type: 'all'
-		});
+		sections = Scouting.PIT.Sections.get(
+			{ eventKey: eventKey },
+			{
+				type: 'all'
+			}
+		);
 		// sections.filter(s => true);
 		sections.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import * as TBA from '$lib/server/utils/tba';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '$lib/server/db';
 
 describe('TheBlueAlliance testing', async () => {

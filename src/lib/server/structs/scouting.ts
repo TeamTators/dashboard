@@ -1,7 +1,7 @@
 import { boolean } from 'drizzle-orm/pg-core';
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct, StructStream } from 'drizzle-struct/back-end';
+import { Struct, StructStream } from 'drizzle-struct';
 import { z } from 'zod';
 import { attempt, attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
@@ -267,9 +267,12 @@ export namespace Scouting {
 
 		const { eventKey, archive } = parsed.data;
 
-		MatchScouting.fromProperty('eventKey', eventKey, {
-			type: 'stream'
-		}).pipe((d) => {
+		MatchScouting.get(
+			{ eventKey: eventKey },
+			{
+				type: 'stream'
+			}
+		).pipe((d) => {
 			if (!['qm', 'qf', 'sf', 'f'].includes(d.data.compLevel)) d.setArchive(archive);
 		});
 
@@ -279,16 +282,22 @@ export namespace Scouting {
 	});
 
 	MatchScouting.on('archive', (match) => {
-		TeamComments.fromProperty('matchScoutingId', match.id, {
-			type: 'stream'
-		}).pipe((d) => d.setArchive(true));
+		TeamComments.get(
+			{ matchScoutingId: match.id },
+			{
+				type: 'stream'
+			}
+		).pipe((d) => d.setArchive(true));
 	});
 
 	MatchScouting.on('restore', (match) => {
-		TeamComments.fromProperty('matchScoutingId', match.id, {
-			type: 'stream',
-			includeArchived: true
-		}).pipe((d) => d.setArchive(false));
+		TeamComments.get(
+			{ matchScoutingId: match.id },
+			{
+				type: 'stream',
+				includeArchived: true
+			}
+		).pipe((d) => d.setArchive(false));
 	});
 
 	// Generates the match scouting summary after a delay to debounce multiple rapid submissions
@@ -480,9 +489,12 @@ export namespace Scouting {
 		export type SectionData = typeof Sections.sample;
 
 		Sections.on('delete', async (data) => {
-			Groups.fromProperty('sectionId', data.id, {
-				type: 'stream'
-			}).pipe((d) => d.delete());
+			Groups.get(
+				{ sectionId: data.id },
+				{
+					type: 'stream'
+				}
+			).pipe((d) => d.delete());
 		});
 
 		export const Groups = new Struct({
@@ -501,9 +513,12 @@ export namespace Scouting {
 		export type GroupData = typeof Groups.sample;
 
 		Groups.on('delete', async (data) => {
-			Questions.fromProperty('groupId', data.id, {
-				type: 'stream'
-			}).pipe((d) => d.delete());
+			Questions.get(
+				{ groupId: data.id },
+				{
+					type: 'stream'
+				}
+			).pipe((d) => d.delete());
 		});
 
 		export const Questions = new Struct({
@@ -536,9 +551,12 @@ export namespace Scouting {
 		export type QuestionData = typeof Questions.sample;
 
 		Questions.on('delete', async (data) => {
-			Answers.fromProperty('questionId', data.id, {
-				type: 'stream'
-			}).pipe((d) => d.delete());
+			Answers.get(
+				{ questionId: data.id },
+				{
+					type: 'stream'
+				}
+			).pipe((d) => d.delete());
 		});
 
 		export const Answers = new Struct({
@@ -612,9 +630,7 @@ export namespace Scouting {
 					.filter((q, i, a) => a.findIndex((qq) => q.id === qq.id) === i)
 					.filter((a) => !a.archived);
 
-				const answers = (
-					await Answers.fromProperty('team', team, { type: 'stream' }).await()
-				).unwrap();
+				const answers = (await Answers.get({ team: team }, { type: 'stream' }).await()).unwrap();
 
 				return {
 					questions,
@@ -637,44 +653,6 @@ export namespace Scouting {
 
 		export const getScoutingInfoFromSection = (team: number, section: SectionData) => {
 			return attemptAsync(async () => {
-				// const groups = (
-				// 	await Groups.fromProperty('sectionId', section.id, {
-				// 		type: 'stream'
-				// 	}).await()
-				// ).unwrap();
-
-				// const questions = resolveAll(
-				// 	await Promise.all(
-				// 		groups.map((g) => Questions.fromProperty('groupId', g.id, { type: 'stream' }).await())
-				// 	)
-				// )
-				// 	.unwrap()
-				// 	.flat();
-				// const answers = resolveAll(
-				// 	await Promise.all(
-				// 		questions.map((q) =>
-				// 			Answers.fromProperty('questionId', q.id, { type: 'stream' }).await()
-				// 		)
-				// 	)
-				// )
-				// 	.unwrap()
-				// 	.flat();
-
-				// return {
-				// 	questions,
-				// 	groups,
-				// 	answers: await Promise.all(
-				// 		answers
-				// 			.filter((a) => a.data.team === team)
-				// 			.map(async (a) => {
-				// 				const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
-				// 				return {
-				// 					answer: a,
-				// 					account
-				// 				};
-				// 			})
-				// 	)
-				// };
 				const groups = await DB.select()
 					.from(Groups.table)
 					.where(and(eq(Groups.table.sectionId, section.id), eq(Groups.table.archived, false)))
@@ -816,9 +794,12 @@ export namespace Scouting {
 		export const generateBoilerplate = async (eventKey: string, accountId: string) => {
 			return attemptAsync(async () => {
 				const sections = (
-					await Sections.fromProperty('eventKey', eventKey, {
-						type: 'stream'
-					}).await()
+					await Sections.get(
+						{ eventKey: eventKey },
+						{
+							type: 'stream'
+						}
+					).await()
 				).unwrap();
 				if (sections.length) throw new Error('Cannot generate boilerplate for existing sections');
 
@@ -1171,9 +1152,12 @@ export namespace Scouting {
 						dataId: id
 					});
 
-				await Sections.fromProperty('eventKey', fromEventKey, {
-					type: 'stream'
-				}).pipe(async (s) => {
+				await Sections.get(
+					{ eventKey: fromEventKey },
+					{
+						type: 'stream'
+					}
+				).pipe(async (s) => {
 					const section = (
 						await Sections.new({
 							...s.data,
@@ -1187,9 +1171,12 @@ export namespace Scouting {
 						section.id
 					);
 
-					return Groups.fromProperty('sectionId', s.id, {
-						type: 'stream'
-					}).pipe(async (g) => {
+					return Groups.get(
+						{ sectionId: s.id },
+						{
+							type: 'stream'
+						}
+					).pipe(async (g) => {
 						const group = (
 							await Groups.new({
 								...g.data,
@@ -1203,9 +1190,12 @@ export namespace Scouting {
 							group.id
 						);
 
-						return Questions.fromProperty('groupId', g.id, {
-							type: 'stream'
-						}).pipe(async (q) => {
+						return Questions.get(
+							{ groupId: g.id },
+							{
+								type: 'stream'
+							}
+						).pipe(async (q) => {
 							(
 								await Questions.new({
 									...q.data,

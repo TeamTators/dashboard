@@ -1,5 +1,5 @@
 import { integer, text } from 'drizzle-orm/pg-core';
-import { Struct, StructData } from 'drizzle-struct/back-end';
+import { Struct, StructData } from 'drizzle-struct';
 import { attemptAsync } from 'ts-utils/check';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
@@ -117,32 +117,24 @@ export namespace Strategy {
 	});
 
 	Strategy.on('delete', (strategy) => {
-		Partners.fromProperty('strategyId', strategy.id, { type: 'stream' }).pipe((p) => p.delete());
-		Opponents.fromProperty('strategyId', strategy.id, { type: 'stream' }).pipe((p) => p.delete());
+		Partners.get({ strategyId: strategy.id }, { type: 'stream' }).pipe((p) => p.delete());
+		Opponents.get({ strategyId: strategy.id }, { type: 'stream' }).pipe((p) => p.delete());
 	});
 
 	Strategy.on('archive', (strategy) => {
-		Partners.fromProperty('strategyId', strategy.id, { type: 'stream' }).pipe((p) =>
-			p.setArchive(true)
-		);
-		Opponents.fromProperty('strategyId', strategy.id, { type: 'stream' }).pipe((p) =>
-			p.setArchive(true)
-		);
+		Partners.get({ strategyId: strategy.id }, { type: 'stream' }).pipe((p) => p.setArchive(true));
+		Opponents.get({ strategyId: strategy.id }, { type: 'stream' }).pipe((p) => p.setArchive(true));
 	});
 
 	Strategy.on('restore', (strategy) => {
-		Partners.fromProperty('strategyId', strategy.id, { type: 'stream' }).pipe((p) =>
-			p.setArchive(false)
-		);
-		Opponents.fromProperty('strategyId', strategy.id, { type: 'stream' }).pipe((p) =>
-			p.setArchive(false)
-		);
+		Partners.get({ strategyId: strategy.id }, { type: 'stream' }).pipe((p) => p.setArchive(false));
+		Opponents.get({ strategyId: strategy.id }, { type: 'stream' }).pipe((p) => p.setArchive(false));
 	});
 
 	// I'm unsure I want this, probably should just be a confirmation on the front end
 	// Strategy.on('update', ({ from , to }) => {
 	// 	const resetPartner = async (position: number) => {
-	// 		const partners = await Partners.fromProperty('strategyId', to.id, { type: 'stream' }).await().unwrap();
+	// 		const partners = await Partners.get({'strategyId': to.id}, { type: 'stream' }).await().unwrap();
 	// 		const partner = partners.find(p => p.data.position === position);
 	// 		if (!partner) return;
 
@@ -157,7 +149,7 @@ export namespace Strategy {
 	// 	};
 
 	// 	const resetOpponent = async (position: number) => {
-	// 		const opponents = await Opponents.fromProperty('strategyId', to.id, { type: 'stream' }).await().unwrap();
+	// 		const opponents = await Opponents.get({'strategyId': to.id}, { type: 'stream' }).await().unwrap();
 	// 		const opponent = opponents.find(o => o.data.position === position);
 	// 		if (!opponent) return;
 
@@ -226,10 +218,10 @@ export namespace Strategy {
 
 	export const getStrategy = (strategy: StrategyData) => {
 		return attemptAsync(async () => {
-			const partners = await Partners.fromProperty('strategyId', strategy.id, { type: 'stream' })
+			const partners = await Partners.get({ strategyId: strategy.id }, { type: 'stream' })
 				.await()
 				.unwrap();
-			const opponents = await Opponents.fromProperty('strategyId', strategy.id, { type: 'stream' })
+			const opponents = await Opponents.get({ strategyId: strategy.id }, { type: 'stream' })
 				.await()
 				.unwrap();
 			if (partners.length !== 3)

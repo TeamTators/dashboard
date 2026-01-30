@@ -39012,7 +39012,7 @@ Defined in: [src/tests/task-import.ts:4](https://github.com/tsaxking/sveltekit-t
 
 # Interface: Error
 
-Defined in: node_modules/.pnpm/@sveltejs+kit@2.49.5_@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3449
+Defined in: node*modules/.pnpm/@sveltejs+kit@2.49.5*@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3449
 
 Defines the common shape of expected and unexpected errors. Expected errors are thrown using the `error` function. Unexpected errors are handled by the `handleError` hooks which should return this shape.
 
@@ -39022,7 +39022,7 @@ Defines the common shape of expected and unexpected errors. Expected errors are 
 
 > **message**: `string`
 
-Defined in: node_modules/.pnpm/@sveltejs+kit@2.49.5_@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3450
+Defined in: node*modules/.pnpm/@sveltejs+kit@2.49.5*@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3450
 
 [**my-app**](../../../../../../README.md)
 
@@ -39032,7 +39032,7 @@ Defined in: node_modules/.pnpm/@sveltejs+kit@2.49.5_@sveltejs+vite-plugin-svelte
 
 # Interface: Locals
 
-Defined in: node_modules/.pnpm/@sveltejs+kit@2.49.5_@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3456
+Defined in: node*modules/.pnpm/@sveltejs+kit@2.49.5*@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3456
 
 The interface that defines `event.locals`, which can be accessed in server [hooks](https://svelte.dev/docs/kit/hooks) (`handle`, and `handleError`), server-only `load` functions, and `+server.js` files.
 
@@ -39076,7 +39076,7 @@ Defined in: [src/types/app.d.ts:14](https://github.com/tsaxking/sveltekit-templa
 
 # Interface: PageData
 
-Defined in: node_modules/.pnpm/@sveltejs+kit@2.49.5_@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3463
+Defined in: node*modules/.pnpm/@sveltejs+kit@2.49.5*@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3463
 
 Defines the common shape of the [page.data state](https://svelte.dev/docs/kit/$app-state#page) and [$page.data store](https://svelte.dev/docs/kit/$app-stores#page) - that is, the data that is shared between all pages.
 The `Load` and `ServerLoad` functions in `./$types` will be narrowed accordingly.
@@ -39090,7 +39090,7 @@ Use optional properties for data that is only present on specific pages. Do not 
 
 # Interface: PageState
 
-Defined in: node_modules/.pnpm/@sveltejs+kit@2.49.5_@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3468
+Defined in: node*modules/.pnpm/@sveltejs+kit@2.49.5*@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3468
 
 The shape of the `page.state` object, which can be manipulated using the [`pushState`](https://svelte.dev/docs/kit/$app-navigation#pushState) and [`replaceState`](https://svelte.dev/docs/kit/$app-navigation#replaceState) functions from `$app/navigation`.
 
@@ -39102,7 +39102,7 @@ The shape of the `page.state` object, which can be manipulated using the [`pushS
 
 # Interface: Platform
 
-Defined in: node_modules/.pnpm/@sveltejs+kit@2.49.5_@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3473
+Defined in: node*modules/.pnpm/@sveltejs+kit@2.49.5*@sveltejs+vite-plugin-svelte@4.0.4_svelte@5.46.4_vite@5.4.20_@type_9ecd9b275f5368f29959a87aabc4b8f0/node_modules/@sveltejs/kit/types/index.d.ts:3473
 
 If your adapter provides [platform-specific context](https://svelte.dev/docs/kit/adapters#Platform-specific-context) via `event.platform`, you can specify it here.
 

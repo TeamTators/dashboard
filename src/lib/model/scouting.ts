@@ -12,7 +12,7 @@ import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
 import { match } from 'ts-utils/match';
 import { Batch } from 'ts-utils/batch';
-import { WritableArray, WritableBase } from '$lib/utils/writables';
+import { WritableArray, WritableBase } from '$lib/services/writables';
 import YearInfo2025 from 'tatorscout/years/2025.js';
 
 export namespace Scouting {

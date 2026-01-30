@@ -63,9 +63,12 @@ export namespace FIRST {
 				throw new Error('Invalid year');
 			};
 
-			const res = await EventSummaryCache.fromProperty('eventKey', eventKey, {
-				pagination: false
-			}).unwrap();
+			const res = await EventSummaryCache.get(
+				{ eventKey: eventKey },
+				{
+					pagination: false
+				}
+			).unwrap();
 			const obj = res.data[0];
 			if (!obj) return get();
 			if (obj.data.created_at > config.cacheExpires) {

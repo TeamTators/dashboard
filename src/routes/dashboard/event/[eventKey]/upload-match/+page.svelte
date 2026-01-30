@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { loadFileContents } from '$lib/utils/downloads';
-	import { WritableArray } from '$lib/utils/writables';
+	import { WritableArray } from '$lib/services/writables';
 	import z from 'zod';
 	import Grid from '$lib/components/general/Grid.svelte';
 	import { ButtonCellRenderer } from '$lib/utils/ag-grid/buttons';

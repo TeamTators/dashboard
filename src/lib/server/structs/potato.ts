@@ -1,5 +1,5 @@
 import { integer, text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { Account } from './account';
 import { attemptAsync } from 'ts-utils/check';
 import { Scouting } from './scouting';
@@ -336,9 +336,12 @@ export namespace Potato {
 	export const getPotato = (accountId: string) => {
 		return attemptAsync(async () => {
 			const p = (
-				await Friend.fromProperty('account', accountId, {
-					type: 'single'
-				})
+				await Friend.get(
+					{ account: accountId },
+					{
+						type: 'single'
+					}
+				)
 			).unwrap();
 			if (p) return p;
 

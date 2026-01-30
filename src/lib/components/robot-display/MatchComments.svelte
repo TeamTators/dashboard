@@ -21,9 +21,8 @@
 	let render = $state(0);
 
 	onMount(() => {
-		comments = Scouting.TeamComments.fromProperty(
-			'matchScoutingId',
-			String(scouting.scouting.data.id),
+		comments = Scouting.TeamComments.get(
+			{ matchScoutingId: String(scouting.scouting.data.id) },
 			{
 				type: 'all',
 				cache: {

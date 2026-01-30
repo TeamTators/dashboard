@@ -1,6 +1,6 @@
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { Permissions } from './permissions';
 import { z } from 'zod';
 import { DB } from '../db';
@@ -87,9 +87,12 @@ export namespace FIRST {
 			const event = await Event.getEvent(eventKey, true).unwrap();
 			const teams = await event.getTeams(true).unwrap();
 			const matches = await event.getMatches(true).unwrap();
-			const scouting = await Scouting.MatchScouting.fromProperty('eventKey', eventKey, {
-				type: 'all'
-			}).unwrap();
+			const scouting = await Scouting.MatchScouting.get(
+				{ eventKey: eventKey },
+				{
+					type: 'all'
+				}
+			).unwrap();
 
 			const obj = teams.reduce(
 				(acc, team) => {
@@ -125,9 +128,12 @@ export namespace FIRST {
 
 	export const getSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
-			const res = await EventSummary.fromProperty('eventKey', eventKey, {
-				type: 'single'
-			}).unwrap();
+			const res = await EventSummary.get(
+				{ eventKey: eventKey },
+				{
+					type: 'single'
+				}
+			).unwrap();
 			if (res) {
 				if (year === 2024) {
 					return Summary2024.deserialize(res.data.summary).unwrap();

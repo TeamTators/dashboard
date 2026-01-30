@@ -15,9 +15,12 @@ export const load = async (event) => {
 	if (teams.isErr()) throw fail(ServerCode.internalServerError);
 	if (matches.isErr()) throw fail(ServerCode.internalServerError);
 
-	const scouting = await Scouting.MatchScouting.fromProperty('eventKey', event.params.eventKey, {
-		type: 'all'
-	}).unwrap();
+	const scouting = await Scouting.MatchScouting.get(
+		{ eventKey: event.params.eventKey },
+		{
+			type: 'all'
+		}
+	).unwrap();
 
 	return {
 		event: e.value.tba,

@@ -14,7 +14,7 @@ import {
 	type Structable,
 	StructData,
 	type TsType
-} from 'drizzle-struct/back-end';
+} from 'drizzle-struct';
 import { z } from 'zod';
 import { attemptAsync } from 'ts-utils/check';
 import terminal from '../utils/terminal';

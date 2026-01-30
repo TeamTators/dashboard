@@ -17,9 +17,12 @@
 		let unsub = () => {};
 		const u = self.subscribe(async () => {
 			const [p] = (
-				await Potato.Friend.fromProperty('account', String(self.get().data.id), {
-					type: 'stream'
-				}).await()
+				await Potato.Friend.get(
+					{ account: String(self.get().data.id) },
+					{
+						type: 'stream'
+					}
+				).await()
 			).unwrap();
 			if (!p) return;
 			potato = p;

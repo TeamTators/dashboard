@@ -80,17 +80,23 @@ export namespace Account {
 		try {
 			if (from.verified !== to.data.verified) {
 				if (to.data.verified) {
-					const has = await Admins.fromProperty('accountId', to.id, {
-						type: 'single'
-					}).unwrap();
+					const has = await Admins.get(
+						{ accountId: to.id },
+						{
+							type: 'single'
+						}
+					).unwrap();
 					if (has) return;
 					await Admins.new({
 						accountId: to.id
 					}).unwrap();
 				} else {
-					const exists = await Admins.fromProperty('accountId', to.id, {
-						type: 'single'
-					}).unwrap();
+					const exists = await Admins.get(
+						{ accountId: to.id },
+						{
+							type: 'single'
+						}
+					).unwrap();
 					if (exists) await exists.delete().unwrap();
 				}
 			}
@@ -136,7 +142,7 @@ export namespace Account {
 			/** Account ID of the admin. */
 			accountId: text('account_id').notNull().unique()
 		}
-	});	
+	});
 
 	/**
 	 * Verifies an account by setting its verified status to true and clearing the verification token.

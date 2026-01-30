@@ -17,9 +17,12 @@
 	let sections = $state(new DataArr(Scouting.PIT.Sections, []));
 
 	onMount(() => {
-		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, {
-			type: 'all'
-		});
+		sections = Scouting.PIT.Sections.get(
+			{ eventKey: eventKey },
+			{
+				type: 'all'
+			}
+		);
 		sections.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});
 
@@ -65,9 +68,12 @@
 				await Promise.all(
 					events.map(async (e) => {
 						const sections = (
-							await Scouting.PIT.Sections.fromProperty('eventKey', e.tba.key, {
-								type: 'stream'
-							}).await()
+							await Scouting.PIT.Sections.get(
+								{ eventKey: e.tba.key },
+								{
+									type: 'stream'
+								}
+							).await()
 						).unwrap();
 						return { event: e, sections };
 					})
