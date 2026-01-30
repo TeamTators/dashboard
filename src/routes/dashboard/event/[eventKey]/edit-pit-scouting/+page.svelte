@@ -5,6 +5,7 @@
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import { TBAEvent } from '$lib/utils/tba.js';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	const { data } = $props();
 	const eventKey = $derived(data.eventKey);
@@ -54,7 +55,7 @@
 
 	const copy = async () => {
 		try {
-			const d = new Date();
+			const d = new SvelteDate();
 			d.setDate(d.getDate() + 1);
 			const events = (await TBAEvent.getEvents(year, false, d))
 				.unwrap()

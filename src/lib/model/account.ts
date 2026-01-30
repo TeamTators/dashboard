@@ -65,8 +65,7 @@ export namespace Account {
 			read: 'boolean'
 		},
 		socket: sse,
-		browser,
-		log: true
+		browser
 	});
 
 	export type AccountNotificationData = StructData<typeof AccountNotification.data.structure>;

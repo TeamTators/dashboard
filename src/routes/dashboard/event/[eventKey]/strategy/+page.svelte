@@ -11,6 +11,7 @@
 	import { goto } from '$app/navigation';
 	import { Account } from '$lib/model/account.js';
 	import nav from '$lib/imports/robot-display.js';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	const { data } = $props();
 
@@ -35,7 +36,7 @@
 	let alliance: 'red' | 'blue' | 'unknown' = $state('unknown');
 
 	const selectFromMatch = async (match: TBAMatch) => {
-		const date = new Date();
+		const date = new SvelteDate();
 		date.setMinutes(date.getMinutes() + 10);
 		const teams = await match.getTeams(false, date);
 		if (teams.isErr()) return console.error(teams.error);

@@ -12,6 +12,7 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -84,7 +85,7 @@
 
 	$effect(() => {
 		// view on search params
-		const search = new URLSearchParams(location.search);
+		const search = new SvelteURLSearchParams(location.search);
 		search.set('view', view);
 		goto(`${location.pathname}?${search.toString()}`);
 	});
@@ -100,7 +101,7 @@
 			}
 		});
 
-		const search = new URLSearchParams(location.search);
+		const search = new SvelteURLSearchParams(location.search);
 		view = (search.get('view') as 'progress' | 'stats') || 'progress';
 
 		chartInstance = new Chart(chartCanvas, {
@@ -227,7 +228,7 @@
 									);
 								}
 
-								const search = new URLSearchParams(location.search);
+								const search = new SvelteURLSearchParams(location.search);
 								search.set(
 									'teams',
 									get(selectedTeams)
