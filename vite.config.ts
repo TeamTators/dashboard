@@ -17,7 +17,18 @@ export default defineConfig({
 	server: {
 		port: config.network.port,
 		host: '0.0.0.0',
-		allowedHosts: ['dev.tsaxking.com']
+		allowedHosts: [
+			'dev.tsaxking.com',
+			'dev.tatorscout.org',
+			'tatorscout.org',
+			'test.tatorscout.org',
+			'sylvie.tatorscout.org',
+			'sophie.tatorscout.org',
+			'landon.tatorscout.org',
+			'anvita.tatorscout.org',
+			'daniel.tatorscout.org',
+			'kynlee.tatorscout.org'
+		]
 	},
 	define: {
 		__APP_ENV__: JSON.stringify({
@@ -26,7 +37,8 @@ export default defineConfig({
 			indexed_db: config.indexed_db,
 			struct_cache: config.struct_cache,
 			struct_batching: config.struct_batching,
-			sse: config.sse
+			sse: config.sse,
+			do_potato: config.potato.enabled
 		})
 	}
 });

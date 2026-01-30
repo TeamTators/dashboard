@@ -76,66 +76,27 @@ export namespace Account {
 	});
 
 	structRegistry.register(Account);
-
-	Account.on('delete', async (a) => {
-		Admins.get(
-			{ accountId: a.id },
-			{
-				type: 'stream'
+	Account.on('update', async ({ from, to }) => {
+		try {
+			if (from.verified !== to.data.verified) {
+				if (to.data.verified) {
+					const has = await Admins.fromProperty('accountId', to.id, {
+						type: 'single'
+					}).unwrap();
+					if (has) return;
+					await Admins.new({
+						accountId: to.id
+					}).unwrap();
+				} else {
+					const exists = await Admins.fromProperty('accountId', to.id, {
+						type: 'single'
+					}).unwrap();
+					if (exists) await exists.delete().unwrap();
+				}
 			}
-		).pipe((a) => a.delete());
-		Developers.get(
-			{ accountId: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe((a) => a.delete());
-		AccountNotification.get(
-			{ accountId: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe((a) => a.delete());
-		Settings.get(
-			{ accountId: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe((a) => a.delete());
-		PasswordReset.get(
-			{ accountId: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe((a) => a.delete());
-		Session.Session.get(
-			{ accountId: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe((s) => s.delete());
-		AccountInfo.get(
-			{ accountId: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe(async (a) => {
-			const versions = await a.getVersions().unwrapOr([]);
-			await Promise.all(versions.map((v) => v.delete()));
-			a.delete();
-		});
-		Permissions.RoleAccount.get(
-			{ account: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe((ra) => ra.delete());
-		Permissions.AccountRuleset.get(
-			{ account: a.id },
-			{
-				type: 'stream'
-			}
-		).pipe((ar) => ar.delete());
+		} catch (error) {
+			terminal.warn(error);
+		}
 	});
 
 	/**
@@ -175,12 +136,25 @@ export namespace Account {
 			/** Account ID of the admin. */
 			accountId: text('account_id').notNull().unique()
 		}
-	});
+	});	
+
+	/**
+	 * Verifies an account by setting its verified status to true and clearing the verification token.
+	 * @param account - The account to verify.
+	 * @returns A promise that resolves when the account is verified.
+	 */
+	export const verify = (account: AccountData) => {
+		return account.update({
+			verified: true,
+			verification: ''
+		});
+	};
 
 	/**
 	 * Checks whether an account is an admin.
 	 *
 	 * @param {AccountData} account - Account to check.
+	 * @returns A promise that resolves to true if the account is an admin, false otherwise.
 	 */
 	export const isAdmin = (account: AccountData) => {
 		return attemptAsync(async () => {

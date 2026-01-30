@@ -7,6 +7,7 @@ layout isolates dashboard-specific UI from the public site layout.
 -->
 <script lang="ts">
 	import Navbar from '$lib/components/general/Navbar.svelte';
+	import Footer from '$lib/components/general/Footer.svelte';
 
 	const { children } = $props();
 </script>
@@ -16,3 +17,4 @@ layout isolates dashboard-specific UI from the public site layout.
 
 	{@render children()}
 </main>
+<Footer />

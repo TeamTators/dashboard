@@ -80,7 +80,6 @@ export const actions = {
 				message: 'Failed to hash password'
 			});
 		}
-
 		const sessionRes = await Session.signIn(account, event.locals.session);
 		if (sessionRes.isErr()) {
 			terminal.error(sessionRes.error);

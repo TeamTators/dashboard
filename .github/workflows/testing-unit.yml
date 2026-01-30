@@ -40,6 +40,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          path: dashboard
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -51,23 +54,48 @@ jobs:
         with:
           node-version: v22.12.0
 
-      - name: Install dependencies
+      - name: Install dashboard dependencies
         run: |
-          echo "Installing dependencies..."
+          cd dashboard
+          echo "Installing dashboard dependencies..."
           pnpm install --frozen-lockfile
 
-      - name: Load .env variables
+      - name: Clone the tba-webhooks repository
+        run: git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/TeamTators/tba-webhooks.git tba-webhooks
+
+      - name: Install tba-webhooks dependencies
         run: |
+          cd tba-webhooks
+          echo "Installing tba-webhooks dependencies..."
+          pnpm install --frozen-lockfile
+
+      - name: Create .env file for tba-webhooks
+        run: |
+          cd tba-webhooks
+          touch .env
+          echo "PORT=5555" >> .env
+          echo "TBA_SECRET=webhook_secret" >> .env
+          echo "REDIS_NAME=tba_webhook" >> .env
+
+      - name: Create .env file for dashboard
+        run: |
+          cd dashboard
           cp config.example.json config.json
           touch .env
+          echo "PORT=3000" >> .env
+          echo "TBA_KEY=${{ secrets.TBA_KEY }}" >> .env
           echo "OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "OAUTH2_CLIENT_SECRET=1234567890" >> .env
+          echo "TBA_WEBHOOK_SECRET=webhook_secret" >> .env
           export $(cat .env | xargs)
 
       - name: Run migrations
         run: |
+          cd dashboard
           pnpm run db:migrate
           pnpm run db:push --strict --verbose --force
 
       - name: Run Vitest tests
-        run: npm run test:unit
+        run: |
+          cd dashboard
+          pnpm run test:unit
