@@ -422,7 +422,9 @@ export namespace Scouting {
 					.filter((q, i, a) => a.findIndex((qq) => q.id === qq.id) === i)
 					.filter((a) => !a.archived);
 
-				const answers = (await Answers.get({ team: team }, { type: 'stream' }).await()).unwrap();
+				const answers = await Answers.get({ team: team }, { type: 'all' }).unwrap();
+
+				const accounts = await Account.Account.all({ type: 'all' }).unwrap();
 
 				return {
 					questions,
@@ -432,10 +434,9 @@ export namespace Scouting {
 						answers
 							.filter((a) => a.data.team === team)
 							.map(async (a) => {
-								const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
 								return {
 									answer: a,
-									account
+									account: accounts.find(acc => acc.data.id === a.data.accountId),
 								};
 							})
 					)

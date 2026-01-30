@@ -80,23 +80,13 @@
 											autoHide: 3000
 										});
 									} else {
-										if (res.value.success) {
-											notify({
-												color: 'success',
-												message: 'You successfully restored the comment.',
-												title: 'Success',
-												textColor: 'light',
-												autoHide: 3000
-											});
-										} else {
-											notify({
-												color: 'warning',
-												message: res.value.message || 'Unknown issue',
-												title: 'Not Archived',
-												textColor: 'dark',
-												autoHide: 3000
-											});
-										}
+										notify({
+											color: 'success',
+											message: 'You successfully restored the comment.',
+											title: 'Success',
+											textColor: 'light',
+											autoHide: 3000
+										});
 									}
 								}
 							},

@@ -33,7 +33,12 @@ export const load = async (event) => {
 	).unwrap();
 
 	const pictures = (
-		await FIRST.getTeamPictures(parseInt(event.params.team), event.params.eventKey)
+		await FIRST.TeamPictures.get({
+			team: team.tba.team_number,
+			eventKey: e.tba.key
+		}, {
+			type: 'all',
+		})
 	).unwrap();
 	return {
 		section: s.safe(),

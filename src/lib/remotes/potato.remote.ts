@@ -23,7 +23,8 @@ export const giveLevels = command(z.object({
     ).unwrap();
 
     return {
-        success: true
+        success: true,
+        message: 'Levels given successfully'
     };
 });
 
@@ -36,12 +37,21 @@ export const rename = command(z.object({
     }
 
     const potato = (await Potato.getPotato(account.id)).unwrap();
+
+    if (potato.data.level < 987) {
+        return {
+            success: false,
+            message: `${potato.data.name} is not old enough to be renamed`,
+        }
+    }
+
     (
         await potato.update({ name: data.name })
     ).unwrap();
 
     return {
-        success: true
+        success: true,
+        message: 'Potato renamed successfully'
     };
 });
 

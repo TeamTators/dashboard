@@ -16,14 +16,13 @@
 	onMount(() => {
 		let unsub = () => {};
 		const u = self.subscribe(async () => {
-			const [p] = (
+			const [p] =
 				await Potato.Friend.get(
 					{ account: String(self.get().data.id) },
 					{
-						type: 'stream'
+						type: 'all'
 					}
-				).await()
-			).unwrap();
+				).await().unwrap();
 			if (!p) return;
 			potato = p;
 			unsub = p.subscribe((data) => {
@@ -97,11 +96,7 @@
 								const name = await prompt('Enter a new name for your potato');
 								if (!name) return;
 								const res = await Potato.renameYourPotato(name);
-								if (res.isOk()) {
-									if (!res.value.success) {
-										alert(`Your potato could not be renamed: ${res.value.message}`);
-									}
-								} else {
+								if (res.isErr()) {
 									console.error(res.error);
 								}
 							}}

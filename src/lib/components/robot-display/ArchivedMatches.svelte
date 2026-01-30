@@ -18,8 +18,6 @@
 		const res = Scouting.getArchivedMatches(team.tba.team_number, event.tba.key);
 		if (res.isOk()) {
 			matches = res.value;
-		} else {
-			console.error('Error fetching archived matches:', res.error);
 		}
 	});
 </script>

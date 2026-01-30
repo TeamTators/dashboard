@@ -7,6 +7,7 @@
 	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { RowAutoHeightModule, TextFilterModule, NumberFilterModule } from 'ag-grid-community';
+	import { WritableArray } from '$lib/services/writables';
 
 	interface Props {
 		team: number;
@@ -17,12 +18,10 @@
 
 	const { team, event, comments, scouting }: Props = $props();
 
-	let commentProxy: Writable<
-		{
-			comment: Scouting.TeamCommentsData;
-			match: string;
-		}[]
-	> = $state(writable([]));
+	const commentProxy = new WritableArray<{
+		comment: Scouting.TeamCommentsData;
+		match: string;
+	}>([]);
 
 	onMount(() => {
 		return comments.subscribe((data) => {
@@ -117,23 +116,13 @@
 											autoHide: 3000
 										});
 									} else {
-										if (res.value.success) {
-											notify({
-												color: 'success',
-												message: 'You successfully archived the comment.',
-												title: 'Success',
-												textColor: 'light',
-												autoHide: 3000
-											});
-										} else {
-											notify({
-												color: 'warning',
-												message: res.value.message || 'Unknown issue',
-												title: 'Not Archived',
-												textColor: 'dark',
-												autoHide: 3000
-											});
-										}
+										notify({
+											color: 'success',
+											message: 'You successfully archived the comment.',
+											title: 'Success',
+											textColor: 'light',
+											autoHide: 3000
+										});
 									}
 								}
 							},

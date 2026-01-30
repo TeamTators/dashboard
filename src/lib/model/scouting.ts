@@ -151,13 +151,14 @@ export namespace Scouting {
 	};
 
 	export const getArchivedMatches = (team: number, eventKey: string) => {
-		return MatchScouting.get({
+		const res = MatchScouting.get({
 			team,
 			eventKey,
 			archived: true,
 		}, {
 			type: 'all',
 		});
+		return MatchScoutingExtendedArr.fromArr(res);
 	};
 
 	export const averageAutoScore = (data: MatchScoutingExtended[], year: number) => {
