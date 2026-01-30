@@ -10,7 +10,7 @@
 	import { Strategy } from '$lib/model/strategy.js';
 	import { goto } from '$app/navigation';
 	import { Account } from '$lib/model/account.js';
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { SvelteDate } from 'svelte/reactivity';
 
 	const { data } = $props();

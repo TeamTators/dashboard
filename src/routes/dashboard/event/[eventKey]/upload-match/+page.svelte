@@ -6,7 +6,7 @@
 	import Grid from '$lib/components/general/Grid.svelte';
 	import { ButtonCellRenderer } from '$lib/utils/ag-grid/buttons';
 	import { type ICellRendererParams } from 'ag-grid-community';
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 
 	const { data = $bindable() } = $props();
 

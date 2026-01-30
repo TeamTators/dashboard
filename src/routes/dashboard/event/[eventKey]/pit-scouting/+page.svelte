@@ -1,5 +1,5 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { onMount } from 'svelte';
 	import { listen } from '$lib/utils/struct-listener.js';
 
