@@ -61,6 +61,19 @@ export default ts.config(
 			'svelte/require-each-key': 'off',
 			'svelte/no-navigation-without-resolve': 'off',
 			'svelte/prefer-writable-derived': 'warn'
+			'svelte/valid-compile': 'error',
+			'svelte/require-each-key': 'warn',
+			'svelte/no-navigation-without-resolve': [
+				'warn',
+				{
+					ignoreGoto: false,
+					ignoreLinks: true,
+					ignorePushState: false,
+					ignoreReplaceState: false
+				}
+			],
+			'svelte/prefer-writable-derived': 'warn',
+			'svelte/prefer-svelte-reactivity': 'warn'
 		}
 	}
 );
