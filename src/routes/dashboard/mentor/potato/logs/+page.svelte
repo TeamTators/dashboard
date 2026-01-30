@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteDate, SvelteURLSearchParams } from 'svelte/reactivity';
 	import { dateTime } from 'ts-utils/clock';
 
 	const { data } = $props();
@@ -9,7 +10,7 @@
 
 	const next = () => {
 		if (page === Math.ceil(count / limit)) return;
-		const params = new URLSearchParams(location.search);
+		const params = new SvelteURLSearchParams(location.search);
 		params.set('page', (page + 1).toString());
 		params.set('limit', limit.toString());
 		location.search = params.toString();
@@ -18,18 +19,11 @@
 
 	const prev = () => {
 		if (page === 1) return;
-		const params = new URLSearchParams(location.search);
+		const params = new SvelteURLSearchParams(location.search);
 		params.set('page', (page - 1).toString());
 		params.set('limit', limit.toString());
 		location.search = params.toString();
 	};
-
-	// const setLimit = (limit: number) => {
-	// 	const params = new URLSearchParams(location.search);
-	// 	params.set('page', '1');
-	// 	params.set('limit', limit.toString());
-	// 	location.search = params.toString();
-	// };
 </script>
 
 <div class="container">
@@ -71,7 +65,7 @@
 									{log.amount}
 								</td>
 								<td>
-									{dateTime(new Date(log.created))}
+									{dateTime(new SvelteDate(log.created))}
 								</td>
 							</tr>
 						{/each}

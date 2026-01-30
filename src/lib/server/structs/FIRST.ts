@@ -58,6 +58,15 @@ export namespace FIRST {
 					message: 'Account not verified'
 				};
 			}
+
+			const exists = await getSummary(data.eventKey, data.year as 2024 | 2025);
+			if (exists.isOk() && exists.value) {
+				return {
+					success: true,
+					data: exists.value.serialize()
+				};
+			}
+
 			const res = await generateSummary(data.eventKey, data.year as 2024 | 2025);
 			if (res.isErr()) {
 				terminal.error(res.error);
