@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
+	import { WritableArray } from '$lib/utils/writables';
 	import type { BootstrapColor } from 'colors/color';
 	import { onMount } from 'svelte';
 	import { capitalize, fromCamelCase } from 'ts-utils/text';
@@ -10,7 +11,7 @@
 	}
 
 	const { scouting, classes }: Props = $props();
-	let checks: string[] = $state([]);
+	let checks = $state(new WritableArray<string>([]));
 
 	const checkColors: {
 		[key: string]: BootstrapColor;
@@ -29,7 +30,7 @@
 	onMount(() => {
 		return scouting.subscribe(() => {
 			try {
-				checks = scouting.getChecks().unwrap();
+				checks = scouting.getChecks();
 				// checks.set(parsed);
 			} catch (error) {
 				console.error(error);
@@ -41,7 +42,7 @@
 <div>
 	<h5 class="text-center">Checks</h5>
 	<ul class="list-group {classes}">
-		{#each checks as check (check)}
+		{#each $checks as check (check)}
 			<li class="list-group-item text-{checkColors[check] ?? checkColors.default} {classes}">
 				{capitalize(fromCamelCase(check))}
 			</li>

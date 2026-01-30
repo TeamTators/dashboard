@@ -105,14 +105,35 @@ export namespace Scouting {
 		}
 
 		getChecks() {
-			return attempt(() => {
-				return z.array(z.string()).parse(JSON.parse(this.data.scouting.data.checks || '[]'));
+			const w = new WritableArray<string>([]);
+			w.pipe(this);
+			setTimeout(() => {
+				const res = z
+					.array(z.string())
+					.safeParse(JSON.parse(this.data.scouting.data.checks || '[]'));
+				if (res.success) {
+					w.set(res.data);
+				} else {
+					console.error('Failed to parse checks:', res.error);
+				}
 			});
+			return w;
 		}
 
 		getSliders() {
-			return attempt(() => {
-				return z
+			const w = new WritableBase<
+				Record<
+					string,
+					{
+						value: number;
+						text: string;
+						color: string;
+					}
+				>
+			>({});
+			w.pipe(this);
+			setTimeout(() => {
+				const res = z
 					.record(
 						z.string(),
 						z.object({
@@ -121,8 +142,14 @@ export namespace Scouting {
 							color: z.string().default('#000000')
 						})
 					)
-					.parse(JSON.parse(this.data.scouting.data.sliders || '{}'));
+					.safeParse(JSON.parse(this.data.scouting.data.sliders || '{}'));
+				if (res.success) {
+					w.set(res.data);
+				} else {
+					console.error('Failed to parse sliders:', res.error);
+				}
 			});
+			return w;
 		}
 	}
 
