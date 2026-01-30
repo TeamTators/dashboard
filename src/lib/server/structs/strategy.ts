@@ -3,9 +3,7 @@ import { Struct, StructData } from 'drizzle-struct';
 import { attemptAsync } from 'ts-utils/check';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
-import { Account } from './account';
 import { Permissions } from './permissions';
-import { z } from 'zod';
 
 export namespace Strategy {
 	export const MatchWhiteboards = new Struct({
@@ -53,35 +51,6 @@ export namespace Strategy {
 		validators: {
 			alliance: (value) => ['red', 'blue', 'unknown'].includes(String(value))
 		}
-	});
-
-	Strategy.queryListen('from-match', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		if (!(await Account.isAdmin(event.locals.account).unwrap())) {
-			return new Error('Not entitled');
-		}
-
-		const parsed = z
-			.object({
-				eventKey: z.string(),
-				matchNumber: z.number(),
-				compLevel: z.string()
-			})
-			.safeParse(data);
-		if (!parsed.success) return new Error('Invalid data: ' + parsed.error.message);
-
-		const { eventKey, matchNumber, compLevel } = parsed.data;
-		const res = await getMatchStrategy(matchNumber, compLevel, eventKey);
-		if (res.isErr()) return new Error('Error getting strategy: ' + res.error.message);
-		return res.value;
-		// const strategies = res.value;
-		// const stream = new StructStream(Strategy);
-		// setTimeout(() => {
-		// 	for (const strategy of strategies) {
-		// 		stream.add(strategy);
-		// 	}
-		// }, event.locals.session.data.latency);
-		// return stream;
 	});
 
 	Strategy.on('create', (strategy) => {

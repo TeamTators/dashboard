@@ -1,14 +1,12 @@
 import { boolean } from 'drizzle-orm/pg-core';
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct, StructStream } from 'drizzle-struct';
+import { Struct } from 'drizzle-struct';
 import { z } from 'zod';
 import { attempt, attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
 import { eq, and, inArray } from 'drizzle-orm';
-import { Session } from './session';
 import { Permissions } from './permissions';
-import terminal from '../utils/terminal';
 import { Logs } from './log';
 import { Account } from './account';
 import { Trace } from 'tatorscout/trace';
@@ -130,156 +128,6 @@ export namespace Scouting {
 			});
 		}
 	}
-
-	MatchScouting.queryListen('from-team', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return new Error('Not entitled');
-		}
-
-		const { team, eventKey } = z
-			.object({
-				team: z.number(),
-				eventKey: z.string()
-			})
-			.parse(data);
-
-		const stream = new StructStream(MatchScouting);
-
-		setTimeout(async () => {
-			const matchScouting = await DB.select()
-				.from(MatchScouting.table)
-				.where(
-					and(
-						eq(MatchScouting.table.team, team),
-						eq(MatchScouting.table.eventKey, eventKey),
-						eq(MatchScouting.table.archived, false)
-					)
-				);
-
-			for (let i = 0; i < matchScouting.length; i++) {
-				stream.add(MatchScouting.Generator(matchScouting[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
-
-	MatchScouting.queryListen('archived-matches', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return new Error('Not entitled');
-		}
-
-		const { team, eventKey } = z
-			.object({
-				team: z.number(),
-				eventKey: z.string()
-			})
-			.parse(data);
-
-		const stream = new StructStream(MatchScouting);
-
-		setTimeout(async () => {
-			const matchScouting = await DB.select()
-				.from(MatchScouting.table)
-				.where(
-					and(
-						eq(MatchScouting.table.team, team),
-						eq(MatchScouting.table.eventKey, eventKey),
-						eq(MatchScouting.table.archived, true)
-					)
-				);
-
-			for (let i = 0; i < matchScouting.length; i++) {
-				stream.add(MatchScouting.Generator(matchScouting[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
-
-	MatchScouting.queryListen('pre-scouting', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return new Error('Not entitled');
-		}
-
-		const { team, year } = z
-			.object({
-				team: z.number(),
-				year: z.number()
-			})
-			.parse(data);
-
-		const stream = new StructStream(MatchScouting);
-
-		setTimeout(async () => {
-			const matchScouting = await DB.select()
-				.from(MatchScouting.table)
-				.where(
-					and(
-						eq(MatchScouting.table.team, team),
-						eq(MatchScouting.table.year, year),
-						eq(MatchScouting.table.prescouting, true)
-					)
-				);
-
-			for (let i = 0; i < matchScouting.length; i++) {
-				stream.add(MatchScouting.Generator(matchScouting[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
-
-	MatchScouting.callListen('set-practice-archive', async (event, data) => {
-		if (!event.locals.account)
-			return {
-				success: false,
-				message: 'Not logged in'
-			};
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return {
-				success: false,
-				message: 'Not entitled'
-			};
-		}
-
-		const parsed = z
-			.object({
-				eventKey: z.string(),
-				archive: z.boolean()
-			})
-			.safeParse(data);
-
-		if (!parsed.success)
-			return {
-				success: false,
-				message: 'Invalid data'
-			};
-
-		const { eventKey, archive } = parsed.data;
-
-		MatchScouting.get(
-			{ eventKey: eventKey },
-			{
-				type: 'stream'
-			}
-		).pipe((d) => {
-			if (!['qm', 'qf', 'sf', 'f'].includes(d.data.compLevel)) d.setArchive(archive);
-		});
-
-		return {
-			success: true
-		};
-	});
 
 	MatchScouting.on('archive', (match) => {
 		TeamComments.get(
@@ -427,34 +275,6 @@ export namespace Scouting {
 		});
 	};
 
-	TeamComments.queryListen('from-event', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		return new Error('Not entitled');
-
-		const { eventKey, team } = z
-			.object({
-				eventKey: z.string(),
-				team: z.number()
-			})
-			.parse(data);
-
-		const stream = new StructStream(TeamComments);
-
-		setTimeout(async () => {
-			const comments = await DB.select()
-				.from(TeamComments.table)
-				.where(and(eq(TeamComments.table.eventKey, eventKey), eq(TeamComments.table.team, team)));
-
-			for (let i = 0; i < comments.length; i++) {
-				stream.add(TeamComments.Generator(comments[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
-
 	Permissions.createEntitlement({
 		name: 'view-scouting',
 		structs: [MatchScouting, TeamComments],
@@ -581,34 +401,6 @@ export namespace Scouting {
 
 		export type AnswerData = typeof Answers.sample;
 
-		Answers.queryListen('from-group', async (event, data) => {
-			const account = event.locals.account;
-			if (!account) throw new Error('Not logged in');
-
-			if (!(await Account.isAdmin(account))) {
-				throw new Error('Not entitled');
-			}
-
-			const { group } = z
-				.object({
-					group: z.string()
-				})
-				.parse(data);
-
-			const g = (await Groups.fromId(group)).unwrap();
-			if (!g) throw new Error('Group not found');
-
-			const res = (await getAnswersFromGroup(g)).unwrap();
-
-			const stream = new StructStream(Answers);
-
-			setTimeout(() => {
-				for (const r of res) stream.add(r);
-			}, 10);
-
-			return stream;
-		});
-
 		export const getScoutingInfo = (team: number, eventKey: string) => {
 			return attemptAsync(async () => {
 				const res = await DB.select()
@@ -708,88 +500,6 @@ export namespace Scouting {
 				return res.map((r) => Answers.Generator(r.pit_answers));
 			});
 		};
-
-		Sections.callListen('generate-event-template', async (event, data) => {
-			if (!event.locals.account) {
-				terminal.error('Not logged in');
-				return {
-					success: false,
-					message: 'Not logged in'
-				};
-			}
-
-			if (!(await Account.isAdmin(event.locals.account))) throw new Error('Not entitled');
-
-			const parsed = z
-				.object({
-					eventKey: z.string()
-				})
-				.safeParse(data);
-
-			if (!parsed.success) {
-				terminal.error('Invalid data', parsed.error);
-				return {
-					success: false,
-					message: 'Invalid data'
-				};
-			}
-
-			const res = await generateBoilerplate(parsed.data.eventKey, event.locals.account.id);
-
-			if (res.isOk()) {
-				return {
-					success: true
-				};
-			} else {
-				terminal.error(res.error);
-				return {
-					success: false,
-					message: 'Failed to generate'
-				};
-			}
-		});
-
-		Sections.callListen('copy-from-event', async (event, data) => {
-			const session = (await Session.getSession(event)).unwrap();
-			const account = (await Session.getAccount(session)).unwrap();
-			if (!account) {
-				terminal.error('Not logged in');
-				return {
-					success: false,
-					message: 'Not logged in'
-				};
-			}
-
-			if (!(await Account.isAdmin(account))) throw new Error('Not entitled');
-
-			const parsed = z
-				.object({
-					from: z.string(),
-					to: z.string()
-				})
-				.safeParse(data);
-
-			if (!parsed.success) {
-				terminal.error('Invalid data', parsed.error);
-				return {
-					success: false,
-					message: 'Invalid data'
-				};
-			}
-
-			const res = await copyFromEvent(parsed.data.from, parsed.data.to, account.id);
-			if (res.isOk()) {
-				return {
-					success: true
-				};
-			} else {
-				terminal.error(res.error);
-				return {
-					success: false,
-					message: 'Failed to copy'
-				};
-			}
-		});
 
 		export const generateBoilerplate = async (eventKey: string, accountId: string) => {
 			return attemptAsync(async () => {

@@ -2,18 +2,14 @@ import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct';
 import { Permissions } from './permissions';
-import { z } from 'zod';
-import { DB } from '../db';
-import { and, eq } from 'drizzle-orm';
 import { attemptAsync } from 'ts-utils/check';
-import { SendListener } from '../services/struct-listeners';
 import Summary2024 from '../../utils/trace/summaries/2024';
 import Summary2025 from '../../utils/trace/summaries/2025';
 import { Event } from '../utils/tba';
 import { Scouting } from './scouting';
 import { Trace } from 'tatorscout/trace';
-import { DataAction, PropertyAction } from 'drizzle-struct/types';
-import terminal from '../utils/terminal';
+import { DataAction, PropertyAction } from '../../types/struct';
+import structRegistry from '../services/struct-registry';
 
 export namespace FIRST {
 	export const EventSummary = new Struct({
@@ -24,63 +20,19 @@ export namespace FIRST {
 		}
 	});
 
-	// Prevent SSE from doing anything
-	EventSummary.block(DataAction.Archive, () => true, 'No archiving allowed');
-	EventSummary.block(DataAction.Clear, () => true, 'No clearing allowed');
-	EventSummary.block(DataAction.Create, () => true, 'No creating allowed');
-	EventSummary.block(DataAction.Delete, () => true, 'No deleting allowed');
-	EventSummary.block(DataAction.DeleteVersion, () => true, 'No deleting allowed');
-	EventSummary.block(DataAction.RestoreArchive, () => true, 'No restoring allowed');
-	EventSummary.block(DataAction.RestoreVersion, () => true, 'No restoring allowed');
-	EventSummary.block(PropertyAction.Update, () => true, 'No updating allowed');
-	EventSummary.block(PropertyAction.Read, () => true, 'No reading allowed');
-	EventSummary.block(PropertyAction.ReadArchive, () => true, 'No reading allowed');
-	EventSummary.block(PropertyAction.ReadVersionHistory, () => true, 'No reading allowed');
-	EventSummary.block(PropertyAction.SetAttributes, () => true, 'No setting allowed');
-
-	SendListener.on(
-		'get-summary',
-		EventSummary,
-		z.object({
-			eventKey: z.string(),
-			year: z.number()
-		}),
-		async (event, data) => {
-			if (!event.locals.account) {
-				return {
-					success: false,
-					message: 'Not logged in'
-				};
-			}
-			if (!event.locals.account.data.verified) {
-				return {
-					success: false,
-					message: 'Account not verified'
-				};
-			}
-
-			const exists = await getSummary(data.eventKey, data.year as 2024 | 2025);
-			if (exists.isOk() && exists.value) {
-				return {
-					success: true,
-					data: exists.value.serialize()
-				};
-			}
-
-			const res = await generateSummary(data.eventKey, data.year as 2024 | 2025);
-			if (res.isErr()) {
-				terminal.error(res.error);
-				return {
-					success: false,
-					message: 'Failed to generate summary'
-				};
-			}
-			return {
-				success: true,
-				data: res.value.serialize()
-			};
-		}
-	);
+	structRegistry.register(EventSummary)
+		.block(DataAction.Archive)
+		.block(DataAction.Clear)
+		.block(DataAction.Create)
+		.block(DataAction.Delete)
+		.block(DataAction.DeleteVersion)
+		.block(DataAction.RestoreArchive)
+		.block(DataAction.RestoreVersion)
+		.block(PropertyAction.Update)
+		.block(PropertyAction.Read)
+		.block(PropertyAction.ReadArchive)
+		.block(PropertyAction.ReadVersionHistory)
+		.block(PropertyAction.SetAttributes);
 
 	export const generateSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
@@ -160,31 +112,6 @@ export namespace FIRST {
 			accountId: text('account_id').notNull()
 		}
 	});
-
-	TeamPictures.queryListen('from-event', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-
-		// Check if the user has permission to view team pictures
-
-		const { team, eventKey } = z
-			.object({
-				team: z.number(),
-				eventKey: z.string()
-			})
-			.parse(data);
-
-		return getTeamPictures(team, eventKey).unwrap();
-	});
-
-	export const getTeamPictures = (team: number, eventKey: string) => {
-		return attemptAsync(async () => {
-			const res = await DB.select()
-				.from(TeamPictures.table)
-				.where(and(eq(TeamPictures.table.team, team), eq(TeamPictures.table.eventKey, eventKey)));
-
-			return res.map((r) => TeamPictures.Generator(r));
-		});
-	};
 
 	// TeamPictures.on('delete', (pic) => {});
 
