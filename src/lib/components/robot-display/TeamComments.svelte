@@ -104,7 +104,6 @@
 						{
 							name: 'Archive',
 							action: async () => {
-								console.log(e);
 								if (!e.data) return;
 
 								if (await confirm('Are you sure you want to archive this?')) {

@@ -4,7 +4,7 @@
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
 	import { copy } from '$lib/utils/clipboard.js';
-	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { Dashboard } from '$lib/model/dashboard.js';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
 	import Chart from 'chart.js/auto';
@@ -19,16 +19,18 @@
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = writable<
-		{
-			team: TBATeam;
-			component: Progress | TeamEventStats | undefined;
-		}[]
-	>(
-		data.selectedTeams.map((t) => ({
-			team: t,
-			component: undefined
-		}))
+	const selectedTeams = $derived(
+		writable<
+			{
+				team: TBATeam;
+				component: Progress | TeamEventStats | undefined;
+			}[]
+		>(
+			data.selectedTeams.map((t) => ({
+				team: t,
+				component: undefined
+			}))
+		)
 	);
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
@@ -82,7 +84,7 @@
 		goto(`${location.pathname}?${search.toString()}`);
 	});
 
-	onMount(() => {
+	afterNavigate(() => {
 		teamScoutingData = teamScouting.map((ts) => {
 			const res = Scouting.MatchScoutingExtendedArr.fromArr(ts);
 			if (res.isOk()) {

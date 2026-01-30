@@ -21,9 +21,10 @@
 	let uploadComponent: FileUploader;
 
 	onMount(() => {
-		uploadComponent.uppy.use(Webcam, { modes: ['picture'] });
-		uploadComponent.uppy.use(ImageEditor);
-		uploadComponent.uppy.use(Compressor, { quality: 0.4 });
+		const uppy = uploadComponent.getUppy();
+		uppy.use(Webcam, { modes: ['picture'] });
+		uppy.use(ImageEditor);
+		uppy.use(Compressor, { quality: 0.4 });
 		const d = new Date();
 		d.setDate(d.getDate() + 7);
 		team.getMedia(true, d).then((m) => {
@@ -60,8 +61,8 @@
 			<FileUploader
 				multiple={true}
 				message="Upload Pictures"
-				usage="images"
-				endpoint={`/upload`}
+				allowedFileTypes={['image/*']}
+				endpoint="/upload"
 				bind:this={uploadComponent}
 			/>
 		</div>

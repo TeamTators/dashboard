@@ -97,7 +97,7 @@ export default (event: TBAEvent) => {
 				href: 'https://frc.ohlinis.me/',
 				icon: {
 					type: 'material-icons',
-					name: 'calculate',
+					name: 'calculate'
 				},
 				external: true
 			},
@@ -131,6 +131,14 @@ export default (event: TBAEvent) => {
 				icon: {
 					type: 'material-icons',
 					name: 'people'
+				}
+			},
+			{
+				name: 'Simulator',
+				href: `/year/${event.year}/simulator`,
+				icon: {
+					type: 'material-icons',
+					name: 'sports_motorsports'
 				}
 			}
 		]

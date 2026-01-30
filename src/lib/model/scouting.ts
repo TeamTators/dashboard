@@ -373,7 +373,6 @@ export namespace Scouting {
 
 	const batcher = new Batch(
 		async (matches: MatchSchemaType[]) => {
-			console.log('Uploading match batch of size', matches.length);
 			const res = await fetch('/event-server/submit-match/batch', {
 				method: 'POST',
 				headers: {

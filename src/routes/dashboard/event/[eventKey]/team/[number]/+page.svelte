@@ -481,7 +481,7 @@
 	// 		height: 1,
 	// 	}
 	// });
-	let dashboard = $state(
+	let dashboard = $derived(
 		new Dashboard.Dashboard({
 			name: `Robot Display: ${data.team.team_number} - ${data.team.nickname}`,
 			cards: [
@@ -541,8 +541,8 @@
 		if (res.isErr()) {
 			console.error('Failed to create extended scouting array:', res.error);
 		} else {
-			scoutingArr.set(res.value.data);
 			scoutingArr = res.value;
+			scoutingArr.inform();
 		}
 		contributionSub();
 		contributionSub = scoutingArr.subscribe(() => {
@@ -584,7 +584,6 @@
 			console.error('Failed to create extended scouting array:', res.error);
 		} else {
 			scoutingArr.set(res.value.data);
-			scoutingArr = res.value;
 		}
 		contributionSub();
 		contributionSub = scoutingArr.subscribe(() => {
@@ -757,7 +756,7 @@
 						{event}
 						scouting={scoutingArr}
 						{matches}
-						defaultView={'points'}
+						defaultView="points"
 					/>
 				{/snippet}
 			</Card>
@@ -846,7 +845,7 @@
 			</Card>
 			<Card card={startLocation}>
 				{#snippet body()}
-					<StartLocationHeatmap {team} {event} />
+					<StartLocationHeatmap scouting={scoutingArr} year={event.tba.year} />
 				{/snippet}
 			</Card>
 		{/key}
