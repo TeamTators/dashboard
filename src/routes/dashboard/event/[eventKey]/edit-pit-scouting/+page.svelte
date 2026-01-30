@@ -86,19 +86,17 @@
 			);
 
 			if (!selected) return;
-			Scouting.PIT.Sections.call('copy-from-event', {
-				from: withSections.find((e) => e.event.tba.name === selected)?.event.tba.key || '',
-				to: eventKey
-			});
+			Scouting.PIT.copyFromEvent(
+				withSections.find((e) => e.event.tba.name === selected)?.event.tba.key || '',
+				eventKey
+			)
 		} catch (err) {
 			console.error(err);
 		}
 	};
 	const generateEventTemplate = async () => {
 		if (!(await confirm('Are you sure you want to generate an event template?'))) return;
-		const res = await Scouting.PIT.Sections.call('generate-event-template', {
-			eventKey: eventKey
-		});
+		const res = await Scouting.PIT.generateEventTemplate(eventKey);
 		if (res.isErr()) return console.error(res.error);
 		if (!res.value.success) alert(`${res.value.message} (You likely already have sections)`);
 	};

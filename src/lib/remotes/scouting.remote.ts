@@ -32,8 +32,9 @@ export const setPracticeArchive = command(z.object({
 });
 
 export const pitAnswersFromGroup = query(z.object({
+    questions: z.array(z.string()),
     group: z.string(),
-}), async ({ group }) => {
+}), async ({ questions, group }) => {
     const account = await getAccount();
     if (!account) return error(401, 'Unauthorized');
     if (!await Account.isAdmin(account).unwrap()) {
@@ -42,7 +43,7 @@ export const pitAnswersFromGroup = query(z.object({
     const g = (await Scouting.PIT.Groups.fromId(group)).unwrap();
     if (!g) return error(404, 'Group not found');
     return await Scouting.PIT.getAnswersFromGroup(g).unwrap()
-        .then(answers => answers.map(a => a.safe()));
+        .then(answers => answers.filter(a => questions.includes(a.data.questionId)).map(a => a.safe()));
 });
 
 export const generateEventPitscoutingTemplate = command(z.object({

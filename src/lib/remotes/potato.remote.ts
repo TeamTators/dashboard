@@ -46,19 +46,7 @@ export const rename = command(z.object({
 });
 
 export const changeIcon = command(z.object({
-    icon: z.enum([
-        'adult',
-        'ascending',
-        'baby',
-        'elder',
-        'god',
-        'kit',
-        'seed',
-        'sprout',
-        'teen',
-        'timeTraveler',
-        'wizard',
-    ])
+    icon: z.string()
 }), async ({ icon }) => {
     const account = await getAccount();
 

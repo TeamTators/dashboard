@@ -14,6 +14,7 @@ import { match } from 'ts-utils/match';
 import { Batch } from 'ts-utils/batch';
 import { WritableArray, WritableBase } from '$lib/services/writables';
 import YearInfo2025 from 'tatorscout/years/2025.js';
+import * as remote from '$lib/remotes/scouting.remote';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -150,18 +151,12 @@ export namespace Scouting {
 	};
 
 	export const getArchivedMatches = (team: number, eventKey: string) => {
-		return attempt(() => {
-			const matches = MatchScouting.query(
-				'archived-matches',
-				{ team, eventKey },
-				{
-					asStream: false,
-					satisfies: (d) =>
-						d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
-				}
-			);
-
-			return MatchScoutingExtendedArr.fromArr(matches).unwrap();
+		return MatchScouting.get({
+			team,
+			eventKey,
+			archived: true,
+		}, {
+			type: 'all',
 		});
 	};
 
@@ -286,40 +281,28 @@ export namespace Scouting {
 	};
 
 	export const scoutingFromTeam = (team: number, eventKey: string) => {
-		return attempt(() => {
-			const ms = MatchScouting.query(
-				'from-team',
-				{ team, eventKey },
-				{
-					asStream: false,
-					satisfies: (d) =>
-						d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
-				}
-			);
-
-			return MatchScoutingExtendedArr.fromArr(ms).unwrap();
+		return MatchScouting.get({
+			team,
+			eventKey,
+		}, {
+			type: 'all',
 		});
 	};
 
 	export const preScouting = (team: number, eventKey: string) => {
-		return MatchScouting.query(
-			'pre-scouting',
-			{ team, eventKey },
-			{
-				asStream: false,
-				satisfies: (d) =>
-					d.data.team === team &&
-					d.data.eventKey === eventKey &&
-					!!d.data.archived &&
-					!!d.data.prescouting
-			}
-		);
+		return MatchScouting.get({
+			team,
+			eventKey,
+			prescouting: true,
+			archived: true
+		}, {
+			type: 'all',	
+		});
 	};
 
 	export const setPracticeArchive = (eventKey: string, archive: boolean) => {
-		return MatchScouting.call('set-practice-archive', {
-			eventKey,
-			archive
+		return attemptAsync(async () => {
+			return remote.setPracticeArchive({ eventKey, archive });
 		});
 	};
 
@@ -496,17 +479,28 @@ export namespace Scouting {
 		};
 
 		export const getAnswersFromGroup = (group: GroupData, questionIDs: string[]) => {
-			return Answers.query(
-				'from-group',
-				{
-					group: group.data.id
-				},
-				{
-					asStream: false,
-					satisfies: (d) => (d.data.questionId ? questionIDs.includes(d.data.questionId) : false)
-				}
-			);
+			return attemptAsync(async () => {
+				return remote.pitAnswersFromGroup({
+					questions: questionIDs,
+					group: String(group.data.id),
+				})
+			});
 		};
+
+		export const copyFromEvent = (from: string, to: string) => {
+			return attemptAsync(async () => {
+				return remote.copyPitScoutingFromEvent({
+					from,
+					to,
+				});
+			});
+		}
+
+		export const generateEventTemplate = (eventKey: string) => {
+			return attemptAsync(async () => {
+				return remote.generateEventPitscoutingTemplate({ eventKey})
+			});
+		}
 
 		export const answerQuestion = (
 			question: QuestionData,

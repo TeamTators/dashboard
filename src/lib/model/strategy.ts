@@ -58,21 +58,13 @@ export namespace Strategy {
 	});
 
 	export const fromMatch = (eventKey: string, matchNumber: number, compLevel: string) => {
-		return Strategy.query(
-			'from-match',
-			{
-				eventKey,
-				matchNumber,
-				compLevel
-			},
-			{
-				asStream: false,
-				satisfies: (data) =>
-					data.data.eventKey === eventKey &&
-					data.data.matchNumber === matchNumber &&
-					data.data.compLevel === compLevel
-			}
-		);
+		return Strategy.get({
+			eventKey,
+			matchNumber,
+			compLevel
+		}, {
+			type: 'all',
+		});
 	};
 
 	export type StrategyData = StructData<typeof Strategy.data.structure>;
