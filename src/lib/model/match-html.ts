@@ -361,8 +361,6 @@ export class StartLocation {
 			zoneEl.style.clipPath = `polygon(${z.map((p) => `${p[0] * 100}% ${p[1] * 100}%`).join(', ')})`;
 			target.appendChild(zoneEl);
 		}
-
-		return this.matches.subscribe(() => this.init(target));
 	}
 }
 
