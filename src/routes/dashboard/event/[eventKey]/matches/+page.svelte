@@ -4,6 +4,7 @@
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { TBAEvent, TBAMatch } from '$lib/utils/tba.js';
 	import { onMount } from 'svelte';
+	import { SvelteDate } from 'svelte/reactivity';
 	import { dateTime } from 'ts-utils/clock';
 
 	const { data } = $props();
@@ -76,7 +77,7 @@
 		const offArchive = Scouting.MatchScouting.on('archive', remove);
 		const offRestore = Scouting.MatchScouting.on('restore', add);
 
-		const expires = new Date();
+		const expires = new SvelteDate();
 		expires.setMinutes(expires.getMinutes() + 10);
 
 		event.getMatches(false, expires).then((m) => {

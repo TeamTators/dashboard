@@ -8,6 +8,7 @@
 	import '@uppy/webcam/css/style.min.css';
 	import ImageEditor from '@uppy/image-editor';
 	import Compressor from '@uppy/compressor';
+	import { SvelteDate } from 'svelte/reactivity';
 	interface Props {
 		team: TBATeam;
 		event: TBAEvent;
@@ -25,7 +26,7 @@
 		uppy.use(Webcam, { modes: ['picture'] });
 		uppy.use(ImageEditor);
 		uppy.use(Compressor, { quality: 0.4 });
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setDate(d.getDate() + 7);
 		team.getMedia(true, d).then((m) => {
 			if (m.isErr()) return console.error(m.error);

@@ -3,6 +3,7 @@
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAMatch, TBAEvent } from '$lib/utils/tba';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	interface Props {
 		event: TBAEvent;
@@ -47,7 +48,7 @@
 	};
 
 	onMount(() => {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setMinutes(d.getMinutes() + 10);
 		team.getMatches(true, d).then((m) => {
 			if (m.isOk()) {
