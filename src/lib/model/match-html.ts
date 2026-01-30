@@ -333,13 +333,15 @@ export class ActionHeatmap<A extends string> {
 		const legend = document.createElement('div');
 		legend.classList.add('heatmap-item');
 		legend.style.display = 'flex';
-		legend.style.flexDirection = 'column';
-		legend.style.justifyContent = 'end';
+		legend.style.flexDirection = 'row';
+		legend.style.justifyContent = 'center';
 		legend.style.position = 'absolute';
 		// legend.style.top = '10px';
 		legend.style.right = '5%';
 		legend.style.top = '50%';
 		legend.style.transform = 'translateY(-50%)';
+		legend.style.zIndex = '1';
+		legend.style.width = '90%';
 		const { colors } = PATH_COLOR.compliment(Object.keys(this.yearInfo.actions).length);
 		const keys = Object.keys(this.yearInfo.actions);
 		for (let i = 0; i < keys.length; i++) {
@@ -407,9 +409,10 @@ export class ActionHeatmap<A extends string> {
 		imgContainer.style.position = 'absolute';
 		imgContainer.style.bottom = '0';
 		imgContainer.style.left = '0';
-		imgContainer.style.width = '100%';
+		imgContainer.style.width = img.style.width;
 		imgContainer.style.height = img.style.height;
 		imgContainer.style.aspectRatio = '2 / 1';
+		imgContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
 		container.appendChild(imgContainer);
 
 		let i = 0;
