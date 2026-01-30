@@ -60,8 +60,7 @@ export default ts.config(
 			'svelte/no-navigation-without-resolve': 'off',
 			'svelte/prefer-writable-derived': 'warn',
 			'svelte/valid-compile': 'error',
-			'svelte/require-each-key': 'warn',
-			'svelte/prefer-writable-derived': 'warn',
+			'svelte/require-each-key': 'off',
 			'svelte/prefer-svelte-reactivity': 'warn'
 		}
 	}
