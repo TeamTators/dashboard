@@ -487,7 +487,7 @@
 				height: 1
 			},
 			lg: {
-				width: 4,
+				width: 6,
 				height: 1
 			},
 			md: {
