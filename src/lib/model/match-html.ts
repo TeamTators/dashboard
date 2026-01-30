@@ -517,9 +517,8 @@ export class ActionHeatmap<A extends string> {
 				label.style.color = 'black';
 			}
 
-
 			label.style.fontWeight = 'bold';
-			label.style.fontSize =  '1em';
+			label.style.fontSize = '1em';
 			label.style.whiteSpace = 'nowrap';
 			label.style.lineHeight = '1em';
 			label.style.margin = 'auto';
@@ -538,7 +537,6 @@ export class ActionHeatmap<A extends string> {
 			legend.appendChild(item);
 		}
 		container.appendChild(legend);
-
 
 		const img = document.createElement('img');
 		img.src = `/assets/field/${this.year}.png`;

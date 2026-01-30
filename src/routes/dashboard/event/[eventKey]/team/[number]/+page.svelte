@@ -781,7 +781,7 @@
 						{event}
 						scouting={scoutingArr}
 						{matches}
-						defaultView={'points'}
+						defaultView="points"
 					/>
 				{/snippet}
 			</Card>

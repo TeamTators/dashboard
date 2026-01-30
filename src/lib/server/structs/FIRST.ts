@@ -63,7 +63,7 @@ export namespace FIRST {
 			if (exists.isOk() && exists.value) {
 				return {
 					success: true,
-					data: exists.value.serialize(),
+					data: exists.value.serialize()
 				};
 			}
 

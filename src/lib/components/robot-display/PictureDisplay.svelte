@@ -62,7 +62,7 @@
 				multiple={true}
 				message="Upload Pictures"
 				allowedFileTypes={['image/*']}
-				endpoint={`/upload`}
+				endpoint="/upload"
 				bind:this={uploadComponent}
 			/>
 		</div>
