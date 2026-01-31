@@ -70,6 +70,12 @@
   */
 	onMount(() => {
 		// Do something here!
+    // render({
+    //   bins:array :(
+    //   labels: bin labels :(
+    // }
+      
+    // );
 		const fn = 'DO SOMETHING HERE';
 		return () => {
 			// DO SOMETHING HERE
