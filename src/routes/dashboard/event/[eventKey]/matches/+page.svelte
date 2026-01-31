@@ -1,5 +1,5 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { TBAEvent, TBAMatch } from '$lib/utils/tba.js';

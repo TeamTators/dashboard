@@ -1,5 +1,5 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import type { TBAMatch } from '$lib/utils/tba';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';

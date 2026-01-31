@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Grid from '$lib/components/general/Grid.svelte';
-	import nav from '$lib/imports/robot-display';
+	import nav from '$lib/nav/robot-display';
 	import { readable } from 'svelte/store';
 	import { NumberFilterModule, TextFilterModule } from 'ag-grid-community';
 	import FileUploader from '$lib/components/forms/FileUploader.svelte';
@@ -35,7 +35,7 @@
 				team: uploadTeam.team.tba.team_number,
 				eventKey: event.tba.key,
 				picture: file,
-				accountId: Account.getSelf().get().data.id || ''
+				accountId: Account.getSelf().data.data.id || ''
 			});
 		});
 	});

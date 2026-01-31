@@ -1,13 +1,22 @@
+/**
+ * @fileoverview Server-side SSE manager for client connections.
+ *
+ * Handles connection lifecycle, message caching, ping/ack, and session mapping.
+ *
+ * @example
+ * import { sse } from '$lib/server/services/sse';
+ * sse.on('connect', (conn) => conn.send('hello', {}));
+ */
 import { attempt, attemptAsync } from 'ts-utils/check';
 import type { RequestEvent as ConnectRequestEvent } from '../../../routes/api/sse/init/[uuid]/$types';
 import { Session } from '../structs/session';
 import { encode } from 'ts-utils/text';
 import { EventEmitter } from 'ts-utils/event-emitter';
-import type { Notification } from '$lib/types/notification';
+import type { Notification } from '../../types/notification';
 import { toByteString } from 'ts-utils/text';
 import { getManifestoInstance } from '../utils/manifesto';
 import { config } from '../utils/env';
-import { type ConnectionState } from '$lib/types/sse';
+import { type ConnectionState } from '../../types/sse';
 
 /** Maximum number of cached messages per connection */
 const CACHE_LIMIT = 50;

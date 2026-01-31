@@ -9,7 +9,7 @@ import { Logs } from '../../src/lib/server/structs/log';
 import { attemptAsync, resolveAll } from 'ts-utils/check';
 import { Scouting } from '../../src/lib/server/structs/scouting';
 import { z } from 'zod';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { openStructs } from '../../cli/struct';
 import { postBuild } from '../../src/lib/server/index';
 import { num, str } from '../../src/lib/server/utils/env';
@@ -119,9 +119,12 @@ export default async () => {
 				(
 					(await Account.Account.fromId(user)).unwrap() ||
 					(
-						await Account.Account.fromProperty('username', user, {
-							type: 'single'
-						})
+						await Account.Account.get(
+							{ username: user },
+							{
+								type: 'single'
+							}
+						)
 					).unwrap()
 				)?.data.username ||
 				(
@@ -129,9 +132,12 @@ export default async () => {
 					(await old.Accounts.fromProperty('username', user)).unwrap()
 				)?.username;
 			const id = (
-				await Account.Account.fromProperty('username', user, {
-					type: 'single'
-				})
+				await Account.Account.get(
+					{ username: user },
+					{
+						type: 'single'
+					}
+				)
 			).unwrap()?.data.id;
 
 			return { username, id };
@@ -460,9 +466,12 @@ export default async () => {
 		type: 'stream'
 	}).pipe(async (s) => {
 		const groups = (
-			await Scouting.PIT.Groups.fromProperty('sectionId', s.id, {
-				type: 'stream'
-			}).await()
+			await Scouting.PIT.Groups.get(
+				{ sectionId: s.id },
+				{
+					type: 'stream'
+				}
+			).await()
 		).unwrap();
 		let groupCount = groups.length;
 
@@ -471,9 +480,12 @@ export default async () => {
 		await Promise.all(
 			groups.map(async (g) => {
 				const questions = (
-					await Scouting.PIT.Questions.fromProperty('groupId', g.id, {
-						type: 'stream'
-					}).await()
+					await Scouting.PIT.Questions.get(
+						{ groupId: g.id },
+						{
+							type: 'stream'
+						}
+					).await()
 				).unwrap();
 
 				let questionCount = questions.length;
@@ -487,9 +499,12 @@ export default async () => {
 				await Promise.all(
 					questions.map(async (q) => {
 						const answers = (
-							await Scouting.PIT.Answers.fromProperty('questionId', q.id, {
-								type: 'stream'
-							}).await()
+							await Scouting.PIT.Answers.get(
+								{ questionId: q.id },
+								{
+									type: 'stream'
+								}
+							).await()
 						).unwrap();
 
 						if (!answers.length) {

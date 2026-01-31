@@ -41,9 +41,12 @@
 
 	const retrieveAnswer = () => {
 		if (answer) return;
-		Scouting.PIT.Answers.fromProperty('questionId', question.data.id || '', {
-			type: 'stream'
-		})
+		Scouting.PIT.Answers.get(
+			{ questionId: question.data.id || '' },
+			{
+				type: 'all'
+			}
+		)
 			.await()
 			.then((res) => {
 				if (res.isErr()) return console.error(res.error);
@@ -68,7 +71,7 @@
 			}));
 		} else {
 			if (!question.data.id) return console.error('question.data.id did not exist');
-			const accountId = self.get().data.id;
+			const accountId = self.data.data.id;
 			if (!accountId) return console.error('No account id found');
 			await Scouting.PIT.Answers.new({
 				questionId: question.data.id,

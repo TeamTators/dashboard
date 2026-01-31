@@ -3,6 +3,8 @@ import { Struct } from '$lib/services/struct';
 import { StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
+import * as remote from '$lib/remotes/potato.remote';
+import { attemptAsync } from 'ts-utils';
 
 export namespace Potato {
 	export const Friend = new Struct({
@@ -117,14 +119,20 @@ export namespace Potato {
 	};
 
 	export const giveLevels = (accountId: string, levels: number) => {
-		return Friend.call('give-levels', { accountId, levels });
+		return attemptAsync(async () => {
+			return remote.giveLevels({ accountId, levels });
+		});
 	};
 
 	export const renameYourPotato = (name: string) => {
-		return Friend.call('rename', { name });
+		return attemptAsync(async () => {
+			return remote.rename({ name });
+		});
 	};
 
 	export const chooseYourIcon = (icon: string) => {
-		return Friend.call('change-icon', { icon });
+		return attemptAsync(async () => {
+			return remote.changeIcon({ icon });
+		});
 	};
 }

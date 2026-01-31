@@ -1,5 +1,5 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { TBAMatch, TBATeam } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
 	import { Loop } from 'ts-utils/loop';

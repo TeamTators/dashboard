@@ -1,6 +1,6 @@
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { Permissions } from './permissions';
 
 export namespace Checklist {

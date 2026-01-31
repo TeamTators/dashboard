@@ -14,15 +14,18 @@ import {
 } from 'tatorscout/tba';
 import { attempt, attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { TBA } from '../structs/TBA';
-import { StructData } from 'drizzle-struct/back-end';
+import { StructData } from 'drizzle-struct';
 import { z } from 'zod';
 
 export class Event {
 	public static getEvents(year: number, force = false) {
 		return attemptAsync<Event[]>(async () => {
-			const custom = await TBA.Events.fromProperty('year', year, {
-				type: 'all'
-			}).unwrap();
+			const custom = await TBA.Events.get(
+				{ year: year },
+				{
+					type: 'all'
+				}
+			).unwrap();
 
 			const tba = (
 				await TBA.get<E[]>(`/team/frc2122/events/${year}`, {
@@ -41,9 +44,12 @@ export class Event {
 	public static getEvent(eventKey: string, force = false) {
 		return attemptAsync(async () => {
 			const custom = (
-				await TBA.Events.fromProperty('eventKey', eventKey, {
-					type: 'single'
-				})
+				await TBA.Events.get(
+					{ eventKey: eventKey },
+					{
+						type: 'single'
+					}
+				)
 			).unwrap();
 			if (custom) return new Event(EventSchema.parse(JSON.parse(custom.data.data)), true, custom);
 
@@ -59,9 +65,12 @@ export class Event {
 
 	public static getTeamEvents(year: number, team: number, force = false) {
 		return attemptAsync(async () => {
-			const custom = await TBA.Events.fromProperty('year', year, {
-				type: 'all'
-			}).unwrap();
+			const custom = await TBA.Events.get(
+				{ year: year },
+				{
+					type: 'all'
+				}
+			).unwrap();
 
 			const tba = (
 				await TBA.get<E[]>(`/team/frc${team}/events/${year}`, {
@@ -113,9 +122,12 @@ export class Event {
 		return attemptAsync(async () => {
 			if (this.custom) {
 				return (
-					await TBA.Teams.fromProperty('eventKey', this.tba.key, {
-						type: 'all'
-					})
+					await TBA.Teams.get(
+						{ eventKey: this.tba.key },
+						{
+							type: 'all'
+						}
+					)
 				)
 					.unwrap()
 					.map((d) => TeamSchema.parse(JSON.parse(d.data.data)))
@@ -139,9 +151,12 @@ export class Event {
 		return attemptAsync(async () => {
 			if (this.custom) {
 				return (
-					await TBA.Matches.fromProperty('eventKey', this.tba.key, {
-						type: 'all'
-					})
+					await TBA.Matches.get(
+						{ eventKey: this.tba.key },
+						{
+							type: 'all'
+						}
+					)
 				)
 					.unwrap()
 					.map((m) => new Match(MatchSchema.parse(JSON.parse(m.data.data)), this))
@@ -174,9 +189,12 @@ export class Event {
 		return attemptAsync(async () => {
 			if (this.custom) {
 				return (
-					await TBA.Matches.fromProperty('eventKey', this.tba.key, {
-						type: 'all'
-					})
+					await TBA.Matches.get(
+						{ eventKey: this.tba.key },
+						{
+							type: 'all'
+						}
+					)
 				)
 					.unwrap()
 					.map((m) => new Match(matchSchema.parse(JSON.parse(m.data.data)), this))
@@ -249,9 +267,12 @@ export class Event {
 				.sort((a, b) => a.team_number - b.team_number)
 				.filter((t, i, a) => a.findIndex((tt) => tt.team_number === t.team_number) === i);
 
-			const currentTeams = await TBA.Teams.fromProperty('eventKey', this.tba.key, {
-				type: 'all'
-			}).unwrap();
+			const currentTeams = await TBA.Teams.get(
+				{ eventKey: this.tba.key },
+				{
+					type: 'all'
+				}
+			).unwrap();
 
 			await Promise.all(currentTeams.map((c) => c.delete().unwrap()));
 
@@ -271,9 +292,12 @@ export class Event {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set matches for a non-custom event');
 
-			await TBA.Matches.fromProperty('eventKey', this.tba.key, {
-				type: 'stream'
-			}).pipe((c) => c.delete().unwrap());
+			await TBA.Matches.get(
+				{ eventKey: this.tba.key },
+				{
+					type: 'stream'
+				}
+			).pipe((c) => c.delete().unwrap());
 
 			resolveAll(
 				await Promise.all(

@@ -1,9 +1,13 @@
+<!--
+@component
+Admin logs page at `/dashboard/admin/logs`.
+-->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { copy } from '$lib/utils/clipboard.js';
 	import { dateTime } from 'ts-utils/clock';
 	import { capitalize, fromSnakeCase, abbreviate } from 'ts-utils/text';
-	import nav from '$lib/imports/admin';
+	import nav from '$lib/nav/admin.js';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	nav();

@@ -1,4 +1,4 @@
-import { WritableBase } from '$lib/utils/writables';
+import { WritableBase } from '$lib/services/writables';
 import type { Point2D } from 'math/point';
 import { EventEmitter } from 'ts-utils';
 

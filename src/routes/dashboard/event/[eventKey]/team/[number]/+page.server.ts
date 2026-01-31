@@ -46,7 +46,15 @@ export const load = async (event) => {
 		Scouting.getTeamScouting(team.tba.team_number, e.value.tba.key),
 		Scouting.getTeamComments(team.tba.team_number, e.value.tba.key),
 		Scouting.PIT.getScoutingInfo(team.tba.team_number, e.value.tba.key),
-		FIRST.getTeamPictures(team.tba.team_number, e.value.tba.key)
+		FIRST.TeamPictures.get(
+			{
+				team: team.tba.team_number,
+				eventKey: e.value.tba.key
+			},
+			{
+				type: 'all'
+			}
+		)
 	]);
 
 	if (scouting.isErr()) {

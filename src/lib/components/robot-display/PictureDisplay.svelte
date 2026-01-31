@@ -46,7 +46,7 @@
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
 				picture: file,
-				accountId: Account.getSelf().get().data.id || ''
+				accountId: Account.getSelf().data.data.id || ''
 			});
 		});
 

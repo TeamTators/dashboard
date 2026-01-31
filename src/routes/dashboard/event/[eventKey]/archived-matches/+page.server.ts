@@ -16,9 +16,12 @@ export const load = async (event) => {
 	if (matches.isErr()) throw fail(ServerCode.internalServerError);
 
 	const res = await Scouting.archivedCommentsFromEvent(event.params.eventKey).unwrap();
-	const scouting = await Scouting.MatchScouting.fromProperty('eventKey', event.params.eventKey, {
-		type: 'all'
-	}).unwrap();
+	const scouting = await Scouting.MatchScouting.get(
+		{ eventKey: event.params.eventKey },
+		{
+			type: 'all'
+		}
+	).unwrap();
 
 	return {
 		event: e.value.tba,

@@ -1,12 +1,10 @@
 import { integer, text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { Account } from './account';
 import { attemptAsync } from 'ts-utils/check';
 import { Scouting } from './scouting';
 import { FIRST } from './FIRST';
 import { eq } from 'drizzle-orm';
-import { z } from 'zod';
-import terminal from '../utils/terminal';
 import { Permissions } from './permissions';
 import { DB } from '../db';
 
@@ -144,129 +142,9 @@ export namespace Potato {
 		}
 	});
 
-	Friend.callListen('give-levels', async (event, data) => {
-		if (!event.locals.account) {
-			return {
-				success: false,
-				message: 'Unauthorized'
-			};
-		}
-
-		// TODO: Check permissions
-
-		const parsed = z
-			.object({
-				accountId: z.string(),
-				levels: z.number().int()
-			})
-			.safeParse(data);
-
-		if (!parsed.success) {
-			terminal.error('Invalid data recieved', parsed.error);
-			return {
-				success: false,
-				message: 'Invalid data recieved'
-			};
-		}
-
-		const potato = (await getPotato(parsed.data.accountId)).unwrap();
-		(
-			await giveLevels(
-				potato,
-				parsed.data.levels,
-				`Manually given levels by ${event.locals.account.data.username}`
-			)
-		).unwrap();
-
-		return {
-			success: true
-		};
-	});
-
-	Friend.callListen('rename', async (event, data) => {
-		if (!event.locals.account) {
-			return {
-				success: false,
-				message: 'Unauthorized'
-			};
-		}
-
-		const potato = (await getPotato(event.locals.account.id)).unwrap();
-		if (potato.data.level < 987) {
-			return {
-				success: false,
-				message: `${potato.data.name} is not old enough to change their name`
-			};
-		}
-
-		const parsed = z
-			.object({
-				name: z.string()
-			})
-			.safeParse(data);
-
-		if (!parsed.success) {
-			terminal.error('Invalid data recieved', parsed.error);
-			return {
-				success: false,
-				message: 'Invalid data recieved'
-			};
-		}
-
-		(await potato.update({ name: parsed.data.name })).unwrap();
-
-		return {
-			success: true
-		};
-	});
-
-	Friend.callListen('change-icon', async (event, data) => {
-		if (!event.locals.account) {
-			return {
-				success: false,
-				message: 'Unauthorized'
-			};
-		}
-
-		const potato = (await getPotato(event.locals.account.id)).unwrap();
-		if (potato.data.level < 987) {
-			return {
-				success: false,
-				message: `${potato.data.name} is not old enough to choose their profession`
-			};
-		}
-
-		const parsed = z
-			.object({
-				icon: z.string()
-			})
-			.safeParse(data);
-
-		if (!parsed.success) {
-			terminal.error('Invalid data recieved', parsed.error);
-			return {
-				success: false,
-				message: 'Invalid data recieved'
-			};
-		}
-
-		if (!Object.keys(Levels).includes(parsed.data.icon)) {
-			return {
-				success: false,
-				message: 'Invalid icon'
-			};
-		}
-
-		(await potato.update({ icon: parsed.data.icon })).unwrap();
-
-		return {
-			success: true
-		};
-	});
-
 	export type FriendData = typeof Friend.sample;
 
-	const giveLevels = (potato: FriendData, levels: number, reason: string) => {
+	export const giveLevels = (potato: FriendData, levels: number, reason: string) => {
 		return attemptAsync(async () => {
 			const currentPhase = getPhase(potato.data.level);
 			const newLevel = potato.data.level + levels;
@@ -336,9 +214,12 @@ export namespace Potato {
 	export const getPotato = (accountId: string) => {
 		return attemptAsync(async () => {
 			const p = (
-				await Friend.fromProperty('account', accountId, {
-					type: 'single'
-				})
+				await Friend.get(
+					{ account: accountId },
+					{
+						type: 'single'
+					}
+				)
 			).unwrap();
 			if (p) return p;
 

@@ -1,7 +1,7 @@
 import type { Strategy } from '$lib/model/strategy';
 import { contextmenu } from '$lib/utils/contextmenu';
 import { Stack } from '$lib/utils/stack';
-import { WritableBase } from '$lib/utils/writables';
+import { WritableBase } from '$lib/services/writables';
 import { Color } from 'colors/color';
 import type { Point2D } from 'math/point';
 // import { catmullRom } from 'math/spline';

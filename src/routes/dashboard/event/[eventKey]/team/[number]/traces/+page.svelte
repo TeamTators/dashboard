@@ -1,5 +1,5 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import Trace from '$lib/components/robot-display/TraceHTML.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';

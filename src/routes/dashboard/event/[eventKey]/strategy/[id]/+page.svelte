@@ -5,7 +5,7 @@
 	import type { TBAMatch } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
 	import { teamsFromMatch } from 'tatorscout/tba';
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import MatchSelect from '$lib/components/FIRST/MatchSelect.svelte';
 	import TeamDisplay from '$lib/components/strategy/TeamDisplay.svelte';
 	import { listen } from '$lib/utils/struct-listener.js';
