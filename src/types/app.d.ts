@@ -47,6 +47,7 @@ declare global {
 			state_report_threshold: number;
 			do_report: boolean;
 		};
+		do_potato: boolean;
 	};
 }
 
