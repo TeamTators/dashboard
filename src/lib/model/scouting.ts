@@ -60,8 +60,7 @@ export namespace Scouting {
 				trace
 			});
 
-			// pipe all events into this class
-			this.onAllUnsubscribe(scouting.subscribe(() => this.inform()));
+			this.pipe(scouting);
 		}
 
 		get team() {
@@ -104,6 +103,10 @@ export namespace Scouting {
 			return String(this.data.scouting.data.id);
 		}
 
+		velocityHistogram(bins: number) {
+			return this.trace.velocityHistogram(bins);
+		}
+
 		getChecks() {
 			return attempt(() => {
 				return z.array(z.string()).parse(JSON.parse(this.data.scouting.data.checks || '[]'));
@@ -142,6 +145,45 @@ export namespace Scouting {
 
 		clone() {
 			return new MatchScoutingExtendedArr([...this.data]);
+		}
+
+		velocityHistogram(bins: number) {
+			
+			const histogramWritable = new WritableBase<{
+				labels: number[]; //makes it so the labels are an array of numbers
+				bins: number[]; //bins are an array of numbers too wow!!
+			}>({
+				labels: [], //makes labels an array...of number arrays?
+				bins: []
+			});
+			histogramWritable.onAllUnsubscribe(
+				this.subscribe((matches) => {
+					// rerender the histogram whenever the match array has changed
+					let labels: number[] = []; //puts the array of numbers in an array?
+					const histogram: number[] = new Array<number>(bins).fill(0); //the automatic bin count is 0 and it fills up as needed
+					for (const match of matches) {
+						const matchHistogram = match.velocityHistogram(bins); //stores the velocity histogram for a match in a variable
+						
+						//if the labels for this histogram arent 0 or the default, then the label changes to what they are right now idk
+						if (
+							matchHistogram.labels[matchHistogram.labels.length - 1] >
+							(labels[labels.length - 1] || 0)
+						) {
+							labels = matchHistogram.labels;
+						}
+						
+						for (let i = 0; i < matchHistogram.bins.length; i++) { //until the bins are one below bins.lenth, it makes them 1 bigger each time
+							histogram[i] += matchHistogram.bins[i];
+						}
+					}
+
+					histogramWritable.set({
+						bins: histogram, //sets the bins to the number array
+						labels
+					});
+				})
+			);
+			return histogramWritable; //returns the number array in histogram and the labels
 		}
 	}
 
