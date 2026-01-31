@@ -28,10 +28,10 @@ import { Session } from './session';
 import { sse } from '../services/sse';
 import { sendEmail } from '../services/email';
 import type { Icon } from '../../types/icons';
-import { Permissions } from './permissions';
 import { config, domain } from '../utils/env';
 import structRegistry from '../services/struct-registry';
 import { DataAction, PropertyAction } from '../../types/struct';
+import terminal from '../utils/terminal';
 
 export namespace Account {
 	/**

@@ -140,10 +140,12 @@ export namespace Scouting {
 
 	MatchScouting.on('restore', (match) => {
 		TeamComments.get(
-			{ matchScoutingId: match.id },
+			{ 
+				matchScoutingId: match.id,
+				archived: true,
+			},
 			{
 				type: 'stream',
-				includeArchived: true
 			}
 		).pipe((d) => d.setArchive(false));
 	});

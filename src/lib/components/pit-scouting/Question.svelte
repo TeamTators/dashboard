@@ -44,7 +44,7 @@
 		Scouting.PIT.Answers.get(
 			{ questionId: question.data.id || '' },
 			{
-				type: 'stream'
+				type: 'all',
 			}
 		)
 			.await()

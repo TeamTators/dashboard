@@ -71,7 +71,7 @@
 							await Scouting.PIT.Sections.get(
 								{ eventKey: e.tba.key },
 								{
-									type: 'stream'
+									type: 'all'
 								}
 							).await()
 						).unwrap();

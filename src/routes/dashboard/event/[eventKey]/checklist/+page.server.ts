@@ -35,10 +35,12 @@ export const load = async (event) => {
 					const answers = answersRes.isErr() ? [] : answersRes.value;
 					const questions = questionsRes.isErr() ? [] : questionsRes.value;
 
-					const pictures = await FIRST.getTeamPictures(
-						team.tba.team_number,
-						event.params.eventKey
-					).unwrap();
+					const pictures = await FIRST.TeamPictures.get({
+						team: team.tba.team_number,
+						eventKey: event.params.eventKey,
+					}, {
+						type: 'all',
+					}).unwrap();
 					const tbaPictures = await team.getMedia().unwrap();
 
 					return {
