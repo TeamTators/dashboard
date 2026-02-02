@@ -42,12 +42,12 @@
 		chart = new Chart(canvas, {
 			type: 'bar',
 			data: {
-				labels: [1, 2, 4, 8, 16, 32, 64],
+				labels: data.labels,
 				datasets: [
 					{
 						label: 'Velocity Histogram (Event)',
-						// bins go here!
-						data: [65, 59, 80, 81, 56, 55, 40],
+						data: data.bins,
+						
 
 						backgroundColor: 'rgba(255, 206, 86, 0.2)',
 						borderColor: 'rgba(255, 206, 86, 1)',
@@ -69,21 +69,21 @@
   so that data from other teams' data doesnt show up on the chart
   */
 	onMount(() => {
-		// Do something here!
-    // render({
-    //   bins:array :(
-    //   labels: bin labels :(
-    // }
-      
-    // );
-		const fn = 'DO SOMETHING HERE';
+		const histogramStore = scouting.velocityHistogram(bins);
+
+		const unsubscribe = histogramStore.subscribe((data) => {
+			render({
+				bins: data.bins,
+				labels: data.labels
+			});
+		});
+
 		return () => {
-			// DO SOMETHING HERE
-			if (chart) {
-				chart.destroy(); //returns the check of whether or not a chart with old data was there and got destroyed
-			}
+			unsubscribe();
+			if (chart) chart.destroy();
 		};
 	});
+
 </script>
 
 <canvas bind:this={canvas}></canvas>

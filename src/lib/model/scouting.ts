@@ -172,7 +172,7 @@ export namespace Scouting {
 							labels = matchHistogram.labels;
 						}
 						
-						for (let i = 0; i < matchHistogram.bins.length; i++) { //until the bins are one below bins.lenth, it makes them 1 bigger each time
+						for (let i = 0; i < matchHistogram.bins.length; i++) { //until the bins are one below bins.length, it makes them 1 bigger each time
 							histogram[i] += matchHistogram.bins[i];
 						}
 					}
