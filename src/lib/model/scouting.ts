@@ -17,6 +17,12 @@ import YearInfo2025 from 'tatorscout/years/2025.js';
 import * as remote from '$lib/remotes/scouting.remote';
 
 export namespace Scouting {
+	const VELOCITY_CONFIG = {
+		maxVel: 20,
+		rolloff: true,
+		rolloffVel: 25
+	} as const;
+
 	export const MatchScouting = new Struct({
 		name: 'match_scouting',
 		structure: {
@@ -93,19 +99,22 @@ export namespace Scouting {
 		}
 
 		get averageVelocity() {
-			return this.data.trace.averageVelocity();
+			return this.data.trace.averageVelocity(VELOCITY_CONFIG);
 		}
 
 		get secondsNotMoving() {
-			return this.data.trace.secondsNotMoving();
+			return this.data.trace.secondsNotMoving({
+				...VELOCITY_CONFIG,
+				threshold: 1,
+			});
 		}
 
 		get id() {
 			return String(this.data.scouting.data.id);
 		}
 
-		velocityHistogram(bins: number) {
-			return this.trace.velocityHistogram(bins);
+		velocityHistogram() {
+			return this.trace.velocityHistogram(VELOCITY_CONFIG);
 		}
 
 		getChecks() {
@@ -149,38 +158,38 @@ export namespace Scouting {
 		}
 
 		velocityHistogram(bins: number) {
-			
 			const histogramWritable = new WritableBase<{
-				labels: number[]; //makes it so the labels are an array of numbers
-				bins: number[]; //bins are an array of numbers too wow!!
+				labels: string[]; // X axis lables
+				bins: number[]; // X axis containers for Y axis values
 			}>({
-				labels: [], //makes labels an array...of number arrays?
+				// initial values
+				labels: [],
 				bins: []
 			});
 			histogramWritable.onAllUnsubscribe(
 				this.subscribe((matches) => {
 					// rerender the histogram whenever the match array has changed
-					let labels: number[] = []; //puts the array of numbers in an array?
-					const histogram: number[] = new Array<number>(bins).fill(0); //the automatic bin count is 0 and it fills up as needed
+					let labels: number[] = []; // X axis labels
+					const histogram: number[] = new Array<number>(bins).fill(0); // start at 0 for each bin
 					for (const match of matches) {
-						const matchHistogram = match.velocityHistogram(bins); //stores the velocity histogram for a match in a variable
-						
-						//if the labels for this histogram arent 0 or the default, then the label changes to what they are right now idk
+						const matchHistogram = match.velocityHistogram();
+
 						if (
+							// force max velocity to be the highest value from all matches
 							matchHistogram.labels[matchHistogram.labels.length - 1] >
 							(labels[labels.length - 1] || 0)
 						) {
 							labels = matchHistogram.labels;
 						}
-						
-						for (let i = 0; i < matchHistogram.bins.length; i++) { //until the bins are one below bins.length, it makes them 1 bigger each time
-							histogram[i] += matchHistogram.bins[i];
+
+						for (let i = 0; i < matchHistogram.bins.length; i++) {
+							histogram[i] += matchHistogram.bins[i]; // sum up the bins from each match
 						}
 					}
 
 					histogramWritable.set({
-						bins: histogram, //sets the bins to the number array
-						labels
+						bins: histogram, // Y axis values
+						labels: labels.map((l) => l.toFixed(2))
 					});
 				})
 			);
@@ -189,7 +198,7 @@ export namespace Scouting {
 	}
 
 	export const getAverageVelocity = (data: MatchScoutingExtended[]) => {
-		return $Math.average(data.map((d) => d.data.trace.averageVelocity()));
+		return $Math.average(data.map((d) => d.data.trace.averageVelocity(VELOCITY_CONFIG)));
 	};
 
 	export const getArchivedMatches = (team: number, eventKey: string) => {
@@ -322,7 +331,10 @@ export namespace Scouting {
 
 	export const averageSecondsNotMoving = (data: MatchScoutingExtended[]) => {
 		return attempt(() => {
-			return $Math.average(data.map((d) => d.data.trace.secondsNotMoving()));
+			return $Math.average(data.map((d) => d.data.trace.secondsNotMoving({
+				...VELOCITY_CONFIG,
+				threshold: 1,
+			})));
 		});
 	};
 

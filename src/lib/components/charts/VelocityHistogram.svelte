@@ -3,17 +3,15 @@
 	import { Chart, BarController, BarElement, CategoryScale, LinearScale } from 'chart.js';
 	import type { TBAMatch } from 'tatorscout/tba';
 	import type { Scouting } from '$lib/model/scouting';
-
-	Chart.register(BarController, BarElement, CategoryScale, LinearScale); //stuff to make the chart actually appear as a chart, i think from chart.js
+	// required for this chart
+	Chart.register(BarController, BarElement, CategoryScale, LinearScale);
 
 	interface Props {
-		scouting: Scouting.MatchScoutingExtendedArr; //takes the stuff from scouting.ts
+		scouting: Scouting.MatchScoutingExtendedArr;
 		bins?: number;
 	}
 
 	const { scouting, bins = 20 }: Props = $props();
-	
-	
 
 	const histogram = 'DO SOMETHING HERE';
 
@@ -32,22 +30,19 @@
 		if (chart) {
 			chart.destroy();
 		}
-  /*I think this means that when the page renders again 
-  (like when you click on a new team), it will get rid of the chart and make a new one with
-  the new data
+		/*I think this means that when the page renders again 
+			(like when you click on a new team), it will get rid of the chart and make a new one with
+			the new data
+  		*/
 
-  */
-//this is the settings for the chart, with the labels for the graph and the bins, colors, and stuff
 		chart = new Chart(canvas, {
 			type: 'bar',
 			data: {
-				labels: data.labels,
+				labels: data.labels.map(l => l.toFixed(2)),
 				datasets: [
 					{
 						label: 'Velocity Histogram Occurences in Feet/Second',
-						data: data.bins.map(n => Number(n.toFixed(2))), //trying to get rid of ugly decimals, dont know if this goes here
-						
-						backgroundColor: 'rgba(255, 206, 86, 0.2)',
+						data: data.bins,
 						borderColor: 'rgba(255, 206, 86, 1)',
 						borderWidth: 1
 					}
@@ -56,20 +51,20 @@
 			options: {
 				responsive: true,
 				scales: {
-					y: { beginAtZero: true, title: { display: true, text: 'Velocity Histogram Occurences in Feet/Second' } }, 
+					y: {
+						beginAtZero: true,
+						title: { display: true, text: 'Velocity Histogram Occurences in Feet/Second' }
+					},
 					x: { title: { display: true, text: 'Velocity Range' } }
 				}
 			}
 		});
 	};
-
-  /* when the stuff on the page loads, it renders the chart, and if there already is a chart, it gets rid of it
-  so that data from other teams' data doesnt show up on the chart
-  */
 	onMount(() => {
 		const histogramStore = scouting.velocityHistogram(bins);
 
 		const unsubscribe = histogramStore.subscribe((data) => {
+			// when a new match is created, rerender
 			render({
 				bins: data.bins,
 				labels: data.labels
@@ -81,7 +76,6 @@
 			if (chart) chart.destroy();
 		};
 	});
-
 </script>
 
 <canvas bind:this={canvas}></canvas>
