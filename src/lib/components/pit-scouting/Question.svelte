@@ -1,3 +1,18 @@
+<!--
+@fileoverview Pit-scouting answer editor for a single question.
+
+@component Question
+
+@description
+Renders the appropriate input control for the question type (text, number, boolean, checkbox,
+radio, textarea, select), loads any existing answer for the team, and persists updates to the
+answers struct when the user changes a value.
+
+@example
+```svelte
+<Question {question} {team} {answers} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { Account } from '$lib/model/account';
@@ -6,8 +21,11 @@
 	import type { DataArr } from '$lib/services/struct/data-arr';
 
 	interface Props {
+		/** Question definition being answered. */
 		question: Scouting.PIT.QuestionData;
+		/** Team number for which the answer is shown/edited. */
 		team: number;
+		/** Answer store for the current section. */
 		answers: DataArr<typeof Scouting.PIT.Answers.data.structure>;
 	}
 

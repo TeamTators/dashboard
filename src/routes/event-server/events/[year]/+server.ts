@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Event server endpoint for season events.
+ * @description
+ * Requires an API key and returns TBA events for a given year.
+ */
+
 import * as TBA from '$lib/server/utils/tba.js';
 import terminal from '$lib/server/utils/terminal';
 import { str } from '$lib/server/utils/env';
 
+/**
+ * Returns all events for the requested season year.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with event data or an error message.
+ */
 export const GET = async (event) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');

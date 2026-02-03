@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Client load mapper for pit scouting team view.
+ * @description
+ * Wraps server payloads into model instances and DataArr collections.
+ */
+
 import { FIRST } from '$lib/model/FIRST.js';
 import { Scouting } from '$lib/model/scouting';
 import { DataArr } from '$lib/services/struct/data-arr';
 import { Account } from '$lib/model/account';
 
+/**
+ * Maps server data into client-side pit scouting models.
+ * @param event - SvelteKit load event with server data.
+ * @returns Page data containing team, section, and pit scouting collections.
+ */
 export const load = (event) => {
 	return {
 		section: Scouting.PIT.Sections.Generator(event.data.section),

@@ -1,3 +1,9 @@
+<!--
+@component
+Strategy detail editor for a specific match or custom plan.
+
+Shows scouting summaries and allows editing strategy assignments.
+-->
 <script lang="ts">
 	import TeamSelect from '$lib/components/FIRST/TeamSelect.svelte';
 	import { Strategy } from '$lib/model/strategy';

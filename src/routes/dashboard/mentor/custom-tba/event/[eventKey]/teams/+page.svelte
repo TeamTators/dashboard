@@ -1,3 +1,9 @@
+<!--
+@component
+Custom event team editor.
+
+Adds or updates team numbers and metadata for a custom event.
+-->
 <script lang="ts">
 	import { TBAEvent, TBATeam, get } from '$lib/utils/tba.js';
 	import Grid from '$lib/components/general/Grid.svelte';

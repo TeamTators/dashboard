@@ -1,3 +1,9 @@
+<!--
+@component
+Pit scouting section editor for a specific section.
+
+Allows navigation between sections and edits for the current section.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import EditSection from '$lib/components/pit-scouting/EditSection.svelte';

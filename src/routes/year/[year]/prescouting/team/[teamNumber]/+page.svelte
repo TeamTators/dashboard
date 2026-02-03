@@ -1,3 +1,9 @@
+<!--
+@component
+Prescouting trace viewer for a single team and season.
+
+Displays traces, actions, checks, and comments across prescouted matches.
+-->
 <script lang="ts">
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import MatchContribution from '$lib/components/charts/MatchContribution.svelte';

@@ -1,3 +1,18 @@
+<!--
+@fileoverview Potato icon widget with modal details and icon selection.
+
+@component Icon
+
+@description
+Shows a small potato icon with the player's level. Clicking opens a modal that displays
+stats and allows renaming or icon changes when eligible. The component updates the browser
+favicon to match the current potato phase.
+
+@example
+```svelte
+<Icon />
+```
+-->
 <script lang="ts">
 	import { Potato } from '$lib/model/potato';
 	import { Account } from '$lib/model/account';

@@ -1,3 +1,9 @@
+<!--
+@component
+Event overview dashboard for a specific TBA event.
+
+Displays team links, summary charts, and admin actions for the event.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba.js';

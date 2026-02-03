@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Server loader for a specific strategy detail page.
+ * @description
+ * Loads strategy info, team/match lists, and scouting data for partners/opponents.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Strategy } from '$lib/server/structs/strategy.js';
 import { Event } from '$lib/server/utils/tba.js';
@@ -5,6 +11,11 @@ import { redirect } from '@sveltejs/kit';
 import { resolveAll } from 'ts-utils/check';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Loads strategy details and scouting data for the selected strategy.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing strategy, teams, matches, and scouting arrays.
+ */
 export const load = async (event) => {
 	const strategy = await Strategy.Strategy.fromId(event.params.id).unwrap();
 	if (!strategy) {

@@ -1,7 +1,19 @@
+/**
+ * @fileoverview Server loader for a team's archived matches page.
+ * @description
+ * Loads event metadata and the selected team for archived match display.
+ * Ensures the user is authenticated before serving team context.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Loads event and team metadata for archived matches.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing the event, team list, and selected team.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const eventKey = event.params.eventKey;

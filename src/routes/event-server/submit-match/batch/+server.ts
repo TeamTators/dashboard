@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Event server endpoint for batch match submissions.
+ * @description
+ * Validates payloads and forwards each entry to the single submit endpoint.
+ */
+
 import { z } from 'zod';
 import terminal from '$lib/server/utils/terminal';
 import { ServerCode } from 'ts-utils/status';
 import { str } from '$lib/server/utils/env.js';
 
+/**
+ * Handles a batch of match submissions.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response containing per-item results.
+ */
 export const POST = async (event) => {
 	const header = event.request.headers.get('X-API-KEY');
 

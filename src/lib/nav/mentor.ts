@@ -1,5 +1,22 @@
+/**
+ * @fileoverview Mentor navigation section registration.
+ *
+ * @description
+ * Adds the Mentor section and its links to the global navbar.
+ */
 import { Navbar } from '$lib/model/navbar';
 
+/**
+ * Register the Mentor navigation section.
+ *
+ * @returns {void} No return value.
+ *
+ * @example
+ * ```ts
+ * import registerMentorNav from '$lib/nav/mentor';
+ * registerMentorNav();
+ * ```
+ */
 export default () => {
 	Navbar.addSection({
 		name: 'Mentor',
