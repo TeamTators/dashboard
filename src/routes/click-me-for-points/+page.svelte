@@ -1,6 +1,7 @@
 <!--
 @component
 Playful landing page that links back to home.
+Kynlee made me do this
 -->
 <div class="container d-flex flex-column align-items-center justify-content-center vh-100">
 	<div class="card shadow-sm p-4 text-center" style="max-width: 400px; width: 100%;">
