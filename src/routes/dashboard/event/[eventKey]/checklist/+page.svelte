@@ -1,3 +1,9 @@
+<!--
+@component
+Event checklist dashboard for pictures and pit scouting.
+
+Renders AG Grid views for uploaded photos and missing pit scouting answers.
+-->
 <script lang="ts">
 	import Grid from '$lib/components/general/Grid.svelte';
 	import nav from '$lib/nav/robot-display';

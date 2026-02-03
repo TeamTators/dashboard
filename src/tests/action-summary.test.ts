@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Integration test for action summary generation.
+ * @description
+ * Builds required structs and verifies summary serialization succeeds.
+ */
+
 import { expect, test, describe } from 'vitest';
 import { DB } from '$lib/server/db';
 import { actionSummary } from '$lib/server/utils/action-summary';

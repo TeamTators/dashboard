@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Server loader for the event matches page.
+ * @description
+ * Fetches event metadata and scouting match references.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import { redirect, fail } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import { Scouting } from '$lib/server/structs/scouting.js';
 
+/**
+ * Loads match summary data for the event.
+ * @param event - SvelteKit request event.
+ * @returns Page data with event metadata and scouting match references.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const e = await TBA.Event.getEvent(event.params.eventKey);

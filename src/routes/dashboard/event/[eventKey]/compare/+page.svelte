@@ -1,3 +1,9 @@
+<!--
+@component
+Team comparison dashboard for a specific event.
+
+Lets users select teams and compare scouting data with charts.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import { goto } from '$app/navigation';

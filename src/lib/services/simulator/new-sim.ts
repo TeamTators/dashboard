@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Robot motion simulator for field visualization.
+ *
+ * @description
+ * Provides a simulator with target controls, physics integration, and SVG-based rendering.
+ */
 import { WritableBase } from '$lib/services/writables';
 import type { Point2D } from 'math/point';
 import { EventEmitter } from 'ts-utils';
@@ -136,6 +142,11 @@ export class Simulator extends WritableBase<RobotState> {
 		'circle'
 	);
 
+	/**
+	 * Initialize DOM elements for the simulator.
+	 *
+	 * @returns {() => void} Cleanup function for the initialized elements.
+	 */
 	init() {
 		const img = document.createElement('img');
 		img.src = `/assets/field/${this.year}.png`;
@@ -170,6 +181,11 @@ export class Simulator extends WritableBase<RobotState> {
 
 	running = false;
 
+	/**
+	 * Start the simulation loop and input listeners.
+	 *
+	 * @returns {() => void} Stop function to clean up listeners and stop the loop.
+	 */
 	start(debug: boolean) {
 		if (this.running) throw new Error('Simulator is already running');
 		this.running = true;
@@ -750,10 +766,20 @@ export class Simulator extends WritableBase<RobotState> {
 
 	private paused = false;
 
+	/**
+	 * Pause the simulation tick updates.
+	 *
+	 * @returns {void} No return value.
+	 */
 	public pause() {
 		this.paused = true;
 	}
 
+	/**
+	 * Resume the simulation tick updates.
+	 *
+	 * @returns {void} No return value.
+	 */
 	public resume() {
 		this.paused = false;
 	}
@@ -762,6 +788,11 @@ export class Simulator extends WritableBase<RobotState> {
 		throw new Error('Simulator is not running');
 	};
 
+	/**
+	 * Render the simulator path, robot, and targets.
+	 *
+	 * @returns {void} No return value.
+	 */
 	draw(config: { allPoints: boolean }) {
 		const pathToDraw = (config.allPoints ? this.points : this.animatedPoints)
 			.map((p) => `${p.position[0]},${p.position[1]}`)

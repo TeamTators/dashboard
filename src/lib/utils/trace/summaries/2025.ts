@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Trace summary definitions for the 2025 season.
+ * @description
+ * Exports a preconfigured summary builder used by trace visualizations.
+ */
+
 import YearInfo2025 from 'tatorscout/years/2025.js';
 import { Aggregators } from 'tatorscout/summary';
 
-export default YearInfo2025.summary({
+/**
+ * Summary configuration for 2025 trace data.
+ * @example
+ * import summary2025 from '$lib/utils/trace/summaries/2025';
+ */
+const summary2025 = YearInfo2025.summary({
 	'Average Auto Points': {
 		Mobility: ({ matches, team }) =>
 			Aggregators.average(
@@ -108,3 +119,5 @@ export default YearInfo2025.summary({
 			Aggregators.average(traces.map((t) => t.secondsNotMoving()))
 	}
 });
+
+export default summary2025;

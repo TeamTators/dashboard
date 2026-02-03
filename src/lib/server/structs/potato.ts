@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Server-side potato Structs and progression utilities.
+ *
+ * @description
+ * Defines Drizzle-backed Structs for potatoes and logs, plus helper functions
+ * for leveling and rankings.
+ */
 import { integer, text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct';
 import { Account } from './account';
@@ -88,18 +95,30 @@ export namespace Potato {
 	export const Friend = new Struct({
 		name: 'potato_friend',
 		structure: {
+			/** Account id that owns the potato. */
 			account: text('account').notNull().unique(),
+			/** Current potato level. */
 			level: integer('level').notNull(),
+			/** Display name of the potato. */
 			name: text('name').notNull(),
+			/** ISO timestamp for last click. */
 			lastClicked: text('last_clicked').notNull(),
+			/** Icon identifier. */
 			icon: text('icon').notNull().default(''),
+			/** Primary color name or hex. */
 			color: text('color').notNull().default(''),
+			/** Background color name or hex. */
 			background: text('background').notNull().default(''),
 
+			/** Attack stat value. */
 			attack: integer('attack').notNull().default(0),
+			/** Defense stat value. */
 			defense: integer('defense').notNull().default(0),
+			/** Speed stat value. */
 			speed: integer('speed').notNull().default(0),
+			/** Health stat value. */
 			health: integer('health').notNull().default(0),
+			/** Mana stat value. */
 			mana: integer('mana').notNull().default(0)
 		}
 	});
@@ -136,14 +155,22 @@ export namespace Potato {
 	export const Log = new Struct({
 		name: 'potato_log',
 		structure: {
+			/** Potato account id the log applies to. */
 			potato: text('potato').notNull(),
+			/** Level amount applied. */
 			amount: integer('amount').notNull(),
+			/** Reason for the log entry. */
 			reason: text('reason').notNull()
 		}
 	});
 
 	export type FriendData = typeof Friend.sample;
 
+	/**
+	 * Grant levels to a potato and emit notifications/logs as needed.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the operation.
+	 */
 	export const giveLevels = (potato: FriendData, levels: number, reason: string) => {
 		return attemptAsync(async () => {
 			const currentPhase = getPhase(potato.data.level);
@@ -211,6 +238,11 @@ export namespace Potato {
 		giveLevels(p.value, LevelUpMap.teamPicture, 'Uploaded a team picture');
 	});
 
+	/**
+	 * Fetch or create a potato record for an account.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the potato record.
+	 */
 	export const getPotato = (accountId: string) => {
 		return attemptAsync(async () => {
 			const p = (
@@ -245,6 +277,11 @@ export namespace Potato {
 		});
 	};
 
+	/**
+	 * Fetch potato rankings ordered by level.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the rankings.
+	 */
 	export const getRankings = async () => {
 		return attemptAsync(async () => {
 			const res = await DB.select()

@@ -1,3 +1,9 @@
+<!--
+@component
+Match data upload page for an event.
+
+Loads JSON match files, validates them with Zod, and uploads valid entries.
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { loadFileContents } from '$lib/utils/downloads';

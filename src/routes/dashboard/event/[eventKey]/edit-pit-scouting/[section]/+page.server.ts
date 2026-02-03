@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Server loader for editing a specific pit scouting section.
+ * @description
+ * Loads the target section plus the full ordered section list.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Event } from '$lib/server/utils/tba.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Loads pit scouting section data for editing.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing the section, event metadata, and index.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const { eventKey, section } = event.params;

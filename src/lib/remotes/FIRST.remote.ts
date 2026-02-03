@@ -1,9 +1,25 @@
+/**
+ * @fileoverview Remote procedures for FIRST summaries.
+ *
+ * @description
+ * Exposes a query to fetch or generate FIRST event summaries with permission checks.
+ */
 import { query } from '$app/server';
 import { z } from 'zod';
 import { getAccount } from './index.remote';
 import { error } from '@sveltejs/kit';
 import { FIRST } from '$lib/server/structs/FIRST';
 
+/**
+ * Fetch or generate a serialized FIRST event summary.
+ *
+ * @returns {ReturnType<typeof query>} Remote query handler.
+ *
+ * @example
+ * ```ts
+ * const res = await FIRSTRemote.getSummary({ eventKey: '2025miket' });
+ * ```
+ */
 export const getSummary = query(
 	z.object({
 		eventKey: z.string()

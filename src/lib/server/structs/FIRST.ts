@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Server-side FIRST Struct definitions and summary helpers.
+ *
+ * @description
+ * Defines Drizzle-backed Structs for FIRST summaries, team pictures, and matches, and
+ * provides summary generation and caching helpers.
+ */
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct';
@@ -15,7 +22,9 @@ export namespace FIRST {
 	export const EventSummary = new Struct({
 		name: 'event_summary',
 		structure: {
+			/** TBA event key. */
 			eventKey: text('event_key').notNull(),
+			/** Serialized summary payload. */
 			summary: text('summary').notNull()
 		}
 	});
@@ -107,9 +116,13 @@ export namespace FIRST {
 	export const TeamPictures = new Struct({
 		name: 'team_pictures',
 		structure: {
+			/** Team number for the picture. */
 			team: integer('team').notNull(),
+			/** Event key associated with the picture. */
 			eventKey: text('event_key').notNull(),
+			/** Stored picture name or path. */
 			picture: text('picture').notNull(),
+			/** Account id that uploaded the picture. */
 			accountId: text('account_id').notNull()
 		}
 	});
@@ -119,8 +132,11 @@ export namespace FIRST {
 	export const Matches = new Struct({
 		name: 'matches',
 		structure: {
+			/** Event key associated with the match. */
 			eventKey: text('event_key').notNull(),
+			/** Match number. */
 			number: integer('number').notNull(),
+			/** Competition level (qm, qf, sf, f). */
 			compLevel: text('comp_level').notNull()
 		}
 	});
@@ -128,17 +144,29 @@ export namespace FIRST {
 	export const CustomMatches = new Struct({
 		name: 'custom_matches',
 		structure: {
+			/** Display name for the custom match. */
 			name: text('name').notNull(),
+			/** Event key associated with the match. */
 			eventKey: text('event_key').notNull(),
+			/** Match number. */
 			number: integer('number').notNull(),
+			/** Competition level (qm, qf, sf, f). */
 			compLevel: text('comp_level').notNull(),
+			/** Red alliance team 1 number. */
 			red1: integer('red1').notNull(),
+			/** Red alliance team 2 number. */
 			red2: integer('red2').notNull(),
+			/** Red alliance team 3 number. */
 			red3: integer('red3').notNull(),
+			/** Red alliance team 4 number. */
 			red4: integer('red4').notNull(),
+			/** Blue alliance team 1 number. */
 			blue1: integer('blue1').notNull(),
+			/** Blue alliance team 2 number. */
 			blue2: integer('blue2').notNull(),
+			/** Blue alliance team 3 number. */
 			blue3: integer('blue3').notNull(),
+			/** Blue alliance team 4 number. */
 			blue4: integer('blue4').notNull()
 		}
 	});

@@ -1,7 +1,18 @@
+/**
+ * @fileoverview API endpoint for creating custom TBA events.
+ * @description
+ * Validates payloads and persists custom event records.
+ */
+
 import { Event } from '$lib/server/utils/tba.js';
 import { json } from '@sveltejs/kit';
 import { EventSchema } from 'tatorscout/tba';
 
+/**
+ * Creates a custom event record.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response indicating success or failure.
+ */
 export const POST = async (event) => {
 	if (!event.locals.account)
 		return json(

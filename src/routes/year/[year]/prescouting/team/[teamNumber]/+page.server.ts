@@ -1,6 +1,17 @@
+/**
+ * @fileoverview Server loader for a team's prescouting history page.
+ * @description
+ * Gathers prescouting entries and related event metadata.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Event, Team } from '$lib/server/utils/tba.js';
 
+/**
+ * Loads prescouting records and event context for a team/year.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing scouting records, events, and team info.
+ */
 export const load = async (event) => {
 	const { year, teamNumber } = event.params;
 	const scouting = (await Scouting.getTeamPrescouting(Number(teamNumber), Number(year))).unwrap();

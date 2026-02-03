@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Integration tests for TBA webhook handling.
+ * @description
+ * Starts the webhook server and validates message processing and auth handling.
+ */
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
 import path from 'path';

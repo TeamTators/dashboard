@@ -1,3 +1,16 @@
+<!--
+@fileoverview Strategy team comparison charts for an event.
+
+@component TeamDisplay
+
+@description
+Renders team event stats and progress charts side-by-side for the selected team number.
+
+@example
+```svelte
+<TeamDisplay {teams} teamNumber={1234} {event} {matches} {scouting} />
+```
+-->
 <script lang="ts">
 	import TeamEventStats from '../charts/TeamEventStats.svelte';
 	import Progress from '../charts/Progress.svelte';
@@ -5,11 +18,17 @@
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 
 	interface Props {
+		/** All teams available for lookup. */
 		teams: TBATeam[];
+		/** Selected team number. */
 		teamNumber: number;
+		/** Event context for charts. */
 		event: TBAEvent;
+		/** Optional fixed Y range shared between charts. */
 		staticY?: number;
+		/** Match list for event context. */
 		matches: TBAMatch[];
+		/** Scouting data for the event. */
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 

@@ -1,3 +1,9 @@
+<!--
+@component
+Pit scouting team view for a specific section.
+
+Displays pit questions, answers, and team pictures for the selected team.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import Section from '$lib/components/pit-scouting/Section.svelte';

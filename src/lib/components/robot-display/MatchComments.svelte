@@ -1,3 +1,17 @@
+<!--
+@fileoverview Comment list and editor for a single match scouting record.
+
+@component MatchComments
+
+@description
+Loads comments tied to a match scouting record, renders them in a grid, and allows
+adding new comments via a prompt.
+
+@example
+```svelte
+<MatchComments {scouting} style="height: 400px;" />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
@@ -9,7 +23,9 @@
 	// import { TextFilterModule } from 'ag-grid-community';
 
 	interface Props {
+		/** Match scouting record whose comments are displayed. */
 		scouting: Scouting.MatchScoutingExtended;
+		/** Optional inline style for container sizing. */
 		style?: string;
 	}
 

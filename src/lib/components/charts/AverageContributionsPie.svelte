@@ -1,3 +1,31 @@
+<!--
+@fileoverview Pie chart of a team's average contributions across scoring categories.
+
+@component AverageContributionsPie
+
+@description
+Builds a Chart.js pie chart and updates it whenever the scouting store emits new match data. The
+chart shows average counts for each scoring action (levels 1-4, barge, processor).
+
+@example
+```svelte
+<script lang="ts">
+  import AverageContributionsPie from '$lib/components/charts/AverageContributionsPie.svelte';
+  import type { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
+  import type { Scouting } from '$lib/model/scouting';
+
+  let team: TBATeam;
+  let event: TBAEvent;
+  let matches: TBAMatch[] = [];
+  let scouting: Scouting.MatchScoutingExtendedArr;
+
+  let chartRef: AverageContributionsPie | undefined;
+  const copyChart = () => chartRef?.copy(true);
+</script>
+
+<AverageContributionsPie bind:this={chartRef} {team} {event} {matches} {scouting} />
+```
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
@@ -5,10 +33,15 @@
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
 
+	/** Component props for `AverageContributionsPie`. */
 	interface Props {
+		/** Team being visualized. */
 		team: TBATeam;
+		/** Event that provides context for matches. */
 		event: TBAEvent;
+		/** Live scouting store for match data. */
 		scouting: Scouting.MatchScoutingExtendedArr;
+		/** All TBA matches for the event. */
 		matches: TBAMatch[];
 	}
 
@@ -24,6 +57,14 @@
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
 
+	/**
+	 * Copy the chart canvas to the clipboard.
+	 *
+	 * @example
+	 * ```ts
+	 * chartRef.copy(true);
+	 * ```
+	 */
 	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
 
 	onMount(() => {

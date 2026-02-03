@@ -1,6 +1,24 @@
+/**
+ * @fileoverview Robot-display navigation for a specific event.
+ *
+ * @description
+ * Clears existing navbar sections and registers event-specific sections and utilities.
+ */
 import { Navbar } from '$lib/model/navbar';
 import type { TBAEvent } from 'tatorscout/tba';
 
+/**
+ * Register robot-display navigation sections for the given event.
+ *
+ * @param event - TBA event used for link generation.
+ * @returns {void} No return value.
+ *
+ * @example
+ * ```ts
+ * import registerRobotDisplayNav from '$lib/nav/robot-display';
+ * registerRobotDisplayNav(event);
+ * ```
+ */
 export default (event: TBAEvent) => {
 	Navbar.getSections().set([]);
 	Navbar.addSection({

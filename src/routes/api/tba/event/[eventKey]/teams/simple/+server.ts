@@ -1,3 +1,9 @@
+/**
+ * @fileoverview API endpoint for reading and updating event teams.
+ * @description
+ * GET returns team list, POST updates teams for custom events.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { fail, json } from '@sveltejs/kit';
@@ -5,6 +11,11 @@ import { TeamSchema } from 'tatorscout/tba';
 import { ServerCode } from 'ts-utils/status';
 import { z } from 'zod';
 
+/**
+ * Returns the simplified team list for an event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with team data.
+ */
 export const GET = async (event) => {
 	const e = await TBA.Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {
@@ -26,6 +37,11 @@ export const GET = async (event) => {
 	});
 };
 
+/**
+ * Replaces the team list for a custom event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response indicating success or failure.
+ */
 export const POST = async (event) => {
 	if (!event.locals.account) {
 		return json(
