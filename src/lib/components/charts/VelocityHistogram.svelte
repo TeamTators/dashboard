@@ -13,7 +13,7 @@
 
 	const { scouting, bins = 20 }: Props = $props();
 	
-	const histogram = new Array<number>(bins).fill(0);
+	
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
@@ -45,10 +45,9 @@
 				labels: data.labels,
 				datasets: [
 					{
-						label: 'Velocity Histogram (Event)',
-						data: data.bins,
+						label: 'Velocity Histogram Occurences in Feet/Second',
+						data: data.bins.map(n => Number(n.toFixed(2))), //trying to get rid of ugly decimals, dont know if this goes here
 						
-
 						backgroundColor: 'rgba(255, 206, 86, 0.2)',
 						borderColor: 'rgba(255, 206, 86, 1)',
 						borderWidth: 1
@@ -58,7 +57,7 @@
 			options: {
 				responsive: true,
 				scales: {
-					y: { beginAtZero: true, title: { display: true, text: 'Occurrences' } }, 
+					y: { beginAtZero: true, title: { display: true, text: 'Velocity Histogram Occurences in Feet/Second' } }, 
 					x: { title: { display: true, text: 'Velocity Range' } }
 				}
 			}
