@@ -189,7 +189,7 @@ export namespace Scouting {
 
 					histogramWritable.set({
 						bins: histogram, // Y axis values
-						labels: labels.map(l => Math.ceil(l))
+						labels: labels.map((l) => Math.ceil(l))
 					});
 				})
 			);

@@ -473,9 +473,9 @@
 
 	const velocityHistogram = new Dashboard.Card({
 		name: 'Velocity Histogram',
-		icon:  {
+		icon: {
 			type: 'material-icons',
-			name: 'speed',
+			name: 'speed'
 		},
 		id: 'velocity_histogram',
 		size: {
@@ -498,7 +498,7 @@
 				height: 1
 			}
 		}
-	})
+	});
 
 	// const actionHeatmap = new Dashboard.Card({
 	// 	name: 'Action Heatmap',
@@ -526,7 +526,7 @@
 				checksSummary,
 				radarChart,
 				startLocation,
-				velocityHistogram,
+				velocityHistogram
 			],
 			id: 'robot-display'
 		})
@@ -547,7 +547,7 @@
 				checksSummary,
 				radarChart,
 				startLocation,
-				velocityHistogram,
+				velocityHistogram
 			],
 			id: 'robot-display'
 		});
@@ -876,7 +876,7 @@
 					<StartLocationHeatmap scouting={scoutingArr} year={event.tba.year} />
 				{/snippet}
 			</Card>
-			<Card card={velocityHistogram}> 
+			<Card card={velocityHistogram}>
 				{#snippet body()}
 					<VelocityHistogram scouting={scoutingArr} />
 				{/snippet}
