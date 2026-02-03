@@ -4,16 +4,16 @@
 	import type { TBAMatch } from 'tatorscout/tba';
 	import type { Scouting } from '$lib/model/scouting';
 
-	Chart.register(BarController, BarElement, CategoryScale, LinearScale);
+	Chart.register(BarController, BarElement, CategoryScale, LinearScale); //stuff to make the chart actually appear as a chart, i think from chart.js
 
 	interface Props {
-		scouting: Scouting.MatchScoutingExtendedArr;
+		scouting: Scouting.MatchScoutingExtendedArr; //takes the stuff from scouting.ts
 		bins?: number;
 	}
 
 	const { scouting, bins = 20 }: Props = $props();
 	
-	const histogram = 'DO SOMETHING HERE';
+	
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
@@ -33,17 +33,21 @@
 		if (chart) {
 			chart.destroy();
 		}
+  /*I think this means that when the page renders again 
+  (like when you click on a new team), it will get rid of the chart and make a new one with
+  the new data
 
+  */
+//this is the settings for the chart, with the labels for the graph and the bins, colors, and stuff
 		chart = new Chart(canvas, {
 			type: 'bar',
 			data: {
-				labels: [1, 2, 4, 8, 16, 32, 64],
+				labels: data.labels,
 				datasets: [
 					{
-						label: 'Velocity Histogram (Event)',
-						// bins go here!
-						data: [65, 59, 80, 81, 56, 55, 40],
-
+						label: 'Velocity Histogram Occurences in Feet/Second',
+						data: data.bins.map(n => Number(n.toFixed(2))), //trying to get rid of ugly decimals, dont know if this goes here
+						
 						backgroundColor: 'rgba(255, 206, 86, 0.2)',
 						borderColor: 'rgba(255, 206, 86, 1)',
 						borderWidth: 1
@@ -53,23 +57,32 @@
 			options: {
 				responsive: true,
 				scales: {
-					y: { beginAtZero: true, title: { display: true, text: 'Occurrences' } },
+					y: { beginAtZero: true, title: { display: true, text: 'Velocity Histogram Occurences in Feet/Second' } }, 
 					x: { title: { display: true, text: 'Velocity Range' } }
 				}
 			}
 		});
 	};
 
+  /* when the stuff on the page loads, it renders the chart, and if there already is a chart, it gets rid of it
+  so that data from other teams' data doesnt show up on the chart
+  */
 	onMount(() => {
-		// Do something here!
-		const fn = 'DO SOMETHING HERE';
+		const histogramStore = scouting.velocityHistogram(bins);
+
+		const unsubscribe = histogramStore.subscribe((data) => {
+			render({
+				bins: data.bins,
+				labels: data.labels
+			});
+		});
+
 		return () => {
-			// DO SOMETHING HERE
-			if (chart) {
-				chart.destroy();
-			}
+			unsubscribe();
+			if (chart) chart.destroy();
 		};
 	});
+
 </script>
 
 <canvas bind:this={canvas}></canvas>

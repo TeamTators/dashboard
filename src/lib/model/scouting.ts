@@ -149,39 +149,42 @@ export namespace Scouting {
 		}
 
 		velocityHistogram(bins: number) {
-			// kynlee, comment through this code
+			
 			const histogramWritable = new WritableBase<{
-				labels: number[];
-				bins: number[];
+				labels: number[]; //makes it so the labels are an array of numbers
+				bins: number[]; //bins are an array of numbers too wow!!
 			}>({
-				labels: [],
+				labels: [], //makes labels an array...of number arrays?
 				bins: []
 			});
 			histogramWritable.onAllUnsubscribe(
 				this.subscribe((matches) => {
 					// rerender the histogram whenever the match array has changed
-					let labels: number[] = [];
-					const histogram: number[] = new Array<number>(bins).fill(0);
+					let labels: number[] = []; //puts the array of numbers in an array?
+					const histogram: number[] = new Array<number>(bins).fill(0); //the automatic bin count is 0 and it fills up as needed
 					for (const match of matches) {
-						const matchHistogram = match.velocityHistogram(bins);
+						const matchHistogram = match.velocityHistogram(bins); //stores the velocity histogram for a match in a variable
+						
+						//if the labels for this histogram arent 0 or the default, then the label changes to what they are right now idk
 						if (
 							matchHistogram.labels[matchHistogram.labels.length - 1] >
 							(labels[labels.length - 1] || 0)
 						) {
 							labels = matchHistogram.labels;
 						}
-						for (let i = 0; i < matchHistogram.bins.length; i++) {
+						
+						for (let i = 0; i < matchHistogram.bins.length; i++) { //until the bins are one below bins.length, it makes them 1 bigger each time
 							histogram[i] += matchHistogram.bins[i];
 						}
 					}
 
 					histogramWritable.set({
-						bins: histogram,
+						bins: histogram, //sets the bins to the number array
 						labels
 					});
 				})
 			);
-			return histogramWritable;
+			return histogramWritable; //returns the number array in histogram and the labels
 		}
 	}
 
