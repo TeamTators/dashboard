@@ -15,6 +15,8 @@
 	
 	
 
+	const histogram = 'DO SOMETHING HERE';
+
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
 	//const maxVelocity = Math.max(...matches.flatMap(m => m.velocityMap()));
@@ -26,10 +28,7 @@
 	//      return `${start}–${end} fps`;
 	//});
 
-	const render = (data: {
-		bins: number[];
-		labels: number[];
-	}) => {
+	const render = (data: { bins: number[]; labels: number[] }) => {
 		if (chart) {
 			chart.destroy();
 		}
