@@ -105,7 +105,7 @@ export namespace Scouting {
 		get secondsNotMoving() {
 			return this.data.trace.secondsNotMoving({
 				...VELOCITY_CONFIG,
-				threshold: 1,
+				threshold: 1
 			});
 		}
 
@@ -159,7 +159,7 @@ export namespace Scouting {
 
 		velocityHistogram(bins: number) {
 			const histogramWritable = new WritableBase<{
-				labels: string[]; // X axis lables
+				labels: number[]; // X axis lables
 				bins: number[]; // X axis containers for Y axis values
 			}>({
 				// initial values
@@ -189,7 +189,7 @@ export namespace Scouting {
 
 					histogramWritable.set({
 						bins: histogram, // Y axis values
-						labels: labels.map((l) => l.toFixed(2))
+						labels: labels.map(l => Math.ceil(l))
 					});
 				})
 			);
@@ -331,10 +331,14 @@ export namespace Scouting {
 
 	export const averageSecondsNotMoving = (data: MatchScoutingExtended[]) => {
 		return attempt(() => {
-			return $Math.average(data.map((d) => d.data.trace.secondsNotMoving({
-				...VELOCITY_CONFIG,
-				threshold: 1,
-			})));
+			return $Math.average(
+				data.map((d) =>
+					d.data.trace.secondsNotMoving({
+						...VELOCITY_CONFIG,
+						threshold: 1
+					})
+				)
+			);
 		});
 	};
 

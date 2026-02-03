@@ -38,12 +38,11 @@
 		chart = new Chart(canvas, {
 			type: 'bar',
 			data: {
-				labels: data.labels.map(l => l.toFixed(2)),
+				labels: data.labels,
 				datasets: [
 					{
 						label: 'Velocity Histogram Occurences in Feet/Second',
 						data: data.bins,
-						borderColor: 'rgba(255, 206, 86, 1)',
 						borderWidth: 1
 					}
 				]

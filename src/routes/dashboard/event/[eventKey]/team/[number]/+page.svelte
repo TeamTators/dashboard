@@ -23,7 +23,7 @@
 	import { Scouting } from '$lib/model/scouting.js';
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
-
+	import VelocityHistogram from '$lib/components/charts/VelocityHistogram.svelte';
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
 	const teams = $derived(data.teams.map((t) => new TBATeam(t, event)));
@@ -471,6 +471,35 @@
 		}
 	});
 
+	const velocityHistogram = new Dashboard.Card({
+		name: 'Velocity Histogram',
+		icon:  {
+			type: 'material-icons',
+			name: 'speed',
+		},
+		id: 'velocity_histogram',
+		size: {
+			width: 2,
+			height: 1,
+			lg: {
+				width: 4,
+				height: 1
+			},
+			md: {
+				width: 4,
+				height: 1
+			},
+			sm: {
+				width: 12,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	})
+
 	// const actionHeatmap = new Dashboard.Card({
 	// 	name: 'Action Heatmap',
 	// 	iconType: 'material-icons',
@@ -496,7 +525,8 @@
 				scoutSummary,
 				checksSummary,
 				radarChart,
-				startLocation
+				startLocation,
+				velocityHistogram,
 			],
 			id: 'robot-display'
 		})
@@ -516,7 +546,8 @@
 				eventStats,
 				checksSummary,
 				radarChart,
-				startLocation
+				startLocation,
+				velocityHistogram,
 			],
 			id: 'robot-display'
 		});
@@ -843,6 +874,11 @@
 			<Card card={startLocation}>
 				{#snippet body()}
 					<StartLocationHeatmap scouting={scoutingArr} year={event.tba.year} />
+				{/snippet}
+			</Card>
+			<Card card={velocityHistogram}> 
+				{#snippet body()}
+					<VelocityHistogram scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 		{/key}
