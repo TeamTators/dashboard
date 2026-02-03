@@ -9,6 +9,8 @@
 	const { data = $bindable() } = $props();
 	const event = $derived(new TBAEvent(data.event));
 
+	let message = $state('');
+
 	let summary:
 		| {
 				[group: string]: {
@@ -34,6 +36,9 @@
 			.then((res) => {
 				if (res.isOk()) {
 					teams = res.value;
+				} else {
+					// is an error, do something here!
+					console.log(res.error);
 				}
 			});
 		setTimeout(() => {
@@ -45,6 +50,7 @@
 					summary = res.value.pivot().teamsRanked();
 				} else {
 					console.error('Error fetching event summary:', res.error);
+					// do something here!
 				}
 			});
 		});
@@ -107,6 +113,10 @@
 			</div>
 		</div>
 	</div>
+	<!-- 
+	https://getbootstrap.com/docs/5.3/components/alerts/#examples
+		Add a new if block to handle messages
+	-->
 	{#if summary}
 		{#each Object.entries(summary) as [group, items]}
 			<hr />
