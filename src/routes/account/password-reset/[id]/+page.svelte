@@ -1,3 +1,7 @@
+<!--
+@component
+Password reset confirmation page for `/account/password-reset/[id]`.
+-->
 <script lang="ts">
 	import { notify } from '$lib/utils/prompts';
 	import { passwordStrength } from 'check-password-strength';
@@ -20,21 +24,7 @@
 
 	let password = $state('');
 	let confirmPassword = $state('');
-	let passwordResult: {
-		id: number;
-		value: 'Too Weak' | 'Weak' | 'Medium' | 'Strong';
-		contains: ('lowercase' | 'uppercase' | 'symbol' | 'number')[];
-		length: number;
-	} = $state({
-		id: 0,
-		value: 'Too Weak',
-		contains: [],
-		length: 0
-	});
-
-	$effect(() => {
-		passwordResult = passwordStrength(password);
-	});
+	const passwordResult = $derived(passwordStrength(password));
 </script>
 
 <div class="container d-flex flex-column align-items-center justify-content-center vh-100">

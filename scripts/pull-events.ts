@@ -1,5 +1,5 @@
 import * as TBA from '../src/lib/server/utils/tba';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '../src/lib/server/db';
 
 export default async () => {

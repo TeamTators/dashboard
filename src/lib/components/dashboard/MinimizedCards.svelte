@@ -1,3 +1,15 @@
+<!--
+@component
+Row of minimized dashboard cards for quick restore.
+
+**Props**
+- `dashboard`: `Dashboard.Dashboard` — Dashboard controller.
+
+**Example**
+```svelte
+<MinimizedCards {dashboard} />
+```
+-->
 <script lang="ts">
 	import { Dashboard } from '$lib/model/dashboard';
 

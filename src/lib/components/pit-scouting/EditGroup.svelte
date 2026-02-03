@@ -39,9 +39,12 @@
 	};
 
 	onMount(() => {
-		questions = Scouting.PIT.Questions.fromProperty('groupId', $group.id || '', {
-			type: 'all'
-		});
+		questions = Scouting.PIT.Questions.get(
+			{ groupId: $group.id || '' },
+			{
+				type: 'all'
+			}
+		);
 		questions.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});
 </script>

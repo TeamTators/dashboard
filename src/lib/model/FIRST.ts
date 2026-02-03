@@ -8,6 +8,7 @@ import { attemptAsync } from 'ts-utils';
 import Summary2025 from '../utils/trace/summaries/2025';
 import Summary2024 from '../utils/trace/summaries/2024';
 import { z } from 'zod';
+import * as remote from '$lib/remotes/FIRST.remote';
 
 export namespace FIRST {
 	export const EventSummary = new Struct({
@@ -40,32 +41,28 @@ export namespace FIRST {
 			>
 		>(async () => {
 			const get = async () => {
-				const contents = await EventSummary.send(
-					'get-summary',
-					{
-						eventKey,
-						year
-					},
-					z.string()
-				).unwrap();
+				const { data } = await remote.getSummary({ eventKey });
 
 				await EventSummaryCache.new({
 					eventKey,
-					summary: contents
+					summary: data
 				}).unwrap();
 
 				if (year === 2024) {
-					return Summary2024.deserialize(contents).unwrap();
+					return Summary2024.deserialize(data).unwrap();
 				}
 				if (year === 2025) {
-					return Summary2025.deserialize(contents).unwrap();
+					return Summary2025.deserialize(data).unwrap();
 				}
 				throw new Error('Invalid year');
 			};
 
-			const res = await EventSummaryCache.fromProperty('eventKey', eventKey, {
-				pagination: false
-			}).unwrap();
+			const res = await EventSummaryCache.get(
+				{ eventKey: eventKey },
+				{
+					pagination: false
+				}
+			).unwrap();
 			const obj = res.data[0];
 			if (!obj) return get();
 			if (obj.data.created_at > config.cacheExpires) {

@@ -4,9 +4,12 @@ import { dateTime } from 'ts-utils/clock';
 
 export const GET = async (event) => {
 	// auth(event);
-	const comments = await Scouting.TeamComments.fromProperty('eventKey', event.params.eventKey, {
-		type: 'stream'
-	})
+	const comments = await Scouting.TeamComments.get(
+		{ eventKey: event.params.eventKey },
+		{
+			type: 'stream'
+		}
+	)
 		.await()
 		.unwrap();
 

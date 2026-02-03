@@ -1,5 +1,5 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import Card from '$lib/components/dashboard/Card.svelte';
 	import { Dashboard } from '$lib/model/dashboard';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
@@ -23,7 +23,6 @@
 	import { Scouting } from '$lib/model/scouting.js';
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
-	import VelocityHistogram from '$lib/components/charts/VelocityHistogram.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -422,7 +421,7 @@
 		},
 		id: 'start_location_heatmap',
 		size: {
-			width: 2,
+			width: 4,
 			height: 1,
 			lg: {
 				width: 8,
@@ -482,40 +481,6 @@
 	// 		height: 1,
 	// 	}
 	// });
-
-	const velocityHistogram = new Dashboard.Card({
-		name: 'Velocity Histogram',
-		icon: {
-			type: 'material-icons',
-			name: 'all_inclusive'
-		},
-		id: 'velocity_histogram',
-		size: {
-			width: 2,
-			height: 1,
-			xl: {
-				width: 3,
-				height: 1
-			},
-			lg: {
-				width: 3,
-				height: 1
-			},
-			md: {
-				width: 6,
-				height: 1
-			},
-			sm: {
-				width: 12,
-				height: 1
-			},
-			xs: {
-				width: 12,
-				height: 1
-			}
-		}
-	});
-
 	let dashboard = $derived(
 		new Dashboard.Dashboard({
 			name: `Robot Display: ${data.team.team_number} - ${data.team.nickname}`,
@@ -523,14 +488,15 @@
 				summary,
 				picturesCard,
 				commentsCard,
-				// actionHeatmap,
+				actionHeatmap,
 				pitScouting,
 				matchViewer,
 				progress,
 				eventStats,
 				scoutSummary,
 				checksSummary,
-				radarChart
+				radarChart,
+				startLocation
 			],
 			id: 'robot-display'
 		})
@@ -543,13 +509,14 @@
 				summary,
 				picturesCard,
 				commentsCard,
-				// actionHeatmap,
+				actionHeatmap,
 				pitScouting,
 				matchViewer,
 				progress,
 				eventStats,
 				checksSummary,
-				radarChart
+				radarChart,
+				startLocation
 			],
 			id: 'robot-display'
 		});
@@ -805,11 +772,6 @@
 					/>
 				{/snippet}
 			</Card>
-			<!-- <Card card={actionHeatmap}>
-				{#snippet body()}
-					<p>This will be the action heatmap card</p>
-				{/snippet}
-			</Card> -->
 			<Card card={pitScouting}>
 				{#snippet body()}
 					<PitScoutingCard
@@ -881,11 +843,6 @@
 			<Card card={startLocation}>
 				{#snippet body()}
 					<StartLocationHeatmap scouting={scoutingArr} year={event.tba.year} />
-				{/snippet}
-			</Card>
-			<Card card={velocityHistogram}>
-				{#snippet body()}
-					<VelocityHistogram scouting={scoutingArr} bins={10} />
 				{/snippet}
 			</Card>
 		{/key}

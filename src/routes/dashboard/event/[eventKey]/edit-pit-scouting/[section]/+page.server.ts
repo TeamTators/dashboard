@@ -14,9 +14,12 @@ export const load = async (event) => {
 		});
 
 	const sections = (
-		await Scouting.PIT.Sections.fromProperty('eventKey', eventKey, {
-			type: 'stream'
-		}).await()
+		await Scouting.PIT.Sections.get(
+			{ eventKey: eventKey },
+			{
+				type: 'stream'
+			}
+		).await()
 	)
 		.unwrap()
 		.sort((a, b) => a.data.order - b.data.order);

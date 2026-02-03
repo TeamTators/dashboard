@@ -1,5 +1,5 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
 	import { onMount } from 'svelte';
 	import { FIRST } from '$lib/model/FIRST.js';

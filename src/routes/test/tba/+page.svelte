@@ -30,10 +30,6 @@
 	$effect(() => {
 		complete = status !== 'Pending';
 	});
-
-	$inspect(event);
-	$inspect(teams);
-	$inspect(matches);
 </script>
 
 <div class="container">

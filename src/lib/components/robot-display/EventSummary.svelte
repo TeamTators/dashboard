@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Scouting } from '$lib/model/scouting';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	interface Props {
 		team: TBATeam;
@@ -24,7 +25,7 @@
 	let averageSecondsNotMoving = $state(0);
 
 	onMount(() => {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setMinutes(d.getMinutes() + 10);
 		team.getStatus(true, d).then((s) => {
 			if (s.isErr()) return console.error(s.error);

@@ -1,3 +1,15 @@
+<!--
+@component
+Top navigation bar with stack controls, theme toggle, account menu, and notifications.
+
+**Props**
+- `title`: `string` — Brand/title text.
+
+**Example**
+```svelte
+<Navbar title="Dashboard" />
+```
+-->
 <script lang="ts">
 	import SideNav from './SideNav.svelte';
 	import Notifications from './Notifications.svelte';

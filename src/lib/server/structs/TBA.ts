@@ -1,6 +1,6 @@
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { Permissions } from './permissions';
 import { str } from '../utils/env';
@@ -29,8 +29,8 @@ export namespace TBA {
 
 	Events.on('delete', async (e) => {
 		const [teams, matches] = await Promise.all([
-			Teams.fromProperty('eventKey', e.data.eventKey, { type: 'array', limit: 1000, offset: 0 }),
-			Matches.fromProperty('eventKey', e.data.eventKey, { type: 'array', limit: 1000, offset: 0 })
+			Teams.get({ eventKey: e.data.eventKey }, { type: 'array', limit: 1000, offset: 0 }),
+			Matches.get({ eventKey: e.data.eventKey }, { type: 'array', limit: 1000, offset: 0 })
 		]);
 
 		const res = resolveAll(
@@ -70,9 +70,12 @@ export namespace TBA {
 		return attemptAsync(async () => {
 			if (!path.startsWith('/')) path = '/' + path;
 
-			const exists = await Requests.fromProperty('url', path, {
-				type: 'single'
-			});
+			const exists = await Requests.get(
+				{ url: path },
+				{
+					type: 'single'
+				}
+			);
 
 			if (exists.isOk() && exists.value && !config.force) {
 				const between = Date.now() - exists.value.updated.getTime();

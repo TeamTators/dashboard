@@ -7,9 +7,12 @@ export const load = async (event) => {
 	const teams = await e.getTeams().unwrap();
 	const matches = await e.getMatches().unwrap();
 
-	const strategies = await Strategy.Strategy.fromProperty('eventKey', event.params.eventKey, {
-		type: 'stream'
-	})
+	const strategies = await Strategy.Strategy.get(
+		{ eventKey: event.params.eventKey },
+		{
+			type: 'stream'
+		}
+	)
 		.await()
 		.unwrap();
 

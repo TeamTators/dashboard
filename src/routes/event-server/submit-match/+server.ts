@@ -80,9 +80,12 @@ export const POST = async (event) => {
 
 	let accountId = '';
 
-	const account = await Account.Account.fromProperty('username', scout, {
-		type: 'single'
-	});
+	const account = await Account.Account.get(
+		{ username: scout },
+		{
+			type: 'single'
+		}
+	);
 	if (account.isOk() && account.value) {
 		accountId = account.value.id;
 	}

@@ -40,9 +40,12 @@ export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expire
 	return attemptAsync<T>(async () => {
 		let cached: T | null = null;
 		if (!force) {
-			const res = await TBARequestCache.fromProperty('url', url, {
-				pagination: false
-			}).unwrap();
+			const res = await TBARequestCache.get(
+				{ url },
+				{
+					pagination: false
+				}
+			).unwrap();
 			const [cache] = res.data;
 			if (cache) {
 				const parsed = parser.safeParse(JSON.parse(cache.data.response));

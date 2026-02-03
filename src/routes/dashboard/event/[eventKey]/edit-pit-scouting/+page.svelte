@@ -1,10 +1,11 @@
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { Scouting } from '$lib/model/scouting';
 	import { alert, confirm, notify, prompt, select } from '$lib/utils/prompts';
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { onMount } from 'svelte';
 	import { TBAEvent } from '$lib/utils/tba.js';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	const { data } = $props();
 	const eventKey = $derived(data.eventKey);
@@ -16,9 +17,12 @@
 	let sections = $state(new DataArr(Scouting.PIT.Sections, []));
 
 	onMount(() => {
-		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, {
-			type: 'all'
-		});
+		sections = Scouting.PIT.Sections.get(
+			{ eventKey: eventKey },
+			{
+				type: 'all'
+			}
+		);
 		sections.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});
 
@@ -54,7 +58,7 @@
 
 	const copy = async () => {
 		try {
-			const d = new Date();
+			const d = new SvelteDate();
 			d.setDate(d.getDate() + 1);
 			const events = (await TBAEvent.getEvents(year, false, d))
 				.unwrap()
@@ -64,9 +68,12 @@
 				await Promise.all(
 					events.map(async (e) => {
 						const sections = (
-							await Scouting.PIT.Sections.fromProperty('eventKey', e.tba.key, {
-								type: 'stream'
-							}).await()
+							await Scouting.PIT.Sections.get(
+								{ eventKey: e.tba.key },
+								{
+									type: 'all'
+								}
+							).await()
 						).unwrap();
 						return { event: e, sections };
 					})
@@ -79,19 +86,17 @@
 			);
 
 			if (!selected) return;
-			Scouting.PIT.Sections.call('copy-from-event', {
-				from: withSections.find((e) => e.event.tba.name === selected)?.event.tba.key || '',
-				to: eventKey
-			});
+			Scouting.PIT.copyFromEvent(
+				withSections.find((e) => e.event.tba.name === selected)?.event.tba.key || '',
+				eventKey
+			);
 		} catch (err) {
 			console.error(err);
 		}
 	};
 	const generateEventTemplate = async () => {
 		if (!(await confirm('Are you sure you want to generate an event template?'))) return;
-		const res = await Scouting.PIT.Sections.call('generate-event-template', {
-			eventKey: eventKey
-		});
+		const res = await Scouting.PIT.generateEventTemplate(eventKey);
 		if (res.isErr()) return console.error(res.error);
 		if (!res.value.success) alert(`${res.value.message} (You likely already have sections)`);
 	};
