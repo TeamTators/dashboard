@@ -41,7 +41,7 @@
 				labels: data.labels,
 				datasets: [
 					{
-						label: 'Velocity Histogram Occurences in Feet/Second',
+						label: 'Velocity Occurences in Feet/Second',
 						data: data.bins,
 						borderWidth: 1
 					}
@@ -52,7 +52,7 @@
 				scales: {
 					y: {
 						beginAtZero: true,
-						title: { display: true, text: 'Velocity Histogram Occurences in Feet/Second' }
+						title: { display: true, text: 'Velocity Occurences in Feet/Second' }
 					},
 					x: { title: { display: true, text: 'Velocity Range' } }
 				}
@@ -77,4 +77,4 @@
 	});
 </script>
 
-<canvas bind:this={canvas} style="width: 100%; height: 100%;"></canvas>
+<canvas bind:this={canvas} style=" display: flex;"></canvas>
