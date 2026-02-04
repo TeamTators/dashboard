@@ -30,7 +30,6 @@
 		event
 			.getTeams(
 				false,
-				// tomorrow
 				tomorrow()
 			)
 			.then((res) => {
