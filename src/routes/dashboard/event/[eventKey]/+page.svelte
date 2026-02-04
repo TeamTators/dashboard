@@ -27,19 +27,14 @@
 	$effect(() => nav(event.tba));
 
 	onMount(() => {
-		event
-			.getTeams(
-				false,
-				tomorrow()
-			)
-			.then((res) => {
-				if (res.isOk()) {
-					teams = res.value;
-				} else {
-					// is an error, do something here!
-					console.log(res.error);
-				}
-			});
+		event.getTeams(false, tomorrow()).then((res) => {
+			if (res.isOk()) {
+				teams = res.value;
+			} else {
+				// is an error, do something here!
+				console.log(res.error);
+			}
+		});
 		setTimeout(() => {
 			FIRST.getSummary(event.tba.key, event.tba.year as 2024 | 2025, {
 				// 10 minutes
