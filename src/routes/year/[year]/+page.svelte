@@ -1,3 +1,9 @@
+<!--
+@component
+Season event listing page.
+
+Shows events for a year and a link to the robot simulator.
+-->
 <script lang="ts">
 	import { page } from '$app/state';
 	import { date } from 'ts-utils/clock';

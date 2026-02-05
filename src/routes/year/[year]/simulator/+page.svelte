@@ -1,3 +1,9 @@
+<!--
+@component
+Robot simulator for the selected season.
+
+Allows interactive tuning of robot physics and target controls.
+-->
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Simulator, type RobotConfig } from '$lib/services/simulator/new-sim.ts';

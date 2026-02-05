@@ -1,5 +1,12 @@
+<!--
+@component
+Team overview dashboard for a specific event and team.
+
+Combines scouting, comments, pit scouting, photos, and performance charts into a single view.
+Includes summary cards, match tables, and heatmaps for quick performance review.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import Card from '$lib/components/dashboard/Card.svelte';
 	import { Dashboard } from '$lib/model/dashboard';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
@@ -23,6 +30,7 @@
 	import { Scouting } from '$lib/model/scouting.js';
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
+	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -421,7 +429,7 @@
 		},
 		id: 'start_location_heatmap',
 		size: {
-			width: 2,
+			width: 4,
 			height: 1,
 			lg: {
 				width: 8,
@@ -471,16 +479,38 @@
 		}
 	});
 
-	// const actionHeatmap = new Dashboard.Card({
-	// 	name: 'Action Heatmap',
-	// 	iconType: 'material-icons',
-	// 	icon: 'layers',
-	// 	id: 'heatmap',
-	// 	size: {
-	// 		width: 1,
-	// 		height: 1,
-	// 	}
-	// });
+	const actionHeatmap = new Dashboard.Card({
+		name: 'Action Heatmap',
+		icon: {
+			type: 'material-icons',
+			name: 'layers'
+		},
+		id: 'heatmap',
+		size: {
+			width: 2,
+			height: 1,
+			xl: {
+				width: 4,
+				height: 1
+			},
+			lg: {
+				width: 6,
+				height: 1
+			},
+			md: {
+				width: 6,
+				height: 1
+			},
+			sm: {
+				width: 12,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
 	let dashboard = $derived(
 		new Dashboard.Dashboard({
 			name: `Robot Display: ${data.team.team_number} - ${data.team.nickname}`,
@@ -488,14 +518,15 @@
 				summary,
 				picturesCard,
 				commentsCard,
-				// actionHeatmap,
+				actionHeatmap,
 				pitScouting,
 				matchViewer,
 				progress,
 				eventStats,
 				scoutSummary,
 				checksSummary,
-				radarChart
+				radarChart,
+				startLocation
 			],
 			id: 'robot-display'
 		})
@@ -508,13 +539,14 @@
 				summary,
 				picturesCard,
 				commentsCard,
-				// actionHeatmap,
+				actionHeatmap,
 				pitScouting,
 				matchViewer,
 				progress,
 				eventStats,
 				checksSummary,
-				radarChart
+				radarChart,
+				startLocation
 			],
 			id: 'robot-display'
 		});
@@ -770,11 +802,6 @@
 					/>
 				{/snippet}
 			</Card>
-			<!-- <Card card={actionHeatmap}>
-				{#snippet body()}
-					<p>This will be the action heatmap card</p>
-				{/snippet}
-			</Card> -->
 			<Card card={pitScouting}>
 				{#snippet body()}
 					<PitScoutingCard
@@ -846,6 +873,11 @@
 			<Card card={startLocation}>
 				{#snippet body()}
 					<StartLocationHeatmap scouting={scoutingArr} year={event.tba.year} />
+				{/snippet}
+			</Card>
+			<Card card={actionHeatmap}>
+				{#snippet body()}
+					<ActionHeatmap scouting={scoutingArr} year={event.tba.year} />
 				{/snippet}
 			</Card>
 		{/key}

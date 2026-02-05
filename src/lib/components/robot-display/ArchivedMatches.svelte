@@ -1,3 +1,16 @@
+<!--
+@fileoverview List of archived match scoutings with restore controls.
+
+@component ArchivedMatches
+
+@description
+Loads archived matches for a team/event pair and renders each trace with a restore button.
+
+@example
+```svelte
+<ArchivedMatches {team} {event} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import type { TBATeam, TBAEvent } from '$lib/utils/tba';
@@ -6,7 +19,9 @@
 	import { confirm } from '$lib/utils/prompts';
 
 	interface Props {
+		/** Team to fetch archived matches for. */
 		team: TBATeam;
+		/** Event to fetch archived matches for. */
 		event: TBAEvent;
 	}
 
@@ -18,8 +33,6 @@
 		const res = Scouting.getArchivedMatches(team.tba.team_number, event.tba.key);
 		if (res.isOk()) {
 			matches = res.value;
-		} else {
-			console.error('Error fetching archived matches:', res.error);
 		}
 	});
 </script>

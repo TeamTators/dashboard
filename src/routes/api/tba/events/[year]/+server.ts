@@ -1,5 +1,16 @@
+/**
+ * @fileoverview API endpoint for retrieving events by season year.
+ * @description
+ * Returns the list of TBA events for the requested season.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 
+/**
+ * Returns the events for a given year.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with the season event list.
+ */
 export const GET = async (event) => {
 	const year = parseInt(event.params.year);
 

@@ -1,3 +1,17 @@
+<!--
+@fileoverview List of derived match checks with color coding.
+
+@component Checks
+
+@description
+Subscribes to a single match scouting record and renders the checks returned by
+`scouting.getChecks()`, applying contextual Bootstrap colors per check type.
+
+@example
+```svelte
+<Checks {scouting} classes="list-group-flush" />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { WritableArray } from '$lib/utils/writables';
@@ -6,7 +20,9 @@
 	import { capitalize, fromCamelCase } from 'ts-utils/text';
 
 	interface Props {
+		/** Match scouting record to compute checks from. */
 		scouting: Scouting.MatchScoutingExtended;
+		/** Optional CSS classes for list styling. */
 		classes?: string;
 	}
 

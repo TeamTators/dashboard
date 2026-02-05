@@ -1,5 +1,11 @@
+<!--
+@component
+Event overview dashboard for a specific TBA event.
+
+Displays team links, summary charts, and admin actions for the event.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
 	import { onMount } from 'svelte';
 	import { FIRST } from '$lib/model/FIRST.js';

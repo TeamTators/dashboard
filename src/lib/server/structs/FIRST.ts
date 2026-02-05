@@ -1,86 +1,60 @@
+/**
+ * @fileoverview Server-side FIRST Struct definitions and summary helpers.
+ *
+ * @description
+ * Defines Drizzle-backed Structs for FIRST summaries, team pictures, and matches, and
+ * provides summary generation and caching helpers.
+ */
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { Permissions } from './permissions';
-import { z } from 'zod';
-import { DB } from '../db';
-import { and, eq } from 'drizzle-orm';
 import { attemptAsync } from 'ts-utils/check';
-import { SendListener } from '../services/struct-listeners';
 import Summary2024 from '../../utils/trace/summaries/2024';
 import Summary2025 from '../../utils/trace/summaries/2025';
 import { Event } from '../utils/tba';
 import { Scouting } from './scouting';
 import { Trace } from 'tatorscout/trace';
-import { DataAction, PropertyAction } from 'drizzle-struct/types';
-import terminal from '../utils/terminal';
+import { DataAction, PropertyAction } from '../../types/struct';
+import structRegistry from '../services/struct-registry';
 
 export namespace FIRST {
 	export const EventSummary = new Struct({
 		name: 'event_summary',
 		structure: {
+			/** TBA event key. */
 			eventKey: text('event_key').notNull(),
+			/** Serialized summary payload. */
 			summary: text('summary').notNull()
 		}
 	});
 
-	// Prevent SSE from doing anything
-	EventSummary.block(DataAction.Archive, () => true, 'No archiving allowed');
-	EventSummary.block(DataAction.Clear, () => true, 'No clearing allowed');
-	EventSummary.block(DataAction.Create, () => true, 'No creating allowed');
-	EventSummary.block(DataAction.Delete, () => true, 'No deleting allowed');
-	EventSummary.block(DataAction.DeleteVersion, () => true, 'No deleting allowed');
-	EventSummary.block(DataAction.RestoreArchive, () => true, 'No restoring allowed');
-	EventSummary.block(DataAction.RestoreVersion, () => true, 'No restoring allowed');
-	EventSummary.block(PropertyAction.Update, () => true, 'No updating allowed');
-	EventSummary.block(PropertyAction.Read, () => true, 'No reading allowed');
-	EventSummary.block(PropertyAction.ReadArchive, () => true, 'No reading allowed');
-	EventSummary.block(PropertyAction.ReadVersionHistory, () => true, 'No reading allowed');
-	EventSummary.block(PropertyAction.SetAttributes, () => true, 'No setting allowed');
-
-	SendListener.on(
-		'get-summary',
-		EventSummary,
-		z.object({
-			eventKey: z.string(),
-			year: z.number()
-		}),
-		async (event, data) => {
-			if (!event.locals.account) {
-				return {
-					success: false,
-					message: 'Not logged in'
-				};
-			}
-			if (!event.locals.account.data.verified) {
-				return {
-					success: false,
-					message: 'Account not verified'
-				};
-			}
-			const res = await generateSummary(data.eventKey, data.year as 2024 | 2025);
-			if (res.isErr()) {
-				terminal.error(res.error);
-				return {
-					success: false,
-					message: 'Failed to generate summary'
-				};
-			}
-			return {
-				success: true,
-				data: res.value.serialize()
-			};
-		}
-	);
+	structRegistry
+		.register(EventSummary)
+		.block(DataAction.Archive)
+		.block(DataAction.Clear)
+		.block(DataAction.Create)
+		.block(DataAction.Delete)
+		.block(DataAction.DeleteVersion)
+		.block(DataAction.RestoreArchive)
+		.block(DataAction.RestoreVersion)
+		.block(PropertyAction.Update)
+		.block(PropertyAction.Read)
+		.block(PropertyAction.ReadArchive)
+		.block(PropertyAction.ReadVersionHistory)
+		.block(PropertyAction.SetAttributes);
 
 	export const generateSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
 			const event = await Event.getEvent(eventKey, true).unwrap();
 			const teams = await event.getTeams(true).unwrap();
 			const matches = await event.getMatches(true).unwrap();
-			const scouting = await Scouting.MatchScouting.fromProperty('eventKey', eventKey, {
-				type: 'all'
-			}).unwrap();
+			const scouting = await Scouting.MatchScouting.get(
+				{ eventKey: eventKey },
+				{
+					type: 'all'
+				}
+			).unwrap();
 
 			const obj = teams.reduce(
 				(acc, team) => {
@@ -116,9 +90,12 @@ export namespace FIRST {
 
 	export const getSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
-			const res = await EventSummary.fromProperty('eventKey', eventKey, {
-				type: 'single'
-			}).unwrap();
+			const res = await EventSummary.get(
+				{ eventKey: eventKey },
+				{
+					type: 'single'
+				}
+			).unwrap();
 			if (res) {
 				if (year === 2024) {
 					return Summary2024.deserialize(res.data.summary).unwrap();
@@ -139,45 +116,27 @@ export namespace FIRST {
 	export const TeamPictures = new Struct({
 		name: 'team_pictures',
 		structure: {
+			/** Team number for the picture. */
 			team: integer('team').notNull(),
+			/** Event key associated with the picture. */
 			eventKey: text('event_key').notNull(),
+			/** Stored picture name or path. */
 			picture: text('picture').notNull(),
+			/** Account id that uploaded the picture. */
 			accountId: text('account_id').notNull()
 		}
 	});
-
-	TeamPictures.queryListen('from-event', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-
-		// Check if the user has permission to view team pictures
-
-		const { team, eventKey } = z
-			.object({
-				team: z.number(),
-				eventKey: z.string()
-			})
-			.parse(data);
-
-		return getTeamPictures(team, eventKey).unwrap();
-	});
-
-	export const getTeamPictures = (team: number, eventKey: string) => {
-		return attemptAsync(async () => {
-			const res = await DB.select()
-				.from(TeamPictures.table)
-				.where(and(eq(TeamPictures.table.team, team), eq(TeamPictures.table.eventKey, eventKey)));
-
-			return res.map((r) => TeamPictures.Generator(r));
-		});
-	};
 
 	// TeamPictures.on('delete', (pic) => {});
 
 	export const Matches = new Struct({
 		name: 'matches',
 		structure: {
+			/** Event key associated with the match. */
 			eventKey: text('event_key').notNull(),
+			/** Match number. */
 			number: integer('number').notNull(),
+			/** Competition level (qm, qf, sf, f). */
 			compLevel: text('comp_level').notNull()
 		}
 	});
@@ -185,17 +144,29 @@ export namespace FIRST {
 	export const CustomMatches = new Struct({
 		name: 'custom_matches',
 		structure: {
+			/** Display name for the custom match. */
 			name: text('name').notNull(),
+			/** Event key associated with the match. */
 			eventKey: text('event_key').notNull(),
+			/** Match number. */
 			number: integer('number').notNull(),
+			/** Competition level (qm, qf, sf, f). */
 			compLevel: text('comp_level').notNull(),
+			/** Red alliance team 1 number. */
 			red1: integer('red1').notNull(),
+			/** Red alliance team 2 number. */
 			red2: integer('red2').notNull(),
+			/** Red alliance team 3 number. */
 			red3: integer('red3').notNull(),
+			/** Red alliance team 4 number. */
 			red4: integer('red4').notNull(),
+			/** Blue alliance team 1 number. */
 			blue1: integer('blue1').notNull(),
+			/** Blue alliance team 2 number. */
 			blue2: integer('blue2').notNull(),
+			/** Blue alliance team 3 number. */
 			blue3: integer('blue3').notNull(),
+			/** Blue alliance team 4 number. */
 			blue4: integer('blue4').notNull()
 		}
 	});

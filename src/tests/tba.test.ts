@@ -1,6 +1,12 @@
+/**
+ * @fileoverview Integration tests for TBA data access.
+ * @description
+ * Validates event, match, and team retrieval for a sample season.
+ */
+
 import { describe, expect, test } from 'vitest';
 import * as TBA from '$lib/server/utils/tba';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '$lib/server/db';
 
 describe('TheBlueAlliance testing', async () => {

@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Generates sample data from Zod schemas.
+ * @description
+ * Walks supported Zod types and produces a representative placeholder value.
+ */
+
 import {
 	z,
 	type ZodTypeAny,
@@ -17,6 +23,14 @@ import {
 	ZodTuple
 } from 'zod';
 
+/**
+ * Creates a sample value for a given Zod schema.
+ * @param schema - Zod schema to derive a sample from.
+ * @returns A sample value matching the schema shape.
+ * @example
+ * const schema = z.object({ name: z.string(), count: z.number() });
+ * const sample = getSampleData(schema);
+ */
 export const getSampleData = (schema: ZodTypeAny): unknown => {
 	if (schema instanceof ZodEffects) {
 		return getSampleData(schema._def.schema);

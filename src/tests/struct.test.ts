@@ -1,6 +1,12 @@
+/**
+ * @fileoverview Unit tests for the Test Struct lifecycle.
+ * @description
+ * Verifies emitter events and basic CRUD behaviors.
+ */
+
 import { DB } from '$lib/server/db';
 import { Test } from '$lib/server/structs/testing';
-import { StructStream } from 'drizzle-struct/back-end';
+import { StructStream } from 'drizzle-struct';
 import { describe, expect, beforeAll, test } from 'vitest';
 
 describe('Run tests on the Test Struct', () => {

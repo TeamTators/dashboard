@@ -1,5 +1,5 @@
 import { Scouting } from '../src/lib/server/structs/scouting';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '../src/lib/server/db';
 import { Trace } from 'tatorscout/trace';
 

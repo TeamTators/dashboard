@@ -1,8 +1,20 @@
+/**
+ * @fileoverview Client load mapper for the team overview page.
+ * @description
+ * Wraps server payloads into DataArr collections and model instances for the UI.
+ * Normalizes pit scouting, comments, and media into consistent client-side models.
+ */
+
 import { DataArr } from '$lib/services/struct/data-arr';
 import { Scouting } from '$lib/model/scouting';
 import { FIRST } from '$lib/model/FIRST';
 import { Account } from '$lib/model/account';
 
+/**
+ * Maps server data into client-side models and collections.
+ * @param event - SvelteKit load event with server data.
+ * @returns Page data containing scouting arrays, pit scouting, media assets, and account mappings.
+ */
 export const load = (event) => {
 	const scouting = new DataArr(
 		Scouting.MatchScouting,

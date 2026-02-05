@@ -1,3 +1,17 @@
+<!--
+@fileoverview Team-level comments grid with archive actions.
+
+@component TeamComments
+
+@description
+Displays all team comments in a grid with context-menu actions to archive entries and
+supports adding new comments.
+
+@example
+```svelte
+<TeamComments {team} {event} {comments} {scouting} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import Grid from '../general/Grid.svelte';
@@ -7,22 +21,25 @@
 	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { RowAutoHeightModule, TextFilterModule, NumberFilterModule } from 'ag-grid-community';
+	import { WritableArray } from '$lib/services/writables';
 
 	interface Props {
+		/** Team number for comment scoping. */
 		team: number;
+		/** Event key for comment scoping. */
 		event: string;
+		/** Comment store for the team. */
 		comments: Scouting.TeamCommentsArr;
+		/** Scouting data used to resolve match labels. */
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { team, event, comments, scouting }: Props = $props();
 
-	let commentProxy: Writable<
-		{
-			comment: Scouting.TeamCommentsData;
-			match: string;
-		}[]
-	> = $state(writable([]));
+	const commentProxy = new WritableArray<{
+		comment: Scouting.TeamCommentsData;
+		match: string;
+	}>([]);
 
 	onMount(() => {
 		return comments.subscribe((data) => {
@@ -49,10 +66,10 @@
 			matchScoutingId: '',
 			comment: c,
 			eventKey: String(event),
-			scoutUsername: String(self.get().data.username),
+			scoutUsername: String(self.data.data.username),
 			team: Number(team),
 			type: 'general',
-			accountId: String(self.get().data.id)
+			accountId: String(self.data.data.id)
 		}).catch((e) => {
 			console.error(e);
 			alert('Failed to add comment');
@@ -117,23 +134,13 @@
 											autoHide: 3000
 										});
 									} else {
-										if (res.value.success) {
-											notify({
-												color: 'success',
-												message: 'You successfully archived the comment.',
-												title: 'Success',
-												textColor: 'light',
-												autoHide: 3000
-											});
-										} else {
-											notify({
-												color: 'warning',
-												message: res.value.message || 'Unknown issue',
-												title: 'Not Archived',
-												textColor: 'dark',
-												autoHide: 3000
-											});
-										}
+										notify({
+											color: 'success',
+											message: 'You successfully archived the comment.',
+											title: 'Success',
+											textColor: 'light',
+											autoHide: 3000
+										});
 									}
 								}
 							},

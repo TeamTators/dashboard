@@ -1,3 +1,32 @@
+<!--
+@fileoverview Progress chart showing action frequency or points across matches.
+
+@component Progress
+
+@description
+Renders a stacked bar chart for a team's match-by-match performance. It can toggle between
+frequency (counts per action) and points (scored points per action) views. The chart is rebuilt
+whenever the scouting store updates, ensuring the visual stays in sync with incoming data.
+
+@example
+```svelte
+<script lang="ts">
+	import Progress from '$lib/components/charts/Progress.svelte';
+	import type { TBATeam, TBAMatch, TBAEvent } from '$lib/utils/tba';
+	import type { Scouting } from '$lib/model/scouting';
+
+	let team: TBATeam;
+	let event: TBAEvent;
+	let matches: TBAMatch[] = [];
+	let scouting: Scouting.MatchScoutingExtendedArr;
+
+	let chartRef: Progress | undefined;
+	const copyChart = () => chartRef?.copy(true);
+</script>
+
+<Progress bind:this={chartRef} {team} {event} {matches} {scouting} defaultView="frequency" />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { copyCanvas } from '$lib/utils/clipboard';
@@ -7,12 +36,19 @@
 	import YearInfo2025 from 'tatorscout/years/2025.js';
 	import { match as matchCase } from 'ts-utils/match';
 
+	/** Component props for `Progress`. */
 	interface Props {
+		/** Team being visualized. */
 		team: TBATeam;
+		/** Event context for the matches. */
 		event: TBAEvent;
+		/** List of matches for label alignment. */
 		matches: TBAMatch[];
+		/** Optional fixed Y value for other layouts (bindable). */
 		staticY?: number;
+		/** Live scouting store for match data. */
 		scouting: Scouting.MatchScoutingExtendedArr;
+		/** Default chart view mode. */
 		defaultView?: 'frequency' | 'points';
 	}
 
@@ -23,6 +59,14 @@
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
 
+	/**
+	 * Copy the chart canvas to the clipboard.
+	 *
+	 * @example
+	 * ```ts
+	 * chartRef.copy(true);
+	 * ```
+	 */
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	type datasetType = {

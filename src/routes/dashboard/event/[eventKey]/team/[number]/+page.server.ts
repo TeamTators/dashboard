@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Server loader for the team detail page.
+ * @description
+ * Loads team scouting, comments, pit scouting data, and photos for the event.
+ */
+
 import { FIRST } from '$lib/server/structs/FIRST.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Account } from '$lib/server/structs/account.js';
@@ -6,6 +12,11 @@ import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import terminal from '$lib/server/utils/terminal';
 
+/**
+ * Loads team data, scouting records, and pit scouting info for the page.
+ * @param event - SvelteKit request event.
+ * @returns Page data with team details, scouting, comments, and media.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const eventKey = event.params.eventKey;
@@ -46,7 +57,15 @@ export const load = async (event) => {
 		Scouting.getTeamScouting(team.tba.team_number, e.value.tba.key),
 		Scouting.getTeamComments(team.tba.team_number, e.value.tba.key),
 		Scouting.PIT.getScoutingInfo(team.tba.team_number, e.value.tba.key),
-		FIRST.getTeamPictures(team.tba.team_number, e.value.tba.key)
+		FIRST.TeamPictures.get(
+			{
+				team: team.tba.team_number,
+				eventKey: e.value.tba.key
+			},
+			{
+				type: 'all'
+			}
+		)
 	]);
 
 	if (scouting.isErr()) {

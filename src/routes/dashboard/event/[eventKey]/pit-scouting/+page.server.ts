@@ -7,9 +7,12 @@ export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const e = (await Event.getEvent(event.params.eventKey)).unwrap();
 	const sections = (
-		await Scouting.PIT.Sections.fromProperty('eventKey', event.params.eventKey, {
-			type: 'stream'
-		}).await()
+		await Scouting.PIT.Sections.get(
+			{ eventKey: event.params.eventKey },
+			{
+				type: 'stream'
+			}
+		).await()
 	).unwrap();
 	return {
 		event: e.tba,

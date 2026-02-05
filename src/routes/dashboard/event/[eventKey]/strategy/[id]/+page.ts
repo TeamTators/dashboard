@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Client load mapper for the strategy detail page.
+ * @description
+ * Wraps server payloads into model instances and scouting data arrays.
+ */
+
 import { Scouting } from '$lib/model/scouting.js';
 import { Strategy } from '$lib/model/strategy';
 import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba.js';
 import { DataArr } from '$lib/services/struct/data-arr';
 
+/**
+ * Maps server data into client-side models for a strategy detail view.
+ * @param event - SvelteKit load event with server data.
+ * @returns Page data containing strategy, teams, matches, and scouting arrays.
+ */
 export const load = (event) => {
 	const e = new TBAEvent(event.data.event);
 	const teams = event.data.teams.map((t) => new TBATeam(t, e));

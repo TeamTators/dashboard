@@ -1,5 +1,12 @@
+<!--
+@component
+Match detail view for a single team and match.
+
+Shows scouting breakdowns, strategies, and navigation between matches.
+Falls back to a no-scout view when a scouting record is missing.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import type { TBAMatch } from '$lib/utils/tba';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';

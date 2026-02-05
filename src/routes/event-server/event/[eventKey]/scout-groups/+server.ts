@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Event server endpoint for scout group generation.
+ * @description
+ * Generates and validates scout group assignments for an event.
+ */
+
 import terminal from '$lib/server/utils/terminal.js';
 import * as TBA from '$lib/server/utils/tba.js';
 import { generateScoutGroups, testAssignments } from 'tatorscout/scout-groups';
 import { str } from '$lib/server/utils/env.js';
 
+/**
+ * Returns generated scout group assignments for an event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with assignments or an error message.
+ */
 export const GET = async (event) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');

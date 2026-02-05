@@ -1,3 +1,17 @@
+<!--
+@fileoverview Team image uploader and carousel display.
+
+@component PictureDisplay
+
+@description
+Lets users upload team photos, pulls existing media from TBA, and renders the result
+in a Bootstrap carousel.
+
+@example
+```svelte
+<PictureDisplay {team} {event} {teamPictures} />
+```
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { FIRST } from '$lib/model/FIRST';
@@ -8,9 +22,13 @@
 	import '@uppy/webcam/css/style.min.css';
 	import ImageEditor from '@uppy/image-editor';
 	import Compressor from '@uppy/compressor';
+	import { SvelteDate } from 'svelte/reactivity';
 	interface Props {
+		/** Team being displayed and updated. */
 		team: TBATeam;
+		/** Event context for uploads. */
 		event: TBAEvent;
+		/** Live store of team pictures. */
 		teamPictures: FIRST.TeamPicturesArr;
 	}
 
@@ -25,7 +43,7 @@
 		uppy.use(Webcam, { modes: ['picture'] });
 		uppy.use(ImageEditor);
 		uppy.use(Compressor, { quality: 0.4 });
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setDate(d.getDate() + 7);
 		team.getMedia(true, d).then((m) => {
 			if (m.isErr()) return console.error(m.error);
@@ -45,7 +63,7 @@
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
 				picture: file,
-				accountId: Account.getSelf().get().data.id || ''
+				accountId: Account.getSelf().data.data.id || ''
 			});
 		});
 

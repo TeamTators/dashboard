@@ -1,3 +1,9 @@
+<!--
+@component
+Strategy list and creation page for an event.
+
+Allows selecting teams or matches to create strategy records.
+-->
 <script lang="ts">
 	import MatchSelect from '$lib/components/FIRST/MatchSelect.svelte';
 	import TeamSelect from '$lib/components/FIRST/TeamSelect.svelte';
@@ -10,7 +16,8 @@
 	import { Strategy } from '$lib/model/strategy.js';
 	import { goto } from '$app/navigation';
 	import { Account } from '$lib/model/account.js';
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	const { data } = $props();
 
@@ -35,7 +42,7 @@
 	let alliance: 'red' | 'blue' | 'unknown' = $state('unknown');
 
 	const selectFromMatch = async (match: TBAMatch) => {
-		const date = new Date();
+		const date = new SvelteDate();
 		date.setMinutes(date.getMinutes() + 10);
 		const teams = await match.getTeams(false, date);
 		if (teams.isErr()) return console.error(teams.error);

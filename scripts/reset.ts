@@ -1,4 +1,4 @@
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { openStructs } from '../src/lib/server/cli/struct';
 
 export default async () => {

@@ -1,3 +1,17 @@
+<!--
+@fileoverview Comment list and editor for a single match scouting record.
+
+@component MatchComments
+
+@description
+Loads comments tied to a match scouting record, renders them in a grid, and allows
+adding new comments via a prompt.
+
+@example
+```svelte
+<MatchComments {scouting} style="height: 400px;" />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
@@ -9,7 +23,9 @@
 	// import { TextFilterModule } from 'ag-grid-community';
 
 	interface Props {
+		/** Match scouting record whose comments are displayed. */
 		scouting: Scouting.MatchScoutingExtended;
+		/** Optional inline style for container sizing. */
 		style?: string;
 	}
 
@@ -21,9 +37,8 @@
 	let render = $state(0);
 
 	onMount(() => {
-		comments = Scouting.TeamComments.fromProperty(
-			'matchScoutingId',
-			String(scouting.scouting.data.id),
+		comments = Scouting.TeamComments.get(
+			{ matchScoutingId: String(scouting.scouting.data.id) },
 			{
 				type: 'all',
 				cache: {
@@ -51,10 +66,10 @@
 			matchScoutingId: String(scouting.scouting.data.id),
 			comment: c,
 			eventKey: String(event),
-			scoutUsername: String(self.get().data.username),
+			scoutUsername: String(self.data.data.username),
 			team: Number(team),
 			type: 'general',
-			accountId: String(self.get().data.id)
+			accountId: String(self.data.data.id)
 		})
 			.then(() => {
 				render++;

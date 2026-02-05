@@ -1,5 +1,11 @@
+<!--
+@component
+Team comparison dashboard for a specific event.
+
+Lets users select teams and compare scouting data with charts.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { goto } from '$app/navigation';
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
@@ -12,6 +18,7 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import EventSummary from '$lib/components/robot-display/EventSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
@@ -80,7 +87,7 @@
 
 	$effect(() => {
 		// view on search params
-		const search = new URLSearchParams(location.search);
+		const search = new SvelteURLSearchParams(location.search);
 		search.set('view', view);
 		goto(`${location.pathname}?${search.toString()}`);
 	});
@@ -96,9 +103,8 @@
 			}
 		});
 
-		const search = new URLSearchParams(location.search);
-		view =
-			(search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action') ||
+		const search = new SvelteURLSearchParams(location.search);
+		view = (search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action') ||
 			'progress';
 
 		const unsub = selectedTeams.subscribe(
@@ -183,7 +189,7 @@
 									);
 								}
 
-								const search = new URLSearchParams(location.search);
+								const search = new SvelteURLSearchParams(location.search);
 								search.set(
 									'teams',
 									get(selectedTeams)

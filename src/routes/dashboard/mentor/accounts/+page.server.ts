@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Server loader for mentor account management.
+ * @description
+ * Loads accounts, roles, and privilege flags for the mentor accounts table.
+ */
+
 import { Account } from '$lib/server/structs/account.js';
 import { Permissions } from '$lib/server/structs/permissions.js';
 import { redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Loads account data and role metadata for the mentor dashboard.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing accounts and roles.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 
