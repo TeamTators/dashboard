@@ -51,7 +51,8 @@
 
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
-	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action' = $state('progress');
+	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action' =
+		$state('progress');
 
 	const sort = (
 		a: {
@@ -96,40 +97,43 @@
 		});
 
 		const search = new URLSearchParams(location.search);
-		view = (search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action') || 'progress';
+		view =
+			(search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action') ||
+			'progress';
 
-		const unsub = selectedTeams.subscribe((st) =>
-			radarData = st.map((team, i) => {
-				const scoutingData = teamScoutingData[i];
-				console.log('scoutingData:', scoutingData);
-				if (!scoutingData) {
-					return {
-						'Level 1': 0,
-						'Level 2': 0,
-						'Level 3': 0,
-						'Level 4': 0,
-						Barge: 0,
-						Processor: 0
+		const unsub = selectedTeams.subscribe(
+			(st) =>
+				(radarData = st.map((team, i) => {
+					const scoutingData = teamScoutingData[i];
+					console.log('scoutingData:', scoutingData);
+					if (!scoutingData) {
+						return {
+							'Level 1': 0,
+							'Level 2': 0,
+							'Level 3': 0,
+							'Level 4': 0,
+							Barge: 0,
+							Processor: 0
+						};
+					}
+					const contribution = Scouting.averageContributions(scoutingData.data) || {
+						cl1: 0,
+						cl2: 0,
+						cl3: 0,
+						cl4: 0,
+						brg: 0,
+						prc: 0
 					};
-				}
-				const contribution = Scouting.averageContributions(scoutingData.data) || {
-					cl1: 0,
-					cl2: 0,
-					cl3: 0,
-					cl4: 0,
-					brg: 0,
-					prc: 0
-				};
 
-				return {
-					'Level 1': contribution.cl1,
-					'Level 2': contribution.cl2,
-					'Level 3': contribution.cl3,
-					'Level 4': contribution.cl4,
-					Barge: contribution.brg,
-					Processor: contribution.prc
-				};
-			})
+					return {
+						'Level 1': contribution.cl1,
+						'Level 2': contribution.cl2,
+						'Level 3': contribution.cl3,
+						'Level 4': contribution.cl4,
+						Barge: contribution.brg,
+						Processor: contribution.prc
+					};
+				}))
 		);
 
 		return () => {
@@ -303,20 +307,21 @@
 													{matches}
 												/>
 											{:else if view === 'radar'}
-													<RadarChart
-														team={team.team}
-														data={radarData[i]}
-														opts={{
-															max: 10,
-															min: 0
-														}}
-													/>
+												<RadarChart
+													team={team.team}
+													data={radarData[i]}
+													opts={{
+														max: 10,
+														min: 0
+													}}
+												/>
 											{:else if view === 'eventSum'}
-												<EventSummary 
-													{matches} 
-													team={team.team} 
-													{event} 
-													scouting={teamScoutingData[i]} />
+												<EventSummary
+													{matches}
+													team={team.team}
+													{event}
+													scouting={teamScoutingData[i]}
+												/>
 											{:else if view === 'checkSum'}
 												<!-- <ChecksSummary 
 												 checks={teamScoutingData[i].data.checksSum} /> -->
