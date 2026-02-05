@@ -1,3 +1,17 @@
+<!--
+@fileoverview Site footer with a rotating quote and project links.
+
+@component Footer
+
+@description
+Shows copyright information, a link to report issues, a GitHub link, and a random quote.
+If the selected quote is "Click me for points!", it renders a link to the easter-egg route.
+
+@example
+```svelte
+<Footer />
+```
+-->
 <script lang="ts">
 	import { Random } from 'ts-utils/math';
 

@@ -1,3 +1,17 @@
+<!--
+@fileoverview Admin editor for a pit-scouting group and its questions.
+
+@component EditGroup
+
+@description
+Provides controls to rename a group, archive it, reorder questions, archive individual questions,
+and add new questions within the group.
+
+@example
+```svelte
+<EditGroup {group} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
@@ -6,6 +20,7 @@
 	import { confirm, prompt } from '$lib/utils/prompts';
 
 	interface Props {
+		/** Group record being edited. */
 		group: Scouting.PIT.GroupData;
 	}
 
@@ -39,9 +54,12 @@
 	};
 
 	onMount(() => {
-		questions = Scouting.PIT.Questions.fromProperty('groupId', $group.id || '', {
-			type: 'all'
-		});
+		questions = Scouting.PIT.Questions.get(
+			{ groupId: $group.id || '' },
+			{
+				type: 'all'
+			}
+		);
 		questions.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});
 </script>

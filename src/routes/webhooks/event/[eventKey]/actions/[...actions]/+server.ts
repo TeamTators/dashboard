@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Webhook endpoint for action summary exports.
+ * @description
+ * Aggregates action summaries for the requested event and action list.
+ */
+
 import { actionSummary } from '$lib/server/utils/action-summary.js';
 import { fail } from '@sveltejs/kit';
 import type { Action } from 'tatorscout/trace';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Returns an action summary for the given event and actions.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response containing the serialized action summary.
+ */
 export const GET = async (event) => {
 	// auth(event);
 	const actions = event.params.actions

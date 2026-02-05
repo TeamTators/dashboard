@@ -1,3 +1,9 @@
+<!--
+@component
+TBA testing utility page.
+
+Fetches event data, teams, and matches to validate TBA connectivity.
+-->
 <script lang="ts">
 	import * as TBA from '$lib/utils/tba';
 	import { dateTime } from 'ts-utils/clock';
@@ -30,10 +36,6 @@
 	$effect(() => {
 		complete = status !== 'Pending';
 	});
-
-	$inspect(event);
-	$inspect(teams);
-	$inspect(matches);
 </script>
 
 <div class="container">

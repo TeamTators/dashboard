@@ -1,12 +1,30 @@
+<!--
+@fileoverview Match list table with scouting status indicators.
+
+@component MatchTable
+
+@description
+Fetches match list data for a team at an event and renders a table with time, status,
+and quick links to match detail pages.
+
+@example
+```svelte
+<MatchTable {event} {team} {scouting} />
+```
+-->
 <script lang="ts">
 	import { dateTime } from 'ts-utils/clock';
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAMatch, TBAEvent } from '$lib/utils/tba';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	interface Props {
+		/** Event context for match list and links. */
 		event: TBAEvent;
+		/** Team context for match lookup. */
 		team: TBATeam;
+		/** Scouting data used to determine availability/flags. */
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
@@ -47,7 +65,7 @@
 	};
 
 	onMount(() => {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setMinutes(d.getMinutes() + 10);
 		team.getMatches(true, d).then((m) => {
 			if (m.isOk()) {

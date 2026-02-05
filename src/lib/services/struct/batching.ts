@@ -1,11 +1,24 @@
+/**
+ * @fileoverview Client-side struct batching for offline-safe updates.
+ *
+ * Queues struct updates in IndexedDB and flushes them in batches when
+ * connectivity is available.
+ *
+ * @example
+ * import { StructBatching } from '$lib/services/struct/batching';
+ * await StructBatching.add({ struct, type: 'update', data });
+ */
 import { attemptAsync } from 'ts-utils/check';
-import { type DataAction, type PropertyAction } from 'drizzle-struct/types';
+import { type DataAction, type PropertyAction } from '$lib/types/struct';
 import { z } from 'zod';
 import { Table } from '../db/table';
 import { Batch } from 'ts-utils/batch';
 import { em } from '../db';
 import type { Blank, Struct } from './struct';
 
+/**
+ * Batching utilities for struct updates.
+ */
 export namespace StructBatching {
 	const table = new Table('struct_batching', {
 		struct: 'string',
@@ -14,8 +27,16 @@ export namespace StructBatching {
 		date: 'date'
 	});
 
-	export type Batch = typeof table.sample;
+	export type B = typeof table.sample;
 
+	/**
+	 * Struct update payload.
+	 *
+	 * @property {Struct<Blank>} struct - Target struct.
+	 * @property {DataAction | PropertyAction | string} type - Action type.
+	 * @property {unknown} data - Payload data.
+	 * @property {Date} [date] - Optional timestamp.
+	 */
 	export type StructBatch = {
 		struct: Struct<Blank>;
 		type: DataAction | PropertyAction | string;
@@ -29,20 +50,31 @@ export namespace StructBatching {
 		}
 	};
 
-	em.on('init', async () => {
-		const data = await table.all({ pagination: false });
-		if (data.isOk()) {
-			log(`Processing ${data.value.data.length} pending struct batching items...`);
-			for (const item of data.value.data) {
-				batcher.add(item);
+	em.on('init', () => {
+		setTimeout(async () => {
+			const data = await table.all({ pagination: false });
+			if (data.isOk()) {
+				log(`Processing ${data.value.data.length} pending struct batching items...`);
+				for (const item of data.value.data) {
+					log('Checking if already awaiting:', item.data.id, awaiting);
+					if (awaiting.has(item.data.id)) continue;
+					batcher.add(item);
+				}
 			}
-		}
+		}, 1000 * 5); // 5 seconds after init
 	});
 
+	const awaiting = new Set<string>();
+
 	const batcher = new Batch(
-		async (items: Batch[]) => {
+		async (items: B[]) => {
+			log('Awaiting batch:', items);
+			for (const item of items) {
+				awaiting.add(item.data.id);
+				log('Added to awaiting:', item.data.id);
+			}
 			log(`Sending batch of ${items.length} struct updates...`);
-			const res = await fetch('/struct/batch', {
+			const res = await fetch('/api/struct/batch', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -60,6 +92,10 @@ export namespace StructBatching {
 
 			// If we got here, then fetch succeeded and server is running, therefore we can delete the items.
 			await Promise.all(items.map((i) => i.delete()));
+			for (const item of items) {
+				awaiting.delete(item.data.id);
+				log('Removed from awaiting:', item.data.id);
+			}
 
 			return z
 				.array(
@@ -80,6 +116,11 @@ export namespace StructBatching {
 		}
 	);
 
+	/**
+	 * Persists and enqueues struct updates to be batched.
+	 *
+	 * @param {StructBatch[]} structBatch - Updates to enqueue.
+	 */
 	export const add = (...structBatch: StructBatch[]) => {
 		return attemptAsync(async () => {
 			const items = await Promise.all(

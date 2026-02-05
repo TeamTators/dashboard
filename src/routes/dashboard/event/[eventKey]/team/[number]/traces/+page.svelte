@@ -1,6 +1,13 @@
+<!--
+@component
+Trace viewer for a single team at an event.
+
+Lists match traces, supports phase filtering, and opens detailed trace modals.
+Includes quick navigation across teams and links back to the robot display.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
-	import Trace from '$lib/components/robot-display/Trace.svelte';
+	import nav from '$lib/nav/robot-display.js';
+	import Trace from '$lib/components/robot-display/TraceHTML.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { writable } from 'svelte/store';
@@ -27,7 +34,7 @@
 	let scroller: HTMLDivElement;
 	let match: TBAMatch | undefined = $state(undefined);
 
-	const open = async (scouting: Scouting.MatchScoutingExtended) => {
+	const _open = async (scouting: Scouting.MatchScoutingExtended) => {
 		selectedScouting = scouting;
 		match = matches.find(
 			(m) => m.tba.match_number === scouting.matchNumber && m.tba.comp_level === scouting.compLevel
@@ -48,9 +55,6 @@
 				})
 			);
 		}
-	});
-
-	onMount(() => {
 		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
 		if (res.isOk()) {
 			scoutingArr = res.value;
@@ -149,14 +153,15 @@
 		{#key scouting}
 			{#if scouting.length}
 				{#each $scoutingArr as s}
-					<div class="col-3">
-						<h3>
-							{s.compLevel}{s.matchNumber} - {s.eventKey}
-							<button type="button" class="btn" onclick={() => open(s)}>
-								<i class="material-icons">visibility</i>
-							</button>
-						</h3>
-						<Trace scouting={s} {focus} />
+					<div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+						<div class="card layer-1">
+							<div class="card-body">
+								<h5 class="card-title">
+									{s.compLevel}{s.matchNumber} - {s.eventKey}
+								</h5>
+								<Trace scouting={s} {focus} />
+							</div>
+						</div>
 					</div>
 				{/each}
 			{:else}

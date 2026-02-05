@@ -1,3 +1,32 @@
+<!--
+@fileoverview Event-level min/avg/max action stats for a team, rendered as a stacked bar chart.
+
+@component TeamEventStats
+
+@description
+Builds a Chart.js stacked bar chart that aggregates match-by-match scouting data into
+min/avg/max buckets for auto, teleop, endgame, and total actions. Each dataset corresponds to a
+specific action (e.g., Level 1, Barge, Shallow Climb).
+
+@example
+```svelte
+<script lang="ts">
+  import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
+  import type { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
+  import type { Scouting } from '$lib/model/scouting';
+
+  let team: TBATeam;
+  let event: TBAEvent;
+  let matches: TBAMatch[] = [];
+  let scouting: Scouting.MatchScoutingExtendedArr;
+
+  let chartRef: TeamEventStats | undefined;
+  const copyChart = () => chartRef?.copy(true);
+</script>
+
+<TeamEventStats bind:this={chartRef} {team} {event} {matches} {scouting} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
@@ -6,11 +35,17 @@
 	import { Trace, type P } from 'tatorscout/trace';
 	import { copyCanvas } from '$lib/utils/clipboard';
 
+	/** Component props for `TeamEventStats`. */
 	interface Props {
+		/** Team being visualized. */
 		team: TBATeam;
+		/** Event context for match ordering. */
 		event: TBAEvent;
+		/** Optional fixed Y value for other layouts (bindable). */
 		staticY?: number;
+		/** Live scouting store for match data. */
 		scouting: Scouting.MatchScoutingExtendedArr;
+		/** All TBA matches for label alignment. */
 		matches: TBAMatch[];
 	}
 
@@ -19,6 +54,14 @@
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
 
+	/**
+	 * Copy the chart canvas to the clipboard.
+	 *
+	 * @example
+	 * ```ts
+	 * chartRef.copy(true);
+	 * ```
+	 */
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	onMount(() => {

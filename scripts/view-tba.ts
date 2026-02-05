@@ -1,6 +1,6 @@
 import { Event } from '../src/lib/server/utils/tba';
 import { openStructs } from '../cli/struct';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '../src/lib/server/db';
 import { Random } from 'ts-utils/math';
 

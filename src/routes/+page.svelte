@@ -1,3 +1,10 @@
+<!--
+@component
+Root home page route for `/`.
+
+Displays the landing card and bootstraps global client styles via `$lib/index`.
+Uses the page title from the global `__APP_ENV__` config to keep branding consistent.
+-->
 <script lang="ts">
 	import '$lib/index';
 </script>
@@ -9,8 +16,18 @@
 <div class="container mt-5">
 	<div class="row">
 		<div class="col-md-6 p-3">
-			<a href="/year/2025" class="text-reset text-decoration-none">
+			<a href="/year/2026" class="text-reset text-decoration-none">
 				<div class="card bg-primary">
+					<div class="card-body">
+						<h5 class="card-title">2026 Dashboard</h5>
+						<p class="card-text">This is the portal to all 2026 scouting information</p>
+					</div>
+				</div>
+			</a>
+		</div>
+		<div class="col-md-6 p-3">
+			<a href="/year/2025" class="text-reset text-decoration-none">
+				<div class="card bg-secondary">
 					<div class="card-body">
 						<h5 class="card-title">2025 Dashboard</h5>
 						<p class="card-text">This is the portal to all 2025 scouting information</p>
@@ -41,7 +58,7 @@
 			</div>
 		{/if}
 		<div class="col-md-6 p-3">
-			<a href="/dashboard/admin" class="text-reset text-decoration-none">
+			<a href="/dashboard/admin/data" class="text-reset text-decoration-none">
 				<div class="card bg-danger">
 					<div class="card-body">
 						<h5 class="card-title text-black">Admin</h5>

@@ -1,12 +1,31 @@
+<!--
+@fileoverview Event-level stats table for a team.
+
+@component EventSummary
+
+@description
+Fetches team ranking info and calculates average scoring metrics from scouting data,
+then renders a summary table.
+
+@example
+```svelte
+<EventSummary {team} {event} {scouting} {matches} />
+```
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Scouting } from '$lib/model/scouting';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	interface Props {
+		/** Team being summarized. */
 		team: TBATeam;
+		/** Event context used for ranking and scoring. */
 		event: TBAEvent;
+		/** Live scouting store for match data. */
 		scouting: Scouting.MatchScoutingExtendedArr;
+		/** TBA match list for endgame calculations. */
 		matches: TBAMatch[];
 	}
 
@@ -24,7 +43,7 @@
 	let averageSecondsNotMoving = $state(0);
 
 	onMount(() => {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setMinutes(d.getMinutes() + 10);
 		team.getStatus(true, d).then((s) => {
 			if (s.isErr()) return console.error(s.error);

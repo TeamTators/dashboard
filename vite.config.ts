@@ -26,7 +26,8 @@ export default defineConfig({
 			'sophie.tatorscout.org',
 			'landon.tatorscout.org',
 			'anvita.tatorscout.org',
-			'daniel.tatorscout.org'
+			'daniel.tatorscout.org',
+			'kynlee.tatorscout.org'
 		]
 	},
 	define: {
@@ -36,6 +37,7 @@ export default defineConfig({
 			indexed_db: config.indexed_db,
 			struct_cache: config.struct_cache,
 			struct_batching: config.struct_batching,
+			sse: config.sse,
 			do_potato: config.potato.enabled
 		})
 	}

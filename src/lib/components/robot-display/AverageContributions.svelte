@@ -1,12 +1,30 @@
+<!--
+@fileoverview Table summary of average scoring contributions for a team.
+
+@component AverageContributions
+
+@description
+Subscribes to scouting updates and computes average coral and algae contributions across matches,
+rendering the values in a simple table.
+
+@example
+```svelte
+<AverageContributions {team} {event} {scouting} {matches} />
+```
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Scouting } from '$lib/model/scouting';
 
 	interface Props {
+		/** Team being summarized. */
 		team: TBATeam;
+		/** Event context for match data. */
 		event: TBAEvent;
+		/** Live scouting store for match data. */
 		scouting: Scouting.MatchScoutingExtendedArr;
+		/** TBA match list for context. */
 		matches: TBAMatch[];
 	}
 

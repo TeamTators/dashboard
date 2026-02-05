@@ -1,3 +1,9 @@
+<!--
+@component
+Strategy detail editor for a specific match or custom plan.
+
+Shows scouting summaries and allows editing strategy assignments.
+-->
 <script lang="ts">
 	import TeamSelect from '$lib/components/FIRST/TeamSelect.svelte';
 	import { Strategy } from '$lib/model/strategy';
@@ -5,7 +11,7 @@
 	import type { TBAMatch } from '$lib/utils/tba';
 	import { onMount } from 'svelte';
 	import { teamsFromMatch } from 'tatorscout/tba';
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import MatchSelect from '$lib/components/FIRST/MatchSelect.svelte';
 	import TeamDisplay from '$lib/components/strategy/TeamDisplay.svelte';
 	import { listen } from '$lib/utils/struct-listener.js';
@@ -62,7 +68,6 @@
 	const selectMatch = (match: TBAMatch) => {
 		const teams = teamsFromMatch(match.tba);
 		if (!teams.includes(2122)) {
-			console.log(teams);
 			return alert('You must create a strategy for a team the Tators are in');
 		}
 

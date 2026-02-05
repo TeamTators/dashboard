@@ -1,3 +1,9 @@
+<!--
+@component
+Potato leaderboard dashboard.
+
+Shows the top rankings and a modal with detailed potato stats.
+-->
 <script lang="ts">
 	import { Navbar } from '$lib/model/navbar';
 	import { Potato } from '$lib/model/potato';
@@ -8,8 +14,10 @@
 	import { writable } from 'svelte/store';
 	import type { Account } from '$lib/model/account.js';
 	const { data } = $props();
-	const rankings = writable(
-		data.rankings.sort((a, b) => Number(b.potato.data.level) - Number(a.potato.data.level))
+	const rankings = $derived(
+		writable(
+			data.rankings.sort((a, b) => Number(b.potato.data.level) - Number(a.potato.data.level))
+		)
 	);
 	type PotatoAccount = {
 		potato: Potato.FriendData;

@@ -1,8 +1,18 @@
+/**
+ * @fileoverview TBA webhook message schemas and listener registration.
+ *
+ * @description
+ * Defines Zod schemas for TBA webhook payloads and exposes a typed event emitter
+ * for consuming those messages.
+ */
 import redis from './redis';
 import { EventEmitter } from 'ts-utils/event-emitter';
 import { z } from 'zod';
 
 export namespace TBAWebhooks {
+	/**
+	 * Zod schemas keyed by webhook type for validating incoming payloads.
+	 */
 	export const messageSchemas = {
 		upcoming_match: z.object({
 			event_key: z.string(),
@@ -152,10 +162,18 @@ export namespace TBAWebhooks {
 		[key in keyof typeof messageSchemas]: z.infer<(typeof messageSchemas)[key]>;
 	}>();
 
+	/** Subscribe to a webhook event type. */
 	export const on = em.on.bind(em);
+	/** Unsubscribe from a webhook event type. */
 	export const off = em.off.bind(em);
+	/** Subscribe to a webhook event type once. */
 	export const once = em.once.bind(em);
 
+	/**
+	 * Initialize a Redis-backed webhook listener service.
+	 *
+	 * @returns {ReturnType<typeof redis.createListener>} Listener service instance.
+	 */
 	export const init = (name: string) => {
 		const service = redis.createListener(name, messageSchemas);
 		service.init().unwrap();

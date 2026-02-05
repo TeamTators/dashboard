@@ -1,24 +1,39 @@
+<!--
+@fileoverview Editor for a single pit-scouting question definition.
+
+@component EditQuestion
+
+@description
+Allows editing the question text, key, type, description, and options. Options can be added,
+removed, or reordered for select/radio/checkbox question types.
+
+@example
+```svelte
+<EditQuestion {question} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { prompt } from '$lib/utils/prompts';
 
 	interface Props {
+		/** Question record being edited. */
 		question: Scouting.PIT.QuestionData;
 	}
 
 	const { question }: Props = $props();
 
-	let q = $state(question.data.question || '');
-	let description = $state(question.data.description || '');
-	let key = $state(question.data.key || '');
-	let type = $state(question.data.type || 'text');
+	let q = $derived(question.data.question || '');
+	let description = $derived(question.data.description || '');
+	let key = $derived(question.data.key || '');
+	let type = $derived(question.data.type || 'text');
 	let options: string[] = $state([]);
-	let order = $state(question.data.order || 0);
+	let order = $derived(question.data.order || 0);
 
-	{
+	$effect(() => {
 		const optionsData = Scouting.PIT.parseOptions(question);
 		if (optionsData.isOk()) options = optionsData.value;
-	}
+	});
 
 	// question
 	// key
@@ -26,6 +41,14 @@
 	// options
 	// order
 
+	/**
+	 * Persist the current question edits back to the struct.
+	 *
+	 * @example
+	 * ```ts
+	 * save();
+	 * ```
+	 */
 	export const save = () => {
 		question.update((data) => ({
 			...data,

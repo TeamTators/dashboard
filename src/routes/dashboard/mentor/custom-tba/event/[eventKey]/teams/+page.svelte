@@ -1,3 +1,9 @@
+<!--
+@component
+Custom event team editor.
+
+Adds or updates team numbers and metadata for a custom event.
+-->
 <script lang="ts">
 	import { TBAEvent, TBATeam, get } from '$lib/utils/tba.js';
 	import Grid from '$lib/components/general/Grid.svelte';
@@ -140,9 +146,9 @@
 				Add or edit teams for this event. Teams are not synced with TheBlueAlliance and are only
 				available on this instance.
 				<br />
-				<strong>Note:</strong> Teams must have a valid team number and can be edited to update their
-				TBA data. Any duplicates or invalid teams will be ignored when saving. Any update to the team
-				number will trigger a save.
+				<strong>Note:</strong> Teams must have a valid team number and can be edited to update their TBA
+				data. Any duplicates or invalid teams will be ignored when saving. Any update to the team number
+				will trigger a save.
 			</p>
 			<a href="/dashboard/mentor/custom-tba/event/{event.tba.key}" class="btn btn-primary">
 				<i class="material-icons">arrow_back</i>
@@ -206,7 +212,6 @@
 					onCellContextMenu: (event) => {
 						if (!event.event) return;
 						event.event.preventDefault();
-						console.log(event.event);
 						contextmenu(event.event as MouseEvent, {
 							options: [
 								`Manage ${event.data?.number} (${event.data?.tba?.nickname || 'Unknown'})`,

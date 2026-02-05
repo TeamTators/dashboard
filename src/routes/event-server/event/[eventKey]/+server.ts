@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Event server endpoint for event details.
+ * @description
+ * Requires an API key and returns event, team, and match data.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal';
 import { str } from '$lib/server/utils/env';
 
+/**
+ * Returns event metadata, teams, and matches for a given event key.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with event data or an error message.
+ */
 export const GET = async (event) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');

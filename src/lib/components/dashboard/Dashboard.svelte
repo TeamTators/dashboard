@@ -1,3 +1,22 @@
+<!--
+@component
+Dashboard layout wrapper that renders cards grid.
+
+**Props**
+- `body`: `Snippet<[Dashboard.Card[]]>` — Render function for cards.
+- `dashboard`: `Dashboard.Dashboard` — Dashboard controller.
+
+**Example**
+```svelte
+<Dashboard {dashboard}>
+	{#snippet body(cards)}
+		{#each cards as card}
+			<Card {card}>{#snippet body()}...{/snippet}</Card>
+		{/each}
+	{/snippet}
+</Dashboard>
+```
+-->
 <script lang="ts">
 	import { capitalize } from 'ts-utils/text';
 	import { onMount, type Snippet } from 'svelte';
@@ -11,7 +30,7 @@
 
 	const { body, dashboard }: Props = $props();
 
-	const cards = dashboard.orderedCards;
+	const cards = $derived(dashboard.orderedCards);
 
 	onMount(() => {
 		dashboard.init();

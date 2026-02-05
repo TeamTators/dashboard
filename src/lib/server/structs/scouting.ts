@@ -1,14 +1,19 @@
+/**
+ * @fileoverview Server-side scouting Structs and data access helpers.
+ *
+ * @description
+ * Defines Drizzle-backed Structs for match scouting, team comments, and pit scouting,
+ * plus helpers for retrieval and summary generation.
+ */
 import { boolean } from 'drizzle-orm/pg-core';
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct, StructStream } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { z } from 'zod';
 import { attempt, attemptAsync, resolveAll } from 'ts-utils/check';
 import { DB } from '../db';
 import { eq, and, inArray } from 'drizzle-orm';
-import { Session } from './session';
 import { Permissions } from './permissions';
-import terminal from '../utils/terminal';
 import { Logs } from './log';
 import { Account } from './account';
 import { Trace } from 'tatorscout/trace';
@@ -20,19 +25,33 @@ export namespace Scouting {
 		name: 'match_scouting',
 		structure: {
 			// matchId: text('match_id').notNull(),
+			/** Event key for the match. */
 			eventKey: text('event_key').notNull(),
+			/** Match number. */
 			matchNumber: integer('match_number').notNull(),
+			/** Competition level (pr, qm, qf, sf, f). */
 			compLevel: text('comp_level').notNull(),
+			/** Team number being scouted. */
 			team: integer('team').notNull(),
+			/** Scout account id. */
 			scoutId: text('scout_id').notNull(),
+			/** Scout group number. */
 			scoutGroup: integer('scout_group').notNull(),
+			/** True if this is prescouting. */
 			prescouting: boolean('prescouting').notNull(),
+			/** True if uploaded remotely. */
 			remote: boolean('remote').notNull(),
+			/** Serialized trace payload. */
 			trace: text('trace').notNull(),
+			/** Serialized checks list. */
 			checks: text('checks').notNull(),
+			/** Scout username for display. */
 			scoutUsername: text('scout_username').notNull(),
+			/** Alliance color. */
 			alliance: text('alliance').notNull(),
+			/** Competition year. */
 			year: integer('year').notNull().default(0),
+			/** Serialized sliders payload. */
 			sliders: text('sliders').notNull().default('{}')
 		},
 		versionHistory: {
@@ -131,164 +150,25 @@ export namespace Scouting {
 		}
 	}
 
-	MatchScouting.queryListen('from-team', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return new Error('Not entitled');
-		}
-
-		const { team, eventKey } = z
-			.object({
-				team: z.number(),
-				eventKey: z.string()
-			})
-			.parse(data);
-
-		const stream = new StructStream(MatchScouting);
-
-		setTimeout(async () => {
-			const matchScouting = await DB.select()
-				.from(MatchScouting.table)
-				.where(
-					and(
-						eq(MatchScouting.table.team, team),
-						eq(MatchScouting.table.eventKey, eventKey),
-						eq(MatchScouting.table.archived, false)
-					)
-				);
-
-			for (let i = 0; i < matchScouting.length; i++) {
-				stream.add(MatchScouting.Generator(matchScouting[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
-
-	MatchScouting.queryListen('archived-matches', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return new Error('Not entitled');
-		}
-
-		const { team, eventKey } = z
-			.object({
-				team: z.number(),
-				eventKey: z.string()
-			})
-			.parse(data);
-
-		const stream = new StructStream(MatchScouting);
-
-		setTimeout(async () => {
-			const matchScouting = await DB.select()
-				.from(MatchScouting.table)
-				.where(
-					and(
-						eq(MatchScouting.table.team, team),
-						eq(MatchScouting.table.eventKey, eventKey),
-						eq(MatchScouting.table.archived, true)
-					)
-				);
-
-			for (let i = 0; i < matchScouting.length; i++) {
-				stream.add(MatchScouting.Generator(matchScouting[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
-
-	MatchScouting.queryListen('pre-scouting', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return new Error('Not entitled');
-		}
-
-		const { team, year } = z
-			.object({
-				team: z.number(),
-				year: z.number()
-			})
-			.parse(data);
-
-		const stream = new StructStream(MatchScouting);
-
-		setTimeout(async () => {
-			const matchScouting = await DB.select()
-				.from(MatchScouting.table)
-				.where(
-					and(
-						eq(MatchScouting.table.team, team),
-						eq(MatchScouting.table.year, year),
-						eq(MatchScouting.table.prescouting, true)
-					)
-				);
-
-			for (let i = 0; i < matchScouting.length; i++) {
-				stream.add(MatchScouting.Generator(matchScouting[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
-
-	MatchScouting.callListen('set-practice-archive', async (event, data) => {
-		if (!event.locals.account)
-			return {
-				success: false,
-				message: 'Not logged in'
-			};
-		if (!(await Account.isAdmin(event.locals.account)).unwrap()) {
-			return {
-				success: false,
-				message: 'Not entitled'
-			};
-		}
-
-		const parsed = z
-			.object({
-				eventKey: z.string(),
-				archive: z.boolean()
-			})
-			.safeParse(data);
-
-		if (!parsed.success)
-			return {
-				success: false,
-				message: 'Invalid data'
-			};
-
-		const { eventKey, archive } = parsed.data;
-
-		MatchScouting.fromProperty('eventKey', eventKey, {
-			type: 'stream'
-		}).pipe((d) => {
-			if (!['qm', 'qf', 'sf', 'f'].includes(d.data.compLevel)) d.setArchive(archive);
-		});
-
-		return {
-			success: true
-		};
-	});
-
 	MatchScouting.on('archive', (match) => {
-		TeamComments.fromProperty('matchScoutingId', match.id, {
-			type: 'stream'
-		}).pipe((d) => d.setArchive(true));
+		TeamComments.get(
+			{ matchScoutingId: match.id },
+			{
+				type: 'stream'
+			}
+		).pipe((d) => d.setArchive(true));
 	});
 
 	MatchScouting.on('restore', (match) => {
-		TeamComments.fromProperty('matchScoutingId', match.id, {
-			type: 'stream',
-			includeArchived: true
-		}).pipe((d) => d.setArchive(false));
+		TeamComments.get(
+			{
+				matchScoutingId: match.id,
+				archived: true
+			},
+			{
+				type: 'stream'
+			}
+		).pipe((d) => d.setArchive(false));
 	});
 
 	// Generates the match scouting summary after a delay to debounce multiple rapid submissions
@@ -308,6 +188,11 @@ export namespace Scouting {
 	MatchScouting.on('restore', genDebounce);
 	MatchScouting.on('restore-version', genDebounce);
 
+	/**
+	 * Fetch a specific match scouting record by match identifiers.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the scouting record.
+	 */
 	export const getMatchScouting = (data: {
 		eventKey: string;
 		match: number;
@@ -332,6 +217,11 @@ export namespace Scouting {
 		});
 	};
 
+	/**
+	 * Fetch all match scouting records for a team at an event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the records.
+	 */
 	export const getTeamScouting = (team: number, event: string) => {
 		return attemptAsync(async () => {
 			const res = await DB.select()
@@ -348,6 +238,11 @@ export namespace Scouting {
 		});
 	};
 
+	/**
+	 * Fetch all prescouting records for a team in a given year.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the records.
+	 */
 	export const getTeamPrescouting = (team: number, year: number) => {
 		return attemptAsync(async () => {
 			const res = await DB.select()
@@ -358,6 +253,11 @@ export namespace Scouting {
 		});
 	};
 
+	/**
+	 * Fetch raw prescouting records for a team/year without mapping.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing raw rows.
+	 */
 	export const getPreScouting = (team: number, year: number) => {
 		return attemptAsync(async () => {
 			const res = await DB.select()
@@ -374,6 +274,11 @@ export namespace Scouting {
 		});
 	};
 
+	/**
+	 * Fetch non-archived team comments for an event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing comments.
+	 */
 	export const getTeamComments = (team: number, event: string) => {
 		return attemptAsync(async () => {
 			const res = await DB.select()
@@ -393,12 +298,19 @@ export namespace Scouting {
 	export const TeamComments = new Struct({
 		name: 'team_comments',
 		structure: {
+			/** Match scouting id associated with the comment. */
 			matchScoutingId: text('match_scouting_id').notNull(),
+			/** Account id of the commenter. */
 			accountId: text('account_id').notNull(),
+			/** Team number the comment references. */
 			team: integer('team').notNull(),
+			/** Comment text. */
 			comment: text('comment').notNull(),
+			/** Comment type/category. */
 			type: text('type').notNull(),
+			/** Event key associated with the comment. */
 			eventKey: text('event_key').notNull(),
+			/** Scout username for display. */
 			scoutUsername: text('scout_username').notNull()
 		},
 		versionHistory: {
@@ -407,6 +319,11 @@ export namespace Scouting {
 		}
 	});
 
+	/**
+	 * Fetch archived comments for a specific event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing archived comments.
+	 */
 	export const archivedCommentsFromEvent = (eventKey: string) => {
 		return attemptAsync(async () => {
 			const res = await DB.select()
@@ -417,34 +334,6 @@ export namespace Scouting {
 			return res.map((c) => TeamComments.Generator(c));
 		});
 	};
-
-	TeamComments.queryListen('from-event', async (event, data) => {
-		if (!event.locals.account) return new Error('Not logged in');
-		return new Error('Not entitled');
-
-		const { eventKey, team } = z
-			.object({
-				eventKey: z.string(),
-				team: z.number()
-			})
-			.parse(data);
-
-		const stream = new StructStream(TeamComments);
-
-		setTimeout(async () => {
-			const comments = await DB.select()
-				.from(TeamComments.table)
-				.where(and(eq(TeamComments.table.eventKey, eventKey), eq(TeamComments.table.team, team)));
-
-			for (let i = 0; i < comments.length; i++) {
-				stream.add(TeamComments.Generator(comments[i]));
-			}
-
-			stream.end();
-		});
-
-		return stream;
-	});
 
 	Permissions.createEntitlement({
 		name: 'view-scouting',
@@ -468,8 +357,11 @@ export namespace Scouting {
 		export const Sections = new Struct({
 			name: 'pit_sections',
 			structure: {
+				/** Section display name. */
 				name: text('name').notNull(),
+				/** Sort order within the event. */
 				order: integer('order').notNull(),
+				/** Event key for the section. */
 				eventKey: text('event_key').notNull()
 			},
 			versionHistory: {
@@ -480,16 +372,22 @@ export namespace Scouting {
 		export type SectionData = typeof Sections.sample;
 
 		Sections.on('delete', async (data) => {
-			Groups.fromProperty('sectionId', data.id, {
-				type: 'stream'
-			}).pipe((d) => d.delete());
+			Groups.get(
+				{ sectionId: data.id },
+				{
+					type: 'stream'
+				}
+			).pipe((d) => d.delete());
 		});
 
 		export const Groups = new Struct({
 			name: 'pit_groups',
 			structure: {
+				/** Parent section id. */
 				sectionId: text('section_id').notNull(),
+				/** Group display name. */
 				name: text('name').notNull(),
+				/** Sort order within the section. */
 				order: integer('order').notNull()
 			},
 			versionHistory: {
@@ -501,20 +399,30 @@ export namespace Scouting {
 		export type GroupData = typeof Groups.sample;
 
 		Groups.on('delete', async (data) => {
-			Questions.fromProperty('groupId', data.id, {
-				type: 'stream'
-			}).pipe((d) => d.delete());
+			Questions.get(
+				{ groupId: data.id },
+				{
+					type: 'stream'
+				}
+			).pipe((d) => d.delete());
 		});
 
 		export const Questions = new Struct({
 			name: 'pit_questions',
 			structure: {
+				/** Question prompt text. */
 				question: text('question').notNull(),
+				/** Parent group id. */
 				groupId: text('group_id').notNull(),
+				/** Question key identifier. */
 				key: text('key').notNull(),
+				/** Question description text. */
 				description: text('description').notNull(),
+				/** Question type (boolean/number/text/textarea/etc.). */
 				type: text('type').notNull(), // boolean/number/text/textarea/etc.
+				/** Serialized options list (JSON string[]). */
 				options: text('options').notNull(), // JSON string[] for checkboxes/radios
+				/** Sort order within the group. */
 				order: integer('order').notNull()
 			},
 			versionHistory: {
@@ -536,17 +444,24 @@ export namespace Scouting {
 		export type QuestionData = typeof Questions.sample;
 
 		Questions.on('delete', async (data) => {
-			Answers.fromProperty('questionId', data.id, {
-				type: 'stream'
-			}).pipe((d) => d.delete());
+			Answers.get(
+				{ questionId: data.id },
+				{
+					type: 'stream'
+				}
+			).pipe((d) => d.delete());
 		});
 
 		export const Answers = new Struct({
 			name: 'pit_answers',
 			structure: {
+				/** Question id being answered. */
 				questionId: text('question_id').notNull(),
+				/** Serialized answer list. */
 				answer: text('answer').notNull(),
+				/** Team number the answer applies to. */
 				team: integer('team').notNull(),
+				/** Account id of the respondent. */
 				accountId: text('account_id').notNull()
 			},
 			versionHistory: {
@@ -563,34 +478,11 @@ export namespace Scouting {
 
 		export type AnswerData = typeof Answers.sample;
 
-		Answers.queryListen('from-group', async (event, data) => {
-			const account = event.locals.account;
-			if (!account) throw new Error('Not logged in');
-
-			if (!(await Account.isAdmin(account))) {
-				throw new Error('Not entitled');
-			}
-
-			const { group } = z
-				.object({
-					group: z.string()
-				})
-				.parse(data);
-
-			const g = (await Groups.fromId(group)).unwrap();
-			if (!g) throw new Error('Group not found');
-
-			const res = (await getAnswersFromGroup(g)).unwrap();
-
-			const stream = new StructStream(Answers);
-
-			setTimeout(() => {
-				for (const r of res) stream.add(r);
-			}, 10);
-
-			return stream;
-		});
-
+		/**
+		 * Fetch all pit-scouting data needed to render a team's pit answers for an event.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing questions, groups, sections, and answers.
+		 */
 		export const getScoutingInfo = (team: number, eventKey: string) => {
 			return attemptAsync(async () => {
 				const res = await DB.select()
@@ -612,9 +504,9 @@ export namespace Scouting {
 					.filter((q, i, a) => a.findIndex((qq) => q.id === qq.id) === i)
 					.filter((a) => !a.archived);
 
-				const answers = (
-					await Answers.fromProperty('team', team, { type: 'stream' }).await()
-				).unwrap();
+				const answers = await Answers.get({ team: team }, { type: 'all' }).unwrap();
+
+				const accounts = await Account.Account.all({ type: 'all' }).unwrap();
 
 				return {
 					questions,
@@ -624,10 +516,9 @@ export namespace Scouting {
 						answers
 							.filter((a) => a.data.team === team)
 							.map(async (a) => {
-								const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
 								return {
 									answer: a,
-									account
+									account: accounts.find((acc) => acc.data.id === a.data.accountId)
 								};
 							})
 					)
@@ -635,46 +526,13 @@ export namespace Scouting {
 			});
 		};
 
+		/**
+		 * Fetch pit-scouting data scoped to a specific section.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing section data.
+		 */
 		export const getScoutingInfoFromSection = (team: number, section: SectionData) => {
 			return attemptAsync(async () => {
-				// const groups = (
-				// 	await Groups.fromProperty('sectionId', section.id, {
-				// 		type: 'stream'
-				// 	}).await()
-				// ).unwrap();
-
-				// const questions = resolveAll(
-				// 	await Promise.all(
-				// 		groups.map((g) => Questions.fromProperty('groupId', g.id, { type: 'stream' }).await())
-				// 	)
-				// )
-				// 	.unwrap()
-				// 	.flat();
-				// const answers = resolveAll(
-				// 	await Promise.all(
-				// 		questions.map((q) =>
-				// 			Answers.fromProperty('questionId', q.id, { type: 'stream' }).await()
-				// 		)
-				// 	)
-				// )
-				// 	.unwrap()
-				// 	.flat();
-
-				// return {
-				// 	questions,
-				// 	groups,
-				// 	answers: await Promise.all(
-				// 		answers
-				// 			.filter((a) => a.data.team === team)
-				// 			.map(async (a) => {
-				// 				const account = (await Account.Account.fromId(a.data.accountId)).unwrap();
-				// 				return {
-				// 					answer: a,
-				// 					account
-				// 				};
-				// 			})
-				// 	)
-				// };
 				const groups = await DB.select()
 					.from(Groups.table)
 					.where(and(eq(Groups.table.sectionId, section.id), eq(Groups.table.archived, false)))
@@ -720,6 +578,11 @@ export namespace Scouting {
 			});
 		};
 
+		/**
+		 * Fetch all answers associated with a pit-scouting group.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing answers.
+		 */
 		export const getAnswersFromGroup = (group: GroupData) => {
 			return attemptAsync(async () => {
 				const res = await DB.select()
@@ -731,94 +594,20 @@ export namespace Scouting {
 			});
 		};
 
-		Sections.callListen('generate-event-template', async (event, data) => {
-			if (!event.locals.account) {
-				terminal.error('Not logged in');
-				return {
-					success: false,
-					message: 'Not logged in'
-				};
-			}
-
-			if (!(await Account.isAdmin(event.locals.account))) throw new Error('Not entitled');
-
-			const parsed = z
-				.object({
-					eventKey: z.string()
-				})
-				.safeParse(data);
-
-			if (!parsed.success) {
-				terminal.error('Invalid data', parsed.error);
-				return {
-					success: false,
-					message: 'Invalid data'
-				};
-			}
-
-			const res = await generateBoilerplate(parsed.data.eventKey, event.locals.account.id);
-
-			if (res.isOk()) {
-				return {
-					success: true
-				};
-			} else {
-				terminal.error(res.error);
-				return {
-					success: false,
-					message: 'Failed to generate'
-				};
-			}
-		});
-
-		Sections.callListen('copy-from-event', async (event, data) => {
-			const session = (await Session.getSession(event)).unwrap();
-			const account = (await Session.getAccount(session)).unwrap();
-			if (!account) {
-				terminal.error('Not logged in');
-				return {
-					success: false,
-					message: 'Not logged in'
-				};
-			}
-
-			if (!(await Account.isAdmin(account))) throw new Error('Not entitled');
-
-			const parsed = z
-				.object({
-					from: z.string(),
-					to: z.string()
-				})
-				.safeParse(data);
-
-			if (!parsed.success) {
-				terminal.error('Invalid data', parsed.error);
-				return {
-					success: false,
-					message: 'Invalid data'
-				};
-			}
-
-			const res = await copyFromEvent(parsed.data.from, parsed.data.to, account.id);
-			if (res.isOk()) {
-				return {
-					success: true
-				};
-			} else {
-				terminal.error(res.error);
-				return {
-					success: false,
-					message: 'Failed to copy'
-				};
-			}
-		});
-
+		/**
+		 * Generate a default pit-scouting template for an event.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the generation.
+		 */
 		export const generateBoilerplate = async (eventKey: string, accountId: string) => {
 			return attemptAsync(async () => {
 				const sections = (
-					await Sections.fromProperty('eventKey', eventKey, {
-						type: 'stream'
-					}).await()
+					await Sections.get(
+						{ eventKey: eventKey },
+						{
+							type: 'stream'
+						}
+					).await()
 				).unwrap();
 				if (sections.length) throw new Error('Cannot generate boilerplate for existing sections');
 
@@ -913,6 +702,16 @@ export namespace Scouting {
 
 				const res = resolveAll(
 					await Promise.all([
+						Questions.new({
+							question: 'What do you do in endgame?',
+							groupId: overview.id,
+							key: 'endgame_action',
+							description:
+								'Did the robot climb, and if so to what level? Did it do anything before then?',
+							type: 'textarea',
+							options: '[]',
+							order: 0
+						}),
 						Questions.new({
 							question: 'What is your favorite part of the robot, or what are you most proud of?',
 							groupId: overview.id,
@@ -1146,6 +945,11 @@ export namespace Scouting {
 			});
 		};
 
+		/**
+		 * Copy pit-scouting sections, groups, and questions between events.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the copy operation.
+		 */
 		export const copyFromEvent = async (
 			fromEventKey: string,
 			toEventKey: string,
@@ -1161,9 +965,12 @@ export namespace Scouting {
 						dataId: id
 					});
 
-				await Sections.fromProperty('eventKey', fromEventKey, {
-					type: 'stream'
-				}).pipe(async (s) => {
+				await Sections.get(
+					{ eventKey: fromEventKey },
+					{
+						type: 'stream'
+					}
+				).pipe(async (s) => {
 					const section = (
 						await Sections.new({
 							...s.data,
@@ -1177,9 +984,12 @@ export namespace Scouting {
 						section.id
 					);
 
-					return Groups.fromProperty('sectionId', s.id, {
-						type: 'stream'
-					}).pipe(async (g) => {
+					return Groups.get(
+						{ sectionId: s.id },
+						{
+							type: 'stream'
+						}
+					).pipe(async (g) => {
 						const group = (
 							await Groups.new({
 								...g.data,
@@ -1193,9 +1003,12 @@ export namespace Scouting {
 							group.id
 						);
 
-						return Questions.fromProperty('groupId', g.id, {
-							type: 'stream'
-						}).pipe(async (q) => {
+						return Questions.get(
+							{ groupId: g.id },
+							{
+								type: 'stream'
+							}
+						).pipe(async (q) => {
 							(
 								await Questions.new({
 									...q.data,
@@ -1213,6 +1026,11 @@ export namespace Scouting {
 				});
 			});
 		};
+		/**
+		 * Fetch pit-scouting answers for a team at an event with account info.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing answers.
+		 */
 		export const getAnswersFromTeam = (team: number, eventKey: string) => {
 			return attemptAsync(async () => {
 				const res = await DB.select()
@@ -1233,6 +1051,11 @@ export namespace Scouting {
 			});
 		};
 
+		/**
+		 * Fetch all pit-scouting questions for an event.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing questions.
+		 */
 		export const getQuestionsFromEvent = (eventKey: string) => {
 			return attemptAsync(async () => {
 				const res = await DB.select()
@@ -1245,6 +1068,11 @@ export namespace Scouting {
 			});
 		};
 
+		/**
+		 * Fetch all pit-scouting answers for an event.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing answers.
+		 */
 		export const getAnswersFromEvent = (eventKey: string) => {
 			return attemptAsync(async () => {
 				const res = await DB.select()

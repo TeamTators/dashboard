@@ -1,10 +1,16 @@
+<!--
+@component
+Team comparison dashboard for a specific event.
+
+Lets users select teams and compare scouting data with charts.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { goto } from '$app/navigation';
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
 	import { copy } from '$lib/utils/clipboard.js';
-	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { Dashboard } from '$lib/model/dashboard.js';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
 	import Chart from 'chart.js/auto';
@@ -12,19 +18,22 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = writable<
-		{
-			team: TBATeam;
-			component: Progress | TeamEventStats | undefined;
-		}[]
-	>(
-		data.selectedTeams.map((t) => ({
-			team: t,
-			component: undefined
-		}))
+	const selectedTeams = $derived(
+		writable<
+			{
+				team: TBATeam;
+				component: Progress | TeamEventStats | undefined;
+			}[]
+		>(
+			data.selectedTeams.map((t) => ({
+				team: t,
+				component: undefined
+			}))
+		)
 	);
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
@@ -82,12 +91,12 @@
 
 	$effect(() => {
 		// view on search params
-		const search = new URLSearchParams(location.search);
+		const search = new SvelteURLSearchParams(location.search);
 		search.set('view', view);
 		goto(`${location.pathname}?${search.toString()}`);
 	});
 
-	onMount(() => {
+	afterNavigate(() => {
 		teamScoutingData = teamScouting.map((ts) => {
 			const res = Scouting.MatchScoutingExtendedArr.fromArr(ts);
 			if (res.isOk()) {
@@ -98,7 +107,7 @@
 			}
 		});
 
-		const search = new URLSearchParams(location.search);
+		const search = new SvelteURLSearchParams(location.search);
 		view = (search.get('view') as 'progress' | 'stats') || 'progress';
 
 		chartInstance = new Chart(chartCanvas, {
@@ -225,7 +234,7 @@
 									);
 								}
 
-								const search = new URLSearchParams(location.search);
+								const search = new SvelteURLSearchParams(location.search);
 								search.set(
 									'teams',
 									get(selectedTeams)

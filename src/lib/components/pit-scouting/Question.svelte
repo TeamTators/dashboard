@@ -1,3 +1,18 @@
+<!--
+@fileoverview Pit-scouting answer editor for a single question.
+
+@component Question
+
+@description
+Renders the appropriate input control for the question type (text, number, boolean, checkbox,
+radio, textarea, select), loads any existing answer for the team, and persists updates to the
+answers struct when the user changes a value.
+
+@example
+```svelte
+<Question {question} {team} {answers} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { Account } from '$lib/model/account';
@@ -6,14 +21,17 @@
 	import type { DataArr } from '$lib/services/struct/data-arr';
 
 	interface Props {
+		/** Question definition being answered. */
 		question: Scouting.PIT.QuestionData;
+		/** Team number for which the answer is shown/edited. */
 		team: number;
+		/** Answer store for the current section. */
 		answers: DataArr<typeof Scouting.PIT.Answers.data.structure>;
 	}
 
 	const { question, team, answers }: Props = $props();
 
-	let answer: Scouting.PIT.AnswerData | undefined = $state(
+	let answer: Scouting.PIT.AnswerData | undefined = $derived(
 		answers.data.find((a) => a.data.questionId === question.data.id && a.data.team === team)
 	);
 
@@ -41,9 +59,12 @@
 
 	const retrieveAnswer = () => {
 		if (answer) return;
-		Scouting.PIT.Answers.fromProperty('questionId', question.data.id || '', {
-			type: 'stream'
-		})
+		Scouting.PIT.Answers.get(
+			{ questionId: question.data.id || '' },
+			{
+				type: 'all'
+			}
+		)
 			.await()
 			.then((res) => {
 				if (res.isErr()) return console.error(res.error);
@@ -68,7 +89,7 @@
 			}));
 		} else {
 			if (!question.data.id) return console.error('question.data.id did not exist');
-			const accountId = self.get().data.id;
+			const accountId = self.data.data.id;
 			if (!accountId) return console.error('No account id found');
 			await Scouting.PIT.Answers.new({
 				questionId: question.data.id,
@@ -208,7 +229,6 @@
 			<select
 				class="form-select"
 				onchange={(e) => {
-					console.log('Select', e);
 					// value = [e.currentTarget.value];
 					value.set([e.currentTarget.value]);
 					updateAnswer();

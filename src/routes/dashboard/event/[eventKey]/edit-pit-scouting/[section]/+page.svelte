@@ -1,5 +1,11 @@
+<!--
+@component
+Pit scouting section editor for a specific section.
+
+Allows navigation between sections and edits for the current section.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import EditSection from '$lib/components/pit-scouting/EditSection.svelte';
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
@@ -19,9 +25,12 @@
 	let sections = $state(new DataArr(Scouting.PIT.Sections, []));
 
 	onMount(() => {
-		sections = Scouting.PIT.Sections.fromProperty('eventKey', eventKey, {
-			type: 'all'
-		});
+		sections = Scouting.PIT.Sections.get(
+			{ eventKey: eventKey },
+			{
+				type: 'all'
+			}
+		);
 		// sections.filter(s => true);
 		sections.sort((a, b) => Number(a.data.order) - Number(b.data.order));
 	});

@@ -1,12 +1,29 @@
+<!--
+@fileoverview Endgame status table for both alliances in a match.
+
+@component MatchEndgame
+
+@description
+Displays the endgame status for each alliance robot and highlights the current team.
+
+@example
+```svelte
+<MatchEndgame {match} {team} {event} />
+```
+-->
 <script lang="ts">
 	import { Match2025Schema } from 'tatorscout/tba';
 	import { TBAEvent, TBATeam, TBAMatch } from '$lib/utils/tba';
 	import z from 'zod';
 
 	interface Props {
+		/** Match providing score breakdown data. */
 		match: TBAMatch;
+		/** Team to highlight in the table. */
 		team: TBATeam;
+		/** Event context (unused but kept for API parity). */
 		event: TBAEvent;
+		/** Optional CSS classes for outer wrapper. */
 		classes?: string;
 	}
 
@@ -14,7 +31,7 @@
 
 	type MatchSchema = z.infer<typeof Match2025Schema>;
 
-	const tba = match.tba as MatchSchema;
+	const tba = $derived(match.tba as MatchSchema);
 
 	type EndGameRobotKey = `endGameRobot${1 | 2 | 3}`;
 

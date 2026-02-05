@@ -1,12 +1,19 @@
+<!--
+@component
+Match detail view for a single team and match.
+
+Shows scouting breakdowns, strategies, and navigation between matches.
+Falls back to a no-scout view when a scouting record is missing.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import type { TBAMatch } from '$lib/utils/tba';
-	import { onMount } from 'svelte';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Strategy } from '$lib/model/strategy.js';
 	import { Scouting } from '$lib/model/scouting.js';
+	import { afterNavigate } from '$app/navigation';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -35,7 +42,7 @@
 		}
 	});
 
-	onMount(() => {
+	afterNavigate(() => {
 		strategies = Strategy.fromMatch(
 			match.tba.event_key,
 			match.tba.match_number,

@@ -1,5 +1,11 @@
+<!--
+@component
+Archived matches view for a specific event.
+
+Lists archived scouting matches and related comments by team.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import ArchivedMatches from '$lib/components/robot-display/ArchivedMatches.svelte';
 	import ArchivedComments from '$lib/components/robot-display/ArchivedComments.svelte';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba';

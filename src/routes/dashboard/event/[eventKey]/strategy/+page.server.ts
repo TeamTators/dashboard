@@ -1,15 +1,29 @@
+/**
+ * @fileoverview Server loader for the event strategy list page.
+ * @description
+ * Loads teams, matches, and existing strategy records for the event.
+ */
+
 import { Strategy } from '$lib/server/structs/strategy.js';
 import { Event } from '$lib/server/utils/tba.js';
 
+/**
+ * Loads strategy data for the event.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing event info, teams, matches, and strategies.
+ */
 export const load = async (event) => {
 	const e = await Event.getEvent(event.params.eventKey).unwrap();
 
 	const teams = await e.getTeams().unwrap();
 	const matches = await e.getMatches().unwrap();
 
-	const strategies = await Strategy.Strategy.fromProperty('eventKey', event.params.eventKey, {
-		type: 'stream'
-	})
+	const strategies = await Strategy.Strategy.get(
+		{ eventKey: event.params.eventKey },
+		{
+			type: 'stream'
+		}
+	)
 		.await()
 		.unwrap();
 

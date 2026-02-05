@@ -1,10 +1,16 @@
+<!--
+@component
+Prescouting trace viewer for a single team and season.
+
+Displays traces, actions, checks, and comments across prescouted matches.
+-->
 <script lang="ts">
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import MatchContribution from '$lib/components/charts/MatchContribution.svelte';
 	import Checks from '$lib/components/robot-display/Checks.svelte';
 	import MatchActions from '$lib/components/robot-display/MatchActions.svelte';
 	import MatchComments from '$lib/components/robot-display/MatchComments.svelte';
-	import Trace from '$lib/components/robot-display/Trace.svelte';
+	import Trace from '$lib/components/robot-display/TraceHTML.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { listen } from '$lib/utils/struct-listener';
 	import type { TBAEvent, TBAMatch } from '$lib/utils/tba.js';

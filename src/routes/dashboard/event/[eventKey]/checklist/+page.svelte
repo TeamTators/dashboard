@@ -1,6 +1,12 @@
+<!--
+@component
+Event checklist dashboard for pictures and pit scouting.
+
+Renders AG Grid views for uploaded photos and missing pit scouting answers.
+-->
 <script lang="ts">
 	import Grid from '$lib/components/general/Grid.svelte';
-	import nav from '$lib/imports/robot-display';
+	import nav from '$lib/nav/robot-display';
 	import { readable } from 'svelte/store';
 	import { NumberFilterModule, TextFilterModule } from 'ag-grid-community';
 	import FileUploader from '$lib/components/forms/FileUploader.svelte';
@@ -24,9 +30,10 @@
 	let uploadComponent: FileUploader;
 
 	onMount(() => {
-		uploadComponent.uppy.use(Webcam, { modes: ['picture'] });
-		uploadComponent.uppy.use(ImageEditor);
-		uploadComponent.uppy.use(Compressor, { quality: 0.4 });
+		const uppy = uploadComponent.getUppy();
+		uppy.use(Webcam, { modes: ['picture'] });
+		uppy.use(ImageEditor);
+		uppy.use(Compressor, { quality: 0.4 });
 
 		uploadComponent.on('load', (file) => {
 			if (!uploadTeam) return;
@@ -34,7 +41,7 @@
 				team: uploadTeam.team.tba.team_number,
 				eventKey: event.tba.key,
 				picture: file,
-				accountId: Account.getSelf().get().data.id || ''
+				accountId: Account.getSelf().data.data.id || ''
 			});
 		});
 	});
@@ -132,7 +139,7 @@
 <FileUploader
 	multiple={true}
 	message="Upload Pictures"
-	usage="images"
+	allowedFileTypes={['image/*']}
 	endpoint="/upload"
 	bind:this={uploadComponent}
 	btnClasses="d-none"

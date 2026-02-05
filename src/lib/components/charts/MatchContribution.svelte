@@ -1,3 +1,32 @@
+<!--
+@fileoverview Stacked bar chart for a single match contribution breakdown.
+
+@component MatchContribution
+
+@description
+Computes auto, teleop, and endgame point totals for a specific team in a given match. The component
+parses the scouting trace, combines it with official TBA breakdowns, and renders a stacked bar chart
+showing mobility, coral, algae, and endgame points.
+
+@example
+```svelte
+<script lang="ts">
+	import MatchContribution from '$lib/components/charts/MatchContribution.svelte';
+	import type { TBAMatch, TBATeam, TBAEvent } from '$lib/utils/tba';
+	import type { Scouting } from '$lib/model/scouting';
+
+	let match: TBAMatch;
+	let team: TBATeam;
+	let event: TBAEvent;
+	let scouting: Scouting.MatchScoutingExtended;
+
+	let chartRef: MatchContribution | undefined;
+	const copyChart = () => chartRef?.copy(true);
+</script>
+
+<MatchContribution bind:this={chartRef} {match} {team} {event} {scouting} />
+```
+-->
 <script lang="ts">
 	import type { Scouting } from '$lib/model/scouting';
 	import { copyCanvas } from '$lib/utils/clipboard';
@@ -7,11 +36,17 @@
 	import YearInfo2025 from 'tatorscout/years/2025.js';
 	import { match as matchCase } from 'ts-utils/match';
 
+	/** Component props for `MatchContribution`. */
 	interface Props {
+		/** Match being visualized. */
 		match: TBAMatch;
+		/** Scouting data for the match. */
 		scouting: Scouting.MatchScoutingExtended;
+		/** Team to compute contribution for. */
 		team: TBATeam;
+		/** Event context for the match. */
 		event: TBAEvent;
+		/** Optional style string passed to the canvas. */
 		style?: string;
 	}
 
@@ -19,6 +54,14 @@
 
 	let canvas: HTMLCanvasElement;
 
+	/**
+	 * Copy the chart canvas to the clipboard.
+	 *
+	 * @example
+	 * ```ts
+	 * chartRef.copy(true);
+	 * ```
+	 */
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	onMount(() => {

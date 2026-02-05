@@ -1,12 +1,18 @@
+<!--
+@component
+Match data upload page for an event.
+
+Loads JSON match files, validates them with Zod, and uploads valid entries.
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { loadFileContents } from '$lib/utils/downloads';
-	import { WritableArray } from '$lib/utils/writables';
+	import { WritableArray } from '$lib/services/writables';
 	import z from 'zod';
 	import Grid from '$lib/components/general/Grid.svelte';
 	import { ButtonCellRenderer } from '$lib/utils/ag-grid/buttons';
 	import { type ICellRendererParams } from 'ag-grid-community';
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 
 	const { data = $bindable() } = $props();
 

@@ -1,5 +1,19 @@
+<!--
+@fileoverview Aggregated summary of checks across users or matches.
+
+@component ChecksSummary
+
+@description
+Aggregates a map of check arrays into a frequency table and renders each check with its count.
+
+@example
+```svelte
+<ChecksSummary checks={{ alice: ['autoMobility'], bob: ['autoMobility', 'parked'] }} />
+```
+-->
 <script lang="ts">
 	interface Props {
+		/** Map of check lists keyed by user or source. */
 		checks: {
 			[key: string]: string[];
 		};

@@ -1,75 +1,72 @@
+<!--
+@fileoverview Interactive action heatmap for match scouting traces.
+
+@component ActionHeatmap
+
+@description
+Creates a heatmap from match scouting data for a given year and exposes helpers to filter
+actions and access the resolved action list.
+
+@example
+```svelte
 <script lang="ts">
+  import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
+  import type { Scouting } from '$lib/model/scouting';
+
+  let scouting: Scouting.MatchScoutingExtendedArr;
+  let heatmap: ActionHeatmap | undefined;
+
+  const showCl4 = () => heatmap?.filter('cl4');
+</script>
+
+<ActionHeatmap bind:this={heatmap} {scouting} year={2025} />
+```
+-->
+<script lang="ts" generics="Actions extends string">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import { type TraceArray } from 'tatorscout/trace';
-	import { MatchCanvas } from '$lib/model/match-canvas';
-	import { type Focus } from '$lib/types/robot-display';
-	import type { TBAEvent, TBATeam } from '$lib/utils/tba';
+	import { ActionHeatmap } from '$lib/model/match-html';
 
 	interface Props {
-		team: TBATeam;
-		focus: Focus;
-		event: TBAEvent;
+		/** Scouting data source to build the heatmap from. */
+		scouting: Scouting.MatchScoutingExtendedArr;
+		/** Competition year to select the action set. */
+		year: number;
 	}
 
-	let actions: string[] = $state([]);
+	let actions: Actions[] = $state([]);
 
+	/**
+	 * Return the current list of available actions.
+	 *
+	 * @example
+	 * ```ts
+	 * const actions = heatmap.getActions();
+	 * ```
+	 */
 	export const getActions = () => actions;
 
-	const { team, focus, event }: Props = $props();
+	const { scouting, year }: Props = $props();
 
-	let matches: Scouting.MatchScoutingExtendedArr = $state(
-		new Scouting.MatchScoutingExtendedArr([])
-	);
-	let canvas: HTMLCanvasElement;
+	const h = $derived(new ActionHeatmap(scouting, year));
 
-	let c: MatchCanvas;
-	let array: TraceArray = $state([]);
+	/**
+	 * Filter the heatmap to only show the provided actions.
+	 *
+	 * @example
+	 * ```ts
+	 * heatmap.filter('cl1', 'cl2');
+	 * ```
+	 */
+	export const filter = (...actions: Actions[]) => {
+		h.filter(...actions);
+	};
 
-	$effect(() => {});
-
-	$effect(() => {
-		if (!c) return;
-		c.between(0, array.length);
-	});
-
-	$effect(() => {
-		array = matches.data
-			.map((m) => m.data.trace)
-			.filter(Boolean)
-			// casted as string because sveltekit doesn't recognize filter(Boolean) as a type guard
-			.map((t) => {
-				return t.points.filter((p) => {
-					const [i, , , a] = p;
-					if (!a) return false;
-					if (!actions.includes(a)) {
-						actions.push(a);
-					}
-					if (focus.auto) return i < 20 * 4;
-					if (focus.teleop) return i >= 20 * 4 && i < 20 * 4 + 135 * 4;
-					if (focus.endgame) return i >= 20 * 4 + 135 * 4;
-					return false;
-				}) as TraceArray;
-			})
-			.flat();
-	});
+	let target: HTMLDivElement;
 
 	onMount(() => {
-		const ctx = canvas.getContext('2d');
-		if (!ctx) throw new Error('Could not get 2d context');
-
-		matches = Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key).unwrap();
-
-		c = new MatchCanvas(array, event.tba.year, ctx);
-
-		c.hidePath();
-
-		actions = [];
-
-		return c.animate();
+		return h.init(target);
 	});
 </script>
 
-<div style="height: 100%; width: 100%; object-fit: cover;" class="p-2">
-	<canvas bind:this={canvas} style="height: 100%; width: 100%; object-fit: cover;"></canvas>
-</div>
+<div bind:this={target}></div>
