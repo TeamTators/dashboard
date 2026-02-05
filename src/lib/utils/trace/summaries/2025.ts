@@ -114,7 +114,8 @@ const summary2025 = YearInfo2025.summary({
 	},
 	Stats: {
 		'Average Total Points': ({ scoring }) => Aggregators.average(scoring.map((d) => d.total)),
-		'Average Point Deviation': ({ scoring }) => Aggregators.standardDeviation(scoring.map((d) => d.total)),
+		'Average Point Deviation': ({ scoring }) =>
+			Aggregators.standardDeviation(scoring.map((d) => d.total)),
 		'Average Velocity': ({ traces }) => Aggregators.average(traces.map((t) => t.averageVelocity())),
 		'Average Seconds Not Moving': ({ traces }) =>
 			Aggregators.average(traces.map((t) => t.secondsNotMoving()))

@@ -16,14 +16,16 @@ Displays team links, summary charts, and admin actions for the event.
 	const { data = $bindable() } = $props();
 	const event = $derived(new TBAEvent(data.event));
 
-	type Summary = {
-		[group: string]: {
-			[item: string]: {
-				team: number;
-				value: number;
-			}[];
-		};
-	} | undefined;
+	type Summary =
+		| {
+				[group: string]: {
+					[item: string]: {
+						team: number;
+						value: number;
+					}[];
+				};
+		  }
+		| undefined;
 
 	let summary: Summary = $state(undefined);
 	let unrankedSummary: Summary = $state(undefined);
