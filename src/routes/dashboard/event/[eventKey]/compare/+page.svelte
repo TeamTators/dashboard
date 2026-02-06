@@ -98,13 +98,15 @@ Lets users select teams and compare scouting data with charts.
 							}
 
 							selectedTeams.update((teams) => {
-								return [...teams, {
-									team,
-									component: undefined,
-									data: data.value
-								}].sort((a, b) => a.team.tba.team_number - b.team.tba.team_number);
+								return [
+									...teams,
+									{
+										team,
+										component: undefined,
+										data: data.value
+									}
+								].sort((a, b) => a.team.tba.team_number - b.team.tba.team_number);
 							});
-
 
 							selectedTeams.pipe(data.value);
 						} else {
