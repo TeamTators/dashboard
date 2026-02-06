@@ -23,21 +23,21 @@ Lets users select teams and compare scouting data with charts.
 	const { data } = $props();
 	const event = $derived(data.event);
 	const selectedTeams = $derived(
-		new WritableArray<
-			{
-				team: TBATeam;
-				component: Progress | TeamEventStats | undefined;
-				data: Scouting.MatchScoutingExtendedArr;
-			}
-		>(
+		new WritableArray<{
+			team: TBATeam;
+			component: Progress | TeamEventStats | undefined;
+			data: Scouting.MatchScoutingExtendedArr;
+		}>(
 			data.selectedTeams.map((t) => ({
 				team: t.team,
 				component: undefined,
-				data: t.scouting,
+				data: t.scouting
 			}))
 		)
 	);
-	$effect(() =>{console.log({ selectedTeams });})
+	$effect(() => {
+		console.log({ selectedTeams });
+	});
 	const teams = $derived(data.teams);
 	const matches = $derived(data.matches);
 
@@ -47,25 +47,20 @@ Lets users select teams and compare scouting data with charts.
 	let staticY = $state(0);
 
 	// view needs to be persistent between reloads, must be in search
-	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action' =
-		$state((() => {
+	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action' = $state(
+		(() => {
 			const current = page.url.searchParams.get('view') || 'progress';
 			if (['progress', 'radar', 'stats', 'eventSum', 'checkSum', 'action'].includes(current)) {
 				return current as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action';
 			}
 			return 'progress';
-		})());
+		})()
+	);
 
 	const runSearchParams = () => {
-			setTimeout(() => {
-				const search = new SvelteURLSearchParams(location.search);
-			search.set(
-				'teams',
-				selectedTeams
-					.data
-					.map((t) => t.team.tba.team_number)
-					.join(',')
-			);
+		setTimeout(() => {
+			const search = new SvelteURLSearchParams(location.search);
+			search.set('teams', selectedTeams.data.map((t) => t.team.tba.team_number).join(','));
 			search.set('view', view);
 			goto(`${location.pathname}?${search.toString()}`);
 		});
@@ -92,12 +87,12 @@ Lets users select teams and compare scouting data with charts.
 					class="btn-check"
 					id="btn-check-{team.tba.team_number}"
 					autocomplete="off"
-					checked={!!$selectedTeams.find(
-						(t) => t.team.tba.team_number === team.tba.team_number
-					)}
+					checked={!!$selectedTeams.find((t) => t.team.tba.team_number === team.tba.team_number)}
 					onchange={async (e) => {
 						if (e.currentTarget.checked) {
-							const data = Scouting.MatchScoutingExtendedArr.fromArr(Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key));
+							const data = Scouting.MatchScoutingExtendedArr.fromArr(
+								Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key)
+							);
 							if (data.isErr()) {
 								return console.error('Error parsing data:', data);
 							}
@@ -105,7 +100,7 @@ Lets users select teams and compare scouting data with charts.
 							selectedTeams.push({
 								team,
 								component: undefined,
-								data: data.value,
+								data: data.value
 							});
 
 							selectedTeams.pipe(data.value);
@@ -243,12 +238,7 @@ Lets users select teams and compare scouting data with charts.
 										}}
 									/>
 								{:else if view === 'eventSum'}
-									<EventSummary
-										{matches}
-										team={team.team}
-										{event}
-										scouting={team.data}
-									/>
+									<EventSummary {matches} team={team.team} {event} scouting={team.data} />
 								{:else if view === 'checkSum'}
 									<!-- <ChecksSummary 
 									checks={team.data.data.checksSum} /> -->

@@ -477,10 +477,12 @@ export class WritableArray<T> extends WritableBase<T[]> {
 		(mapped as any)._reverse = this._reverse;
 
 		if (reactive) {
-			mapped.onAllUnsubscribe(this.subscribe((data) => {
-				const newData = data.map(fn);
-				mapped.set(newData);
-			}));
+			mapped.onAllUnsubscribe(
+				this.subscribe((data) => {
+					const newData = data.map(fn);
+					mapped.set(newData);
+				})
+			);
 		}
 
 		return mapped;

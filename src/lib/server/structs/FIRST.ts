@@ -127,7 +127,7 @@ export namespace FIRST {
 		}
 	});
 
-	structRegistry.register(TeamPictures);	
+	structRegistry.register(TeamPictures);
 
 	// TeamPictures.on('delete', (pic) => {});
 

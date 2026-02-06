@@ -59,7 +59,7 @@ export namespace Scouting {
 		},
 		socket: sse,
 		browser,
-		log: true,
+		log: true
 	});
 
 	export type MatchScoutingData = StructData<typeof MatchScouting.data.structure>;
@@ -192,7 +192,7 @@ export namespace Scouting {
 					return acc;
 				},
 				{} as Record<string, number>
-			); 
+			);
 		}
 	}
 
@@ -205,11 +205,16 @@ export namespace Scouting {
 				const data = arr instanceof DataArr ? arr.data : arr;
 				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
 				const extendedArr = new MatchScoutingExtendedArr(ms);
-				if (arr instanceof DataArr) extendedArr.onAllUnsubscribe(arr.subscribe(() => {
-					const updatedData = arr.data;
-					const updatedMs = updatedData.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
-					extendedArr.set(updatedMs);
-				}));
+				if (arr instanceof DataArr)
+					extendedArr.onAllUnsubscribe(
+						arr.subscribe(() => {
+							const updatedData = arr.data;
+							const updatedMs = updatedData.map((scouting) =>
+								MatchScoutingExtended.from(scouting).unwrap()
+							);
+							extendedArr.set(updatedMs);
+						})
+					);
 				return extendedArr;
 			});
 		}
@@ -225,41 +230,44 @@ export namespace Scouting {
 		checksSummary() {
 			const summary = new WritableBase<Record<string, number>>({});
 			setTimeout(() => {
-				summary.onAllUnsubscribe(this.subscribe(() => {
-					const result: Record<string, number> = {};
-					this.each((ms) => {
-						const checks = ms.getChecks();
-						checks.each((check) => {
-							result[check] = (result[check] || 0) + 1;
+				summary.onAllUnsubscribe(
+					this.subscribe(() => {
+						const result: Record<string, number> = {};
+						this.each((ms) => {
+							const checks = ms.getChecks();
+							checks.each((check) => {
+								result[check] = (result[check] || 0) + 1;
+							});
 						});
-					});
-					summary.set(result);
-				}));
+						summary.set(result);
+					})
+				);
 			});
 			return summary;
 		}
 
-		
 		averageContribution() {
 			const contribution = new WritableBase<Record<string, number>>({});
 			setTimeout(() => {
-				contribution.onAllUnsubscribe(this.subscribe(() => {
-				const totals: Record<string, number> = {};
-				this.each((ms) => {
-					const contrib = ms.contribution;
-					Object.entries(contrib).forEach(([key, value]) => {
-						totals[key] = (totals[key] || 0) + value;
-					});
-				});
+				contribution.onAllUnsubscribe(
+					this.subscribe(() => {
+						const totals: Record<string, number> = {};
+						this.each((ms) => {
+							const contrib = ms.contribution;
+							Object.entries(contrib).forEach(([key, value]) => {
+								totals[key] = (totals[key] || 0) + value;
+							});
+						});
 
-				const count = this.data.length;
-				const averages: Record<string, number> = {};
-				Object.entries(totals).forEach(([key, value]) => {
-					averages[key] = value / count;
-				});
+						const count = this.data.length;
+						const averages: Record<string, number> = {};
+						Object.entries(totals).forEach(([key, value]) => {
+							averages[key] = value / count;
+						});
 
-				contribution.set(averages);
-			}));
+						contribution.set(averages);
+					})
+				);
 			});
 
 			return contribution;

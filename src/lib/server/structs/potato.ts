@@ -124,7 +124,7 @@ export namespace Potato {
 		}
 	});
 
-	structRegistry.register(Friend);	
+	structRegistry.register(Friend);
 
 	const randomStats = (level: number) => {
 		const stats = ['attack', 'defense', 'speed', 'health', 'mana'];
@@ -168,7 +168,7 @@ export namespace Potato {
 		}
 	});
 
-	structRegistry	.register(Log);
+	structRegistry.register(Log);
 
 	export type FriendData = typeof Friend.sample;
 

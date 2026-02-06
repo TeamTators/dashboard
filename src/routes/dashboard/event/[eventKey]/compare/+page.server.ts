@@ -42,13 +42,13 @@ export const load = async (event) => {
 			return {
 				team: teams.value.find((team) => team.tba.team_number === t)?.tba,
 				scouting: res
-			}
-			})
+			};
+		})
 	);
 
 	return {
 		event: e.value.tba,
-		selectedTeams: teamScouting.filter(t => t.team),
+		selectedTeams: teamScouting.filter((t) => t.team),
 		teams: teams.value.map((t) => t.tba),
 		matches: matches.value.map((m) => m.tba)
 	};
