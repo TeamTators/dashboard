@@ -97,11 +97,14 @@ Lets users select teams and compare scouting data with charts.
 								return console.error('Error parsing data:', data);
 							}
 
-							selectedTeams.push({
-								team,
-								component: undefined,
-								data: data.value
+							selectedTeams.update((teams) => {
+								return [...teams, {
+									team,
+									component: undefined,
+									data: data.value
+								}].sort((a, b) => a.team.tba.team_number - b.team.tba.team_number);
 							});
+
 
 							selectedTeams.pipe(data.value);
 						} else {
@@ -200,9 +203,9 @@ Lets users select teams and compare scouting data with charts.
 			</div>
 		</div>
 		<div class="row mb-3">
-			{#each $selectedTeams as team}
+			{#each $selectedTeams as team (team.team.tba.team_number)}
 				<div class="col-md-4 mb-3">
-					<div class="card layer-2">
+					<div class="card layer-2 animate__animated animate__zoomIn">
 						<div class="card-body">
 							<div class="d-flex align-items-center mb-1 justify-content-between">
 								<h5 class="card-title">
