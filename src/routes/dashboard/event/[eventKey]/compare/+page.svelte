@@ -10,352 +10,268 @@ Lets users select teams and compare scouting data with charts.
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
 	import { copy } from '$lib/utils/clipboard.js';
-	import { afterNavigate } from '$app/navigation';
-	import { Dashboard } from '$lib/model/dashboard.js';
-	import DB from '$lib/components/dashboard/Dashboard.svelte';
-	import Chart from 'chart.js/auto';
 	import { Scouting } from '$lib/model/scouting';
-	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
-	import { Color } from 'colors/color';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import EventSummary from '$lib/components/robot-display/EventSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
+	import { WritableArray } from '$lib/services/writables.js';
+	import { page } from '$app/state';
 
 	const { data } = $props();
 	const event = $derived(data.event);
 	const selectedTeams = $derived(
-		writable<
+		new WritableArray<
 			{
 				team: TBATeam;
 				component: Progress | TeamEventStats | undefined;
-			}[]
+				data: Scouting.MatchScoutingExtendedArr;
+			}
 		>(
 			data.selectedTeams.map((t) => ({
-				team: t,
-				component: undefined
+				team: t.team,
+				component: undefined,
+				data: t.scouting,
 			}))
 		)
 	);
+	$effect(() =>{console.log({ selectedTeams });})
 	const teams = $derived(data.teams);
-	// const scouting = $derived(data.scouting);
-	const teamScouting = $derived(data.teamScouting);
-	let teamScoutingData: (Scouting.MatchScoutingExtendedArr | undefined)[] = $state([]);
 	const matches = $derived(data.matches);
-	type RadarData = {
-		'Level 1': number;
-		'Level 2': number;
-		'Level 3': number;
-		'Level 4': number;
-		Barge: number;
-		Processor: number;
-	};
-	let radarData: RadarData[] = $state([]);
 
 	$effect(() => nav(event.tba));
 
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
+
+	// view needs to be persistent between reloads, must be in search
 	let view: 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action' =
-		$state('progress');
+		$state((() => {
+			const current = page.url.searchParams.get('view') || 'progress';
+			if (['progress', 'radar', 'stats', 'eventSum', 'checkSum', 'action'].includes(current)) {
+				return current as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action';
+			}
+			return 'progress';
+		})());
 
-	const sort = (
-		a: {
-			team: TBATeam;
-		},
-		b: {
-			team: TBATeam;
-		}
-	): number => a.team.tba.team_number - b.team.tba.team_number;
+	const runSearchParams = () => {
+			setTimeout(() => {
+				const search = new SvelteURLSearchParams(location.search);
+			search.set(
+				'teams',
+				selectedTeams
+					.data
+					.map((t) => t.team.tba.team_number)
+					.join(',')
+			);
+			search.set('view', view);
+			goto(`${location.pathname}?${search.toString()}`);
+		});
+	};
 
-	const dataset: {
-		label: string;
-		data: number[];
-		backgroundColor: string;
-		borderColor: string;
-		borderWidth: number;
-		pointBackgroundColor: string;
-		pointBorderColor: string;
-	}[] = $state([]);
+	const getRadar = (data: Scouting.MatchScoutingExtendedArr): Record<string, number> => {
+		const contribution = Scouting.averageContributions(data.data);
+		if (contribution.isErr()) return {};
+		return contribution.value;
+	};
 
 	$effect(() => {
 		if (!view) return; // On view set
 		staticY = 0;
 	});
-
-	$effect(() => {
-		// view on search params
-		const search = new SvelteURLSearchParams(location.search);
-		search.set('view', view);
-		goto(`${location.pathname}?${search.toString()}`);
-	});
-
-	afterNavigate(() => {
-		teamScoutingData = teamScouting.map((ts) => {
-			const res = Scouting.MatchScoutingExtendedArr.fromArr(ts);
-			if (res.isOk()) {
-				return res.value;
-			} else {
-				console.error('Failed to parse scouting data for team:', res.error);
-				return undefined;
-			}
-		});
-
-		const search = new SvelteURLSearchParams(location.search);
-		view = (search.get('view') as 'progress' | 'radar' | 'stats' | 'eventSum' | 'checkSum' | 'action') ||
-			'progress';
-
-		const unsub = selectedTeams.subscribe(
-			(st) =>
-				(radarData = st.map((team, i) => {
-					const scoutingData = teamScoutingData[i];
-					console.log('scoutingData:', scoutingData);
-					if (!scoutingData) {
-						return {
-							'Level 1': 0,
-							'Level 2': 0,
-							'Level 3': 0,
-							'Level 4': 0,
-							Barge: 0,
-							Processor: 0
-						};
-					}
-					const contribution = Scouting.averageContributions(scoutingData.data) || {
-						cl1: 0,
-						cl2: 0,
-						cl3: 0,
-						cl4: 0,
-						brg: 0,
-						prc: 0
-					};
-
-					return {
-						'Level 1': contribution.cl1,
-						'Level 2': contribution.cl2,
-						'Level 3': contribution.cl3,
-						'Level 4': contribution.cl4,
-						Barge: contribution.brg,
-						Processor: contribution.prc
-					};
-				}))
-		);
-
-		return () => {
-			unsub();
-		};
-	});
-
-	const dashboard = $derived(
-		new Dashboard.Dashboard({
-			name: event.tba.name + ' Team Comparison',
-			cards: [],
-			id: 'event-dashboard'
-		})
-	);
 </script>
 
-<DB {dashboard}>
-	{#snippet body()}
-		<div style="grid-column: span var(--grid-size);">
-			<div class="ws-nowrap scroll-x p-3 mb-3" bind:this={scroller}>
-				<div class="btn-group" role="group">
-					{#each teams as team}
-						<input
-							type="checkbox"
-							class="btn-check"
-							id="btn-check-{team.tba.team_number}"
-							autocomplete="off"
-							checked={!!$selectedTeams.find(
-								(t) => t.team.tba.team_number === team.tba.team_number
-							)}
-							onchange={(event) => {
-								if (event.currentTarget.checked) {
-									selectedTeams.set(
-										[
-											...get(selectedTeams),
-											{
-												team,
-												component: undefined
-											}
-										].sort(sort)
-									);
-								} else {
-									selectedTeams.set(
-										get(selectedTeams)
-											.filter((t) => t.team !== team)
-											.sort(sort)
-									);
-								}
+<div style="grid-column: span var(--grid-size);">
+	<div class="ws-nowrap scroll-x p-3 mb-3" bind:this={scroller}>
+		<div class="btn-group" role="group">
+			{#each teams as team}
+				<input
+					type="checkbox"
+					class="btn-check"
+					id="btn-check-{team.tba.team_number}"
+					autocomplete="off"
+					checked={!!$selectedTeams.find(
+						(t) => t.team.tba.team_number === team.tba.team_number
+					)}
+					onchange={async (e) => {
+						if (e.currentTarget.checked) {
+							const data = Scouting.MatchScoutingExtendedArr.fromArr(Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key));
+							if (data.isErr()) {
+								return console.error('Error parsing data:', data);
+							}
 
-								const search = new SvelteURLSearchParams(location.search);
-								search.set(
-									'teams',
-									get(selectedTeams)
-										.map((t) => t.team.tba.team_number)
-										.join(',')
-								);
-								goto(`${location.pathname}?${search.toString()}`);
-							}}
-						/>
-						<label class="btn btn-outline-primary me-2" for="btn-check-{team.tba.team_number}">
-							{team.tba.team_number}
-						</label>
-					{/each}
-				</div>
-			</div>
+							selectedTeams.push({
+								team,
+								component: undefined,
+								data: data.value,
+							});
 
-			<div class="container-fluid">
-				<div class="row mb-3">
-					<div class="d-flex align-items-center">
-						<h1>Compare Teams</h1>
-						<div class="btn-group ms-3" role="group" aria-label="View">
-							<button
-								type="button"
-								class="btn btn-info me-3"
-								onclick={() => {
-									copy(location.href, true);
-								}}
-							>
-								<i class="material-icons">share</i>
-							</button>
-							<input
-								type="radio"
-								class="btn-check"
-								id="progress-view"
-								autocomplete="off"
-								checked
-								bind:group={view}
-								value="progress"
-							/>
-							<label class="btn btn-outline-primary h-min" for="progress-view">Progress</label>
-							<input
-								type="radio"
-								class="btn-check"
-								id="stats-view"
-								autocomplete="off"
-								bind:group={view}
-								value="stats"
-							/>
-							<label class="btn btn-outline-primary h-min" for="stats-view">Event Stats</label>
-							<input
-								type="radio"
-								class="btn-check"
-								id="radar-view"
-								autocomplete="off"
-								checked
-								bind:group={view}
-								value="radar"
-							/>
-							<label class="btn btn-outline-primary h-min" for="radar-view">Radar Chart</label>
-							<input
-								type="radio"
-								class="btn-check"
-								id="eventSum-view"
-								autocomplete="off"
-								checked
-								bind:group={view}
-								value="eventSum"
-							/>
-							<label class="btn btn-outline-primary h-min" for="eventSum-view">Event Summary</label>
-							<input
-								type="radio"
-								class="btn-check"
-								id="checkSum-view"
-								autocomplete="off"
-								checked
-								bind:group={view}
-								value="checkSum"
-							/>
-							<label class="btn btn-outline-primary h-min" for="checkSum-view">Check Summary</label>
-							<input
-								type="radio"
-								class="btn-check"
-								id="action-view"
-								autocomplete="off"
-								checked
-								bind:group={view}
-								value="action"
-							/>
-							<label class="btn btn-outline-primary h-min" for="action-view">Action Heatmap</label>
-						</div>
-					</div>
-				</div>
-				<div class="row mb-3">
-					{#each $selectedTeams as team, i}
-						<div class="col-md-4 mb-3">
-							<div class="card layer-2">
-								<div class="card-body">
-									<div class="d-flex align-items-center mb-1 justify-content-between">
-										<h5 class="card-title">
-											{team.team.tba.team_number} | {team.team.tba.nickname}
-										</h5>
-										<button
-											type="button"
-											class="btn btn-sm btn-secondary ms-2"
-											onclick={() => {
-												team.component?.copy(true);
-											}}
-										>
-											<i class="material-icons">copy_all</i>
-										</button>
-									</div>
-									<div style="height: 300px;">
-										{#if teamScoutingData[i]}
-											{#if view === 'progress'}
-												<Progress
-													bind:this={team.component}
-													team={team.team}
-													{event}
-													bind:staticY
-													scouting={teamScoutingData[i]}
-													{matches}
-												/>
-											{:else if view === 'radar'}
-												<RadarChart
-													team={team.team}
-													data={radarData[i]}
-													opts={{
-														max: 10,
-														min: 0
-													}}
-												/>
-											{:else if view === 'eventSum'}
-												<EventSummary
-													{matches}
-													team={team.team}
-													{event}
-													scouting={teamScoutingData[i]}
-												/>
-											{:else if view === 'checkSum'}
-												<!-- <ChecksSummary 
-												 checks={teamScoutingData[i].data.checksSum} /> -->
-											{:else if view === 'action'}
-												<!-- <ActionHeatmap
-													team={team.team}
-													scouting={teamScoutingData[i]}
-												/> -->
-											{:else}
-												<TeamEventStats
-													bind:this={team.component}
-													team={team.team}
-													{event}
-													bind:staticY
-													scouting={teamScoutingData[i]}
-													{matches}
-												/>
-											{/if}
-										{:else}
-											No data found :(
-										{/if}
-									</div>
-								</div>
-							</div>
-						</div>
-					{/each}
+							selectedTeams.pipe(data.value);
+						} else {
+							selectedTeams.remove((t) => t.team.tba.team_number === team.tba.team_number);
+						}
+						runSearchParams();
+					}}
+				/>
+				<label class="btn btn-outline-primary me-2" for="btn-check-{team.tba.team_number}">
+					{team.tba.team_number}
+				</label>
+			{/each}
+		</div>
+	</div>
+
+	<div class="container-fluid">
+		<div class="row mb-3">
+			<div class="d-flex align-items-center">
+				<h1>Compare Teams</h1>
+				<div class="btn-group ms-3" role="group" aria-label="View">
+					<button
+						type="button"
+						class="btn btn-info me-3"
+						onclick={() => {
+							copy(location.href, true);
+						}}
+					>
+						<i class="material-icons">share</i>
+					</button>
+					<input
+						type="radio"
+						class="btn-check"
+						id="progress-view"
+						autocomplete="off"
+						checked
+						bind:group={view}
+						value="progress"
+						onclick={runSearchParams}
+					/>
+					<label class="btn btn-outline-primary h-min" for="progress-view">Progress</label>
+					<input
+						type="radio"
+						class="btn-check"
+						id="stats-view"
+						autocomplete="off"
+						bind:group={view}
+						value="stats"
+						onclick={runSearchParams}
+					/>
+					<label class="btn btn-outline-primary h-min" for="stats-view">Event Stats</label>
+					<input
+						type="radio"
+						class="btn-check"
+						id="radar-view"
+						autocomplete="off"
+						checked
+						bind:group={view}
+						value="radar"
+						onclick={runSearchParams}
+					/>
+					<label class="btn btn-outline-primary h-min" for="radar-view">Radar Chart</label>
+					<input
+						type="radio"
+						class="btn-check"
+						id="eventSum-view"
+						autocomplete="off"
+						checked
+						bind:group={view}
+						value="eventSum"
+						onclick={runSearchParams}
+					/>
+					<label class="btn btn-outline-primary h-min" for="eventSum-view">Event Summary</label>
+					<input
+						type="radio"
+						class="btn-check"
+						id="checkSum-view"
+						autocomplete="off"
+						checked
+						bind:group={view}
+						value="checkSum"
+						onclick={runSearchParams}
+					/>
+					<label class="btn btn-outline-primary h-min" for="checkSum-view">Check Summary</label>
+					<input
+						type="radio"
+						class="btn-check"
+						id="action-view"
+						autocomplete="off"
+						checked
+						bind:group={view}
+						value="action"
+						onclick={runSearchParams}
+					/>
+					<label class="btn btn-outline-primary h-min" for="action-view">Action Heatmap</label>
 				</div>
 			</div>
 		</div>
-	{/snippet}
-</DB>
+		<div class="row mb-3">
+			{#each $selectedTeams as team}
+				<div class="col-md-4 mb-3">
+					<div class="card layer-2">
+						<div class="card-body">
+							<div class="d-flex align-items-center mb-1 justify-content-between">
+								<h5 class="card-title">
+									{team.team.tba.team_number} | {team.team.tba.nickname}
+								</h5>
+								<button
+									type="button"
+									class="btn btn-sm btn-secondary ms-2"
+									onclick={() => {
+										team.component?.copy(true);
+									}}
+								>
+									<i class="material-icons">copy_all</i>
+								</button>
+							</div>
+							<div style="height: 300px;">
+								{#if view === 'progress'}
+									<Progress
+										bind:this={team.component}
+										team={team.team}
+										{event}
+										bind:staticY
+										scouting={team.data}
+										{matches}
+									/>
+								{:else if view === 'radar'}
+									<RadarChart
+										team={team.team}
+										data={getRadar(team.data)}
+										opts={{
+											max: 10,
+											min: 0
+										}}
+									/>
+								{:else if view === 'eventSum'}
+									<EventSummary
+										{matches}
+										team={team.team}
+										{event}
+										scouting={team.data}
+									/>
+								{:else if view === 'checkSum'}
+									<!-- <ChecksSummary 
+									checks={team.data.data.checksSum} /> -->
+								{:else if view === 'action'}
+									<!-- <ActionHeatmap
+										team={team.team}
+										scouting={team.data}
+									/> -->
+								{:else}
+									<TeamEventStats
+										bind:this={team.component}
+										team={team.team}
+										{event}
+										bind:staticY
+										scouting={team.data}
+										{matches}
+									/>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+	</div>
+</div>

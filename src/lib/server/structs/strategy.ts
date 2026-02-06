@@ -10,6 +10,7 @@ import { attemptAsync } from 'ts-utils/check';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
 import { Permissions } from './permissions';
+import structRegistry from '../services/struct-registry';
 
 export namespace Strategy {
 	export const MatchWhiteboards = new Struct({
@@ -28,6 +29,8 @@ export namespace Strategy {
 		}
 	});
 
+	structRegistry.register(MatchWhiteboards);
+
 	export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;
 
 	export const Whiteboards = new Struct({
@@ -41,6 +44,8 @@ export namespace Strategy {
 			name: text('name').notNull()
 		}
 	});
+
+	structRegistry.register(Whiteboards);
 
 	export const Strategy = new Struct({
 		name: 'strategy',
@@ -79,6 +84,8 @@ export namespace Strategy {
 			alliance: (value) => ['red', 'blue', 'unknown'].includes(String(value))
 		}
 	});
+
+	structRegistry.register(Strategy);
 
 	Strategy.on('create', (strategy) => {
 		// generate partners
@@ -189,6 +196,8 @@ export namespace Strategy {
 		}
 	});
 
+	structRegistry.register(Partners);
+
 	export type PartnerData = StructData<typeof Partners.data.structure>;
 
 	export const Opponents = new Struct({
@@ -207,6 +216,8 @@ export namespace Strategy {
 			notes: text('notes').notNull()
 		}
 	});
+
+	structRegistry.register(Opponents);
 
 	export type OpponentData = StructData<typeof Opponents.data.structure>;
 
@@ -273,6 +284,8 @@ export namespace Strategy {
 			team4: integer('team4').notNull()
 		}
 	});
+
+	structRegistry.register(Alliances);
 
 	Permissions.createEntitlement({
 		name: 'view-strategy',

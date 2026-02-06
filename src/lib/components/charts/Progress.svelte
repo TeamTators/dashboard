@@ -88,6 +88,7 @@ whenever the scouting store updates, ensuring the visual stays in sync with inco
 		});
 
 		return scouting.subscribe(async (data) => {
+			console.log('Applying data to chart:', data);
 			if (chart) chart.destroy();
 			try {
 				const countsPerMatch = data.map((d) => {

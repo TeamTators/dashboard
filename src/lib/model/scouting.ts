@@ -5,7 +5,7 @@
  * Provides client-side Structs for match scouting, team comments, and pit scouting, plus
  * helper classes and functions for analyzing scouting data and uploading match batches.
  */
-import { type DataArr } from '$lib/services/struct/data-arr';
+import { DataArr } from '$lib/services/struct/data-arr';
 import { Struct } from '$lib/services/struct';
 import { type StructDataVersion, type StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
@@ -58,7 +58,8 @@ export namespace Scouting {
 			sliders: 'string'
 		},
 		socket: sse,
-		browser
+		browser,
+		log: true,
 	});
 
 	export type MatchScoutingData = StructData<typeof MatchScouting.data.structure>;
@@ -72,10 +73,16 @@ export namespace Scouting {
 		trace: Trace;
 		scouting: MatchScoutingData;
 	}> {
+		private static readonly cache = new Map<string, MatchScoutingExtended>();
+
 		static from(scouting: MatchScoutingData) {
 			return attempt(() => {
+				const has = this.cache.get(String(scouting.data.id));
+				if (has) return has;
 				const trace = Trace.parse(scouting.data.trace).unwrap();
-				return new MatchScoutingExtended(scouting, trace);
+				const ms = new MatchScoutingExtended(scouting, trace);
+				this.cache.set(String(scouting.data.id), ms);
+				return ms;
 			});
 		}
 
@@ -176,17 +183,33 @@ export namespace Scouting {
 			});
 			return w;
 		}
+
+		get contribution() {
+			return this.data.trace.points.reduce(
+				(acc, curr) => {
+					if (!curr[3]) return acc;
+					acc[curr[3]] = (acc[curr[3]] || 0) + 1;
+					return acc;
+				},
+				{} as Record<string, number>
+			); 
+		}
 	}
 
 	/**
 	 * Writable array wrapper for extended scouting records.
 	 */
 	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
-		static fromArr(arr: MatchScoutingArr) {
+		static fromArr(arr: MatchScoutingArr | MatchScoutingData[]) {
 			return attempt(() => {
-				const ms = arr.data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
+				const data = arr instanceof DataArr ? arr.data : arr;
+				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
 				const extendedArr = new MatchScoutingExtendedArr(ms);
-				extendedArr.onAllUnsubscribe(arr.subscribe(() => extendedArr.inform()));
+				if (arr instanceof DataArr) extendedArr.onAllUnsubscribe(arr.subscribe(() => {
+					const updatedData = arr.data;
+					const updatedMs = updatedData.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
+					extendedArr.set(updatedMs);
+				}));
 				return extendedArr;
 			});
 		}
@@ -201,18 +224,45 @@ export namespace Scouting {
 
 		checksSummary() {
 			const summary = new WritableBase<Record<string, number>>({});
-			summary.pipe(this);
 			setTimeout(() => {
-				const result: Record<string, number> = {};
-				this.each((ms) => {
-					const checks = ms.getChecks();
-					checks.each((check) => {
-						result[check] = (result[check] || 0) + 1;
+				summary.onAllUnsubscribe(this.subscribe(() => {
+					const result: Record<string, number> = {};
+					this.each((ms) => {
+						const checks = ms.getChecks();
+						checks.each((check) => {
+							result[check] = (result[check] || 0) + 1;
+						});
 					});
-				});
-				summary.set(result);
+					summary.set(result);
+				}));
 			});
 			return summary;
+		}
+
+		
+		averageContribution() {
+			const contribution = new WritableBase<Record<string, number>>({});
+			setTimeout(() => {
+				contribution.onAllUnsubscribe(this.subscribe(() => {
+				const totals: Record<string, number> = {};
+				this.each((ms) => {
+					const contrib = ms.contribution;
+					Object.entries(contrib).forEach(([key, value]) => {
+						totals[key] = (totals[key] || 0) + value;
+					});
+				});
+
+				const count = this.data.length;
+				const averages: Record<string, number> = {};
+				Object.entries(totals).forEach(([key, value]) => {
+					averages[key] = value / count;
+				});
+
+				contribution.set(averages);
+			}));
+			});
+
+			return contribution;
 		}
 	}
 
@@ -315,32 +365,20 @@ export namespace Scouting {
 		});
 	};
 
-	export interface Contribution {
-		cl1: number;
-		cl2: number;
-		cl3: number;
-		cl4: number;
-		brg: number;
-		prc: number;
-		shc: number;
-		dpc: number;
-		prk: number;
-	}
+	export type Contribution = Record<string, number>;
 
 	/**
 	 * Compute average action contributions across a set of scouting traces.
 	 *
 	 * @returns {Contribution} Average contribution totals.
 	 */
-	export const averageContributions = (data: MatchScoutingExtended[]): Contribution => {
-		return attempt(() => {
+	export const averageContributions = (data: MatchScoutingExtended[]) => {
+		return attempt<Contribution>(() => {
 			const coralCounts = data.map((d) => {
 				const actionObj = d.data.trace.points.reduce(
 					(acc, curr) => {
 						if (!curr[3]) return acc;
-						if (['cl1', 'cl2', 'cl3', 'cl4', 'brg', 'prc', 'shc', 'dpc', 'prk'].includes(curr[3])) {
-							acc[curr[3]] = (acc[curr[3]] || 0) + 1;
-						}
+						acc[curr[3]] = (acc[curr[3]] || 0) + 1;
 						return acc;
 					},
 					{} as Record<string, number>
@@ -360,22 +398,10 @@ export namespace Scouting {
 			);
 
 			const count = coralCounts.length;
-			const averages = Object.fromEntries(
+			return Object.fromEntries(
 				Object.entries(totalActions).map(([key, value]) => [key, value / count])
 			);
-
-			return {
-				cl1: averages.cl1 || 0,
-				cl2: averages.cl2 || 0,
-				cl3: averages.cl3 || 0,
-				cl4: averages.cl4 || 0,
-				brg: averages.brg || 0,
-				prc: averages.prc || 0,
-				shc: averages.shc || 0,
-				dpc: averages.dpc || 0,
-				prk: averages.prk || 0
-			};
-		}).unwrap();
+		});
 	};
 
 	/**

@@ -19,6 +19,7 @@ import { Account } from './account';
 import { Trace } from 'tatorscout/trace';
 import { debounce } from 'ts-utils';
 import { FIRST } from './FIRST';
+import structRegistry from '../services/struct-registry';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -65,6 +66,8 @@ export namespace Scouting {
 			// 	typeof checks === 'string' && z.array(z.string()).safeParse(JSON.parse(checks)).success
 		}
 	});
+
+	structRegistry.register(MatchScouting);
 
 	export type MatchScoutingData = typeof MatchScouting.sample;
 
@@ -319,6 +322,8 @@ export namespace Scouting {
 		}
 	});
 
+	structRegistry.register(TeamComments);
+
 	/**
 	 * Fetch archived comments for a specific event.
 	 *
@@ -371,6 +376,8 @@ export namespace Scouting {
 		});
 		export type SectionData = typeof Sections.sample;
 
+		structRegistry.register(Sections);
+
 		Sections.on('delete', async (data) => {
 			Groups.get(
 				{ sectionId: data.id },
@@ -395,6 +402,8 @@ export namespace Scouting {
 				amount: 3
 			}
 		});
+
+		structRegistry.register(Groups);
 
 		export type GroupData = typeof Groups.sample;
 
@@ -441,6 +450,8 @@ export namespace Scouting {
 			}
 		});
 
+		structRegistry.register(Questions);
+
 		export type QuestionData = typeof Questions.sample;
 
 		Questions.on('delete', async (data) => {
@@ -475,6 +486,8 @@ export namespace Scouting {
 				}
 			}
 		});
+
+		structRegistry.register(Answers);
 
 		export type AnswerData = typeof Answers.sample;
 

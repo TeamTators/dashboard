@@ -127,6 +127,8 @@ export namespace FIRST {
 		}
 	});
 
+	structRegistry.register(TeamPictures);	
+
 	// TeamPictures.on('delete', (pic) => {});
 
 	export const Matches = new Struct({
@@ -140,6 +142,8 @@ export namespace FIRST {
 			compLevel: text('comp_level').notNull()
 		}
 	});
+
+	structRegistry.register(Matches);
 
 	export const CustomMatches = new Struct({
 		name: 'custom_matches',
@@ -170,6 +174,8 @@ export namespace FIRST {
 			blue4: integer('blue4').notNull()
 		}
 	});
+
+	structRegistry.register(CustomMatches);
 
 	Permissions.createEntitlement({
 		name: 'view-tba-info',

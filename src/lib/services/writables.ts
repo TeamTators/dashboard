@@ -469,12 +469,20 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 * const strings = numbers.map(n => n.toString());
 	 * ```
 	 */
-	map<U>(fn: (item: T) => U) {
+	map<U>(fn: (item: T) => U, reactive = true) {
 		const mapped = new WritableArray<U>(this.data.map(fn));
 		// Copy filter, sort, and reverse settings
 		(mapped as any)._filter = this._filter as any;
 		(mapped as any)._sort = this._sort as any;
 		(mapped as any)._reverse = this._reverse;
+
+		if (reactive) {
+			mapped.onAllUnsubscribe(this.subscribe((data) => {
+				const newData = data.map(fn);
+				mapped.set(newData);
+			}));
+		}
+
 		return mapped;
 	}
 

@@ -36,20 +36,20 @@ export const load = async (event) => {
 
 	const teamScouting = await Promise.all(
 		searchTeams.map(async (t) => {
-			return (await Scouting.getTeamScouting(t, event.params.eventKey))
+			const res = (await Scouting.getTeamScouting(t, event.params.eventKey))
 				.unwrap()
 				.map((s) => s.safe());
-		})
+			return {
+				team: teams.value.find((team) => team.tba.team_number === t)?.tba,
+				scouting: res
+			}
+			})
 	);
 
 	return {
 		event: e.value.tba,
-		selectedTeams: searchTeams
-			.map((t) => teams.value.find((team) => team.tba.team_number === t))
-			.filter(Boolean)
-			.map((t) => t.tba),
+		selectedTeams: teamScouting.filter(t => t.team),
 		teams: teams.value.map((t) => t.tba),
-		teamScouting,
 		matches: matches.value.map((m) => m.tba)
 	};
 };

@@ -2,6 +2,7 @@ import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct';
 import { Permissions } from './permissions';
+import structRegistry from '../services/struct-registry';
 
 export namespace Checklist {
 	export const Checklists = new Struct({
@@ -13,6 +14,8 @@ export namespace Checklist {
 		}
 	});
 
+	structRegistry.register(Checklists);
+
 	export const Questions = new Struct({
 		name: 'checklist_questions',
 		structure: {
@@ -22,6 +25,8 @@ export namespace Checklist {
 		}
 	});
 
+	structRegistry.register(Questions);
+
 	export const Assignments = new Struct({
 		name: 'checklist_assignments',
 		structure: {
@@ -29,6 +34,8 @@ export namespace Checklist {
 			accountId: text('account_id').notNull()
 		}
 	});
+
+	structRegistry.register(Assignments);
 
 	export const Answers = new Struct({
 		name: 'checklist_answers',
@@ -38,6 +45,8 @@ export namespace Checklist {
 			matchId: text('match_id').notNull()
 		}
 	});
+
+	structRegistry.register(Answers);
 
 	Permissions.createEntitlement({
 		name: 'view-checklist',
