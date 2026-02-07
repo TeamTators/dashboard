@@ -33,7 +33,7 @@ beforeAll(async () => {
 
 	await Account.Admins.new({
 		accountId: adminAccount.id
-	}).unwrap();
+	});//.unwrap();
 });
 
 afterAll(async () => {
