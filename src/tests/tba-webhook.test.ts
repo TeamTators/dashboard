@@ -6,7 +6,7 @@
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
-// import path from 'path';
+import path from 'path';
 import { z } from 'zod';
 import { getSampleData } from '$lib/utils/zod-sample';
 import redis from '$lib/server/services/redis';
@@ -14,8 +14,8 @@ import { config, str } from '$lib/server/utils/env';
 import { sleep } from 'ts-utils/sleep';
 
 describe('TBA Webhook', async () => {
-	const server = await import(`../../../tba-webhooks/src/index`);
-	// const server = await import(path.join(process.cwd(), 'tba-webhooks', 'src', 'index'));
+	// const server = await import(`../../../tba-webhooks/src/index`);
+	const server = await import(path.join(process.cwd(), config.tba_webhook.path, 'src', 'index'));
 
 	const serverPromise = server.main(
 		config.tba_webhook.port,

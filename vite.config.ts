@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { config } from './src/lib/server/utils/env';
+import path from 'path';
 
 const isTest = Boolean(process.env.VITEST);
 
@@ -26,6 +27,9 @@ export default defineConfig({
 	server: {
 		port: config.network.port,
 		host: '0.0.0.0',
+		fs: {
+			allow: [path.resolve(process.cwd(), config.tba_webhook.path)]
+		},
 		allowedHosts: [
 			'dev.tsaxking.com',
 			'dev.tatorscout.org',
