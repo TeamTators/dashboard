@@ -62,7 +62,7 @@ Notifications offcanvas panel with unread count binding.
 
 	// const test = () => {
 	// 	Account.AccountNotification.new({
-	// 		accountId: Account.self.get().data.id || 'guest',
+	// 		accountId: Account.self.data.data.id || 'guest',
 	// 		title: 'Test Notification',
 	// 		icon: 'info',
 	// 		message: 'This is a test notification.',

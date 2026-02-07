@@ -318,7 +318,40 @@
 					"description": "Whether to enable state reporting"
 				}
 			},
-			"required": ["debug", "ping_interval_ms", "state_report_threshold", "do_report"],
+			"required": ["debug", "ping_interval_ms", "state_report_threshold", "do_report"]
+		},
+		"tba_webhook": {
+			"description": "TheBlueAlliance webhook configuration",
+			"type": "object",
+			"properties": {
+				"path": {
+					"type": "string",
+					"description": "Path to the webhook service"
+				},
+				"port": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 65535,
+					"description": "Port for the webhook service"
+				},
+				"redis_name": {
+					"type": "string",
+					"description": "Redis instance name for the webhook"
+				}
+			},
+			"required": ["path", "port", "redis_name"],
+			"additionalProperties": false
+		},
+		"potato": {
+			"description": "Potato feature configuration",
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"description": "Whether the potato feature is enabled"
+				}
+			},
+			"required": ["enabled"],
 			"additionalProperties": false
 		}
 	},
@@ -337,7 +370,9 @@
 		"struct_cache",
 		"struct_batching",
 		"indexed_db",
-		"sse"
+		"sse",
+		"tba_webhook",
+		"potato"
 	],
 	"additionalProperties": false
 }

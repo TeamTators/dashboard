@@ -1,0 +1,64 @@
+<!--
+@fileoverview Read-only pit-scouting question display with answer attribution.
+
+@component PitScoutingQuestion
+
+@description
+Shows the question key and answer value, with a tooltip indicating which account provided
+the answer.
+
+@example
+```svelte
+<Question {question} {answer} {answerAccounts} />
+```
+-->
+<script lang="ts">
+	import { Scouting } from '$lib/model/scouting';
+	import { onMount } from 'svelte';
+	import { capitalize } from 'ts-utils/text';
+	import { Account } from '$lib/model/account';
+
+	interface Props {
+		/** Question definition being rendered. */
+		question: Scouting.PIT.QuestionData;
+		/** Answer record for the question (if any). */
+		answer: Scouting.PIT.AnswerData | undefined;
+		/** Accounts that may have submitted the answer. */
+		answerAccounts: Account.AccountData[];
+	}
+
+	const { question, answer, answerAccounts }: Props = $props();
+
+	let value = $state('No answer');
+	let accountUsername = $state('unknown');
+
+	onMount(() => {
+		if (!answer) return;
+		const res = Scouting.PIT.parseAnswer(answer);
+		if (res.isOk()) {
+			value = res.value.join(', ');
+			const a = answerAccounts.find((a) => a.data.id === answer.data.accountId);
+			accountUsername = a?.data.username || 'unknown';
+		}
+
+		import('bootstrap').then((bs) => {
+			bs.Tooltip.getOrCreateInstance(tooltip);
+		});
+	});
+
+	let tooltip: HTMLDivElement;
+</script>
+
+<div class="d-flex justify-content-between">
+	<div class="text-end">
+		{capitalize($question.key || '')}
+	</div>
+	<div
+		bind:this={tooltip}
+		class="text-start"
+		data-bs-toggle="tooltip"
+		data-bs-title="Answered by {accountUsername}"
+	>
+		{value}
+	</div>
+</div>

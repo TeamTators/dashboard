@@ -81,8 +81,6 @@ export namespace Permissions {
 		});
 	};
 
-	// Role.callListen('update', async (event, data) => {});
-
 	export const detectCircularHierarchy = (role: RoleData) => {
 		return attemptAsync(async () => {
 			const visited = new Set<string>();
