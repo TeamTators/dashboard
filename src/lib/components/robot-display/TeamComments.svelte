@@ -18,7 +18,6 @@ supports adding new comments.
 	import { onMount } from 'svelte';
 	import { Account } from '$lib/model/account';
 	import { alert, prompt, confirm, notify } from '$lib/utils/prompts';
-	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { RowAutoHeightModule, TextFilterModule, NumberFilterModule } from 'ag-grid-community';
 	import { WritableArray } from '$lib/services/writables';

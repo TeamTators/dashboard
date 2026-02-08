@@ -3,7 +3,7 @@
  * @description Provides sample TBA event, match, and team data for testing
  */
 
-import type { TBAEvent, TBAMatch, TBATeam } from 'tatorscout/tba';
+import type { TBAEvent, TBAMatch, TBAMatch2025, TBATeam } from 'tatorscout/tba';
 
 /**
  * Mock TBA Event (2025 Idaho Boise)
@@ -11,34 +11,9 @@ import type { TBAEvent, TBAMatch, TBATeam } from 'tatorscout/tba';
 export const mockEvent2025: TBAEvent = {
 	key: '2025idbo',
 	name: 'Idaho Regional',
-	event_code: 'idbo',
-	event_type: 0,
-	district: null,
-	city: 'Boise',
-	state_prov: 'ID',
-	country: 'USA',
-	start_date: '2025-03-20',
-	end_date: '2025-03-23',
 	year: 2025,
-	short_name: 'Idaho',
-	event_type_string: 'Regional',
-	week: 2,
-	address: '123 Test St',
-	postal_code: '83702',
-	gmaps_place_id: 'test',
-	gmaps_url: 'https://maps.google.com',
-	lat: 43.6135,
-	lng: -116.2023,
-	location_name: 'Boise Event Center',
-	timezone: 'America/Boise',
-	website: 'https://example.com',
-	first_event_id: 'test-id',
-	first_event_code: 'idbo',
-	webcasts: [],
-	division_keys: [],
-	parent_event_key: null,
-	playoff_type: 0,
-	playoff_type_string: 'Bracket'
+	start_date: '2025-03-19',
+	end_date: '2025-03-22'
 };
 
 /**
@@ -63,15 +38,11 @@ export const mockMatch2025: TBAMatch = {
 	alliances: {
 		red: {
 			score: 150,
-			team_keys: ['frc254', 'frc1114', 'frc2056'],
-			surrogate_team_keys: [],
-			dq_team_keys: []
+			team_keys: ['frc254', 'frc1114', 'frc2056']
 		},
 		blue: {
 			score: 145,
-			team_keys: ['frc148', 'frc1323', 'frc2471'],
-			surrogate_team_keys: [],
-			dq_team_keys: []
+			team_keys: ['frc148', 'frc1323', 'frc2471']
 		}
 	},
 	winning_alliance: 'red',
@@ -79,7 +50,6 @@ export const mockMatch2025: TBAMatch = {
 	time: 1679328000,
 	actual_time: 1679328000,
 	predicted_time: 1679328000,
-	post_result_time: 1679328300,
 	score_breakdown: null,
 	videos: []
 };
@@ -87,24 +57,289 @@ export const mockMatch2025: TBAMatch = {
 /**
  * Mock TBA Match with 2025 score breakdown
  */
-export const mockMatch2025WithScoreBreakdown: TBAMatch = {
-	...mockMatch2025,
-	score_breakdown: {
+export const mockMatch2025WithScoreBreakdown: TBAMatch2025 = {
+	key: '2025idbo_qm1',
+	comp_level: 'qm',
+	set_number: 1,
+	match_number: 1,
+	winning_alliance: 'red',
+	event_key: '2025idbo',
+	time: 1679328000,
+	actual_time: 1679328000,
+	predicted_time: 1679328000,
+	videos: [],
+	alliances: {
 		red: {
-			autoLineRobot1: 'Yes',
-			autoLineRobot2: 'Yes',
-			autoLineRobot3: 'No',
-			endGameRobot1: 'DeepCage',
-			endGameRobot2: 'ShallowCage',
-			endGameRobot3: 'Parked'
+			score: 150,
+			team_keys: ['frc254', 'frc1114', 'frc2056'],
+			dq_team_keys: [],
+			surrogate_team_keys: []
 		},
 		blue: {
+			score: 145,
+			team_keys: ['frc148', 'frc1323', 'frc2471'],
+			dq_team_keys: [],
+			surrogate_team_keys: []
+		}
+	},
+	score_breakdown: {
+		red: {
+			adjustPoints: 0,
+			algaePoints: 0,
+			autoBonusAchieved: false,
+			autoCoralCount: 0,
+			autoCoralPoints: 0,
 			autoLineRobot1: 'Yes',
-			autoLineRobot2: 'No',
-			autoLineRobot3: 'No',
+			autoLineRobot2: 'Yes',
+			autoLineRobot3: 'Yes',
+			autoMobilityPoints: 0,
+			autoPoints: 0,
+			autoReef: {
+				botRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				midRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				tba_botRowCount: 0,
+				tba_midRowCount: 0,
+				tba_topRowCount: 0,
+				topRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				trough: 0
+			},
+			bargeBonusAchieved: false,
+			coopertitionCriteriaMet: false,
+			coralBonusAchieved: false,
+			endGameBargePoints: 0,
 			endGameRobot1: 'ShallowCage',
 			endGameRobot2: 'Parked',
-			endGameRobot3: 'None'
+			endGameRobot3: 'None',
+			foulCount: 0,
+			foulPoints: 0,
+			g206Penalty: false,
+			g410Penalty: false,
+			g418Penalty: false,
+			g428Penalty: false,
+			netAlgaeCount: 0,
+			rp: 0,
+			techFoulCount: 0,
+			teleopCoralCount: 0,
+			teleopCoralPoints: 0,
+			teleopPoints: 0,
+			teleopReef: {
+				botRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				midRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				tba_botRowCount: 0,
+				tba_midRowCount: 0,
+				tba_topRowCount: 0,
+				topRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				trough: 0
+			},
+			totalPoints: 0,
+			wallAlgaeCount: 0
+		},
+		blue: {
+			adjustPoints: 0,
+			algaePoints: 0,
+			autoBonusAchieved: false,
+			autoCoralCount: 0,
+			autoCoralPoints: 0,
+			autoLineRobot1: 'Yes',
+			autoLineRobot2: 'Yes',
+			autoLineRobot3: 'Yes',
+			autoMobilityPoints: 0,
+			autoPoints: 0,
+			autoReef: {
+				botRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				midRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				tba_botRowCount: 0,
+				tba_midRowCount: 0,
+				tba_topRowCount: 0,
+				topRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				trough: 0
+			},
+			bargeBonusAchieved: false,
+			coopertitionCriteriaMet: false,
+			coralBonusAchieved: false,
+			endGameBargePoints: 0,
+			endGameRobot1: 'ShallowCage',
+			endGameRobot2: 'Parked',
+			endGameRobot3: 'None',
+			foulCount: 0,
+			foulPoints: 0,
+			g206Penalty: false,
+			g410Penalty: false,
+			g418Penalty: false,
+			g428Penalty: false,
+			netAlgaeCount: 0,
+			rp: 0,
+			techFoulCount: 0,
+			teleopCoralCount: 0,
+			teleopCoralPoints: 0,
+			teleopPoints: 0,
+			teleopReef: {
+				botRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				midRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				tba_botRowCount: 0,
+				tba_midRowCount: 0,
+				tba_topRowCount: 0,
+				topRow: {
+					nodeA: false,
+					nodeB: false,
+					nodeC: false,
+					nodeD: false,
+					nodeE: false,
+					nodeF: false,
+					nodeG: false,
+					nodeH: false,
+					nodeI: false,
+					nodeJ: false,
+					nodeK: false,
+					nodeL: false
+				},
+				trough: 0
+			},
+			totalPoints: 0,
+			wallAlgaeCount: 0
 		}
 	}
 };
@@ -116,21 +351,7 @@ export const mockTeam254: TBATeam = {
 	key: 'frc254',
 	team_number: 254,
 	nickname: 'The Cheesy Poofs',
-	name: 'NASA Ames Research Center & Google',
-	city: 'San Jose',
-	state_prov: 'California',
-	country: 'USA',
-	address: null,
-	postal_code: null,
-	gmaps_place_id: null,
-	gmaps_url: null,
-	lat: null,
-	lng: null,
-	location_name: null,
-	website: 'http://www.team254.com',
-	rookie_year: 1999,
-	motto: null,
-	home_championship: null
+	name: 'NASA Ames Research Center & Google'
 };
 
 export const mockTeam1114: TBATeam = {
@@ -138,12 +359,7 @@ export const mockTeam1114: TBATeam = {
 	key: 'frc1114',
 	team_number: 1114,
 	nickname: 'Simbotics',
-	name: 'General Motors & Ryerson University',
-	city: 'St. Catharines',
-	state_prov: 'Ontario',
-	country: 'Canada',
-	website: 'http://www.simbotics.org',
-	rookie_year: 2003
+	name: 'General Motors & Ryerson University'
 };
 
 export const mockTeam2056: TBATeam = {
@@ -151,11 +367,7 @@ export const mockTeam2056: TBATeam = {
 	key: 'frc2056',
 	team_number: 2056,
 	nickname: 'OP Robotics',
-	name: 'Overland High School',
-	city: 'Aurora',
-	state_prov: 'Colorado',
-	website: 'http://www.oprobotics.com',
-	rookie_year: 2007
+	name: 'Overland High School'
 };
 
 /**

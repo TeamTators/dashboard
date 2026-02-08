@@ -12,7 +12,7 @@ import * as TBA from '$lib/server/utils/tba';
 import { TBA as TBAStructs } from '$lib/server/structs/TBA';
 import { mockEvent2025, mockTeam254, mockMatch2025 } from './fixtures/tba-data';
 
-describe('Phase 1: TBA Integration & Caching', async () => {
+describe('TBA Integration & Caching', async () => {
 	// Setup database
 	beforeAll(async () => {
 		await Struct.buildAll(DB).unwrap();

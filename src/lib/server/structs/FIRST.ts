@@ -47,14 +47,18 @@ export namespace FIRST {
 	export const generateSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
 			const event = await Event.getEvent(eventKey, true).unwrap();
+			console.log('Received event', eventKey);
 			const teams = await event.getTeams(true).unwrap();
+			console.log('Received teams', eventKey, teams.length);
 			const matches = await event.getMatches(true).unwrap();
+			console.log('Received matches', eventKey, matches.length);
 			const scouting = await Scouting.MatchScouting.get(
-				{ eventKey: eventKey },
+				{ eventKey },
 				{
 					type: 'all'
 				}
 			).unwrap();
+			console.log('Received scouting', eventKey, scouting.length);
 
 			const obj = teams.reduce(
 				(acc, team) => {
@@ -68,6 +72,7 @@ export namespace FIRST {
 				const team = scout.data.team;
 				if (obj[team]) {
 					const trace = Trace.parse(scout.data.trace).unwrap();
+					console.log('Parsed trace for team', team);
 					obj[team].push(trace);
 				}
 			}

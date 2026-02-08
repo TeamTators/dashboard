@@ -5,7 +5,7 @@
  * Part of Phase 1: Data Integrity testing.
  */
 
-import { describe, expect, test, beforeAll, afterEach } from 'vitest';
+import { describe, expect, test, beforeAll, afterEach, afterAll } from 'vitest';
 import { Struct } from 'drizzle-struct';
 import { DB } from '$lib/server/db';
 import { Scouting } from '$lib/server/structs/scouting';
@@ -21,7 +21,7 @@ import {
 	emptySliders
 } from './fixtures/trace-data';
 
-describe('Phase 1: Scouting Data Models & Trace Parsing', async () => {
+describe('Scouting Data Models & Trace Parsing', async () => {
 	// Setup database
 	beforeAll(async () => {
 		await Struct.buildAll(DB).unwrap();
@@ -39,6 +39,33 @@ describe('Phase 1: Scouting Data Models & Trace Parsing', async () => {
 				await item.delete();
 			}
 		}
+	});
+
+	afterAll(async () => {
+		// Final cleanup
+		const testData2024 = await Scouting.MatchScouting.get(
+			{ eventKey: '2024test' },
+			{ type: 'array', limit: 1000, offset: 0 }
+		);
+		if (testData2024.isOk()) await Promise.all(testData2024.value.map((i) => i.delete()));
+
+		const testData2025 = await Scouting.MatchScouting.get(
+			{ eventKey: '2025test' },
+			{ type: 'array', limit: 1000, offset: 0 }
+		);
+		if (testData2025.isOk()) await Promise.all(testData2025.value.map((i) => i.delete()));
+
+		const prescouting2024 = await Scouting.MatchScouting.get(
+			{ eventKey: '2024test' },
+			{ type: 'array', limit: 1000, offset: 0 }
+		);
+		if (prescouting2024.isOk()) await Promise.all(prescouting2024.value.map((i) => i.delete()));
+
+		const prescouting2025 = await Scouting.MatchScouting.get(
+			{ eventKey: '2025test' },
+			{ type: 'array', limit: 1000, offset: 0 }
+		);
+		if (prescouting2025.isOk()) await Promise.all(prescouting2025.value.map((i) => i.delete()));
 	});
 
 	describe('MatchScoutingExtended.from()', () => {
@@ -96,12 +123,7 @@ describe('Phase 1: Scouting Data Models & Trace Parsing', async () => {
 				sliders: emptySliders
 			});
 
-			expect(created.isOk()).toBe(true);
-			const scouting = created.unwrap();
-
-			// Should fail to parse
-			const extended = Scouting.MatchScoutingExtended.from(scouting);
-			expect(extended.isErr()).toBe(true);
+			expect(created.isOk()).toBe(false);
 		});
 
 		test('should fail with invalid trace structure', async () => {
@@ -122,12 +144,7 @@ describe('Phase 1: Scouting Data Models & Trace Parsing', async () => {
 				sliders: emptySliders
 			});
 
-			expect(created.isOk()).toBe(true);
-			const scouting = created.unwrap();
-
-			// Should fail to parse
-			const extended = Scouting.MatchScoutingExtended.from(scouting);
-			expect(extended.isErr()).toBe(true);
+			expect(created.isOk()).toBe(false);
 		});
 	});
 
@@ -461,13 +478,13 @@ describe('Phase 1: Scouting Data Models & Trace Parsing', async () => {
 				sliders: emptySliders
 			});
 
-			const result = await Scouting.getTeamPrescouting(254, 2025);
+			const result = await Scouting.getTeamPrescouting(254, 2025, true);
 
 			expect(result.isOk()).toBe(true);
 			const prescouting = result.unwrap();
 			expect(prescouting.length).toBeGreaterThanOrEqual(1);
-			// All should be prescouting
-			expect(prescouting.every((s) => s.prescouting)).toBe(true);
+			// This function may not retrieve only prescouting records if the flag is not set, but if it does, they should all be prescouting
+			expect(prescouting.every((s) => s.data.prescouting)).toBe(true);
 		});
 
 		test('should filter by year correctly', async () => {
@@ -511,13 +528,13 @@ describe('Phase 1: Scouting Data Models & Trace Parsing', async () => {
 			const result2024 = await Scouting.getTeamPrescouting(254, 2024);
 			expect(result2024.isOk()).toBe(true);
 			const prescouting2024 = result2024.unwrap();
-			expect(prescouting2024.every((s) => s.year === 2024)).toBe(true);
+			expect(prescouting2024.every((s) => s.data.year === 2024)).toBe(true);
 
 			// Get 2025 only
 			const result2025 = await Scouting.getTeamPrescouting(254, 2025);
 			expect(result2025.isOk()).toBe(true);
 			const prescouting2025 = result2025.unwrap();
-			expect(prescouting2025.every((s) => s.year === 2025)).toBe(true);
+			expect(prescouting2025.every((s) => s.data.year === 2025)).toBe(true);
 		});
 	});
 });

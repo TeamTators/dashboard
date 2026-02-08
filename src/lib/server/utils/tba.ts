@@ -440,6 +440,17 @@ export class Match {
 			} else throw new Error('Invalid year');
 		});
 	}
+
+	toString() {
+		const compLevelMap: Record<string, string> = {
+			qm: 'Qualifications',
+			qf: 'Quarterfinals',
+			sf: 'Semifinals',
+			f: 'Finals'
+		};
+		const compLevel = compLevelMap[this.tba.comp_level] || this.tba.comp_level;
+		return `${compLevel} Match ${this.tba.match_number}`;
+	}
 }
 
 export class Team {
