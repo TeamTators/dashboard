@@ -25,7 +25,7 @@ export namespace FIRST {
 		name: 'event_summary',
 		structure: {
 			/** TBA event key. */
-			eventKey: text('event_key').notNull(),
+			eventKey: text('event_key').notNull().unique(),
 			/** Serialized summary payload. */
 			summary: text('summary').notNull(),
 			/** Hash of the summary for cache invalidation. */
