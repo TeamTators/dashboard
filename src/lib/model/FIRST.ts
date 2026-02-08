@@ -25,7 +25,7 @@ export namespace FIRST {
 			/** Serialized summary payload. */
 			summary: 'string',
 			/** Hash of the summary for cache invalidation. */
-			summaryHash: 'string',
+			summaryHash: 'string'
 		},
 		socket: sse,
 		browser

@@ -29,7 +29,7 @@ export namespace FIRST {
 			/** Serialized summary payload. */
 			summary: text('summary').notNull(),
 			/** Hash of the summary for cache invalidation. */
-			summaryHash: text('summary_hash').notNull().default(''), // to ensure we can invalidate the cache when the summary generation logic changes
+			summaryHash: text('summary_hash').notNull().default('') // to ensure we can invalidate the cache when the summary generation logic changes
 		}
 	});
 
@@ -92,33 +92,35 @@ export namespace FIRST {
 		});
 	};
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	export const hashSummary = (summary: Summary<any, {
-		[key: string]: {
-			[key: string]: () => number;
-		}
-	}>) => {
-		const normalizeFunction = (fn: (data: unknown) => number) => {
-			return fn
-				.toString()
-				.replace(/\s+/g, " ")
-				.trim()
+	export const hashSummary = (
+		summary: Summary<
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			any,
+			{
+				[key: string]: {
+					[key: string]: () => number;
+				};
 			}
+		>
+	) => {
+		const normalizeFunction = (fn: (data: unknown) => number) => {
+			return fn.toString().replace(/\s+/g, ' ').trim();
+		};
 		const canonical = Object.keys(summary['schema'])
 			.sort()
-			.map(outerKey => {
-			const inner = summary['schema'][outerKey]
-			const innerCanonical = Object.keys(inner)
-				.sort()
-				.map(innerKey => {
-				const fn = inner[innerKey]
-				return `${innerKey}:${normalizeFunction(fn)}`
-				})
-				.join("|")
+			.map((outerKey) => {
+				const inner = summary['schema'][outerKey];
+				const innerCanonical = Object.keys(inner)
+					.sort()
+					.map((innerKey) => {
+						const fn = inner[innerKey];
+						return `${innerKey}:${normalizeFunction(fn)}`;
+					})
+					.join('|');
 
-			return `${outerKey}:{${innerCanonical}}`
+				return `${outerKey}:{${innerCanonical}}`;
 			})
-			.join("||")
+			.join('||');
 
 		return hash('sha256', canonical);
 	};
@@ -148,7 +150,7 @@ export namespace FIRST {
 			await EventSummary.new({
 				eventKey,
 				summary: summary.serialize(),
-				summaryHash: hashSummary(summary.parser),
+				summaryHash: hashSummary(summary.parser)
 			});
 			return summary;
 		});
