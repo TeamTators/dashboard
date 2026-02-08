@@ -16,7 +16,6 @@ Includes quick navigation across teams and links back to the robot display.
 	import type { TBAMatch } from '$lib/utils/tba.js';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';
-	import { onMount } from 'svelte';
 
 	const { data } = $props();
 	const teams = $derived(data.teams);

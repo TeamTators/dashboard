@@ -50,7 +50,7 @@ export namespace FIRST {
 			const teams = await event.getTeams(true).unwrap();
 			const matches = await event.getMatches(true).unwrap();
 			const scouting = await Scouting.MatchScouting.get(
-				{ eventKey: eventKey },
+				{ eventKey },
 				{
 					type: 'all'
 				}
@@ -68,6 +68,7 @@ export namespace FIRST {
 				const team = scout.data.team;
 				if (obj[team]) {
 					const trace = Trace.parse(scout.data.trace).unwrap();
+					console.log('Parsed trace for team', team);
 					obj[team].push(trace);
 				}
 			}
