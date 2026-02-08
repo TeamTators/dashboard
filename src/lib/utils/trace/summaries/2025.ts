@@ -117,7 +117,7 @@ const summary2025 = YearInfo2025.summary({
 		'Average Velocity': ({ traces }) => Aggregators.average(traces.map((t) => t.averageVelocity())),
 		'Average Seconds Not Moving': ({ traces }) =>
 			Aggregators.average(traces.map((t) => t.secondsNotMoving()))
-	}
+	},
 });
 
 export default summary2025;

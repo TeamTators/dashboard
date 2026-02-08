@@ -23,7 +23,9 @@ export namespace FIRST {
 			/** TBA event key (e.g., "2025miket"). */
 			eventKey: 'string',
 			/** Serialized summary payload. */
-			summary: 'string'
+			summary: 'string',
+			/** Hash of the summary for cache invalidation. */
+			summaryHash: 'string',
 		},
 		socket: sse,
 		browser
@@ -82,12 +84,22 @@ export namespace FIRST {
 			const summary = obj.data.summary;
 			if (!summary) throw new Error('No summary found');
 			if (year === 2024) {
+				const res = Summary2024.deserialize(summary);
+				if (res.isErr()) {
+					await obj.delete().unwrap();
+					return get();
+				}
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				return Summary2024.deserialize(summary).unwrap() as any;
+				return res.value as any;
 			}
 			if (year === 2025) {
+				const res = Summary2025.deserialize(summary);
+				if (res.isErr()) {
+					await obj.delete().unwrap();
+					return get();
+				}
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				return Summary2025.deserialize(summary).unwrap() as any;
+				return res.value as any;
 			}
 			return get();
 		});
