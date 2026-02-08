@@ -64,10 +64,10 @@ describe('Year-Specific Trace Summaries', async () => {
 			}
 		};
 
-		clearEvent('2025summarytest');
-		clearEvent('2024summarytest');
-		clearEvent('2025nocache');
-		clearEvent('2025serializetest');
+		await clearEvent('2025summarytest');
+		await clearEvent('2024summarytest');
+		await clearEvent('2025nocache');
+		await clearEvent('2025serializetest');
 	};
 
 	afterAll(clearAll);
@@ -302,9 +302,8 @@ describe('Year-Specific Trace Summaries', async () => {
 			});
 
 			// Get summary - should generate
-			const result = await FIRST.getSummary('2025nocache', 2025);
-			expect(result.isOk()).toBe(true);
-			expect(result.unwrap()).toBeDefined();
+			const summary = await FIRST.getSummary('2025nocache', 2025).unwrap();
+			expect(summary).toBeDefined();
 		});
 	});
 
@@ -350,9 +349,8 @@ describe('Year-Specific Trace Summaries', async () => {
 			});
 
 			// Generate summary
-			const summaryResult = await FIRST.generateSummary('2025serializetest', 2025);
-			expect(summaryResult.isOk()).toBe(true);
-			const summary = summaryResult.unwrap();
+			const summary = await FIRST.generateSummary('2025serializetest', 2025).unwrap();
+			expect(summary).toBeDefined();
 
 			// Serialize
 			const serialized = summary.serialize();
