@@ -1,3 +1,9 @@
+<!--
+@component
+TBA testing utility page.
+
+Fetches event data, teams, and matches to validate TBA connectivity.
+-->
 <script lang="ts">
 	import * as TBA from '$lib/utils/tba';
 	import { dateTime } from 'ts-utils/clock';
@@ -7,7 +13,7 @@
 	let teams: TBA.TBATeam[] = $state([]);
 
 	let status = $state('Pending');
-	let complete = $state(false);
+	let complete = $derived(status !== 'Pending');
 
 	const getEvent = async () => {
 		eventKey = eventKey.trim().toLowerCase();
@@ -26,14 +32,6 @@
 
 		status = 'Success';
 	};
-
-	$effect(() => {
-		complete = status !== 'Pending';
-	});
-
-	$inspect(event);
-	$inspect(teams);
-	$inspect(matches);
 </script>
 
 <div class="container">

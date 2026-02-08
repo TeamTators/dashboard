@@ -1,14 +1,29 @@
+<!--
+@fileoverview Aggregated potato stat list for a friend.
+
+@component Stats
+
+@description
+Computes the current and next phase information for a potato and renders multiple `Stat`
+components (health, attack, defense, speed, mana, and next-phase progress).
+
+@example
+```svelte
+<Stats {potato} />
+```
+-->
 <script lang="ts">
 	import Stats from './Stat.svelte';
 	import { Potato } from '$lib/model/potato';
 
 	interface Props {
+		/** Potato friend data source. */
 		potato: Potato.FriendData;
 	}
 
 	const { potato }: Props = $props();
-	let currentPhase = $state(Potato.getPhase(potato.data.level || 0));
-	let nextPhase = $state(Potato.getNextPhase(potato.data.level || 0));
+	let currentPhase = $derived(Potato.getPhase(potato.data.level || 0));
+	let nextPhase = $derived(Potato.getNextPhase(potato.data.level || 0));
 	let nextLevel = $derived(Potato.Levels[currentPhase as keyof typeof Potato.Levels]);
 </script>
 

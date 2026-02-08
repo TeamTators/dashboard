@@ -1,3 +1,17 @@
+<!--
+@fileoverview Read-only pit-scouting card that summarizes all sections.
+
+@component PitScoutingCard
+
+@description
+Renders all pit-scouting sections for a team with links to edit each section. Uses
+the provided questions and answers to display read-only responses.
+
+@example
+```svelte
+<PitScoutingCard {team} {event} {sections} {groups} {questions} {answers} {answerAccounts} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import Section from './Section.svelte';
@@ -5,12 +19,19 @@
 	import { Account } from '$lib/model/account';
 
 	interface Props {
+		/** Team being displayed. */
 		team: TBATeam;
+		/** Event context for section links. */
 		event: TBAEvent;
+		/** Section store for the event. */
 		sections: Scouting.PIT.SectionArr;
+		/** Group store for the event. */
 		groups: Scouting.PIT.GroupArr;
+		/** Question store for the event. */
 		questions: Scouting.PIT.QuestionArr;
+		/** Answer store for the team. */
 		answers: Scouting.PIT.AnswerArr;
+		/** Accounts that provided answers. */
 		answerAccounts: Account.AccountData[];
 	}
 

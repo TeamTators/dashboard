@@ -1,7 +1,22 @@
+<!--
+@fileoverview Full match scouting display with media, charts, and actions.
+
+@component MatchDisplay
+
+@description
+Renders a comprehensive view of a match: videos, contribution chart, comments, checks,
+actions, endgame, trace replay, and administrative actions like archiving or restoring
+older versions.
+
+@example
+```svelte
+<MatchDisplay {match} {team} {event} {scouting} strategies={[]} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import Trace from './Trace.svelte';
+	// import Trace from './Trace.svelte';
 	import { TBAEvent, TBATeam, TBAMatch } from '$lib/utils/tba';
 	import { writable } from 'svelte/store';
 	import MatchComments from './MatchComments.svelte';
@@ -14,15 +29,21 @@
 	import type { Strategy } from '$lib/model/strategy';
 	import { goto } from '$app/navigation';
 	import Slider from './Slider.svelte';
-	import { Trace as T, TraceSchema, type TraceArray } from 'tatorscout/trace';
+	import TraceHTML from './TraceHTML.svelte';
 
 	interface Props {
+		/** TBA match for display and media. */
 		match: TBAMatch;
-		scouting?: Scouting.MatchScoutingData;
+		/** Optional scouting record (may be undefined). */
+		scouting?: Scouting.MatchScoutingExtended;
+		/** Team being displayed. */
 		team: TBATeam;
 		// focus: Focus;
+		/** Event context for navigation and scoring. */
 		event: TBAEvent;
+		/** Optional strategies for quick navigation. */
 		strategies?: Strategy.StrategyData[];
+		/** Optional scout username override. */
 		scout?: string;
 	}
 
@@ -32,7 +53,7 @@
 
 	onMount(() => {
 		if (scouting) {
-			scouting.getVersions().then((res) => {
+			scouting.scouting.getVersions().then((res) => {
 				if (res.isErr()) return console.error(res.error);
 				versions.set(res.value.data);
 			});
@@ -41,10 +62,7 @@
 
 	const avgvelocity = () => {
 		if (!scouting) return 0;
-		const trace = TraceSchema.safeParse(JSON.parse(scouting.data.trace || '[]'));
-		if (!trace.success) return 0;
-		const traceData = trace.data;
-		return T.velocity.average(traceData as TraceArray).toFixed(2);
+		return scouting.averageVelocity.toFixed(2);
 	};
 </script>
 
@@ -55,7 +73,7 @@
 				{#if scout}
 					<h4>Scouted by: {scout}</h4>
 				{:else}
-					<h4>Scouted by: {scouting.data.scoutUsername}</h4>
+					<h4>Scouted by: {scouting.scouting.data.scoutUsername}</h4>
 				{/if}
 			</div>
 		</div>
@@ -133,7 +151,7 @@
 			</div>
 		</div>
 		<div class="row mb-3">
-			<Trace {scouting} />
+			<TraceHTML {scouting} />
 		</div>
 		<div class="row mb-3">
 			<div class="col-12">
@@ -147,7 +165,7 @@
 									'Are you sure you want to archive this scouting data? (It can still be restored)'
 								)
 							) {
-								scouting?.setArchive(true);
+								scouting?.scouting.setArchive(true);
 							}
 						}}
 					>
@@ -185,7 +203,7 @@
 								{:else}
 									Unknown date
 								{/if}
-								<Trace {scouting} classes="layer-1 flex-1" />
+								<TraceHTML {scouting} />
 								<button
 									type="button"
 									class="btn btn-success"

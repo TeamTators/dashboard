@@ -1,6 +1,6 @@
 <script lang="ts">
 	const { data } = $props();
-	const { account } = data;
+	const { account } = $derived(data);
 </script>
 
 <div class="container d-flex flex-column align-items-center justify-content-center vh-100">

@@ -1,11 +1,17 @@
+<!--
+@component
+Prescouting trace viewer for a single team and season.
+
+Displays traces, actions, checks, and comments across prescouted matches.
+-->
 <script lang="ts">
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import MatchContribution from '$lib/components/charts/MatchContribution.svelte';
 	import Checks from '$lib/components/robot-display/Checks.svelte';
 	import MatchActions from '$lib/components/robot-display/MatchActions.svelte';
 	import MatchComments from '$lib/components/robot-display/MatchComments.svelte';
-	import Trace from '$lib/components/robot-display/Trace.svelte';
-	import type { Scouting } from '$lib/model/scouting.js';
+	import Trace from '$lib/components/robot-display/TraceHTML.svelte';
+	import { Scouting } from '$lib/model/scouting.js';
 	import { listen } from '$lib/utils/struct-listener';
 	import type { TBAEvent, TBAMatch } from '$lib/utils/tba.js';
 	import { onMount } from 'svelte';
@@ -15,31 +21,37 @@
 
 	const year = $derived(data.year);
 	const teamNumber = $derived(data.teamNumber);
-	const scoutingArr = $derived(data.scouting);
+	const scouting = $derived(data.scouting);
+	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
 	const team = $derived(data.team);
 	const events = $derived(data.events);
 
 	const focus = writable<'auto' | 'teleop' | 'endgame' | 'all'>('all');
 	onMount(() => {
-		return listen(scoutingArr, (data) => {
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		if (res.isOk()) {
+			scoutingArr = res.value;
+		} else {
+			console.error('Error creating MatchScoutingExtendedArr:', res.error);
+		}
+
+		return listen(scouting, (data) => {
 			return data.data.year === year && data.data.team === teamNumber;
 		});
 	});
 
 	let modal: Modal;
 
-	let selectedScouting: Scouting.MatchScoutingData | undefined = $state(undefined);
+	let selectedScouting: Scouting.MatchScoutingExtended | undefined = $state(undefined);
 	let match: TBAMatch | undefined = $state(undefined);
 	let event: TBAEvent | undefined = $state(undefined);
 
-	const open = async (scouting: Scouting.MatchScoutingData) => {
+	const open = async (scouting: Scouting.MatchScoutingExtended) => {
 		selectedScouting = scouting;
-		const e = events.find((e) => e.event.tba.key === scouting.data.eventKey);
+		const e = events.find((e) => e.event.tba.key === scouting.eventKey);
 		event = e?.event;
 		match = e?.matches.find(
-			(m) =>
-				m.tba.match_number === scouting.data.matchNumber &&
-				m.tba.comp_level === scouting.data.compLevel
+			(m) => m.tba.match_number === scouting.matchNumber && m.tba.comp_level === scouting.compLevel
 		);
 		modal.show();
 	};
@@ -102,12 +114,12 @@
 		</div>
 	</div>
 	<div class="row">
-		{#key scoutingArr}
-			{#if $scoutingArr.length}
+		{#key scouting}
+			{#if $scouting.length}
 				{#each $scoutingArr as scouting}
 					<div class="col-3">
 						<h3>
-							{scouting.data.compLevel}{scouting.data.matchNumber} - {scouting.data.eventKey}
+							{scouting.compLevel}{scouting.matchNumber} - {scouting.eventKey}
 							<button type="button" class="btn" onclick={() => open(scouting)}>
 								<i class="material-icons">visibility</i>
 							</button>
@@ -124,8 +136,7 @@
 <Modal
 	bind:this={modal}
 	size="lg"
-	title="Trace {selectedScouting?.data.compLevel}{selectedScouting?.data
-		.matchNumber} - {selectedScouting?.data.eventKey}"
+	title="Trace {selectedScouting?.compLevel}{selectedScouting?.matchNumber} - {selectedScouting?.eventKey}"
 >
 	{#snippet body()}
 		{#key selectedScouting}

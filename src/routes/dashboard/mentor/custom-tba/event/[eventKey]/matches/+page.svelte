@@ -1,3 +1,9 @@
+<!--
+@component
+Custom event match editor.
+
+Edits match schedules, alliances, and times for a custom event.
+-->
 <script lang="ts">
 	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba.js';
 	import Grid from '$lib/components/general/Grid.svelte';
@@ -62,30 +68,32 @@
 		time: Date;
 	};
 
-	const updateMatches: Writable<Row[]> = writable(
-		data.matches.map((m) => ({
-			red1: m.alliances.red.team_keys[0]
-				? parseInt(m.alliances.red.team_keys[0].replace('frc', ''))
-				: 0,
-			red2: m.alliances.red.team_keys[1]
-				? parseInt(m.alliances.red.team_keys[1].replace('frc', ''))
-				: 0,
-			red3: m.alliances.red.team_keys[2]
-				? parseInt(m.alliances.red.team_keys[2].replace('frc', ''))
-				: 0,
-			blue1: m.alliances.blue.team_keys[0]
-				? parseInt(m.alliances.blue.team_keys[0].replace('frc', ''))
-				: 0,
-			blue2: m.alliances.blue.team_keys[1]
-				? parseInt(m.alliances.blue.team_keys[1].replace('frc', ''))
-				: 0,
-			blue3: m.alliances.blue.team_keys[2]
-				? parseInt(m.alliances.blue.team_keys[2].replace('frc', ''))
-				: 0,
-			number: m.match_number,
-			compLevel: m.comp_level as 'qm' | 'qf' | 'sf' | 'f',
-			time: new Date(Number(m.time) * 1000)
-		}))
+	const updateMatches: Writable<Row[]> = $derived(
+		writable(
+			data.matches.map((m) => ({
+				red1: m.alliances.red.team_keys[0]
+					? parseInt(m.alliances.red.team_keys[0].replace('frc', ''))
+					: 0,
+				red2: m.alliances.red.team_keys[1]
+					? parseInt(m.alliances.red.team_keys[1].replace('frc', ''))
+					: 0,
+				red3: m.alliances.red.team_keys[2]
+					? parseInt(m.alliances.red.team_keys[2].replace('frc', ''))
+					: 0,
+				blue1: m.alliances.blue.team_keys[0]
+					? parseInt(m.alliances.blue.team_keys[0].replace('frc', ''))
+					: 0,
+				blue2: m.alliances.blue.team_keys[1]
+					? parseInt(m.alliances.blue.team_keys[1].replace('frc', ''))
+					: 0,
+				blue3: m.alliances.blue.team_keys[2]
+					? parseInt(m.alliances.blue.team_keys[2].replace('frc', ''))
+					: 0,
+				number: m.match_number,
+				compLevel: m.comp_level as 'qm' | 'qf' | 'sf' | 'f',
+				time: new Date(Number(m.time) * 1000)
+			}))
+		)
 	);
 
 	const addMatch = () => {

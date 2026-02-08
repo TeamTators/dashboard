@@ -2,12 +2,12 @@ import { attemptAsync } from 'ts-utils/check';
 import { Event, Team } from './tba';
 import { z } from 'zod';
 import { Scouting } from '../structs/scouting';
-import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
 import terminal from './terminal';
 import { DB } from '../db';
 import { and, eq } from 'drizzle-orm';
 import { type RequestEvent } from '@sveltejs/kit';
 import { teamsFromMatch } from 'tatorscout/tba';
+import YearInfo2025 from 'tatorscout/years/2025.js';
 
 /**
  * Memoization utility for caching expensive function results
@@ -58,18 +58,15 @@ export const summarize = async (eventKey: string) => {
 
 		if (event.tba.year !== 2025) throw new Error('Only 2025 events are currently supported');
 
-		const cache = new Map<number, { trace: TraceArray; match: Scouting.MatchScoutingData }[]>();
+		const cache = new Map<number, Scouting.MatchScoutingExtended[]>();
 
-		const getAllTraces = async (team: Team) => {
+		const getAllScouting = async (team: Team) => {
 			const cached = cache.get(team.tba.team_number);
 			if (cached) return cached;
 			const matchScouting = (
 				await Scouting.getTeamScouting(team.tba.team_number, event.tba.key)
 			).unwrap();
-			const data = matchScouting.map((s) => ({
-				trace: TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray,
-				match: s
-			}));
+			const data = matchScouting.map((s) => Scouting.MatchScoutingExtended.from(s).unwrap());
 			cache.set(team.tba.team_number, data);
 			return data;
 		};
@@ -78,8 +75,8 @@ export const summarize = async (eventKey: string) => {
 		const getScores = memoize(
 			async (team: Team) => {
 				try {
-					const traces = await getAllTraces(team);
-					if (!traces) throw new Error('No traces found');
+					const scouting = await getAllScouting(team);
+					if (!scouting) throw new Error('No traces found');
 					const teamMatches = matches.filter((m) =>
 						teamsFromMatch(m.tba).includes(team.tba.team_number)
 					);
@@ -90,9 +87,7 @@ export const summarize = async (eventKey: string) => {
 					// For each of the listeners below, you'll need to do `scores.map(s => s.traceScore.something)` instead of `scores.map(s => s.something)`
 					// Then, fill out the blank columns below with the appropriate values
 
-					const traceScore = traces.map((t) =>
-						Trace.score.parse2025(t.trace, (t.match.data.alliance || 'red') as 'red' | 'blue')
-					);
+					const traceScore = scouting.map((t) => YearInfo2025.parse(t.trace));
 
 					const endgame: { dpc: number; shc: number; park: number }[] = [];
 					const mobility: number[] = [];
@@ -142,7 +137,7 @@ export const summarize = async (eventKey: string) => {
 		const getScoresWithoutDefense = memoize(
 			async (team: Team) => {
 				try {
-					const traces = await getAllTraces(team);
+					const traces = await getAllScouting(team);
 					if (!traces) throw new Error('No traces found');
 					const teamMatches = matches.filter((m) =>
 						teamsFromMatch(m.tba).includes(team.tba.team_number)
@@ -151,11 +146,12 @@ export const summarize = async (eventKey: string) => {
 
 					const traceScore = traces
 						.map((t) => {
-							if (!t.match.data.checks.includes('defense')) {
-								return Trace.score.parse2025(
-									t.trace,
-									(t.match.data.alliance || 'red') as 'red' | 'blue'
-								);
+							if (!t.getChecks().unwrap().includes('defense')) {
+								// return Trace.score.parse2025(
+								// 	t.trace,
+								// 	(t.match.data.alliance || 'red') as 'red' | 'blue'
+								// );
+								return YearInfo2025.parse(t.trace);
 							}
 						})
 						.filter((score) => score !== undefined); // Remove undefined values
@@ -211,7 +207,8 @@ export const summarize = async (eventKey: string) => {
 		// Memoize expensive velocity and scouting calculations
 		const getTeamScouting = memoize(
 			async (teamNumber: number, eventKey: string) => {
-				return (await Scouting.getTeamScouting(teamNumber, eventKey)).unwrap();
+				const scoutingArr = await Scouting.getTeamScouting(teamNumber, eventKey).unwrap();
+				return scoutingArr.map((s) => Scouting.MatchScoutingExtended.from(s).unwrap());
 			},
 			(teamNumber: number, eventKey: string) => `teamScouting_${teamNumber}_${eventKey}`
 		);
@@ -219,11 +216,7 @@ export const summarize = async (eventKey: string) => {
 		const getAverageVelocity = memoize(
 			async (team: Team) => {
 				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
-				return average(
-					matchScouting.map((s) =>
-						Trace.velocity.average(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray)
-					)
-				);
+				return average(matchScouting.map((s) => s.averageVelocity));
 			},
 			(team: Team) => `averageVelocity_${team.tba.team_number}`
 		);
@@ -232,7 +225,7 @@ export const summarize = async (eventKey: string) => {
 			async (team: Team) => {
 				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
 				return matchScouting
-					.map((s) => z.array(z.string()).parse(JSON.parse(s.data.checks)))
+					.map((s) => s.getChecks().unwrap())
 					.flat()
 					.join('\n ');
 			},
@@ -242,11 +235,7 @@ export const summarize = async (eventKey: string) => {
 		const getSecondsNotMoving = memoize(
 			async (team: Team) => {
 				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
-				return average(
-					matchScouting.map((s) =>
-						Trace.secondsNotMoving(TraceSchema.parse(JSON.parse(s.data.trace)) as TraceArray, false)
-					)
-				);
+				return average(matchScouting.map((s) => s.secondsNotMoving));
 			},
 			(team: Team) => `secondsNotMoving_${team.tba.team_number}`
 		);
@@ -272,7 +261,7 @@ export const summarize = async (eventKey: string) => {
 			return Math.sqrt(variance);
 		};
 
-		const yearBreakdown = Trace.score.yearBreakdown[2025];
+		const yearBreakdown = YearInfo2025.scoreBreakdown;
 
 		const t = new Table(eventKey);
 		t.column('Team Number', (t) => t.tba.team_number);

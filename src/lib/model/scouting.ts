@@ -1,35 +1,60 @@
+/**
+ * @fileoverview Scouting Struct models, helpers, and match upload utilities.
+ *
+ * @description
+ * Provides client-side Structs for match scouting, team comments, and pit scouting, plus
+ * helper classes and functions for analyzing scouting data and uploading match batches.
+ */
 import { type DataArr } from '$lib/services/struct/data-arr';
 import { Struct } from '$lib/services/struct';
 import { type StructDataVersion, type StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
-import { attempt, attemptAsync } from 'ts-utils/check';
+import { attempt, attemptAsync, resolveAll } from 'ts-utils/check';
 import { z } from 'zod';
 import { Account } from './account';
-import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+import { Trace } from 'tatorscout/trace';
 import { $Math } from 'ts-utils/math';
 import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
 import { match } from 'ts-utils/match';
+import { Batch } from 'ts-utils/batch';
+import { WritableArray, WritableBase } from '$lib/services/writables';
+import YearInfo2025 from 'tatorscout/years/2025.js';
+import * as remote from '$lib/remotes/scouting.remote';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
 		name: 'match_scouting',
 		structure: {
+			/** Event key the match belongs to. */
 			eventKey: 'string',
+			/** Match number within the event. */
 			matchNumber: 'number',
+			/** Competition level (pr, qm, qf, sf, f). */
 			compLevel: 'string',
 			// matchId: 'string',
+			/** Team number being scouted. */
 			team: 'number',
+			/** Scout account id. */
 			scoutId: 'string',
+			/** Scout group number. */
 			scoutGroup: 'number',
+			/** True if this is a pre-scouting record. */
 			prescouting: 'boolean',
+			/** True if the match was uploaded remotely. */
 			remote: 'boolean',
+			/** Serialized trace payload. */
 			trace: 'string',
+			/** Serialized checks list. */
 			checks: 'string',
+			/** Scout username for display. */
 			scoutUsername: 'string',
+			/** Alliance color for the team. */
 			alliance: 'string',
+			/** Competition year. */
 			year: 'number',
+			/** Serialized sliders payload. */
 			sliders: 'string'
 		},
 		socket: sse,
@@ -40,57 +65,175 @@ export namespace Scouting {
 	export type MatchScoutingArr = DataArr<typeof MatchScouting.data.structure>;
 	export type MatchScoutingHistory = StructDataVersion<typeof MatchScouting.data.structure>;
 
-	export const getAverageVelocity = (data: MatchScoutingData[]) => {
-		return Trace.velocity.average(
-			data.map((d) => TraceSchema.parse(JSON.parse(d.data.trace || '[]'))).flat() as TraceArray
-		);
-	};
+	/**
+	 * Wrapper that pairs a scouting record with its parsed trace.
+	 */
+	export class MatchScoutingExtended extends WritableBase<{
+		trace: Trace;
+		scouting: MatchScoutingData;
+	}> {
+		static from(scouting: MatchScoutingData) {
+			return attempt(() => {
+				const trace = Trace.parse(scouting.data.trace).unwrap();
+				return new MatchScoutingExtended(scouting, trace);
+			});
+		}
 
-	export const getArchivedMatches = (team: number, eventKey: string) => {
-		return MatchScouting.query(
-			'archived-matches',
-			{ team, eventKey },
-			{
-				asStream: false,
-				satisfies: (d) => d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
-			}
-		);
-	};
+		constructor(scouting: MatchScoutingData, trace: Trace) {
+			super({
+				scouting,
+				trace
+			});
 
-	export const averageAutoScore = (data: MatchScoutingData[], year: number) => {
-		return attempt(() => {
-			if (year === 2025) {
-				return $Math.average(
-					data.map(
-						(d) =>
-							Trace.score.parse2025(
-								TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-								d.data.alliance as 'red' | 'blue'
-							).auto.total
+			// pipe all events into this class
+			this.onAllUnsubscribe(scouting.subscribe(() => this.inform()));
+		}
+
+		get team() {
+			return Number(this.data.scouting.data.team);
+		}
+
+		get matchNumber() {
+			return Number(this.data.scouting.data.matchNumber);
+		}
+
+		get compLevel() {
+			return this.data.scouting.data.compLevel;
+		}
+
+		get trace() {
+			return this.data.trace;
+		}
+
+		get scouting() {
+			return this.data.scouting;
+		}
+
+		get year() {
+			return Number(this.data.scouting.data.year);
+		}
+
+		get eventKey() {
+			return this.data.scouting.data.eventKey;
+		}
+
+		get averageVelocity() {
+			return this.data.trace.averageVelocity();
+		}
+
+		get secondsNotMoving() {
+			return this.data.trace.secondsNotMoving();
+		}
+
+		get id() {
+			return String(this.data.scouting.data.id);
+		}
+
+		getChecks() {
+			return attempt(() => {
+				return z.array(z.string()).parse(JSON.parse(this.data.scouting.data.checks || '[]'));
+			});
+		}
+
+		getSliders() {
+			return attempt(() => {
+				return z
+					.record(
+						z.string(),
+						z.object({
+							value: z.number(),
+							text: z.string(),
+							color: z.string().default('#000000')
+						})
 					)
-				);
-			}
-			return 0;
-		});
+					.parse(JSON.parse(this.data.scouting.data.sliders || '{}'));
+			});
+		}
+	}
+
+	/**
+	 * Writable array wrapper for extended scouting records.
+	 */
+	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
+		static fromArr(arr: MatchScoutingArr) {
+			return attempt(() => {
+				const ms = arr.data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
+				const extendedArr = new MatchScoutingExtendedArr(ms);
+				extendedArr.onAllUnsubscribe(arr.subscribe(() => extendedArr.inform()));
+				return extendedArr;
+			});
+		}
+
+		constructor(arr: MatchScoutingExtended[]) {
+			super(arr);
+		}
+
+		clone() {
+			return new MatchScoutingExtendedArr([...this.data]);
+		}
+	}
+
+	/**
+	 * Compute the average velocity across a set of scouting traces.
+	 *
+	 * @returns {number} Average velocity.
+	 */
+	export const getAverageVelocity = (data: MatchScoutingExtended[]) => {
+		return $Math.average(data.map((d) => d.data.trace.averageVelocity()));
 	};
 
-	export const averageTeleopScore = (data: MatchScoutingData[], year: number) => {
+	/**
+	 * Fetch archived matches for a team at an event.
+	 *
+	 * @returns {ReturnType<typeof MatchScoutingExtendedArr.fromArr>} Archived matches wrapper.
+	 */
+	export const getArchivedMatches = (team: number, eventKey: string) => {
+		const res = MatchScouting.get(
+			{
+				team,
+				eventKey,
+				archived: true
+			},
+			{
+				type: 'all'
+			}
+		);
+		return MatchScoutingExtendedArr.fromArr(res);
+	};
+
+	/**
+	 * Compute average auto score for the provided year.
+	 *
+	 * @returns {ReturnType<typeof attempt>} Result wrapper for the average.
+	 */
+	export const averageAutoScore = (data: MatchScoutingExtended[], year: number) => {
 		return attempt(() => {
 			if (year === 2025) {
-				const teles = data.map(
-					(d) =>
-						Trace.score.parse2025(
-							TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-							d.data.alliance as 'red' | 'blue'
-						).teleop
-				);
-
-				return $Math.average(teles.map((t) => t.total));
+				return $Math.average(data.map((d) => YearInfo2025.parse(d.data.trace).auto.total));
 			}
 			return 0;
 		});
 	};
 
+	/**
+	 * Compute average teleop score for the provided year.
+	 *
+	 * @returns {ReturnType<typeof attempt>} Result wrapper for the average.
+	 */
+	export const averageTeleopScore = (data: MatchScoutingExtended[], year: number) => {
+		return attempt(() => {
+			if (year === 2025) {
+				return $Math.average(data.map((d) => YearInfo2025.parse(d.data.trace).teleop.total));
+			}
+			return 0;
+		});
+	};
+
+	/**
+	 * Compute average endgame points for a team using TBA match breakdowns.
+	 *
+	 * @returns {ReturnType<typeof attempt>} Result wrapper for the average.
+	 */
 	export const averageEndgameScore = (matches: TBAMatch[], team: number, year: number) => {
 		return attempt(() => {
 			if (year === 2025) {
@@ -141,12 +284,15 @@ export namespace Scouting {
 		prk: number;
 	}
 
-	export const averageContributions = (data: MatchScoutingData[]): Contribution => {
+	/**
+	 * Compute average action contributions across a set of scouting traces.
+	 *
+	 * @returns {Contribution} Average contribution totals.
+	 */
+	export const averageContributions = (data: MatchScoutingExtended[]): Contribution => {
 		return attempt(() => {
 			const coralCounts = data.map((d) => {
-				const trace = TraceSchema.parse(JSON.parse(d.data.trace || '[]'));
-
-				const actionObj = trace.reduce(
+				const actionObj = d.data.trace.points.reduce(
 					(acc, curr) => {
 						if (!curr[3]) return acc;
 						if (['cl1', 'cl2', 'cl3', 'cl4', 'brg', 'prc', 'shc', 'dpc', 'prk'].includes(curr[3])) {
@@ -189,61 +335,80 @@ export namespace Scouting {
 		}).unwrap();
 	};
 
-	export const averageSecondsNotMoving = (data: MatchScoutingData[]) => {
+	/**
+	 * Compute average seconds not moving across scouting traces.
+	 *
+	 * @returns {ReturnType<typeof attempt>} Result wrapper for the average.
+	 */
+	export const averageSecondsNotMoving = (data: MatchScoutingExtended[]) => {
 		return attempt(() => {
-			return $Math.average(
-				data.map((d) =>
-					Trace.secondsNotMoving(
-						TraceSchema.parse(JSON.parse(d.data.trace || '[]')) as TraceArray,
-						false
-					)
-				)
-			);
+			return $Math.average(data.map((d) => d.data.trace.secondsNotMoving()));
 		});
 	};
 
+	/**
+	 * Fetch all scouting entries for a team at an event.
+	 *
+	 * @returns {ReturnType<typeof MatchScouting.get>} Struct query result.
+	 */
 	export const scoutingFromTeam = (team: number, eventKey: string) => {
-		return MatchScouting.query(
-			'from-team',
-			{ team, eventKey },
+		return MatchScouting.get(
 			{
-				asStream: false,
-				satisfies: (d) => d.data.team === team && d.data.eventKey === eventKey && !!d.data.archived
+				team,
+				eventKey
+			},
+			{
+				type: 'all'
 			}
 		);
 	};
 
+	/**
+	 * Fetch archived prescouting entries for a team at an event.
+	 *
+	 * @returns {ReturnType<typeof MatchScouting.get>} Struct query result.
+	 */
 	export const preScouting = (team: number, eventKey: string) => {
-		return MatchScouting.query(
-			'pre-scouting',
-			{ team, eventKey },
+		return MatchScouting.get(
 			{
-				asStream: false,
-				satisfies: (d) =>
-					d.data.team === team &&
-					d.data.eventKey === eventKey &&
-					!!d.data.archived &&
-					!!d.data.prescouting
+				team,
+				eventKey,
+				prescouting: true,
+				archived: true
+			},
+			{
+				type: 'all'
 			}
 		);
 	};
 
+	/**
+	 * Toggle archive state for practice matches at an event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the command.
+	 */
 	export const setPracticeArchive = (eventKey: string, archive: boolean) => {
-		return MatchScouting.call('set-practice-archive', {
-			eventKey,
-			archive
+		return attemptAsync(async () => {
+			return remote.setPracticeArchive({ eventKey, archive });
 		});
 	};
 
 	export const TeamComments = new Struct({
 		name: 'team_comments',
 		structure: {
+			/** Match scouting id associated with the comment. */
 			matchScoutingId: 'string',
+			/** Account id of the commenter. */
 			accountId: 'string',
+			/** Team number the comment references. */
 			team: 'number',
+			/** Comment text content. */
 			comment: 'string',
+			/** Comment type/category. */
 			type: 'string',
+			/** Event key associated with the comment. */
 			eventKey: 'string',
+			/** Scout username for display. */
 			scoutUsername: 'string'
 		},
 		socket: sse,
@@ -253,11 +418,82 @@ export namespace Scouting {
 	export type TeamCommentsData = StructData<typeof TeamComments.data.structure>;
 	export type TeamCommentsArr = DataArr<typeof TeamComments.data.structure>;
 
-	export const parseTrace = (trace: string) => {
-		return attempt<TraceArray>(() => {
+	export const MatchSchema = z.object({
+		trace: z.unknown(),
+		eventKey: z.string(),
+		match: z.number().int(),
+		team: z.number().int(),
+		compLevel: z.enum(['pr', 'qm', 'qf', 'sf', 'f']),
+		flipX: z.boolean(),
+		flipY: z.boolean(),
+		checks: z.array(z.string()),
+		comments: z.record(z.string()),
+		scout: z.string(),
+		prescouting: z.boolean(),
+		practice: z.boolean(),
+		alliance: z.union([z.literal('red'), z.literal('blue'), z.literal(null)]),
+		group: z.number().int(),
+		sliders: z.record(
+			z.string(),
+			z.object({
+				value: z.number().int().min(0).max(5),
+				text: z.string(),
+				color: z.string()
+			})
+		)
+	});
+	export type MatchSchemaType = z.infer<typeof MatchSchema>;
+
+	const batcher = new Batch(
+		async (matches: MatchSchemaType[]) => {
+			const res = await fetch('/event-server/submit-match/batch', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(
+					matches.map((m) => ({
+						...m,
+						remote: true
+					}))
+				)
+			});
+
+			if (!res.ok) {
+				return matches.map(() => ({
+					success: false,
+					message: 'Failed to upload match batch'
+				}));
+			}
+
+			const json = await res.json();
 			return z
-				.array(z.tuple([z.number(), z.number(), z.number(), z.string()]))
-				.parse(JSON.parse(trace)) as TraceArray;
+				.array(
+					z.object({
+						success: z.boolean(),
+						message: z.string().optional()
+					})
+				)
+				.parse(json);
+		},
+		{
+			batchSize: 10,
+			interval: 500,
+			limit: 500,
+			timeout: 10000
+		}
+	);
+
+	batcher.on('drained', () => console.log('Match upload batcher drained'));
+
+	/**
+	 * Upload a batch of match scouting payloads.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the upload.
+	 */
+	export const uploadMatches = (matches: MatchSchemaType[]) => {
+		return attemptAsync(async () => {
+			return resolveAll(await Promise.all(matches.map(async (m) => batcher.add(m, true)))).unwrap();
 		});
 	};
 
@@ -265,8 +501,11 @@ export namespace Scouting {
 		export const Sections = new Struct({
 			name: 'pit_sections',
 			structure: {
+				/** Section display name. */
 				name: 'string',
+				/** Sort order within the event. */
 				order: 'number',
+				/** Event key this section belongs to. */
 				eventKey: 'string'
 			},
 			socket: sse,
@@ -279,8 +518,11 @@ export namespace Scouting {
 		export const Groups = new Struct({
 			name: 'pit_groups',
 			structure: {
+				/** Parent section id. */
 				sectionId: 'string',
+				/** Group display name. */
 				name: 'string',
+				/** Sort order within the section. */
 				order: 'number'
 			},
 			socket: sse,
@@ -293,12 +535,19 @@ export namespace Scouting {
 		export const Questions = new Struct({
 			name: 'pit_questions',
 			structure: {
+				/** Parent group id. */
 				groupId: 'string',
+				/** Question prompt text. */
 				question: 'string',
+				/** Question description text. */
 				description: 'string',
+				/** Question type (text, number, select, etc). */
 				type: 'string',
+				/** Question key identifier. */
 				key: 'string',
+				/** Sort order within the group. */
 				order: 'number',
+				/** Serialized options list for select-like types. */
 				options: 'string'
 			},
 			socket: sse,
@@ -311,9 +560,13 @@ export namespace Scouting {
 		export const Answers = new Struct({
 			name: 'pit_answers',
 			structure: {
+				/** Question id being answered. */
 				questionId: 'string',
+				/** Serialized answer array. */
 				answer: 'string',
+				/** Team number this answer applies to. */
 				team: 'number',
+				/** Account id of the respondent. */
 				accountId: 'string'
 			},
 			socket: sse,
@@ -325,6 +578,11 @@ export namespace Scouting {
 
 		export type Options = {};
 
+		/**
+		 * Parse the JSON options list for a pit question.
+		 *
+		 * @returns {ReturnType<typeof attempt>} Result wrapper for the parsed options.
+		 */
 		export const parseOptions = (question: QuestionData) => {
 			return attempt(() => {
 				const options = question.data.options;
@@ -333,6 +591,11 @@ export namespace Scouting {
 			});
 		};
 
+		/**
+		 * Parse the JSON answer list for a pit question.
+		 *
+		 * @returns {ReturnType<typeof attempt>} Result wrapper for the parsed answer.
+		 */
 		export const parseAnswer = (answer: AnswerData) => {
 			return attempt(() => {
 				const value = answer.data.answer;
@@ -341,19 +604,50 @@ export namespace Scouting {
 			});
 		};
 
+		/**
+		 * Fetch answers for a group and filter by question ids.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the answers.
+		 */
 		export const getAnswersFromGroup = (group: GroupData, questionIDs: string[]) => {
-			return Answers.query(
-				'from-group',
-				{
-					group: group.data.id
-				},
-				{
-					asStream: false,
-					satisfies: (d) => (d.data.questionId ? questionIDs.includes(d.data.questionId) : false)
-				}
-			);
+			return attemptAsync(async () => {
+				return remote.pitAnswersFromGroup({
+					questions: questionIDs,
+					group: String(group.data.id)
+				});
+			});
 		};
 
+		/**
+		 * Copy pit-scouting template data between events.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the copy.
+		 */
+		export const copyFromEvent = (from: string, to: string) => {
+			return attemptAsync(async () => {
+				return remote.copyPitScoutingFromEvent({
+					from,
+					to
+				});
+			});
+		};
+
+		/**
+		 * Generate a new pit-scouting template for an event.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the generation.
+		 */
+		export const generateEventTemplate = (eventKey: string) => {
+			return attemptAsync(async () => {
+				return remote.generateEventPitscoutingTemplate({ eventKey });
+			});
+		};
+
+		/**
+		 * Submit a pit-scouting answer for a question.
+		 *
+		 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the submission.
+		 */
 		export const answerQuestion = (
 			question: QuestionData,
 			answer: string[],

@@ -1,10 +1,16 @@
+<!--
+@component
+Team comparison dashboard for a specific event.
+
+Lets users select teams and compare scouting data with charts.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { goto } from '$app/navigation';
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
 	import { copy } from '$lib/utils/clipboard.js';
-	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { Dashboard } from '$lib/model/dashboard.js';
 	import DB from '$lib/components/dashboard/Dashboard.svelte';
 	import Chart from 'chart.js/auto';
@@ -12,23 +18,27 @@
 	import { writable, get } from 'svelte/store';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { Color } from 'colors/color';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const { data } = $props();
 	const event = $derived(data.event);
-	const selectedTeams = writable<
-		{
-			team: TBATeam;
-			component: Progress | TeamEventStats | undefined;
-		}[]
-	>(
-		data.selectedTeams.map((t) => ({
-			team: t,
-			component: undefined
-		}))
+	const selectedTeams = $derived(
+		writable<
+			{
+				team: TBATeam;
+				component: Progress | TeamEventStats | undefined;
+			}[]
+		>(
+			data.selectedTeams.map((t) => ({
+				team: t,
+				component: undefined
+			}))
+		)
 	);
 	const teams = $derived(data.teams);
 	// const scouting = $derived(data.scouting);
 	const teamScouting = $derived(data.teamScouting);
+	let teamScoutingData: (Scouting.MatchScoutingExtendedArr | undefined)[] = $state([]);
 	const matches = $derived(data.matches);
 
 	$effect(() => nav(event.tba));
@@ -81,13 +91,23 @@
 
 	$effect(() => {
 		// view on search params
-		const search = new URLSearchParams(location.search);
+		const search = new SvelteURLSearchParams(location.search);
 		search.set('view', view);
 		goto(`${location.pathname}?${search.toString()}`);
 	});
 
-	onMount(() => {
-		const search = new URLSearchParams(location.search);
+	afterNavigate(() => {
+		teamScoutingData = teamScouting.map((ts) => {
+			const res = Scouting.MatchScoutingExtendedArr.fromArr(ts);
+			if (res.isOk()) {
+				return res.value;
+			} else {
+				console.error('Failed to parse scouting data for team:', res.error);
+				return undefined;
+			}
+		});
+
+		const search = new SvelteURLSearchParams(location.search);
 		view = (search.get('view') as 'progress' | 'stats') || 'progress';
 
 		chartInstance = new Chart(chartCanvas, {
@@ -126,7 +146,7 @@
 		const unsub = selectedTeams.subscribe((st) =>
 			st.map((team, i) => {
 				const color = colors[i % colors.length];
-				const scoutingData = teamScouting[i];
+				const scoutingData = teamScoutingData[i];
 				if (!scoutingData) {
 					return {
 						label: String(team.team.tba.team_number),
@@ -214,7 +234,7 @@
 									);
 								}
 
-								const search = new URLSearchParams(location.search);
+								const search = new SvelteURLSearchParams(location.search);
 								search.set(
 									'teams',
 									get(selectedTeams)
@@ -301,14 +321,14 @@
 										</button>
 									</div>
 									<div style="height: 300px;">
-										{#if teamScouting[i]}
+										{#if teamScoutingData[i]}
 											{#if view === 'progress'}
 												<Progress
 													bind:this={team.component}
 													team={team.team}
 													{event}
 													bind:staticY
-													scouting={teamScouting[i]}
+													scouting={teamScoutingData[i]}
 													{matches}
 												/>
 											{:else}
@@ -317,7 +337,7 @@
 													team={team.team}
 													{event}
 													bind:staticY
-													scouting={teamScouting[i]}
+													scouting={teamScoutingData[i]}
 													{matches}
 												/>
 											{/if}

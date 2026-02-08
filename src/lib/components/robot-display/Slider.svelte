@@ -1,10 +1,25 @@
+<!--
+@fileoverview Slider summary list for a match scouting record.
+
+@component Slider
+
+@description
+Parses slider values from the scouting record and renders each slider with its value and
+text label.
+
+@example
+```svelte
+<Slider {scouting} classes="list-group-flush" />
+```
+-->
 <script lang="ts">
 	import type { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
-	import { z } from 'zod';
 
 	interface Props {
-		scouting: Scouting.MatchScoutingData;
+		/** Match scouting record to parse sliders from. */
+		scouting: Scouting.MatchScoutingExtended;
+		/** Optional CSS classes for wrapper styling. */
 		classes?: string;
 	}
 
@@ -18,18 +33,9 @@
 	} = $state({});
 
 	const render = () => {
-		const parsed = z
-			.record(
-				z.string(),
-				z.object({
-					value: z.number(),
-					text: z.string(),
-					color: z.string().default('#000000')
-				})
-			)
-			.safeParse(JSON.parse(String(scouting.data.sliders)));
-		if (parsed.success) {
-			sliders = parsed.data;
+		const parsed = scouting.getSliders();
+		if (parsed.isOk()) {
+			sliders = parsed.value;
 		} else {
 			console.error('Failed to parse sliders', parsed.error);
 		}

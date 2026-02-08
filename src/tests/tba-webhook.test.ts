@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Integration tests for TBA webhook handling.
+ * @description
+ * Starts the webhook server and validates message processing and auth handling.
+ */
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { TBAWebhooks } from '$lib/server/services/tba-webhooks';
 import path from 'path';
@@ -8,7 +14,8 @@ import { config, str } from '$lib/server/utils/env';
 import { sleep } from 'ts-utils/sleep';
 
 describe('TBA Webhook', async () => {
-	const server = await import(path.resolve(process.cwd(), config.tba_webhook.path, 'src', 'index'));
+	// const server = await import(`../../../tba-webhooks/src/index`);
+	const server = await import(path.join(process.cwd(), config.tba_webhook.path, 'src', 'index'));
 
 	const serverPromise = server.main(
 		config.tba_webhook.port,
@@ -24,6 +31,16 @@ describe('TBA Webhook', async () => {
 		await sleep(1000); // Wait for the server to start
 
 		service = TBAWebhooks.init(config.tba_webhook.redis_name).unwrap();
+	});
+
+	afterAll(async () => {
+		if (service) {
+			service.redis.close();
+			await redis.close();
+			console.log('Closed TBA Webhook service and Redis connection');
+			await server.stop();
+			await serverPromise;
+		}
 	});
 
 	const send = (data: unknown, secret: string) => {
@@ -42,6 +59,37 @@ describe('TBA Webhook', async () => {
 			body: payload
 		});
 	};
+
+	const ping = () => {
+		return fetch(`http://localhost:${config.tba_webhook.port}/`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+	};
+
+	it('Should respond to ping requests', async () => {
+		const res = await ping();
+		expect(res.status).toBe(200);
+	});
+
+	const test = async () => {
+		return fetch(`http://localhost:${config.tba_webhook.port}/test`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ test: 'data' })
+		});
+	};
+
+	it('Should respond to test requests', async () => {
+		const res = await test();
+		expect(res.status).toBe(200);
+		const text = await res.text();
+		expect(text).toBe('Test endpoint received your request!');
+	});
 
 	it('Should handle all message types', async () => {
 		const handleMessage = async (name: keyof typeof TBAWebhooks.messageSchemas) => {
@@ -93,6 +141,7 @@ describe('TBA Webhook', async () => {
 	});
 
 	afterAll(async () => {
-		Promise.resolve(serverPromise);
+		await server.stop();
+		await serverPromise;
 	});
 });

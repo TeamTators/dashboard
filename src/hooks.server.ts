@@ -17,7 +17,7 @@ import '$lib/server/structs/webhooks';
 import { type Handle } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import terminal from '$lib/server/utils/terminal';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '$lib/server/db/';
 import '$lib/server/utils/files';
 import '$lib/server/index';
@@ -26,6 +26,8 @@ import ignore from 'ignore';
 // import { signFingerprint } from '$lib/server/utils/fingerprint';
 import redis from '$lib/server/services/redis';
 import { config } from '$lib/server/utils/env';
+import createTree from '../scripts/create-route-tree';
+import { sse } from '$lib/server/services/sse';
 
 (async () => {
 	await redis.init();
@@ -35,6 +37,7 @@ import { config } from '$lib/server/utils/env';
 			createStructEventService(struct);
 		}
 	});
+	await createTree();
 })();
 
 // if (env.LOG === 'true') {
@@ -45,15 +48,14 @@ const sessionIgnore = ignore();
 sessionIgnore.add(`
 /account
 /status
-/sse
-/struct
+/api/sse
+/api/struct
 /test
 /favicon.ico
 /robots.txt
-/oauth
+/api/oauth
 /email
-/analytics
-/fp
+/api/analytics
 `);
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -104,11 +106,21 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	event.locals.session = session.value;
+	const sseId = event.request.headers.get('X-SSE');
+	if (sseId) {
+		const connection = sse.getConnection(sseId);
+		if (connection) {
+			event.locals.sse = connection;
+		}
+	}
 
 	const autoSignIn = config.sessions.auto_sign_in;
+	const disableAutoSignIn =
+		event.request.headers.get('x-no-auto-sign-in') === 'true' ||
+		event.cookies.get('no_auto_sign_in') === 'true';
 
-	if (autoSignIn && config.environment !== 'prod') {
-		const a = await Account.Account.fromProperty('username', autoSignIn, { type: 'single' });
+	if (autoSignIn && config.environment !== 'prod' && !disableAutoSignIn) {
+		const a = await Account.Account.get({ username: autoSignIn }, { type: 'single' });
 		if (a.isOk() && a.value) {
 			event.locals.account = a.value;
 			Object.assign(event.locals.session.data, {

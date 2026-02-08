@@ -1,12 +1,31 @@
+<!--
+@fileoverview Event-level stats table for a team.
+
+@component EventSummary
+
+@description
+Fetches team ranking info and calculates average scoring metrics from scouting data,
+then renders a summary table.
+
+@example
+```svelte
+<EventSummary {team} {event} {scouting} {matches} />
+```
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Scouting } from '$lib/model/scouting';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	interface Props {
+		/** Team being summarized. */
 		team: TBATeam;
+		/** Event context used for ranking and scoring. */
 		event: TBAEvent;
-		scouting: Scouting.MatchScoutingArr;
+		/** Live scouting store for match data. */
+		scouting: Scouting.MatchScoutingExtendedArr;
+		/** TBA match list for endgame calculations. */
 		matches: TBAMatch[];
 	}
 
@@ -24,7 +43,7 @@
 	let averageSecondsNotMoving = $state(0);
 
 	onMount(() => {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setMinutes(d.getMinutes() + 10);
 		team.getStatus(true, d).then((s) => {
 			if (s.isErr()) return console.error(s.error);
@@ -52,47 +71,48 @@
 	});
 </script>
 
-<table class="table">
-	<tbody>
-		<tr>
-			<td>Rank:</td>
-			<td>{rank}</td>
-		</tr>
-		<tr>
-			<td>Record:</td>
-			<td>{record}</td>
-		</tr>
-		<tr>
-			<td>Played:</td>
-			<td>{played}</td>
-		</tr>
-		<tr>
-			<td>Average Velocity:</td>
-			<td class="ws-nowrap">
-				{#if $scouting.length}
-					{Scouting.getAverageVelocity($scouting).toFixed(2)} ft/s
-				{:else}
-					No data
-				{/if}
-			</td>
-		</tr>
-		<tr>
-			<td>Average Auto Score:</td>
-			<td>{auto.toFixed(2)}</td>
-		</tr>
-		<tr>
-			<td>Average Teleop Score:</td>
-			<td>{teleop.toFixed(2)}</td>
-		</tr>
-		<tr>
-			<td>Average Endgame Score:</td>
-			<td>{endgame.toFixed(2)}</td>
-		</tr>
-		<tr>
-			<td>Average Seconds Not Moving:</td>
-			<td>{averageSecondsNotMoving.toFixed(2)}s</td>
-		</tr>
-		<!-- <tr>
+<div class="table-container table-responsive">
+	<table class="table table-striped">
+		<tbody>
+			<tr>
+				<td>Rank:</td>
+				<td>{rank}</td>
+			</tr>
+			<tr>
+				<td>Record:</td>
+				<td>{record}</td>
+			</tr>
+			<tr>
+				<td>Played:</td>
+				<td>{played}</td>
+			</tr>
+			<tr>
+				<td>Average Velocity:</td>
+				<td class="ws-nowrap">
+					{#if $scouting.length}
+						{Scouting.getAverageVelocity($scouting).toFixed(2)} ft/s
+					{:else}
+						No data
+					{/if}
+				</td>
+			</tr>
+			<tr>
+				<td>Average Auto Score:</td>
+				<td>{auto.toFixed(2)}</td>
+			</tr>
+			<tr>
+				<td>Average Teleop Score:</td>
+				<td>{teleop.toFixed(2)}</td>
+			</tr>
+			<tr>
+				<td>Average Endgame Score:</td>
+				<td>{endgame.toFixed(2)}</td>
+			</tr>
+			<tr>
+				<td>Average Seconds Not Moving:</td>
+				<td>{averageSecondsNotMoving.toFixed(2)}s</td>
+			</tr>
+			<!-- <tr>
 			<td>Drivebase:</td>
 			<td>{drivebase}</td>
 		</tr>
@@ -100,5 +120,13 @@
 			<td>Weight:</td>
 			<td>{weight}</td>
 		</tr> -->
-	</tbody>
-</table>
+		</tbody>
+	</table>
+</div>
+
+<style>
+	.table-container {
+		max-height: 100%;
+		overflow-y: auto;
+	}
+</style>

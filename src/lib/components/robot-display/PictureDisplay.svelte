@@ -1,3 +1,17 @@
+<!--
+@fileoverview Team image uploader and carousel display.
+
+@component PictureDisplay
+
+@description
+Lets users upload team photos, pulls existing media from TBA, and renders the result
+in a Bootstrap carousel.
+
+@example
+```svelte
+<PictureDisplay {team} {event} {teamPictures} />
+```
+-->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { FIRST } from '$lib/model/FIRST';
@@ -8,9 +22,13 @@
 	import '@uppy/webcam/css/style.min.css';
 	import ImageEditor from '@uppy/image-editor';
 	import Compressor from '@uppy/compressor';
+	import { SvelteDate } from 'svelte/reactivity';
 	interface Props {
+		/** Team being displayed and updated. */
 		team: TBATeam;
+		/** Event context for uploads. */
 		event: TBAEvent;
+		/** Live store of team pictures. */
 		teamPictures: FIRST.TeamPicturesArr;
 	}
 
@@ -21,10 +39,11 @@
 	let uploadComponent: FileUploader;
 
 	onMount(() => {
-		uploadComponent.uppy.use(Webcam, { modes: ['picture'] });
-		uploadComponent.uppy.use(ImageEditor);
-		uploadComponent.uppy.use(Compressor, { quality: 0.4 });
-		const d = new Date();
+		const uppy = uploadComponent.getUppy();
+		uppy.use(Webcam, { modes: ['picture'] });
+		uppy.use(ImageEditor);
+		uppy.use(Compressor, { quality: 0.4 });
+		const d = new SvelteDate();
 		d.setDate(d.getDate() + 7);
 		team.getMedia(true, d).then((m) => {
 			if (m.isErr()) return console.error(m.error);
@@ -44,7 +63,7 @@
 				team: team.tba.team_number,
 				eventKey: event.tba.key,
 				picture: file,
-				accountId: Account.getSelf().get().data.id || ''
+				accountId: Account.getSelf().data.data.id || ''
 			});
 		});
 
@@ -54,57 +73,56 @@
 	});
 </script>
 
-<div class="container-fluid h-100">
-	<div class="d-flex flex-column flex-md-row h-auto h-md-100">
-		<div class="col-12 col-md-4 order-1 order-md-2 p-2 h-auto h-md-75">
+<div class="container-fluid">
+	<div class="row mb-3">
+		<div class="col-12 col-md-4 d-flex justify-content-center w-100">
 			<FileUploader
 				multiple={true}
 				message="Upload Pictures"
-				usage="images"
-				endpoint={`/upload`}
+				allowedFileTypes={['image/*']}
+				endpoint="/upload"
 				bind:this={uploadComponent}
 			/>
 		</div>
-
-		<div class="col-12 col-md-8 order-2 order-md-1 p-2 h-auto h-md-100">
-			{#if pictures.length > 0}
-				<div id="carousel-{team.tba.team_number}" class="carousel slide h-100">
-					<div class="carousel-inner h-100">
-						{#each pictures as picture, i}
-							<div class="carousel-item {i === 0 ? 'active' : ''} h-100">
-								<img
-									src={picture}
-									alt="Team {team.tba.team_number}"
-									class="d-block w-100 h-100"
-									style="object-fit: contain;"
-								/>
-							</div>
-						{/each}
-					</div>
-					<button
-						class="carousel-control-prev"
-						type="button"
-						data-bs-target="#carousel-{team.tba.team_number}"
-						data-bs-slide="prev"
-					>
-						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-						<span class="visually-hidden">Previous</span>
-					</button>
-					<button
-						class="carousel-control-next"
-						type="button"
-						data-bs-target="#carousel-{team.tba.team_number}"
-						data-bs-slide="next"
-					>
-						<span class="carousel-control-next-icon" aria-hidden="true"></span>
-						<span class="visually-hidden">Next</span>
-					</button>
+	</div>
+	<div class="row mb-3">
+		{#if pictures.length > 0}
+			<div id="carousel-{team.tba.team_number}" class="carousel slide">
+				<div class="carousel-inner">
+					{#each pictures as picture, i}
+						<div class="carousel-item {i === 0 ? 'active' : ''}">
+							<img
+								src={picture}
+								class="d-block w-100"
+								alt="Team {team.tba.team_number}"
+								style="max-height: 200px; object-fit: contain;"
+							/>
+						</div>
+					{/each}
 				</div>
-			{:else}
-				<div class="d-flex justify-content-center align-items-center h-100 text-muted">
-					No photos uploaded
-				</div>
-			{/if}
-		</div>
+				<button
+					class="carousel-control-prev"
+					type="button"
+					data-bs-target="#carousel-{team.tba.team_number}"
+					data-bs-slide="prev"
+				>
+					<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Previous</span>
+				</button>
+				<button
+					class="carousel-control-next"
+					type="button"
+					data-bs-target="#carousel-{team.tba.team_number}"
+					data-bs-slide="next"
+				>
+					<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Next</span>
+				</button>
+			</div>
+		{:else}
+			<div class="d-flex justify-content-center align-items-center text-muted">
+				No photos uploaded
+			</div>
+		{/if}
 	</div>
 </div>

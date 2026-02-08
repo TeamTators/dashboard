@@ -1,28 +1,50 @@
+/**
+ * @fileoverview Defines entitlement and feature unions for permission gating.
+ * @description
+ * Centralized string unions used to describe user capabilities and UI groupings.
+ */
+
+/**
+ * Entitlement keys used for permission checks throughout the app.
+ * @example
+ * const entitlement: Entitlement = 'view-scouting';
+ */
 export type Entitlement =
-	| 'test-permission-manage'
-	| 'manage-members'
-	| 'upload-pictures'
-	| 'manage-scouting'
-	| 'view-tba-info'
-	| 'test-permission-view'
-	| 'view-scouting'
 	| 'view-roles'
-	| 'manage-roles'
+	| 'view-tba-info'
 	| 'view-potatoes'
-	| 'view-pit-scouting'
 	| 'edit-potato-level'
-	| 'manage-tba'
-	| 'view-checklist'
-	| 'create-custom-tba-responses'
+	| 'upload-pictures'
+	| 'view-scouting'
+	| 'manage-scouting'
+	| 'view-pit-scouting'
 	| 'manage-pit-scouting'
-	| 'view-strategy';
+	| 'manage-tba'
+	| 'create-custom-tba-responses'
+	| 'view-strategy'
+	| 'view-checklist'
+	| 'manage-roles'
+	| 'manage-members'
+	| 'test-permission-manage';
+
+/**
+ * Display groups used to organize entitlements in the UI.
+ * @example
+ * const group: Group = 'Scouting';
+ */
 export type Group =
-	| 'Testing'
 	| 'Roles'
 	| 'FIRST'
-	| 'Scouting'
 	| 'Potatoes'
+	| 'Scouting'
 	| 'TBA'
+	| 'Strategy'
 	| 'Checklists'
-	| 'Strategy';
-export type Features = 'manage-roles' | 'manage-potatoes';
+	| 'Testing';
+
+/**
+ * Feature flags surfaced in configuration or role assignments.
+ * @example
+ * const feature: Features = 'manage-roles';
+ */
+export type Features = 'manage-potatoes' | 'manage-roles';

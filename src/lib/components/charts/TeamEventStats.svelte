@@ -1,16 +1,51 @@
+<!--
+@fileoverview Event-level min/avg/max action stats for a team, rendered as a stacked bar chart.
+
+@component TeamEventStats
+
+@description
+Builds a Chart.js stacked bar chart that aggregates match-by-match scouting data into
+min/avg/max buckets for auto, teleop, endgame, and total actions. Each dataset corresponds to a
+specific action (e.g., Level 1, Barge, Shallow Climb).
+
+@example
+```svelte
+<script lang="ts">
+  import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
+  import type { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
+  import type { Scouting } from '$lib/model/scouting';
+
+  let team: TBATeam;
+  let event: TBAEvent;
+  let matches: TBAMatch[] = [];
+  let scouting: Scouting.MatchScoutingExtendedArr;
+
+  let chartRef: TeamEventStats | undefined;
+  const copyChart = () => chartRef?.copy(true);
+</script>
+
+<TeamEventStats bind:this={chartRef} {team} {event} {matches} {scouting} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
-	import { Trace, TraceSchema, type TraceArray } from 'tatorscout/trace';
+	import { Trace, type P } from 'tatorscout/trace';
 	import { copyCanvas } from '$lib/utils/clipboard';
 
+	/** Component props for `TeamEventStats`. */
 	interface Props {
+		/** Team being visualized. */
 		team: TBATeam;
+		/** Event context for match ordering. */
 		event: TBAEvent;
+		/** Optional fixed Y value for other layouts (bindable). */
 		staticY?: number;
-		scouting: Scouting.MatchScoutingArr;
+		/** Live scouting store for match data. */
+		scouting: Scouting.MatchScoutingExtendedArr;
+		/** All TBA matches for label alignment. */
 		matches: TBAMatch[];
 	}
 
@@ -19,26 +54,34 @@
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
 
+	/**
+	 * Copy the chart canvas to the clipboard.
+	 *
+	 * @example
+	 * ```ts
+	 * chartRef.copy(true);
+	 * ```
+	 */
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	onMount(() => {
 		scouting.sort((a, b) => {
-			if (a.data.compLevel === b.data.compLevel)
-				return Number(a.data.matchNumber) - Number(b.data.matchNumber);
+			if (a.compLevel === b.compLevel) return Number(a.matchNumber) - Number(b.matchNumber);
 			const order = ['qm', 'qf', 'sf', 'f'];
-			return order.indexOf(String(a.data.compLevel)) - order.indexOf(String(b.data.compLevel));
+			return order.indexOf(String(a.compLevel)) - order.indexOf(String(b.compLevel));
 		});
 
 		return scouting.subscribe(async (data) => {
 			if (chart) chart.destroy();
 			try {
 				const counts = data.map((s) => {
-					const trace = TraceSchema.parse(JSON.parse(s.data.trace || '[]')) as TraceArray;
-
-					const sectionCounts = trace.reduce(
+					const sectionCounts = s.trace.points.reduce(
 						(acc, curr) => {
 							if (!curr[3]) return acc;
-							const section = Trace.getSection(curr);
+							const section = Trace.getSection(curr as P);
+							if (!section) {
+								return acc;
+							}
 							if (!acc[section]) acc[section] = {};
 							acc[section][curr[3] as string] = (acc[section][curr[3] as string] || 0) + 1;
 							return acc;

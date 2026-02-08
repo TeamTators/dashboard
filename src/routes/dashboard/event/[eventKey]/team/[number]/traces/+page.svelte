@@ -1,6 +1,13 @@
+<!--
+@component
+Trace viewer for a single team at an event.
+
+Lists match traces, supports phase filtering, and opens detailed trace modals.
+Includes quick navigation across teams and links back to the robot display.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
-	import Trace from '$lib/components/robot-display/Trace.svelte';
+	import nav from '$lib/nav/robot-display.js';
+	import Trace from '$lib/components/robot-display/TraceHTML.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { writable } from 'svelte/store';
@@ -14,23 +21,22 @@
 	const teams = $derived(data.teams);
 	const event = $derived(data.event);
 	const team = $derived(data.team);
-	const scoutingArr = $derived(data.scouting);
+	const scouting = $derived(data.scouting);
+	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
 	const matches = $derived(data.matches);
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 
 	$effect(() => nav(event.tba));
 
 	let modal: Modal;
-	let selectedScouting: Scouting.MatchScoutingData | undefined = $state(undefined);
+	let selectedScouting: Scouting.MatchScoutingExtended | undefined = $state(undefined);
 	let scroller: HTMLDivElement;
 	let match: TBAMatch | undefined = $state(undefined);
 
-	const open = async (scouting: Scouting.MatchScoutingData) => {
+	const _open = async (scouting: Scouting.MatchScoutingExtended) => {
 		selectedScouting = scouting;
 		match = matches.find(
-			(m) =>
-				m.tba.match_number === scouting.data.matchNumber &&
-				m.tba.comp_level === scouting.data.compLevel
+			(m) => m.tba.match_number === scouting.matchNumber && m.tba.comp_level === scouting.compLevel
 		);
 		modal.show();
 	};
@@ -47,6 +53,12 @@
 					inline: 'center'
 				})
 			);
+		}
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		if (res.isOk()) {
+			scoutingArr = res.value;
+		} else {
+			console.error('Failed to parse scouting data:', res.error);
 		}
 	});
 </script>
@@ -137,17 +149,18 @@
 		</div>
 	</div>
 	<div class="row">
-		{#key scoutingArr}
-			{#if scoutingArr.length}
-				{#each scoutingArr as scouting}
-					<div class="col-3">
-						<h3>
-							{scouting.data.compLevel}{scouting.data.matchNumber} - {scouting.data.eventKey}
-							<button type="button" class="btn" onclick={() => open(scouting)}>
-								<i class="material-icons">visibility</i>
-							</button>
-						</h3>
-						<Trace {scouting} {focus} />
+		{#key scouting}
+			{#if scouting.length}
+				{#each $scoutingArr as s}
+					<div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+						<div class="card layer-1">
+							<div class="card-body">
+								<h5 class="card-title">
+									{s.compLevel}{s.matchNumber} - {s.eventKey}
+								</h5>
+								<Trace scouting={s} {focus} />
+							</div>
+						</div>
 					</div>
 				{/each}
 			{:else}
@@ -159,8 +172,7 @@
 <Modal
 	bind:this={modal}
 	size="lg"
-	title="Trace {selectedScouting?.data.compLevel}{selectedScouting?.data
-		.matchNumber} - {selectedScouting?.data.eventKey}"
+	title="Trace {selectedScouting?.compLevel}{selectedScouting?.matchNumber} - {selectedScouting?.eventKey}"
 >
 	{#snippet body()}
 		{#key selectedScouting}
@@ -171,7 +183,7 @@
 						{team}
 						{event}
 						{match}
-						scout={scoutingAccounts[selectedScouting.data.id || '']}
+						scout={scoutingAccounts[selectedScouting.id || '']}
 					/>
 				{:else}
 					You should never see this. If you do, there is a substantial bug.

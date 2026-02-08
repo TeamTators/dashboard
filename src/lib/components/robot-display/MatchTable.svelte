@@ -1,13 +1,31 @@
+<!--
+@fileoverview Match list table with scouting status indicators.
+
+@component MatchTable
+
+@description
+Fetches match list data for a team at an event and renders a table with time, status,
+and quick links to match detail pages.
+
+@example
+```svelte
+<MatchTable {event} {team} {scouting} />
+```
+-->
 <script lang="ts">
 	import { dateTime } from 'ts-utils/clock';
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
 	import { TBATeam, TBAMatch, TBAEvent } from '$lib/utils/tba';
+	import { SvelteDate } from 'svelte/reactivity';
 
 	interface Props {
+		/** Event context for match list and links. */
 		event: TBAEvent;
+		/** Team context for match lookup. */
 		team: TBATeam;
-		scouting: Scouting.MatchScoutingArr;
+		/** Scouting data used to determine availability/flags. */
+		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { team, event, scouting }: Props = $props();
@@ -26,13 +44,13 @@
 		}
 	};
 
-	const generateFlagColor = (match?: Scouting.MatchScoutingData) => {
+	const generateFlagColor = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'danger';
 		// TODO: Implement flag color
 		return 'success';
 	};
 
-	const generateFlagTitle = (match?: Scouting.MatchScoutingData) => {
+	const generateFlagTitle = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'No Scouting data';
 		// TODO: Parse checks
 		return 'Scouting data available';
@@ -47,7 +65,7 @@
 	};
 
 	onMount(() => {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setMinutes(d.getMinutes() + 10);
 		team.getMatches(true, d).then((m) => {
 			if (m.isOk()) {
@@ -58,11 +76,9 @@
 
 	let table: HTMLTableElement;
 
-	const findMatch = (scouting: Scouting.MatchScoutingData[], match: TBAMatch) => {
+	const findMatch = (scouting: Scouting.MatchScoutingExtended[], match: TBAMatch) => {
 		return scouting.find((m) => {
-			return (
-				m.data.compLevel === match.tba.comp_level && m.data.matchNumber === match.tba.match_number
-			);
+			return m.compLevel === match.tba.comp_level && m.matchNumber === match.tba.match_number;
 		});
 	};
 </script>

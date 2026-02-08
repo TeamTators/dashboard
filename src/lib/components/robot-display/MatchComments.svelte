@@ -1,3 +1,17 @@
+<!--
+@fileoverview Comment list and editor for a single match scouting record.
+
+@component MatchComments
+
+@description
+Loads comments tied to a match scouting record, renders them in a grid, and allows
+adding new comments via a prompt.
+
+@example
+```svelte
+<MatchComments {scouting} style="height: 400px;" />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
@@ -5,23 +19,33 @@
 	import { onMount } from 'svelte';
 	import { prompt } from '$lib/utils/prompts';
 	import { Account } from '$lib/model/account';
+	import { tomorrow } from 'ts-utils';
+	// import { TextFilterModule } from 'ag-grid-community';
 
 	interface Props {
-		scouting: Scouting.MatchScoutingData;
+		/** Match scouting record whose comments are displayed. */
+		scouting: Scouting.MatchScoutingExtended;
+		/** Optional inline style for container sizing. */
 		style?: string;
 	}
 
 	const { scouting, style }: Props = $props();
-	let team = $state(scouting.data.team);
-	let event = $state(scouting.data.eventKey);
+	let team = $derived(scouting.team);
+	let event = $derived(scouting.eventKey);
 	let comments = $state(new DataArr(Scouting.TeamComments, []));
 
 	let render = $state(0);
 
 	onMount(() => {
-		comments = Scouting.TeamComments.fromProperty('matchScoutingId', String(scouting.data.id), {
-			type: 'all'
-		});
+		comments = Scouting.TeamComments.get(
+			{ matchScoutingId: String(scouting.scouting.data.id) },
+			{
+				type: 'all',
+				cache: {
+					expires: tomorrow()
+				}
+			}
+		);
 
 		render++;
 
@@ -39,13 +63,13 @@
 		});
 		if (!c) return;
 		Scouting.TeamComments.new({
-			matchScoutingId: String(scouting.data.id),
+			matchScoutingId: String(scouting.scouting.data.id),
 			comment: c,
 			eventKey: String(event),
-			scoutUsername: String(self.get().data.username),
+			scoutUsername: String(self.data.data.username),
 			team: Number(team),
 			type: 'general',
-			accountId: String(self.get().data.id)
+			accountId: String(self.data.data.id)
 		})
 			.then(() => {
 				render++;

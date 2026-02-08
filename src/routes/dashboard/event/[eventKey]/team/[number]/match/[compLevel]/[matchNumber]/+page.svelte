@@ -1,11 +1,19 @@
+<!--
+@component
+Match detail view for a single team and match.
+
+Shows scouting breakdowns, strategies, and navigation between matches.
+Falls back to a no-scout view when a scouting record is missing.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import type { TBAMatch } from '$lib/utils/tba';
-	import { onMount } from 'svelte';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';
 	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Strategy } from '$lib/model/strategy.js';
+	import { Scouting } from '$lib/model/scouting.js';
+	import { afterNavigate } from '$app/navigation';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -14,6 +22,7 @@
 	const team = $derived(data.team);
 	// const teams = $derived(data.teams);
 	const scouting = $derived(data.scouting);
+	let scoutingData: Scouting.MatchScoutingExtended | undefined = $state(undefined);
 	const account = $derived(data.account);
 
 	$effect(() => nav(event.tba));
@@ -33,12 +42,21 @@
 		}
 	});
 
-	onMount(() => {
+	afterNavigate(() => {
 		strategies = Strategy.fromMatch(
 			match.tba.event_key,
 			match.tba.match_number,
 			match.tba.comp_level
 		);
+
+		if (scouting) {
+			const res = Scouting.MatchScoutingExtended.from(scouting);
+			if (res.isOk()) {
+				scoutingData = res.value;
+			} else {
+				console.error('Failed to parse scouting data:', res.error);
+			}
+		}
 	});
 </script>
 
@@ -81,9 +99,16 @@
 		</div>
 	</div>
 	<div class="row">
-		{#key scouting}
-			{#if scouting}
-				<MatchDisplay {scouting} {team} {event} {match} strategies={$strategies} scout={account} />
+		{#key scoutingData}
+			{#if scoutingData}
+				<MatchDisplay
+					scouting={scoutingData}
+					{team}
+					{event}
+					{match}
+					strategies={$strategies}
+					scout={account}
+				/>
 			{:else}
 				<MatchDisplayNoScout {match} {team} {event} strategies={$strategies} />
 			{/if}
