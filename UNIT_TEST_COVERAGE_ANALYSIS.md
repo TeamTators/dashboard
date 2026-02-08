@@ -11,6 +11,7 @@ The repository has some existing unit tests (19 test files found), but there are
 Currently, the following test files exist:
 
 ### E2E Tests (in `e2e/`)
+
 - permissions.test.ts
 - accounts.test.ts
 - tba.test.ts
@@ -20,6 +21,7 @@ Currently, the following test files exist:
 - struct-data.test.ts
 
 ### Unit Tests (in `src/tests/`)
+
 - scout-groups.test.ts
 - writeable.test.ts
 - downloads.test.ts
@@ -41,6 +43,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/utils/tba.ts`
 
 **Missing Tests**:
+
 - `Event.getEvent()` - Fetch and cache events with proper error handling
 - `Event.getEvents()` - Fetch multiple events for a season
 - `Event.createEvent()` - Create custom events
@@ -64,6 +67,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/structs/scouting.ts` and `src/lib/model/scouting.ts`
 
 **Missing Tests**:
+
 - `MatchScoutingExtended.from()` - Parse and validate trace data
 - `MatchScoutingExtended` computed properties (team, matchNumber, compLevel, etc.)
 - `getTeamScouting()` - Retrieve scouting data for a team at an event
@@ -86,6 +90,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/structs/FIRST.ts`
 
 **Missing Tests**:
+
 - `generateSummary()` - Generate event summaries for 2024 and 2025
 - `getSummary()` - Retrieve or generate cached summaries
 - Summary caching logic
@@ -105,6 +110,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/utils/trace/summaries/2024.ts` and `src/lib/utils/trace/summaries/2025.ts`
 
 **Missing Tests**:
+
 - **2025 Summary**:
   - Average Auto Points (Mobility, Coral, Algae, Total)
   - Average Teleop Points (Coral, Algae, Total)
@@ -112,7 +118,6 @@ Currently, the following test files exist:
   - Aggregator functions (average, max, min, sum)
   - Serialization/deserialization
   - Edge cases (no data, partial data, invalid data)
-  
 - **2024 Summary**:
   - All year-specific calculations
   - Compatibility with 2024 game rules
@@ -129,6 +134,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/structs/strategy.ts`
 
 **Missing Tests**:
+
 - `getMatchStrategy()` - Retrieve strategies for a specific match
 - `getStrategy()` - Fetch strategy with partners and opponents
 - Strategy lifecycle hooks (create, delete, archive, restore)
@@ -150,6 +156,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/utils/action-summary.ts`
 
 **Missing Tests**:
+
 - `actionSummary()` - Generate action count tables
 - Action counting logic for specific actions
 - Match filtering (only completed matches)
@@ -169,6 +176,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/services/tba-webhooks.ts`
 
 **Missing Tests**:
+
 - Schema validation for all webhook types:
   - `upcoming_match`
   - `match_score`
@@ -195,6 +203,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/structs/scouting.ts` (PIT namespace)
 
 **Missing Tests**:
+
 - Pit scouting group management
 - Question/Answer validation
 - Template generation (`generateBoilerplate()`)
@@ -213,6 +222,7 @@ Currently, the following test files exist:
 **Location**: Referenced in `src/tests/scout-groups.test.ts` (uses tatorscout package)
 
 **Missing Tests**:
+
 - Scout group generation algorithm validation
 - Assignment conflict detection
 - Coverage verification (all matches covered)
@@ -231,6 +241,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/model/scouting.ts` - MatchScoutingExtended class
 
 **Missing Tests**:
+
 - Team number extraction
 - Match identification
 - Trace data parsing
@@ -251,6 +262,7 @@ Currently, the following test files exist:
 **Location**: `src/lib/server/structs/TBA.ts`
 
 **Missing Tests**:
+
 - Request caching logic
 - Cache invalidation based on updateThreshold
 - Force refresh functionality
@@ -269,40 +281,44 @@ Currently, the following test files exist:
 
 ## Priority Matrix
 
-| Priority | Area | Impact | Complexity |
-|----------|------|--------|------------|
-| CRITICAL | Scouting Data Models | Very High | Medium |
-| CRITICAL | Year-Specific Summaries | Very High | High |
-| HIGH | TBA Integration | High | Medium |
-| HIGH | FIRST Data Structures | High | Medium |
-| HIGH | Strategy Management | High | Low |
-| HIGH | Action Summary | High | Medium |
-| HIGH | Scout Group Assignment | High | Low |
-| MEDIUM | TBA Webhook Processing | Medium | Low |
-| MEDIUM | Pit Scouting | Medium | Low |
-| MEDIUM | Match Scouting Extended | Medium | Low |
-| MEDIUM | TBA Caching | Medium | Medium |
+| Priority | Area                    | Impact    | Complexity |
+| -------- | ----------------------- | --------- | ---------- |
+| CRITICAL | Scouting Data Models    | Very High | Medium     |
+| CRITICAL | Year-Specific Summaries | Very High | High       |
+| HIGH     | TBA Integration         | High      | Medium     |
+| HIGH     | FIRST Data Structures   | High      | Medium     |
+| HIGH     | Strategy Management     | High      | Low        |
+| HIGH     | Action Summary          | High      | Medium     |
+| HIGH     | Scout Group Assignment  | High      | Low        |
+| MEDIUM   | TBA Webhook Processing  | Medium    | Low        |
+| MEDIUM   | Pit Scouting            | Medium    | Low        |
+| MEDIUM   | Match Scouting Extended | Medium    | Low        |
+| MEDIUM   | TBA Caching             | Medium    | Medium     |
 
 ---
 
 ## Recommended Testing Approach
 
 ### Phase 1: Critical Infrastructure (Week 1-2)
+
 1. Scouting Data Models
 2. Year-Specific Trace Summaries
 3. TBA Integration
 
 ### Phase 2: Core Features (Week 3-4)
+
 4. FIRST Data Structures
 5. Strategy Management
 6. Action Summary Generation
 
 ### Phase 3: Supporting Features (Week 5-6)
+
 7. Scout Group Assignment (enhance existing)
 8. TBA Caching
 9. TBA Webhook Processing
 
 ### Phase 4: Additional Features (Week 7)
+
 10. Pit Scouting
 11. Match Scouting Extended
 
@@ -326,6 +342,7 @@ Currently, the following test files exist:
 This repository has a solid foundation with existing E2E and unit tests, but there are significant gaps in coverage for Tator-specific features. The 11 areas identified above represent critical functionality that should be thoroughly tested to ensure data integrity, correct calculations, and reliable operation during scouting events.
 
 Implementing comprehensive unit tests for these areas will:
+
 - Reduce bugs in production
 - Enable confident refactoring
 - Improve code documentation

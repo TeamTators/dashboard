@@ -13,12 +13,14 @@ This analysis identifies areas in the TeamTators/dashboard repository requiring 
 ## 🎯 Key Findings
 
 ### Current State
+
 - ✅ **19 test files exist** (7 E2E, 12 unit tests)
 - ⚠️ **Limited coverage** of core business logic
 - ⚠️ **Missing tests** for critical data transformations
 - ⚠️ **No tests** for year-specific calculations (2024/2025)
 
 ### Gaps Identified
+
 - **11 major areas** require comprehensive unit testing
 - **15-22 developer days** estimated effort
 - **3 CRITICAL areas** requiring immediate attention
@@ -29,11 +31,13 @@ This analysis identifies areas in the TeamTators/dashboard repository requiring 
 ## 🚨 Critical Areas (Immediate Action Required)
 
 ### 1. Scouting Data Models & Trace Parsing
+
 **Risk**: Data corruption, lost scouting data  
 **Impact**: Very High  
-**Effort**: 2-3 days  
+**Effort**: 2-3 days
 
 **Key Functions**:
+
 - `MatchScoutingExtended.from()` - Trace parsing
 - `getMatchScouting()` - Match data retrieval
 - `getTeamScouting()` - Team data aggregation
@@ -41,11 +45,13 @@ This analysis identifies areas in the TeamTators/dashboard repository requiring 
 **Why Critical**: Trace data is the core output of scouting. Invalid parsing leads to data loss.
 
 ### 2. Year-Specific Trace Summaries (2024/2025)
+
 **Risk**: Incorrect performance analysis, bad strategic decisions  
 **Impact**: Very High  
-**Effort**: 2-3 days  
+**Effort**: 2-3 days
 
 **Key Functions**:
+
 - Auto points calculation (Mobility, Coral, Algae)
 - Teleop points calculation
 - Endgame points calculation (Park, Shallow, Deep)
@@ -54,11 +60,13 @@ This analysis identifies areas in the TeamTators/dashboard repository requiring 
 **Why Critical**: Summary calculations directly inform team selection and strategy. Errors mislead scouts.
 
 ### 3. TBA Integration & Caching
+
 **Risk**: Stale data, excessive API usage, failed data fetches  
 **Impact**: High  
-**Effort**: 2 days  
+**Effort**: 2 days
 
 **Key Functions**:
+
 - Event/Match/Team retrieval
 - Cache expiration logic
 - Error handling and fallbacks
@@ -69,25 +77,26 @@ This analysis identifies areas in the TeamTators/dashboard repository requiring 
 
 ## 📊 Complete Priority Matrix
 
-| Priority | Area | Impact | Complexity | Effort | File Location |
-|----------|------|--------|------------|--------|---------------|
-| **CRITICAL** | Scouting Data Models | Very High | Medium | 2-3 days | `server/structs/scouting.ts` |
-| **CRITICAL** | Trace Summaries | Very High | High | 2-3 days | `utils/trace/summaries/` |
-| **HIGH** | TBA Integration | High | Medium | 2 days | `server/utils/tba.ts` |
-| **HIGH** | FIRST Data Structures | High | Medium | 1-2 days | `server/structs/FIRST.ts` |
-| **HIGH** | Strategy Management | High | Low | 1-2 days | `server/structs/strategy.ts` |
-| **HIGH** | Action Summary | High | Medium | 1 day | `server/utils/action-summary.ts` |
-| **HIGH** | Scout Group Assignment | High | Low | 1 day | `tests/scout-groups.test.ts` |
-| **MEDIUM** | TBA Webhooks | Medium | Low | 1 day | `server/services/tba-webhooks.ts` |
-| **MEDIUM** | Pit Scouting | Medium | Low | 1-2 days | `server/structs/scouting.ts` |
-| **MEDIUM** | Match Scouting Extended | Medium | Low | 1 day | `model/scouting.ts` |
-| **MEDIUM** | TBA Caching | Medium | Medium | 1 day | `server/structs/TBA.ts` |
+| Priority     | Area                    | Impact    | Complexity | Effort   | File Location                     |
+| ------------ | ----------------------- | --------- | ---------- | -------- | --------------------------------- |
+| **CRITICAL** | Scouting Data Models    | Very High | Medium     | 2-3 days | `server/structs/scouting.ts`      |
+| **CRITICAL** | Trace Summaries         | Very High | High       | 2-3 days | `utils/trace/summaries/`          |
+| **HIGH**     | TBA Integration         | High      | Medium     | 2 days   | `server/utils/tba.ts`             |
+| **HIGH**     | FIRST Data Structures   | High      | Medium     | 1-2 days | `server/structs/FIRST.ts`         |
+| **HIGH**     | Strategy Management     | High      | Low        | 1-2 days | `server/structs/strategy.ts`      |
+| **HIGH**     | Action Summary          | High      | Medium     | 1 day    | `server/utils/action-summary.ts`  |
+| **HIGH**     | Scout Group Assignment  | High      | Low        | 1 day    | `tests/scout-groups.test.ts`      |
+| **MEDIUM**   | TBA Webhooks            | Medium    | Low        | 1 day    | `server/services/tba-webhooks.ts` |
+| **MEDIUM**   | Pit Scouting            | Medium    | Low        | 1-2 days | `server/structs/scouting.ts`      |
+| **MEDIUM**   | Match Scouting Extended | Medium    | Low        | 1 day    | `model/scouting.ts`               |
+| **MEDIUM**   | TBA Caching             | Medium    | Medium     | 1 day    | `server/structs/TBA.ts`           |
 
 ---
 
 ## 📈 Impact Analysis
 
 ### Data Integrity Risks
+
 Without proper testing, the following data integrity issues may occur:
 
 1. **Trace Parsing Failures** → Lost scouting data
@@ -97,6 +106,7 @@ Without proper testing, the following data integrity issues may occur:
 5. **Summary Generation Errors** → Misleading analytics
 
 ### Competition Impact
+
 During live competitions, untested code could lead to:
 
 - ❌ Missing match schedules (TBA webhook failures)
@@ -112,24 +122,30 @@ During live competitions, untested code could lead to:
 This analysis includes three comprehensive documents:
 
 ### 1. UNIT_TEST_COVERAGE_ANALYSIS.md
+
 **Purpose**: Complete analysis of all 11 areas requiring tests  
 **Contents**:
+
 - Detailed area descriptions
 - Priority matrix
 - Testing approach by phase
 - Best practices and patterns
 
 ### 2. DETAILED_TEST_RECOMMENDATIONS.md
+
 **Purpose**: Implementation guide with specific test cases  
 **Contents**:
+
 - Detailed test cases for each function
 - Code examples and templates
 - Edge case scenarios
 - Implementation timeline
 
 ### 3. TEST_COVERAGE_QUICK_REFERENCE.md (this document)
+
 **Purpose**: Quick reference for developers  
 **Contents**:
+
 - Priority ranking
 - Test file mapping
 - Common patterns
@@ -140,6 +156,7 @@ This analysis includes three comprehensive documents:
 ## 🛣️ Recommended Implementation Roadmap
 
 ### Phase 1: Critical Foundation (Week 1-2)
+
 **Focus**: Data integrity and core calculations
 
 1. ✅ Scouting Data Models
@@ -160,6 +177,7 @@ This analysis includes three comprehensive documents:
 **Deliverable**: 3 comprehensive test files, ~80% coverage of critical functions
 
 ### Phase 2: Core Features (Week 3-4)
+
 **Focus**: Strategic planning and analysis
 
 4. ✅ FIRST Data Structures
@@ -180,6 +198,7 @@ This analysis includes three comprehensive documents:
 **Deliverable**: 3 additional test files, core business logic tested
 
 ### Phase 3: Supporting Features (Week 5-6)
+
 **Focus**: Assignment and real-time updates
 
 7. ✅ Scout Group Assignment (enhance existing)
@@ -200,6 +219,7 @@ This analysis includes three comprehensive documents:
 **Deliverable**: Enhanced tests, webhook validation suite
 
 ### Phase 4: Additional Features (Week 7)
+
 **Focus**: Pit scouting and extended features
 
 10. ✅ Pit Scouting
@@ -219,12 +239,14 @@ This analysis includes three comprehensive documents:
 ## 📊 Success Metrics
 
 ### Coverage Goals
+
 - **Critical functions**: 100% line and branch coverage
 - **High priority**: 90%+ coverage
 - **Medium priority**: 80%+ coverage
 - **Overall Tator code**: 75%+ coverage
 
 ### Quality Metrics
+
 - ✅ All edge cases covered (empty, null, invalid)
 - ✅ Error paths tested
 - ✅ Lifecycle hooks validated
@@ -232,6 +254,7 @@ This analysis includes three comprehensive documents:
 - ✅ Async operations handled correctly
 
 ### Deliverables
+
 - [x] Analysis documents (3 files)
 - [ ] Test fixtures and mocks
 - [ ] 11 comprehensive test files
@@ -243,41 +266,44 @@ This analysis includes three comprehensive documents:
 ## 🎓 Testing Guidelines
 
 ### What to Test
+
 ✅ Pure functions (calculations, transformations)  
 ✅ Data validation and parsing  
 ✅ Struct lifecycle hooks  
 ✅ Database operations (CRUD)  
 ✅ Error handling paths  
-✅ Edge cases and boundaries  
+✅ Edge cases and boundaries
 
 ### What NOT to Test
+
 ❌ External libraries (ts-utils, drizzle-orm)  
 ❌ Framework code (SvelteKit)  
 ❌ UI components (use E2E instead)  
-❌ Template code (from sveltekit-template repo)  
+❌ Template code (from sveltekit-template repo)
 
 ### Test Structure
+
 ```typescript
 describe('Feature Name', () => {
-  beforeAll(async () => {
-    // Setup (database, mocks)
-  });
+	beforeAll(async () => {
+		// Setup (database, mocks)
+	});
 
-  test('should handle happy path', () => {
-    // Valid input → expected output
-  });
+	test('should handle happy path', () => {
+		// Valid input → expected output
+	});
 
-  test('should handle error path', () => {
-    // Invalid input → error result
-  });
+	test('should handle error path', () => {
+		// Invalid input → error result
+	});
 
-  test('should handle edge case', () => {
-    // Empty/null/boundary → graceful handling
-  });
+	test('should handle edge case', () => {
+		// Empty/null/boundary → graceful handling
+	});
 
-  afterAll(async () => {
-    // Cleanup
-  });
+	afterAll(async () => {
+		// Cleanup
+	});
 });
 ```
 
@@ -315,16 +341,19 @@ describe('Feature Name', () => {
 ## 📞 Support & Resources
 
 ### Documentation
+
 - `UNIT_TEST_COVERAGE_ANALYSIS.md` - Complete analysis
 - `DETAILED_TEST_RECOMMENDATIONS.md` - Implementation guide
 - `TEST_COVERAGE_QUICK_REFERENCE.md` - Quick reference
 
 ### Existing Tests (Examples)
+
 - `src/tests/tba.test.ts`
 - `src/tests/scout-groups.test.ts`
 - `src/tests/action-summary.test.ts`
 
 ### External Resources
+
 - [Vitest Documentation](https://vitest.dev/)
 - [Testing Best Practices](https://testingjavascript.com/)
 - [TBA API Documentation](https://www.thebluealliance.com/apidocs)
@@ -334,6 +363,7 @@ describe('Feature Name', () => {
 ## ✅ Next Steps
 
 ### Immediate Actions (This Week)
+
 1. [ ] Review this analysis with team
 2. [ ] Assign developers to Phase 1 areas
 3. [ ] Set up test fixtures directory
@@ -341,12 +371,14 @@ describe('Feature Name', () => {
 5. [ ] Establish coverage baseline
 
 ### Short Term (Next 2 Weeks)
+
 6. [ ] Complete Phase 1 tests (critical areas)
 7. [ ] Integrate coverage reporting
 8. [ ] Add tests to CI/CD pipeline
 9. [ ] Begin Phase 2 tests
 
 ### Long Term (Next 2 Months)
+
 10. [ ] Complete all 11 test areas
 11. [ ] Achieve 75%+ coverage goal
 12. [ ] Document testing patterns
@@ -362,13 +394,13 @@ This repository has solid E2E test coverage but lacks comprehensive unit tests f
 ✅ Correct calculations for team analysis  
 ✅ Reliable integration with TBA  
 ✅ Proper strategic planning features  
-✅ Confidence in code changes and refactoring  
+✅ Confidence in code changes and refactoring
 
 Implementing the recommended tests will significantly improve code quality, reduce production bugs, and enable faster development cycles.
 
 **Total Estimated Effort**: 15-22 developer days  
 **Expected ROI**: Reduced bugs, faster releases, improved confidence  
-**Risk Mitigation**: Critical data integrity and calculation correctness  
+**Risk Mitigation**: Critical data integrity and calculation correctness
 
 ---
 

@@ -7,9 +7,11 @@ This directory contains comprehensive unit tests for **Phase 1: Data Integrity**
 ## Test Files
 
 ### 1. phase1-scouting-data.test.ts (15 tests)
+
 **Focus**: Scouting data models, trace parsing, and data retrieval
 
 **Key Test Areas**:
+
 - `MatchScoutingExtended.from()` - Validates trace parsing with valid/invalid data
 - Computed properties - Tests getChecks(), getSliders() with various inputs
 - `getMatchScouting()` - Retrieves match data by identifiers, handles archives
@@ -17,6 +19,7 @@ This directory contains comprehensive unit tests for **Phase 1: Data Integrity**
 - `getTeamPrescouting()` - Filters prescouting by team and year
 
 **Coverage**:
+
 - Valid trace parsing (2024, 2025)
 - Invalid JSON handling
 - Invalid trace structure handling
@@ -25,9 +28,11 @@ This directory contains comprehensive unit tests for **Phase 1: Data Integrity**
 - Multi-year data filtering
 
 ### 2. phase1-tba-integration.test.ts (17 tests)
+
 **Focus**: TBA API integration, caching, and data management
 
 **Key Test Areas**:
+
 - Event retrieval (`getEvents()`, `getEvent()`)
 - Match and team data fetching
 - Memory and database caching
@@ -37,6 +42,7 @@ This directory contains comprehensive unit tests for **Phase 1: Data Integrity**
 - Match formatting (toString)
 
 **Coverage**:
+
 - TBA API data retrieval
 - In-memory event caching
 - Database request caching
@@ -46,9 +52,11 @@ This directory contains comprehensive unit tests for **Phase 1: Data Integrity**
 - Result type validation
 
 ### 3. phase1-trace-summaries.test.ts (17 tests)
+
 **Focus**: Year-specific summary calculations and aggregation
 
 **Key Test Areas**:
+
 - Aggregator functions (average, max, min, sum)
 - Trace parsing for 2024/2025 seasons
 - Summary generation (`generateSummary()`)
@@ -56,6 +64,7 @@ This directory contains comprehensive unit tests for **Phase 1: Data Integrity**
 - Serialization/deserialization
 
 **Coverage**:
+
 - Mathematical aggregations (mean, max, min, sum)
 - Empty array handling
 - Year-specific trace validation
@@ -67,7 +76,9 @@ This directory contains comprehensive unit tests for **Phase 1: Data Integrity**
 ## Fixtures
 
 ### fixtures/trace-data.ts
+
 Provides test data for trace validation:
+
 - `validTrace2025` - Complete 2025 trace with all sections
 - `validTrace2024` - Complete 2024 trace
 - `invalidTraceJSON` - Malformed JSON string
@@ -77,7 +88,9 @@ Provides test data for trace validation:
 - `emptyChecks` / `emptySliders` - Empty state handling
 
 ### fixtures/tba-data.ts
+
 Provides TBA test data:
+
 - `mockEvent2025` / `mockEvent2024` - Sample events
 - `mockMatch2025` - Sample match data
 - `mockMatch2025WithScoreBreakdown` - Match with 2025 scoring details
@@ -87,11 +100,13 @@ Provides TBA test data:
 ## Running Tests
 
 ### Run all Phase 1 tests
+
 ```bash
 pnpm test:unit src/tests/phase1-*.test.ts
 ```
 
 ### Run specific test file
+
 ```bash
 pnpm test:unit src/tests/phase1-scouting-data.test.ts
 pnpm test:unit src/tests/phase1-tba-integration.test.ts
@@ -99,11 +114,13 @@ pnpm test:unit src/tests/phase1-trace-summaries.test.ts
 ```
 
 ### Run in watch mode
+
 ```bash
 pnpm test:unit src/tests/phase1-*.test.ts -- --watch
 ```
 
 ### Run with coverage
+
 ```bash
 pnpm test:unit src/tests/phase1-*.test.ts -- --coverage
 ```
@@ -119,13 +136,15 @@ pnpm test:unit src/tests/phase1-*.test.ts -- --coverage
 ## Test Patterns Used
 
 ### 1. Database Setup
+
 ```typescript
 beforeAll(async () => {
-  await Struct.buildAll(DB).unwrap();
+	await Struct.buildAll(DB).unwrap();
 });
 ```
 
 ### 2. Cleanup After Each Test
+
 ```typescript
 afterEach(async () => {
   // Delete test data to avoid conflicts
@@ -137,6 +156,7 @@ afterEach(async () => {
 ```
 
 ### 3. Result Type Validation
+
 ```typescript
 const result = await someFunction();
 expect(result.isOk()).toBe(true);
@@ -145,6 +165,7 @@ expect(value).toBeDefined();
 ```
 
 ### 4. Error Path Testing
+
 ```typescript
 const result = await functionWithInvalidInput();
 expect(result.isErr()).toBe(true);
@@ -154,6 +175,7 @@ expect(result.error).toBeDefined();
 ## Critical Functions Tested
 
 ### High-Risk Functions (100% Coverage Goal)
+
 1. `MatchScoutingExtended.from()` - Data corruption risk
 2. `getMatchScouting()` - Core data retrieval
 3. `getTeamScouting()` - Aggregation logic
@@ -180,12 +202,14 @@ expect(result.error).toBeDefined();
 ## Future Enhancements
 
 ### Short Term
+
 - [ ] Add mock TBA API responses
 - [ ] Test more edge cases (concurrent operations)
 - [ ] Add performance benchmarks
 - [ ] Test error recovery paths
 
 ### Long Term
+
 - [ ] Integration tests for complete workflows
 - [ ] Load testing for cache performance
 - [ ] Mutation testing for edge case discovery
@@ -204,6 +228,7 @@ expect(result.error).toBeDefined();
 ## Contribution Guidelines
 
 ### Adding New Tests
+
 1. Follow existing pattern (describe/test structure)
 2. Use fixtures for test data
 3. Clean up in afterEach
@@ -211,6 +236,7 @@ expect(result.error).toBeDefined();
 5. Use descriptive test names
 
 ### Modifying Existing Tests
+
 1. Ensure all tests still pass
 2. Update comments if behavior changes
 3. Add new edge cases as discovered
@@ -225,6 +251,7 @@ expect(result.error).toBeDefined();
 ## Support
 
 For questions or issues with these tests:
+
 1. Check existing test comments
 2. Review fixture data
 3. Consult related documentation

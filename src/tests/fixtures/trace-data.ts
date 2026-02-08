@@ -84,7 +84,7 @@ export const invalidTraceJSON = 'invalid json {';
  * Invalid trace structure (missing required fields)
  */
 export const invalidTraceStructure = JSON.stringify({
-	points: [],
+	points: []
 	// Missing sections, scoring, metadata
 });
 

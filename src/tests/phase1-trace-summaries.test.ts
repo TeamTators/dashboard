@@ -308,10 +308,7 @@ describe('Phase 1: Year-Specific Trace Summaries', async () => {
 			expect(result2.unwrap()).toBeDefined();
 
 			// Clean up
-			const event = await TBAStructs.Events.get(
-				{ eventKey: '2025cachetest' },
-				{ type: 'single' }
-			);
+			const event = await TBAStructs.Events.get({ eventKey: '2025cachetest' }, { type: 'single' });
 			if (event.isOk() && event.value) {
 				await event.value.delete();
 			}
@@ -373,10 +370,7 @@ describe('Phase 1: Year-Specific Trace Summaries', async () => {
 				await event.value.delete();
 			}
 
-			const summary = await FIRST.EventSummary.get(
-				{ eventKey: '2025nocache' },
-				{ type: 'single' }
-			);
+			const summary = await FIRST.EventSummary.get({ eventKey: '2025nocache' }, { type: 'single' });
 			if (summary.isOk() && summary.value) {
 				await summary.value.delete();
 			}

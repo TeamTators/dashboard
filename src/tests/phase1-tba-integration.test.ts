@@ -178,7 +178,7 @@ describe('Phase 1: TBA Integration & Caching', async () => {
 
 			const matches = matchesResult.unwrap();
 			expect(matches.length).toBeGreaterThan(0);
-			
+
 			// Verify team is in each match
 			matches.forEach((match) => {
 				const allTeamKeys = [
@@ -200,10 +200,7 @@ describe('Phase 1: TBA Integration & Caching', async () => {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			// Check if cached in database
-			const cached = await TBAStructs.Requests.get(
-				{},
-				{ type: 'array', limit: 100, offset: 0 }
-			);
+			const cached = await TBAStructs.Requests.get({}, { type: 'array', limit: 100, offset: 0 });
 
 			expect(cached.isOk()).toBe(true);
 			// Should have at least some cached requests
@@ -324,11 +321,11 @@ describe('Phase 1: TBA Integration & Caching', async () => {
 
 		test('should return Result type for all operations', async () => {
 			const eventResult = await TBA.Event.getEvent('2024idbo');
-			
+
 			// All results should have isOk/isErr methods
 			expect(typeof eventResult.isOk).toBe('function');
 			expect(typeof eventResult.isErr).toBe('function');
-			
+
 			if (eventResult.isOk()) {
 				const event = eventResult.unwrap();
 				const matchesResult = await event.getMatches();
@@ -348,7 +345,7 @@ describe('Phase 1: TBA Integration & Caching', async () => {
 			expect(matchesResult.isOk()).toBe(true);
 
 			const matches = matchesResult.unwrap();
-			
+
 			// Find different match types
 			const qm = matches.find((m) => m.tba.comp_level === 'qm');
 			if (qm) {
