@@ -1,8 +1,0 @@
-name: manage-roles
-structs:
-  - role
-permissions:
-  - '*'
-pages:
-  - roles
-group: Roles

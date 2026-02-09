@@ -1,9 +1,0 @@
-name: manage-scouting
-structs:
-  - match_scouting
-  - team_comments
-permissions:
-  - match_scouting:*:*
-  - team_comments:*:*
-pages: []
-group: Scouting
