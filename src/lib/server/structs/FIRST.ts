@@ -3,7 +3,32 @@
  *
  * @description
  * Defines Drizzle-backed Structs for FIRST summaries, team pictures, and matches, and
- * provides summary generation and caching helpers.
+ * provides summary generation, hashing, and cache read-through helpers.
+ *
+ * @example
+ * ```ts
+ * // Generate a summary (read-through cache).
+ * const summary = await FIRST.getSummary('2024mike2', 2024).unwrap();
+ *
+ * // Build a summary without caching.
+ * const fresh = await FIRST.generateSummary('2024mike2', 2024).unwrap();
+ *
+ * // Store or query custom matches via the Struct API.
+ * const match = await FIRST.CustomMatches.new({
+ *   name: 'Practice 1',
+ *   eventKey: '2024mike2',
+ *   number: 1,
+ *   compLevel: 'qm',
+ *   red1: 1,
+ *   red2: 2,
+ *   red3: 3,
+ *   red4: 4,
+ *   blue1: 5,
+ *   blue2: 6,
+ *   blue3: 7,
+ *   blue4: 8
+ * }).unwrap();
+ * ```
  */
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
@@ -20,7 +45,16 @@ import structRegistry from '../services/struct-registry';
 import { hash } from 'crypto';
 import { Summary } from 'tatorscout/summary';
 
+/**
+ * FIRST data helpers and Structs.
+ */
 export namespace FIRST {
+	/**
+	 * Cached summaries for an event, keyed by TBA event key.
+	 *
+	 * @remarks
+	 * This struct is read-only from the UI and used for server-side caching.
+	 */
 	export const EventSummary = new Struct({
 		name: 'event_summary',
 		structure: {
@@ -48,6 +82,18 @@ export namespace FIRST {
 		.block(PropertyAction.ReadVersionHistory)
 		.block(PropertyAction.SetAttributes);
 
+	/**
+	 * Generate a scouting summary for the given event/year without caching.
+	 *
+	 * @param eventKey - TBA event key to summarize.
+	 * @param year - Summary schema year (2024 or 2025).
+	 * @returns A computed summary result.
+	 *
+	 * @example
+	 * ```ts
+	 * const summary = await FIRST.generateSummary('2024mike2', 2024).unwrap();
+	 * ```
+	 */
 	export const generateSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
 			const event = await Event.getEvent(eventKey, true).unwrap();
@@ -92,6 +138,17 @@ export namespace FIRST {
 		});
 	};
 
+	/**
+	 * Hash a summary schema for cache invalidation.
+	 *
+	 * @param summary - Summary schema definition to hash.
+	 * @returns A deterministic hash string.
+	 *
+	 * @example
+	 * ```ts
+	 * const hash = FIRST.hashSummary(Summary2024);
+	 * ```
+	 */
 	export const hashSummary = (
 		summary: Summary<
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,6 +179,18 @@ export namespace FIRST {
 		return hash('sha256', canonical);
 	};
 
+	/**
+	 * Get a cached summary or compute and store a new one.
+	 *
+	 * @param eventKey - TBA event key to summarize.
+	 * @param year - Summary schema year (2024 or 2025).
+	 * @returns A cached or freshly computed summary.
+	 *
+	 * @example
+	 * ```ts
+	 * const summary = await FIRST.getSummary('2024mike2', 2025).unwrap();
+	 * ```
+	 */
 	export const getSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
 			const res = await EventSummary.get(
@@ -153,6 +222,12 @@ export namespace FIRST {
 		});
 	};
 
+	/**
+	 * Team pictures uploaded for a given event.
+	 *
+	 * @remarks
+	 * Upload permissions are granted via the `upload-pictures` entitlement.
+	 */
 	export const TeamPictures = new Struct({
 		name: 'team_pictures',
 		structure: {
@@ -169,6 +244,9 @@ export namespace FIRST {
 
 	// TeamPictures.on('delete', (pic) => {});
 
+	/**
+	 * Event match metadata imported from FIRST/TBA.
+	 */
 	export const Matches = new Struct({
 		name: 'matches',
 		structure: {
@@ -181,6 +259,9 @@ export namespace FIRST {
 		}
 	});
 
+	/**
+	 * Custom match entries created for internal workflows.
+	 */
 	export const CustomMatches = new Struct({
 		name: 'custom_matches',
 		structure: {

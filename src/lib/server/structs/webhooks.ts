@@ -1,4 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * @fileoverview
+ * Webhook subscription storage, alert persistence, and notification dispatch logic.
+ *
+ * @description
+ * This module wires TBA webhook payloads into the local subscription system.
+ * It generates subscription keys, stores incoming alert payloads for later viewing,
+ * and sends notifications through popup and email channels.
+ *
+ * @example
+ * ```ts
+ * // Register webhook listeners for a redis stream name.
+ * Webhooks.init('tba-webhooks').unwrap();
+ *
+ * // Generate subscription args for a payload.
+ * const args = Webhooks.genArgs('match_score', payload);
+ *
+ * // Build a notification for UI display.
+ * const notif = Webhooks.buildNotif('match_score', payload);
+ * ```
+ */
 import { boolean, text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct';
 import { TBAWebhooks } from '../services/tba-webhooks';
@@ -12,15 +33,40 @@ import { domain } from '../utils/env';
 import { Event, type Match } from '../utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
 
+/**
+ * Webhook subscription storage and TBA alert dispatch helpers.
+ *
+ * @example
+ * ```ts
+ * const result = Webhooks.WebhookAlerts.new({
+ *   type: 'schedule_updated',
+ *   data: JSON.stringify(payload)
+ * });
+ * ```
+ */
 export namespace Webhooks {
+	/**
+	 * Subscription records keyed by webhook type and args.
+	 *
+	 * @remarks
+	 * - `type` aligns with TBA webhook message types.
+	 * - `args` is derived via `genArgs()` and represents the subscription key.
+	 * - `email`, `popup`, and `discord` control delivery channels.
+	 */
 	export const Subscriptions = new Struct({
 		name: 'webhook_subscriptions',
 		structure: {
+			/** Account id that owns the subscription. */
 			accountId: text('account_id').notNull(),
+			/** Webhook message type (TBA schema key). */
 			type: text('type').notNull(),
+			/** Subscription key derived from the webhook payload. */
 			args: text('args').notNull(),
+			/** Send email notifications for this subscription. */
 			email: boolean('email').notNull(),
+			/** Send popup notifications for this subscription. */
 			popup: boolean('popup').notNull(),
+			/** Send Discord notifications for this subscription. */
 			discord: boolean('discord').notNull()
 		}
 	});
@@ -67,19 +113,56 @@ export namespace Webhooks {
 		// }
 	});
 
+	/**
+	 * Typed sample for webhook subscriptions.
+	 *
+	 * @example
+	 * ```ts
+	 * const sample: Webhooks.SubscriptionData = Webhooks.Subscriptions.sample;
+	 * ```
+	 */
 	export type SubscriptionData = typeof Subscriptions.sample;
 
+	/**
+	 * Stored webhook alert payloads used for view links.
+	 *
+	 * @remarks
+	 * Stored alerts are retained for seven days to support view links.
+	 */
 	export const WebhookAlerts = new Struct({
 		name: 'webhook_alerts',
 		structure: {
+			/** Webhook message type for this alert. */
 			type: text('type').notNull(),
+			/** Serialized payload for the alert. */
 			data: text('data').notNull()
 		},
 		lifetime: 1000 * 60 * 60 * 24 * 7 // 7 days
 	});
 
+	/**
+	 * Typed sample for webhook alerts.
+	 *
+	 * @example
+	 * ```ts
+	 * const sample: Webhooks.WebhookAlertsData = Webhooks.WebhookAlerts.sample;
+	 * ```
+	 */
 	export type WebhookAlertsData = typeof WebhookAlerts.sample;
 
+	/**
+	 * Build subscription keys for a webhook payload.
+	 *
+	 * @param type - The webhook message type.
+	 * @param data - The webhook payload for the provided type.
+	 * @returns A list of args and whether each subscription is single-use.
+	 *
+	 * @example
+	 * ```ts
+	 * const args = Webhooks.genArgs('match_score', payload);
+	 * // [{ args: '2024mike2', single: false }, { args: '2024mike2:qm:12', single: true }]
+	 * ```
+	 */
 	export const genArgs = <K extends TBAWebhooks.Types.Schemas>(
 		type: K,
 		data: TBAWebhooks.Types.Schema<K>
@@ -138,6 +221,18 @@ export namespace Webhooks {
 		}
 	};
 
+	/**
+	 * Resolve subscriptions that match a webhook payload.
+	 *
+	 * @param type - The webhook message type.
+	 * @param data - The webhook payload for the provided type.
+	 * @returns An async result containing subscriptions and single-use metadata.
+	 *
+	 * @example
+	 * ```ts
+	 * const subs = await Webhooks.findSubs('schedule_updated', payload).unwrap();
+	 * ```
+	 */
 	export const findSubs = <K extends TBAWebhooks.Types.Schemas>(
 		type: K,
 		data: TBAWebhooks.Types.Schema<K>
@@ -169,6 +264,20 @@ export namespace Webhooks {
 		});
 	};
 
+	/**
+	 * Build a notifier that sends popup/email for a subscription.
+	 *
+	 * @param type - The webhook message type.
+	 * @param data - The webhook payload for the provided type.
+	 * @param whData - Stored webhook alert for generating view links.
+	 * @returns A function that dispatches notifications for a subscription.
+	 *
+	 * @example
+	 * ```ts
+	 * const notify = Webhooks.doNotify('match_score', payload, alert);
+	 * await notify(sub).unwrap();
+	 * ```
+	 */
 	export const doNotify = (
 		type: TBAWebhooks.Types.Schemas,
 		data: any,
@@ -202,6 +311,18 @@ export namespace Webhooks {
 		};
 	};
 
+	/**
+	 * Persist the webhook alert and notify all matching subscribers.
+	 *
+	 * @param type - The webhook message type.
+	 * @returns A handler that accepts raw webhook payloads.
+	 *
+	 * @example
+	 * ```ts
+	 * const handler = Webhooks.runWebhook('schedule_updated');
+	 * await handler(payload).unwrap();
+	 * ```
+	 */
 	export const runWebhook =
 		<K extends TBAWebhooks.Types.Schemas>(type: K) =>
 		(data: any) => {
@@ -226,6 +347,18 @@ export namespace Webhooks {
 			});
 		};
 
+	/**
+	 * Convert a webhook payload into a user-facing notification.
+	 *
+	 * @param type - The webhook message type.
+	 * @param data - The webhook payload for the provided type.
+	 * @returns A notification object suitable for UI and email.
+	 *
+	 * @example
+	 * ```ts
+	 * const notif = Webhooks.buildNotif('upcoming_match', payload);
+	 * ```
+	 */
 	export const buildNotif = <K extends TBAWebhooks.Types.Schemas>(
 		type: K,
 		data: TBAWebhooks.Types.Schema<K>
@@ -308,6 +441,12 @@ export namespace Webhooks {
 		}
 	};
 
+	/**
+	 * Match-centric webhook handler that additionally notifies team subscriptions.
+	 *
+	 * @param type - The webhook message type.
+	 * @returns A handler that accepts raw webhook payloads.
+	 */
 	const runMatchWebhook = <K extends TBAWebhooks.Types.Schemas>(type: K) => {
 		const run = runWebhook(type);
 		return (data: any) => {
@@ -374,6 +513,17 @@ export namespace Webhooks {
 		};
 	};
 
+	/**
+	 * Initialize webhook listeners for the configured redis stream.
+	 *
+	 * @param name - Redis stream name used by the TBA webhook service.
+	 * @returns A result describing initialization success or error.
+	 *
+	 * @example
+	 * ```ts
+	 * Webhooks.init('tba-webhooks').unwrap();
+	 * ```
+	 */
 	export const init = (name: string) => {
 		return attempt(async () => {
 			const service = TBAWebhooks.init(name).unwrap();
