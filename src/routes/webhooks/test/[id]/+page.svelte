@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { Webhooks } from '$lib/model/webhooks';
-	import { notify } from '$lib/utils/prompts';
 	import { freqEst, getDesc } from '$lib/utils/webhooks';
 	import { capitalize, fromSnakeCase } from 'ts-utils';
 
 	const { data } = $props();
-	const sub = $state(Webhooks.Subscriptions.Generator(data.sub));
+	const sub = $derived(Webhooks.Subscriptions.Generator(data.sub));
 </script>
 
 <div class="container d-flex flex-column align-items-center justify-content-center vh-100">
@@ -26,22 +25,7 @@
 			type="button"
 			class="btn btn-primary"
 			onclick={async () => {
-				const res = await Webhooks.test(sub);
-				if (res.isOk()) {
-					notify({
-						title: 'Test Sent',
-						message: 'The test webhook has been sent successfully.',
-						color: 'success',
-						autoHide: 3000
-					});
-				} else {
-					notify({
-						title: 'Test Failed',
-						message: `Failed to send test webhook: ${res.error}`,
-						color: 'danger',
-						autoHide: 5000
-					});
-				}
+				await Webhooks.test(sub);
 			}}
 		>
 			Run Test

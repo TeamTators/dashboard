@@ -8,7 +8,7 @@
 	import { confirm, notify } from '$lib/utils/prompts';
 	import { capitalize, fromSnakeCase } from 'ts-utils';
 	import { freqEst, getDesc } from '$lib/utils/webhooks';
-	import nav from '$lib/imports/robot-display';
+	import nav from '$lib/nav/robot-display';
 
 	const eventKey = String(page.params.eventKey);
 	let event: TBAEvent | undefined = $state(undefined);
@@ -44,11 +44,17 @@
 	};
 
 	onMount(() => {
-		Account.getSelfAsync().then((s) => {
-			if (s.isOk()) {
-				subscriptions = Webhooks.Subscriptions.fromProperty('accountId', String(s.value.data.id), {
-					type: 'all'
-				});
+		const self = Account.getSelf();
+		self.await().then((res) => {
+			if (res.isOk()) {
+				subscriptions = Webhooks.Subscriptions.get(
+					{
+						accountId: res.value.data.id
+					},
+					{
+						type: 'all'
+					}
+				);
 			}
 		});
 

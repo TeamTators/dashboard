@@ -3,6 +3,7 @@ import { sse } from '$lib/services/sse';
 import { Struct } from '$lib/services/struct';
 import { attemptAsync } from 'ts-utils';
 import { Account } from './account';
+import * as remote from '$lib/remotes/webhooks.remote';
 
 export namespace Webhooks {
 	export const Subscriptions = new Struct({
@@ -30,7 +31,7 @@ export namespace Webhooks {
 		discord: boolean
 	) => {
 		return attemptAsync(async () => {
-			const self = await Account.getSelfAsync().unwrap();
+			const self = await Account.getSelf().await().unwrap();
 			return Subscriptions.new({
 				accountId: String(self.data.id),
 				type,
@@ -43,8 +44,8 @@ export namespace Webhooks {
 	};
 
 	export const test = (sub: SubscriptionData) => {
-		return Subscriptions.call('test', {
-			id: sub.data.id
+		return remote.test({
+			id: String(sub.data.id)
 		});
 	};
 }

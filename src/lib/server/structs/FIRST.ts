@@ -96,11 +96,8 @@ export namespace FIRST {
 		summary: Summary<
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			any,
-			{
-				[key: string]: {
-					[key: string]: () => number;
-				};
-			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			any
 		>
 	) => {
 		const normalizeFunction = (fn: (data: unknown) => number) => {

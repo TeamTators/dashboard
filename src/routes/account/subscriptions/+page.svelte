@@ -17,11 +17,17 @@
 	const cs = useCommandStack('account:webhooks', onMount, onDestroy);
 
 	onMount(() => {
-		Account.getSelfAsync().then((s) => {
-			if (s.isOk()) {
-				subscriptions = Webhooks.Subscriptions.fromProperty('accountId', String(s.value.data.id), {
-					type: 'all'
-				});
+		const self = Account.getSelf();
+		self.await().then((res) => {
+			if (res.isOk()) {
+				subscriptions = Webhooks.Subscriptions.get(
+					{
+						accountId: res.value.data.id
+					},
+					{
+						type: 'all'
+					}
+				);
 			}
 		});
 	});

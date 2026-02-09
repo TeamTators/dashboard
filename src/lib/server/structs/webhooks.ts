@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { boolean, text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { TBAWebhooks } from '../services/tba-webhooks';
 import { attempt, attemptAsync, capitalize, fromSnakeCase } from 'ts-utils';
 import { DB } from '../db';
@@ -11,9 +11,6 @@ import { sendEmail } from '../services/email';
 import { domain } from '../utils/env';
 import { Event, type Match } from '../utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
-import { CallListener } from '../services/struct-listeners';
-import z from 'zod';
-// import { freqEst, getDesc } from '$lib/utils/webhooks';
 
 export namespace Webhooks {
 	export const Subscriptions = new Struct({
@@ -27,42 +24,6 @@ export namespace Webhooks {
 			discord: boolean('discord').notNull()
 		}
 	});
-
-	CallListener.on(
-		'test',
-		Subscriptions,
-		z.object({
-			id: z.string()
-		}),
-		async (event, data) => {
-			if (!event.locals.account) {
-				return {
-					success: false,
-					message: 'Not authenticated'
-				};
-			}
-
-			const sub = await Subscriptions.fromId(data.id).unwrap();
-			if (!sub) {
-				return {
-					success: false,
-					message: 'Subscription not found'
-				};
-			}
-			if (sub.data.accountId !== event.locals.account.id) {
-				return {
-					success: false,
-					message: 'Not authorized to test this subscription'
-				};
-			}
-			return {
-				success: false,
-				message: 'Not implemented'
-			};
-
-			// doNotify(sub.data.type as TBAWebhooks.Types.Schemas, JSON.parse('{}'), { id: 'test' } as any)(sub).unwrap();
-		}
-	);
 
 	Subscriptions.on('create', async (s) => {
 		const exists = await Subscriptions.get(
@@ -114,8 +75,7 @@ export namespace Webhooks {
 			type: text('type').notNull(),
 			data: text('data').notNull()
 		},
-		lifetime: 1000 * 60 * 60 * 24 * 7, // 7 days
-		frontend: false
+		lifetime: 1000 * 60 * 60 * 24 * 7 // 7 days
 	});
 
 	export type WebhookAlertsData = typeof WebhookAlerts.sample;
@@ -209,7 +169,11 @@ export namespace Webhooks {
 		});
 	};
 
-	const doNotify = (type: TBAWebhooks.Types.Schemas, data: any, whData: WebhookAlertsData) => {
+	export const doNotify = (
+		type: TBAWebhooks.Types.Schemas,
+		data: any,
+		whData: WebhookAlertsData
+	) => {
 		const notif = buildNotif(type, data);
 		return (sub: SubscriptionData) => {
 			return attemptAsync(async () => {
@@ -238,7 +202,7 @@ export namespace Webhooks {
 		};
 	};
 
-	const runWebhook =
+	export const runWebhook =
 		<K extends TBAWebhooks.Types.Schemas>(type: K) =>
 		(data: any) => {
 			return attemptAsync(async () => {
@@ -262,7 +226,7 @@ export namespace Webhooks {
 			});
 		};
 
-	const buildNotif = <K extends TBAWebhooks.Types.Schemas>(
+	export const buildNotif = <K extends TBAWebhooks.Types.Schemas>(
 		type: K,
 		data: TBAWebhooks.Types.Schema<K>
 	): Notification => {

@@ -5,7 +5,7 @@
 	import { capitalize, fromSnakeCase } from 'ts-utils';
 
 	const { data } = $props();
-	const sub = $state(Webhooks.Subscriptions.Generator(data.sub));
+	const sub = $derived(Webhooks.Subscriptions.Generator(data.sub));
 </script>
 
 <div class="container d-flex flex-column align-items-center justify-content-center vh-100">

@@ -10,7 +10,6 @@ import { EventEmitter } from 'ts-utils/event-emitter';
 import { z } from 'zod';
 import { attempt } from 'ts-utils';
 
-
 export namespace TBAWebhooks {
 	/**
 	 * Zod schemas keyed by webhook type for validating incoming payloads.

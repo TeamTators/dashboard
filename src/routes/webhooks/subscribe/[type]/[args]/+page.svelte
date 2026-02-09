@@ -62,7 +62,7 @@
 					value: { Preferences }
 				} = await getNotify();
 
-				const self = await Account.getSelfAsync();
+				const self = await Account.getSelf().await();
 				if (self.isErr()) {
 					console.error('Failed to get account info:', self.error);
 					return;

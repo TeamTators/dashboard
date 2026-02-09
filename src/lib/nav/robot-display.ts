@@ -156,8 +156,8 @@ export default (event: TBAEvent) => {
 				href: `/dashboard/event/${event.key}/subscriptions`,
 				icon: {
 					type: 'material-icons',
-					name: 'notifications',
-				},
+					name: 'notifications'
+				}
 			},
 			{
 				name: 'Simulator',
