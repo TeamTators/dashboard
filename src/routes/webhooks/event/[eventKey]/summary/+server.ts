@@ -4,8 +4,9 @@
  * Generates a summarized report for the event using the summary pipeline.
  */
 
-import { summarize } from '$lib/server/utils/google-summary.js';
-import { fail } from '@sveltejs/kit';
+import { summarize as summarize2025 } from '$lib/server/utils/google-summary/2025';
+import { summarize as summarize2026 } from '$lib/server/utils/google-summary/2026';
+import { fail, json } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
 /**
@@ -14,29 +15,48 @@ import { ServerCode } from 'ts-utils/status';
  * @returns A JSON response containing the serialized summary.
  */
 export const GET = async (event) => {
-	// auth(event);
-	const data = await summarize(event.params.eventKey);
-	if (data.isErr())
-		throw fail(ServerCode.internalServerError, {
-			error: data.error.message
+	const year = parseInt(event.params.eventKey.slice(0, 4));
+	if (isNaN(year) || ![2025, 2026].includes(year)) {
+		throw fail(ServerCode.badRequest, {
+			error: 'Invalid event key format. Year must be 2025 or 2026.'
 		});
+	}
 
-	const res = await data.value.serialize();
+	if (year === 2025) {
+		const data = await summarize2025(event.params.eventKey);
+		if (data.isErr())
+			throw fail(ServerCode.internalServerError, {
+				error: data.error.message
+			});
 
-	if (res.isErr())
-		throw fail(ServerCode.internalServerError, {
-			error: res.error.message
-		});
+		const res = await data.value.serialize();
 
-	return new Response(
-		JSON.stringify({
-			summary: res.value
-		}),
-		{
-			status: 200,
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		}
-	);
+		if (res.isErr())
+			throw fail(ServerCode.internalServerError, {
+				error: res.error.message
+			});
+
+		return json(res.value);
+	}
+
+	if (year === 2026) {
+		const data = await summarize2026(event.params.eventKey);
+		if (data.isErr())
+			throw fail(ServerCode.internalServerError, {
+				error: data.error.message
+			});
+
+		const res = await data.value.serialize();
+
+		if (res.isErr())
+			throw fail(ServerCode.internalServerError, {
+				error: res.error.message
+			});
+
+		return json(res.value);
+	}
+
+	throw fail(ServerCode.badRequest, {
+		error: 'Invalid event key format. Year must be 2025 or 2026.'
+	});
 };
