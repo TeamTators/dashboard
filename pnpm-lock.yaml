@@ -265,7 +265,7 @@ importers:
         version: 2.2.1
       tatorscout:
         specifier: github:TeamTators/tatorscout-utils#2026-02-08-TK-ChangeMatchSchema
-        version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/bc6ee53c93cfb8dd547006e1cb580373e4d11ffc(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
+        version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/2cecea657802434e706d5eb005339ae7e20f1148(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
       ts-utils:
         specifier: github:tsaxking/global-ts-utilities#v1.0.10
         version: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
@@ -5211,8 +5211,8 @@ packages:
   tabbable@6.4.0:
     resolution: {integrity: sha512-05PUHKSNE8ou2dwIxTngl4EzcnsCDZGJ/iCLtDflR/SHB/ny14rXc+qU5P4mG9JkusiV7EivzY9Mhm55AzAvCg==}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/bc6ee53c93cfb8dd547006e1cb580373e4d11ffc:
-    resolution: {tarball: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/bc6ee53c93cfb8dd547006e1cb580373e4d11ffc}
+  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/2cecea657802434e706d5eb005339ae7e20f1148:
+    resolution: {tarball: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/2cecea657802434e706d5eb005339ae7e20f1148}
     version: 1.0.0
 
   text-table@0.2.0:
@@ -11072,7 +11072,7 @@ snapshots:
 
   tabbable@6.4.0: {}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/bc6ee53c93cfb8dd547006e1cb580373e4d11ffc(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
+  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/2cecea657802434e706d5eb005339ae7e20f1148(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
     dependencies:
       '@eslint/compat': 1.4.1(eslint@9.39.2)
       eslint: 9.39.2

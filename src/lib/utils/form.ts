@@ -17,6 +17,7 @@ type Option =
 			value: string;
 			label: string;
 			disabled?: boolean;
+			selected?: boolean;
 	  };
 
 /**
@@ -433,6 +434,15 @@ export class Form<T extends { [key: string]: Input<keyof Inputs> }> {
 						const checkLabel = document.createElement('label');
 						checkLabel.innerText = typeof option === 'string' ? option : option.label;
 						checkLabel.classList.add('form-check-label');
+
+						if (typeof option === 'object') {
+							if (option.disabled) {
+								checkInput.disabled = true;
+							}
+							if (option.selected) {
+								checkInput.setAttribute('checked', 'true');
+							}
+						}
 
 						checkWrapper.appendChild(checkInput);
 						checkWrapper.appendChild(checkLabel);

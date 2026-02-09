@@ -23,14 +23,14 @@ describe('TBA Webhook', async () => {
 		config.tba_webhook.redis_name
 	);
 
-	let service: ReturnType<typeof TBAWebhooks.init> | undefined;
+	let service: ReturnType<ReturnType<typeof TBAWebhooks.init>['unwrap']> | undefined;
 
 	beforeAll(async () => {
 		const res = await redis.init();
 		expect(res.isOk()).toBe(true);
 		await sleep(1000); // Wait for the server to start
 
-		service = TBAWebhooks.init(config.tba_webhook.redis_name);
+		service = TBAWebhooks.init(config.tba_webhook.redis_name).unwrap();
 	});
 
 	afterAll(async () => {

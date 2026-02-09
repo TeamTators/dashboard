@@ -1,0 +1,95 @@
+<mjml>
+	<mj-body background-color="#f4f4f4">
+		<mj-section>
+			<mj-column>
+				<mj-image
+					width="100px"
+					src="https://tatorscout.org/assets/favicon.png"
+					alt="Tatorscout Logo"
+				/>
+				<mj-divider border-color="#0057b8" />
+				<mj-text
+					font-size="24px"
+					font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+					color="#222"
+					font-weight="bold"
+				>
+					Welcome to Tatorscout Webhook Notifications!
+				</mj-text>
+				<mj-text font-size="16px" color="#333"> Hello {{ username }}, </mj-text>
+				<mj-text font-size="16px" color="#333">
+					Thank you for subscribing to Tatorscout webhook notifications. You will now receive
+					real-time updates for the events and data you care about.
+				</mj-text>
+			</mj-column>
+		</mj-section>
+
+		<!-- Subscription Details -->
+		<mj-section background-color="#ffffff" padding="20px">
+			<mj-column>
+				<mj-text font-size="18px" color="#222" font-weight="bold">
+					Your Subscription Details
+				</mj-text>
+
+				<mj-text font-size="15px" color="#333">
+					<strong>Webhook Type:</strong> {{ webhook_type }}
+				</mj-text>
+
+				<mj-text font-size="15px" color="#333">
+					<strong>Subscription ID:</strong> <code>{{ subscription_id }}</code>
+				</mj-text>
+
+				<mj-text font-size="15px" color="#333">
+					<strong>Created:</strong> {{ created_date }}
+				</mj-text>
+			</mj-column>
+		</mj-section>
+
+		<!-- What to Expect -->
+		<mj-section background-color="#e8f4fd" padding="20px">
+			<mj-column>
+				<mj-text font-size="18px" color="#222" font-weight="bold"> What to Expect </mj-text>
+
+				<mj-text font-size="15px" color="#333">
+					{{ webhook_description }}
+				</mj-text>
+
+				<mj-text font-size="14px" color="#555">
+					<strong>Typical notification frequency:</strong> {{ frequency_estimate }}
+				</mj-text>
+
+				<mj-text font-size="14px" color="#555">
+					Notifications will be sent to: <strong>{{ email_address }}</strong>
+				</mj-text>
+			</mj-column>
+		</mj-section>
+
+		<mj-section>
+			<mj-column>
+				<!-- Action Buttons -->
+				<mj-button background-color="#0057b8" color="#fff" href="{{ manage_subscriptions_url }}">
+					Manage All Subscriptions
+				</mj-button>
+
+				<mj-button background-color="#28a745" color="#fff" href="{{ test_notification_url }}">
+					Send Test Notification
+				</mj-button>
+
+				<!-- Help Information -->
+				<mj-divider border-color="#cccccc" />
+
+				<mj-text font-size="12px" color="#aaa" align="center">
+					This is an automated confirmation email. You're receiving this because you just subscribed
+					to TBA webhook notifications.<br />
+					If you didn't create this subscription, please
+					<a href="{{ unsubscribe_url }}" style="color: #0057b8">unsubscribe here</a>.
+				</mj-text>
+
+				<mj-text font-size="11px" color="#999" align="center">
+					The Blue Alliance Webhook Notification System<br />
+					{{ timestamp }}
+				</mj-text>
+			</mj-column>
+		</mj-section>
+	</mj-body>
+</mjml>

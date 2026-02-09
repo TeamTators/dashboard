@@ -79,6 +79,9 @@ Top navigation bar with stack controls, theme toggle, account menu, and notifica
 					{:else}
 						<li><a class="dropdown-item" href="/account/sign-out">Sign Out</a></li>
 					{/if}
+					<li>
+						<a class="dropdown-item" href="/account/subscriptions">Manage Subscriptions</a>
+					</li>
 				</ul>
 			</div>
 			<button
