@@ -32,14 +32,14 @@ describe('Webhooks helpers', () => {
 			event_key: '2024mike2',
 			event_name: 'Great Lakes Bay Regional',
 			match: {
-                event_key: '2024mike2',
-                key: '2024mike2_qf2',
-                comp_level: 'qf',
-                match_number: 2,
-                videos: [{ type: 'youtube', key: 'abcd1234' }],
-                'set_number': 1,
-                'time': 1700000000,
-            }
+				event_key: '2024mike2',
+				key: '2024mike2_qf2',
+				comp_level: 'qf',
+				match_number: 2,
+				videos: [{ type: 'youtube', key: 'abcd1234' }],
+				set_number: 1,
+				time: 1700000000
+			}
 		} as TBAWebhooks.Types.Schema<'match_video'>;
 
 		const scheduleUpdated = {
@@ -138,13 +138,13 @@ describe('Webhooks helpers', () => {
 			event_key: '2024mike2',
 			event_name: 'Great Lakes Bay Regional',
 			match: {
-                event_key: '2024mike2',
-                key: '2024mike2_qf2',
-                comp_level: 'qf',
-                match_number: 2,
-                videos: [{ type: 'youtube', key: 'abcd1234' }],
-                'set_number': 1,
-                'time': 1700000000,
+				event_key: '2024mike2',
+				key: '2024mike2_qf2',
+				comp_level: 'qf',
+				match_number: 2,
+				videos: [{ type: 'youtube', key: 'abcd1234' }],
+				set_number: 1,
+				time: 1700000000
 			}
 		} as TBAWebhooks.Types.Schema<'match_video'>);
 
@@ -178,7 +178,9 @@ describe('Webhooks helpers', () => {
 		const notifUpcoming = Webhooks.buildNotif('upcoming_match', upcomingMatch);
 
 		expect(notifUpcoming.icon).toEqual({ type: 'material-icons', name: 'alarm' });
-		expect(notifUpcoming.message.startsWith(`Match ${upcomingMatch.match_key} is scheduled at `)).toBe(true);
+		expect(
+			notifUpcoming.message.startsWith(`Match ${upcomingMatch.match_key} is scheduled at `)
+		).toBe(true);
 
 		const broadcast = {
 			title: 'Field Cam',
@@ -197,6 +199,8 @@ describe('Webhooks helpers', () => {
 
 		expect(() => Webhooks.buildNotif('broadcast', broadcast)).toThrow('Unhandled webhook type');
 		expect(() => Webhooks.buildNotif('ping', ping)).toThrow('Unhandled webhook type');
-		expect(() => Webhooks.buildNotif('verification', verification)).toThrow('Unhandled webhook type');
+		expect(() => Webhooks.buildNotif('verification', verification)).toThrow(
+			'Unhandled webhook type'
+		);
 	});
 });
