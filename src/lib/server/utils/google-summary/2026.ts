@@ -7,26 +7,8 @@ import { DB } from '../../db';
 import { and, eq } from 'drizzle-orm';
 import { teamsFromMatch } from 'tatorscout/tba';
 import YearInfo2026 from 'tatorscout/years/2026.js';
-import { Table } from '.';
+import { Table, memoize } from '.';
 
-function memoize<TArgs extends unknown[], TReturn>(
-    fn: (...args: TArgs) => TReturn,
-    keyGenerator?: (...args: TArgs) => string
-): (...args: TArgs) => TReturn {
-    const cache = new Map<string, TReturn>();
-
-    return (...args: TArgs): TReturn => {
-        const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
-
-        if (cache.has(key)) {
-            return cache.get(key)!;
-        }
-
-        const result = fn(...args);
-        cache.set(key, result);
-        return result;
-    };
-}
 
 
 export const summarize = (eventKey: string) => {

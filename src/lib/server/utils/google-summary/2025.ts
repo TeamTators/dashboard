@@ -8,38 +8,9 @@ import { and, eq } from 'drizzle-orm';
 import { type RequestEvent } from '@sveltejs/kit';
 import { teamsFromMatch } from 'tatorscout/tba';
 import YearInfo2025 from 'tatorscout/years/2025.js';
-import { Table } from '.';
+import { Table, memoize } from '.';
 
-/**
- * Memoization utility for caching expensive function results
- *
- * This utility enables significant performance optimizations by:
- * - Caching database query results (pit scouting, team scouting)
- * - Caching complex score calculations that are reused across multiple columns
- * - Caching trace processing and analysis results
- * - Reducing redundant API calls (team status, rankings)
- *
- * The cache is maintained per function call with intelligent key generation
- * to ensure correct cache hits while avoiding memory leaks.
- */
-function memoize<TArgs extends unknown[], TReturn>(
-    fn: (...args: TArgs) => TReturn,
-    keyGenerator?: (...args: TArgs) => string
-): (...args: TArgs) => TReturn {
-    const cache = new Map<string, TReturn>();
 
-    return (...args: TArgs): TReturn => {
-        const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
-
-        if (cache.has(key)) {
-            return cache.get(key)!;
-        }
-
-        const result = fn(...args);
-        cache.set(key, result);
-        return result;
-    };
-}
 
 export const auth = (_event: RequestEvent) => {
     // const key = event.request.headers.get('X-Auth-Key');
