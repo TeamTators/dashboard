@@ -72,6 +72,12 @@ export namespace Scouting {
 		trace: Trace;
 		scouting: MatchScoutingData;
 	}> {
+		/**
+		 * Create an extended wrapper from a base scouting record.
+		 *
+		 * @param scouting - Match scouting record to wrap.
+		 * @returns Result wrapping the extended instance.
+		 */
 		static from(scouting: MatchScoutingData) {
 			return attempt(() => {
 				const trace = Trace.parse(scouting.data.trace).unwrap();
@@ -79,6 +85,12 @@ export namespace Scouting {
 			});
 		}
 
+		/**
+		 * Create an extended wrapper with a pre-parsed trace.
+		 *
+		 * @param scouting - Match scouting record.
+		 * @param trace - Parsed trace for the record.
+		 */
 		constructor(scouting: MatchScoutingData, trace: Trace) {
 			super({
 				scouting,
@@ -89,52 +101,72 @@ export namespace Scouting {
 			this.onAllUnsubscribe(scouting.subscribe(() => this.inform()));
 		}
 
+		/** Team number for this scouting record. */
 		get team() {
 			return Number(this.data.scouting.data.team);
 		}
 
+		/** Match number within the event. */
 		get matchNumber() {
 			return Number(this.data.scouting.data.matchNumber);
 		}
 
+		/** Competition level (pr, qm, qf, sf, f). */
 		get compLevel() {
 			return this.data.scouting.data.compLevel;
 		}
 
+		/** Parsed trace payload. */
 		get trace() {
 			return this.data.trace;
 		}
 
+		/** Raw scouting record. */
 		get scouting() {
 			return this.data.scouting;
 		}
 
+		/** Competition year for the record. */
 		get year() {
 			return Number(this.data.scouting.data.year);
 		}
 
+		/** Event key for the record. */
 		get eventKey() {
 			return this.data.scouting.data.eventKey;
 		}
 
+		/** Average velocity computed from trace points. */
 		get averageVelocity() {
 			return this.data.trace.averageVelocity();
 		}
 
+		/** Seconds stationary computed from trace points. */
 		get secondsNotMoving() {
 			return this.data.trace.secondsNotMoving();
 		}
 
+		/** Struct id for this scouting record. */
 		get id() {
 			return String(this.data.scouting.data.id);
 		}
 
+		/**
+		 * Parse the serialized checks list.
+		 *
+		 * @returns Result wrapping the parsed list of checks.
+		 */
 		getChecks() {
 			return attempt(() => {
 				return z.array(z.string()).parse(JSON.parse(this.data.scouting.data.checks || '[]'));
 			});
 		}
 
+		/**
+		 * Parse the serialized sliders payload.
+		 *
+		 * @returns Result wrapping the parsed slider records.
+		 */
 		getSliders() {
 			return attempt(() => {
 				return z
@@ -155,6 +187,12 @@ export namespace Scouting {
 	 * Writable array wrapper for extended scouting records.
 	 */
 	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
+		/**
+		 * Convert a struct array into an extended wrapper.
+		 *
+		 * @param arr - Base scouting array.
+		 * @returns Result wrapping the extended array.
+		 */
 		static fromArr(arr: MatchScoutingArr) {
 			return attempt(() => {
 				const ms = arr.data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
@@ -164,10 +202,18 @@ export namespace Scouting {
 			});
 		}
 
+		/**
+		 * Create a writable array for extended scouting records.
+		 *
+		 * @param arr - Extended scouting records.
+		 */
 		constructor(arr: MatchScoutingExtended[]) {
 			super(arr);
 		}
 
+		/**
+		 * Clone the current wrapper with a shallow copy of the data.
+		 */
 		clone() {
 			return new MatchScoutingExtendedArr([...this.data]);
 		}
