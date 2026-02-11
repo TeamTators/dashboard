@@ -28,6 +28,7 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	import { TBATeam } from '$lib/utils/tba';
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
+	import YearInfo2025 from 'tatorscout/years/2025.js';
 
 	/** Component props for `RadarChart`. */
 	interface Props {
@@ -45,6 +46,10 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	const { team, data, opts }: Props = $props();
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
+
+	for ([keys, str] in Object.entries(YearInfo2025.actions)) {
+		
+	}
 
 	/**
 	 * Copy the chart canvas to the clipboard.
