@@ -72,6 +72,11 @@ Lets users select teams and compare scouting data with charts.
 		return contribution.value;
 	};
 
+	const getChecks = (data: Scouting.MatchScoutingExtendedArr): Record<string, string[]> => {
+		data.checksSummary();
+		return {"action": ["1","2","3"]};
+	};
+
 	$effect(() => {
 		if (!view) return; // On view set
 		staticY = 0;
@@ -245,13 +250,13 @@ Lets users select teams and compare scouting data with charts.
 								{:else if view === 'eventSum'}
 									<EventSummary {matches} team={team.team} {event} scouting={team.data} />
 								{:else if view === 'checkSum'}
-									<!-- <ChecksSummary 
-									checks={team.data.data.checksSum} /> -->
+									<ChecksSummary 
+									scouting={team.data} />
 								{:else if view === 'action'}
-									<!-- <ActionHeatmap
-										team={team.team}
+									<ActionHeatmap
 										scouting={team.data}
-									/> -->
+										year={event.tba.year}
+									/>
 								{:else}
 									<TeamEventStats
 										bind:this={team.component}
