@@ -24,6 +24,7 @@
 
 	let teams: TBATeam[] = $state([]);
 
+
 	$effect(() => nav(event.tba));
 
 	onMount(() => {
@@ -38,7 +39,8 @@
 					teams = res.value;
 				} else {
 					// is an error, do something here!
-					console.log(res.error);
+					message = "Failed to load": ${res.error};
+					console.error(res.error);
 				}
 			});
 		setTimeout(() => {
@@ -50,6 +52,7 @@
 					summary = res.value.pivot().teamsRanked();
 				} else {
 					console.error('Error fetching event summary:', res.error);
+					message = "Failed to load": ${res.error};
 					// do something here!
 				}
 			});
@@ -115,8 +118,15 @@
 	</div>
 	<!-- 
 	https://getbootstrap.com/docs/5.3/components/alerts/#examples
+	
 		Add a new if block to handle messages
 	-->
+{#if message}	
+	<div class="alert alert-primary" role="alert">
+  A simple danger alert—check it out!
+</div>
+{/if}
+
 	{#if summary}
 		{#each Object.entries(summary) as [group, items]}
 			<hr />
