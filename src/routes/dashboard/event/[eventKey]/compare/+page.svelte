@@ -35,9 +35,6 @@ Lets users select teams and compare scouting data with charts.
 			}))
 		)
 	);
-	$effect(() => {
-		console.log({ selectedTeams });
-	});
 	const teams = $derived(data.teams);
 	const matches = $derived(data.matches);
 
