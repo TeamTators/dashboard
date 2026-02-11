@@ -29,7 +29,7 @@ then renders a summary table.
 		matches: TBAMatch[];
 	}
 
-	const { team, event, scouting, matches }: Props = $props();
+	const { team, event, scouting }: Props = $props();
 
 	let rank = $state(0);
 	let record = $state('');

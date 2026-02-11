@@ -59,11 +59,11 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	 * ```
 	 */
 	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
-		const destroy = () => {
-			if (chartInstance) {
-				chartInstance.destroy();
-			}
-		};
+	const destroy = () => {
+		if (chartInstance) {
+			chartInstance.destroy();
+		}
+	};
 	const render = (data: T) => {
 		destroy();
 
@@ -104,7 +104,7 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	onMount(() => {
 		setTimeout(() => {
 			render(get(data));
-		})
+		});
 		return data.subscribe(render);
 	});
 </script>

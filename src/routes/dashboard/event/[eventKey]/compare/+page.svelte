@@ -228,7 +228,11 @@ Lets users select teams and compare scouting data with charts.
 										{matches}
 									/>
 								{:else if view === 'radar'}
-									<RadarCapabilityChart team={team.team} scouting={team.data} />
+									<RadarCapabilityChart
+										team={team.team}
+										scouting={team.data}
+										year={event.tba.year}
+									/>
 								{:else if view === 'eventSum'}
 									<EventSummary {matches} team={team.team} {event} scouting={team.data} />
 								{:else if view === 'checkSum'}

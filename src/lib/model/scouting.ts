@@ -376,17 +376,22 @@ export namespace Scouting {
 		 * const contribStore = ext.getContribution(true);
 		 * contribStore.subscribe((value) => console.log(value));
 		 */
-		getContribution(year: number, reactive: false, actionLabels?: boolean): Result<Record<string, number>>;
-		getContribution(year: number, reactive: true, actionLabels?: boolean): WritableBase<Record<string, number>>;
 		getContribution(
-			year: number, 
+			year: number,
+			reactive: false,
+			actionLabels?: boolean
+		): Result<Record<string, number>>;
+		getContribution(
+			year: number,
+			reactive: true,
+			actionLabels?: boolean
+		): WritableBase<Record<string, number>>;
+		getContribution(
+			year: number,
 			reactive: boolean,
-			actionLabels = true,
+			actionLabels = true
 		): Result<Record<string, number>> | WritableBase<Record<string, number>> {
-			const get = (data: {
-				scouting: MatchScoutingData;
-				trace: Trace;
-			}) => {
+			const get = (data: { scouting: MatchScoutingData; trace: Trace }) => {
 				const info = getYearInfo(year);
 				if (info.isErr()) return {};
 
@@ -396,7 +401,7 @@ export namespace Scouting {
 					contrib[key] = 0;
 				}
 
-				for (const [,,,a] of data.trace.points) {
+				for (const [, , , a] of data.trace.points) {
 					if (a) {
 						contrib[a] = (contrib[a] || 0) + 1;
 					}
@@ -533,35 +538,46 @@ export namespace Scouting {
 		 * const averagesStore = extArr.averageContribution(true);
 		 * averagesStore.subscribe((value) => console.log(value));
 		 */
-		averageContribution(year: number, reactive: false, actionLabels?: boolean): Result<Record<string, number>>;
-		averageContribution(year: number, reactive: true, actionLabels?: boolean): WritableBase<Record<string, number>>;
+		averageContribution(
+			year: number,
+			reactive: false,
+			actionLabels?: boolean
+		): Result<Record<string, number>>;
+		averageContribution(
+			year: number,
+			reactive: true,
+			actionLabels?: boolean
+		): WritableBase<Record<string, number>>;
 		averageContribution(year: number, reactive: boolean, actionLabels = true) {
 			if (reactive) {
-				return this.derive((data) => {
-					const totals: Record<string, number> = {};
-					for (const ms of data) {
-						const contrib = ms.getContribution(year, false);
-						if (contrib.isErr()) continue;
-						Object.entries(contrib.value).forEach(([key, value]) => {
-							totals[key] = (totals[key] || 0) + value;
+				return this.derive(
+					(data) => {
+						const totals: Record<string, number> = {};
+						for (const ms of data) {
+							const contrib = ms.getContribution(year, false, actionLabels);
+							if (contrib.isErr()) continue;
+							Object.entries(contrib.value).forEach(([key, value]) => {
+								totals[key] = (totals[key] || 0) + value;
+							});
+						}
+
+						const count = data.length;
+						const averages: Record<string, number> = {};
+						Object.entries(totals).forEach(([key, value]) => {
+							averages[key] = value / count;
 						});
+
+						return averages;
+					},
+					{
+						debug: true
 					}
-
-					const count = data.length;
-					const averages: Record<string, number> = {};
-					Object.entries(totals).forEach(([key, value]) => {
-						averages[key] = value / count;
-					});
-
-					return averages;
-				}, {
-					debug: true,
-				});
+				);
 			} else {
 				return attempt(() => {
 					const totals: Record<string, number> = {};
 					this.data.forEach((ms) => {
-						const contrib = ms.getContribution(year, false);
+						const contrib = ms.getContribution(year, false, actionLabels);
 						Object.entries(contrib).forEach(([key, value]) => {
 							totals[key] = (totals[key] || 0) + value;
 						});

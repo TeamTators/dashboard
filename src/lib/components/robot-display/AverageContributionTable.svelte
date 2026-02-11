@@ -9,7 +9,6 @@
 	const { scouting, year }: Props = $props();
 
 	const data = $derived(scouting.averageContribution(year, true));
-
 </script>
 
 <table class="table table-striped">

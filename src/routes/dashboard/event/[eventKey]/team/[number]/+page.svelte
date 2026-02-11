@@ -715,7 +715,12 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 					>
 						<i class="material-icons">copy_all</i>
 					</button>
-					<RadarCapabilityChart bind:this={radarChartComp} {team} year={event.tba.year} scouting={scoutingArr} />
+					<RadarCapabilityChart
+						bind:this={radarChartComp}
+						{team}
+						year={event.tba.year}
+						scouting={scoutingArr}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={picturesCard}>
