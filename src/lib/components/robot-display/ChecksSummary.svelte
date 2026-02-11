@@ -47,7 +47,11 @@ Aggregates a map of check arrays into a frequency table and renders each check w
 
 	const { scouting }: Props = $props();
 	
-	let checks = $derived(scouting.checksSummary());
+	const checks = $derived(scouting.checksSummary);
+
+	$effect(() => checks.subscribe(val => {
+		console.log("Checks summary updated:", val);
+	}));
 </script>
 
 <ul class="list">

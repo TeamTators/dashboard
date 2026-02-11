@@ -138,15 +138,15 @@ export namespace Scouting {
 
 		getChecks() {
 			const w = new WritableArray<string>([]);
-			w.pipe(this);
-			setTimeout(() => {
+			w.pipeData(this, (data) => {
 				const res = z
 					.array(z.string())
-					.safeParse(JSON.parse(this.data.scouting.data.checks || '[]'));
+					.safeParse(JSON.parse(data.scouting.data.checks || '[]'));
 				if (res.success) {
-					w.set(res.data);
+					return res.data;
 				} else {
 					console.error('Failed to parse checks:', res.error);
+					return [];
 				}
 			});
 			return w;
@@ -163,8 +163,25 @@ export namespace Scouting {
 					}
 				>
 			>({});
-			w.pipe(this);
-			setTimeout(() => {
+			// w.pipe(this);
+			// setTimeout(() => {
+			// 	const res = z
+			// 		.record(
+			// 			z.string(),
+			// 			z.object({
+			// 				value: z.number(),
+			// 				text: z.string(),
+			// 				color: z.string().default('#000000')
+			// 			})
+			// 		)
+			// 		.safeParse(JSON.parse(this.data.scouting.data.sliders || '{}'));
+			// 	if (res.success) {
+			// 		w.set(res.data);
+			// 	} else {
+			// 		console.error('Failed to parse sliders:', res.error);
+			// 	}
+			// });
+			 w.pipeData(this, (data) => {
 				const res = z
 					.record(
 						z.string(),
@@ -174,13 +191,14 @@ export namespace Scouting {
 							color: z.string().default('#000000')
 						})
 					)
-					.safeParse(JSON.parse(this.data.scouting.data.sliders || '{}'));
+					.safeParse(JSON.parse(data.scouting.data.sliders || '{}'));
 				if (res.success) {
-					w.set(res.data);
+					return res.data;
 				} else {
 					console.error('Failed to parse sliders:', res.error);
+					return {};
 				}
-			});
+			 });
 			return w;
 		}
 
@@ -205,16 +223,13 @@ export namespace Scouting {
 				const data = arr instanceof DataArr ? arr.data : arr;
 				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
 				const extendedArr = new MatchScoutingExtendedArr(ms);
-				if (arr instanceof DataArr)
-					extendedArr.onAllUnsubscribe(
-						arr.subscribe(() => {
-							const updatedData = arr.data;
-							const updatedMs = updatedData.map((scouting) =>
-								MatchScoutingExtended.from(scouting).unwrap()
-							);
-							extendedArr.set(updatedMs);
-						})
-					);
+				if (arr instanceof DataArr){
+					extendedArr.pipeData(arr, (data) => {
+						return data.map((scouting) =>
+							MatchScoutingExtended.from(scouting).unwrap()
+						);
+
+					});}
 				return extendedArr;
 			});
 		}
@@ -227,47 +242,39 @@ export namespace Scouting {
 			return new MatchScoutingExtendedArr([...this.data]);
 		}
 
-		checksSummary() {
+		get checksSummary() {
 			const summary = new WritableBase<Record<string, number>>({});
-			setTimeout(() => {
-				summary.onAllUnsubscribe(
-					this.subscribe(() => {
-						const result: Record<string, number> = {};
-						this.each((ms) => {
-							const checks = ms.getChecks();
-							checks.each((check) => {
-								result[check] = (result[check] || 0) + 1;
-							});
-						});
-						summary.set(result);
-					})
-				);
+			summary.pipeData(this, (data) => {
+				const result: Record<string, number> = {};
+				for (const ms of data) {
+					const checks = ms.getChecks();
+					for (const check of checks.data) {
+						result[check] = (result[check] || 0) + 1;
+					}
+				}
+				return result;
 			});
 			return summary;
 		}
 
-		averageContribution() {
+		get averageContribution() {
 			const contribution = new WritableBase<Record<string, number>>({});
-			setTimeout(() => {
-				contribution.onAllUnsubscribe(
-					this.subscribe(() => {
-						const totals: Record<string, number> = {};
-						this.each((ms) => {
-							const contrib = ms.contribution;
-							Object.entries(contrib).forEach(([key, value]) => {
-								totals[key] = (totals[key] || 0) + value;
-							});
-						});
+			contribution.pipeData(this, (data) => {
+				const totals: Record<string, number> = {};
+				data.forEach((ms) => {
+					const contrib = ms.contribution;
+					Object.entries(contrib).forEach(([key, value]) => {
+						totals[key] = (totals[key] || 0) + value;
+					});
+				});
 
-						const count = this.data.length;
-						const averages: Record<string, number> = {};
-						Object.entries(totals).forEach(([key, value]) => {
-							averages[key] = value / count;
-						});
+				const count = data.length;
+				const averages: Record<string, number> = {};
+				Object.entries(totals).forEach(([key, value]) => {
+					averages[key] = value / count;
+				});
 
-						contribution.set(averages);
-					})
-				);
+				return averages;
 			});
 
 			return contribution;
