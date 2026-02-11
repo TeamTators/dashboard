@@ -37,22 +37,19 @@
 				if (res.isOk()) {
 					teams = res.value;
 				} else {
-					// is an error, do something here!
-					message = "Failed to load": ${res.error};
+					message = `Teams failed to load`;
 					console.error(res.error);
 				}
 			});
 		setTimeout(() => {
 			FIRST.getSummary(event.tba.key, event.tba.year as 2024 | 2025, {
-				// 10 minutes
 				cacheExpires: after(10 * 60 * 1000)
 			}).then((res) => {
 				if (res.isOk()) {
 					summary = res.value.pivot().teamsRanked();
 				} else {
 					console.error('Error fetching event summary:', res.error);
-					message = "Failed to load": ${res.error};
-					// do something here!
+					message = `Failed to load: ${res.error.message}`;
 				}
 			});
 		});
@@ -115,14 +112,9 @@
 			</div>
 		</div>
 	</div>
-	<!-- 
-	https://getbootstrap.com/docs/5.3/components/alerts/#examples
-	
-		Add a new if block to handle messages
-	-->
 {#if message}	
-	<div class="alert alert-primary" role="alert">
-  A simple danger alert—check it out!
+	<div class="alert alert-danger" role="alert">
+  {message}
 </div>
 {/if}
 
