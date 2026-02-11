@@ -60,10 +60,10 @@ export namespace Scouting {
 			amount: 3
 		},
 		validators: {
-			// trace: (trace) =>
-			// 	typeof trace === 'string' && TraceSchema.safeParse(JSON.parse(trace)).success,
-			// checks: (checks) =>
-			// 	typeof checks === 'string' && z.array(z.string()).safeParse(JSON.parse(checks)).success
+			trace: (data) => {
+				const res = Trace.parse(data);
+				return res.isOk();
+			}
 		}
 	});
 
@@ -246,11 +246,17 @@ export namespace Scouting {
 	 *
 	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the records.
 	 */
-	export const getTeamPrescouting = (team: number, year: number) => {
+	export const getTeamPrescouting = (team: number, year: number, onlyPrescouting = false) => {
 		return attemptAsync(async () => {
 			const res = await DB.select()
 				.from(MatchScouting.table)
-				.where(and(eq(MatchScouting.table.team, team), eq(MatchScouting.table.year, year)));
+				.where(
+					and(
+						eq(MatchScouting.table.team, team),
+						eq(MatchScouting.table.year, year),
+						onlyPrescouting ? eq(MatchScouting.table.prescouting, true) : undefined
+					)
+				);
 
 			return res.map((r) => MatchScouting.Generator(r));
 		});
