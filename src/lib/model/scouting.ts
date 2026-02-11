@@ -20,8 +20,11 @@ import { Trace } from 'tatorscout/trace';
 // import { match } from 'ts-utils/match';
 import { Batch } from 'ts-utils/batch';
 import { WritableArray, WritableBase } from '$lib/services/writables';
-// import YearInfo2025 from 'tatorscout/years/2025.js';
+import YearInfo2024 from 'tatorscout/years/2024.js';
+import YearInfo2025 from 'tatorscout/years/2025.js';
+import YearInfo2026 from 'tatorscout/years/2026.js';
 import * as remote from '$lib/remotes/scouting.remote';
+import type { YearInfo } from 'tatorscout/years';
 
 /**
  * Client-side scouting models, helpers, and batch utilities.
@@ -565,6 +568,11 @@ export namespace Scouting {
 				});
 			}
 		}
+
+
+		averageAutoScore(reactive: boolean, year: number) {}
+		averageTeleopScore(reactive: boolean, year: number) {}
+		averageEndgameScore(reactive: boolean, year: number) {}
 	}
 
 	/**
@@ -1235,5 +1243,21 @@ export namespace Scouting {
 				if (!res.success) throw new Error(res.message || 'Failed to answer question');
 			});
 		};
+	}
+
+
+	export const getYearInfo = (year: number) => {
+		return attempt(() => {
+			switch (year) {
+			case 2024:
+				return YearInfo2024;
+			case 2025:
+				return YearInfo2025;
+			case 2026:
+				return YearInfo2026;
+			default:
+				throw new Error(`Unsupported year: ${year}`);
+		}
+		});
 	}
 }

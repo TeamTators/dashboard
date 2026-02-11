@@ -13,12 +13,12 @@ Lets users select teams and compare scouting data with charts.
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam } from '$lib/utils/tba.js';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
-	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import EventSummary from '$lib/components/robot-display/EventSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
 	import { WritableArray } from '$lib/services/writables.js';
 	import { page } from '$app/state';
+	import RadarCapabilityChart from '$lib/components/charts/RadarCapabilityChart.svelte';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -64,17 +64,6 @@ Lets users select teams and compare scouting data with charts.
 			search.set('view', view);
 			goto(`${location.pathname}?${search.toString()}`);
 		});
-	};
-
-	const getRadar = (data: Scouting.MatchScoutingExtendedArr): Record<string, number> => {
-		const contribution = Scouting.averageContributions(data.data);
-		if (contribution.isErr()) return {};
-		return contribution.value;
-	};
-
-	const getChecks = (data: Scouting.MatchScoutingExtendedArr): Record<string, string[]> => {
-		data.checksSummary();
-		return { action: ['1', '2', '3'] };
 	};
 
 	$effect(() => {
@@ -239,13 +228,9 @@ Lets users select teams and compare scouting data with charts.
 										{matches}
 									/>
 								{:else if view === 'radar'}
-									<RadarChart
+									<RadarCapabilityChart
 										team={team.team}
-										data={getRadar(team.data)}
-										opts={{
-											max: 10,
-											min: 0
-										}}
+										scouting={team.data}
 									/>
 								{:else if view === 'eventSum'}
 									<EventSummary {matches} team={team.team} {event} scouting={team.data} />

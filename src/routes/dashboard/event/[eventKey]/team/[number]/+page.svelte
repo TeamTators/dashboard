@@ -20,17 +20,17 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	import MatchTable from '$lib/components/robot-display/MatchTable.svelte';
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
-	import AverageContributions from '$lib/components/robot-display/AverageContributions.svelte';
 	import AverageContributionsPie from '$lib/components/charts/AverageContributionsPie.svelte';
+	import AverageContributionsTable from '$lib/components/robot-display/AverageContributionTable.svelte';
 	import { onMount } from 'svelte';
 	import { listen } from '$lib/utils/struct-listener';
 	import ScoutSummary from '$lib/components/robot-display/ScoutSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
-	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
+	import RadarCapabilityChart from '$lib/components/charts/RadarCapabilityChart.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -49,7 +49,6 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 	const checksSum = $derived(data.checksSum);
 
-	let contributions = $state(Scouting.averageContributions([]));
 
 	$effect(() => nav(event.tba));
 
@@ -550,12 +549,9 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			],
 			id: 'robot-display'
 		});
-
-		contributions = Scouting.averageContributions(scoutingArr.data);
 	});
 
 	let scroller: HTMLDivElement;
-	let contributionSub = () => {};
 
 	afterNavigate(() => {
 		const btn = scroller.querySelector(`[data-team="${team.tba.team_number}"]`);
@@ -576,10 +572,6 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			scoutingArr = res.value;
 			scoutingArr.inform();
 		}
-		contributionSub();
-		contributionSub = scoutingArr.subscribe(() => {
-			contributions = Scouting.averageContributions(scoutingArr.data);
-		});
 	});
 
 	onMount(() => {
@@ -617,11 +609,6 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		} else {
 			scoutingArr.set(res.value.data);
 		}
-		contributionSub();
-		contributionSub = scoutingArr.subscribe(() => {
-			contributions = Scouting.averageContributions(scoutingArr.data);
-		});
-
 		return () => {
 			offScouting();
 			offComments();
@@ -630,14 +617,13 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			offGroups();
 			offSections();
 			offPictures();
-			contributionSub();
 		};
 	});
 
 	let progressChart: Progress | undefined = $state(undefined);
 	let teamEventStatsChart: TeamEventStats | undefined = $state(undefined);
 	let averageContributionsPieChart: AverageContributionsPie | undefined = $state(undefined);
-	let radarChartComp: RadarChart<{ [key: string]: number }> | undefined = $state(undefined);
+	let radarChartComp: RadarCapabilityChart | undefined = $state(undefined);
 </script>
 
 <DB {dashboard}>
@@ -722,33 +708,20 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		{#key team}
 			<Card card={radarChart}>
 				{#snippet body()}
-					{#key contributions}
-						<button
-							type="button"
-							class="btn btn-secondary copy-btn"
-							onclick={() => {
-								radarChartComp?.copy(true);
-							}}
-						>
-							<i class="material-icons">copy_all</i>
-						</button>
-						<RadarChart
-							bind:this={radarChartComp}
-							{team}
-							data={{
-								'Level 1': contributions.cl1,
-								'Level 2': contributions.cl2,
-								'Level 3': contributions.cl3,
-								'Level 4': contributions.cl4,
-								Barge: contributions.brg,
-								Processor: contributions.prc
-							}}
-							opts={{
-								max: 10,
-								min: 0
-							}}
-						/>
-					{/key}
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							radarChartComp?.copy(true);
+						}}
+					>
+						<i class="material-icons">copy_all</i>
+					</button>
+					<RadarCapabilityChart
+						bind:this={radarChartComp}
+						{team}
+						scouting={scoutingArr}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={picturesCard}>
@@ -758,7 +731,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			</Card>
 			<Card card={checksSummary}>
 				{#snippet body()}
-					<ChecksSummary checks={checksSum} />
+					<ChecksSummary scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 			<Card card={summary}>
@@ -842,7 +815,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			</Card>
 			<Card card={averageContributionsTable}>
 				{#snippet body()}
-					<AverageContributions {team} {event} scouting={scoutingArr} {matches} />
+					<AverageContributionsTable year={event.tba.year} scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 			<Card card={averageContributionsPie}>

@@ -14,8 +14,6 @@ text label.
 -->
 <script lang="ts">
 	import type { Scouting } from '$lib/model/scouting';
-	import { WritableBase } from '$lib/services/writeables';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		/** Match scouting record to parse sliders from. */
@@ -25,19 +23,7 @@ text label.
 	}
 
 	const { scouting, classes }: Props = $props();
-	let sliders = $state(
-		new WritableBase<{
-			[key: string]: {
-				value: number;
-				text: string;
-				color: string;
-			};
-		}>({})
-	);
-
-	onMount(() => {
-		sliders = scouting.getSliders();
-	});
+	let sliders = $derived(scouting.getSliders(true));
 </script>
 
 <div class={classes}>
