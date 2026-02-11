@@ -1,5 +1,20 @@
+<!--
+@fileoverview Summary of scouting contributions per user.
+
+@component ScoutSummary
+
+@description
+Aggregates a map of scout identifiers into a frequency list showing how many entries
+each scout has contributed.
+
+@example
+```svelte
+<ScoutSummary scouts={{ 'match-1': 'alice', 'match-2': 'bob' }} />
+```
+-->
 <script lang="ts">
 	interface Props {
+		/** Map of source keys to scout usernames. */
 		scouts: {
 			[key: string]: string;
 		};

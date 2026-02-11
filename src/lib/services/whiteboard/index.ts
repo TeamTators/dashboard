@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Interactive strategy whiteboard rendering and editing.
+ *
+ * @description
+ * Provides SVG-based whiteboard paths with undo/redo stack and context menu tools.
+ */
 import type { Strategy } from '$lib/model/strategy';
 import { contextmenu } from '$lib/utils/contextmenu';
 import { Stack } from '$lib/utils/stack';
@@ -45,6 +51,11 @@ export class Path extends WritableBase<PathState> {
 		return this.data.points;
 	}
 
+	/**
+	 * Remove this path from the whiteboard and DOM.
+	 *
+	 * @returns {void} No return value.
+	 */
 	remove() {
 		this.whiteboard.update((wb) => {
 			wb.paths = wb.paths.filter((p) => p.data.id !== this.data.id);
@@ -54,12 +65,22 @@ export class Path extends WritableBase<PathState> {
 		this.whiteboard.emit('update');
 	}
 
+	/**
+	 * Append a point to the path and re-render.
+	 *
+	 * @returns {void} No return value.
+	 */
 	add(point: Point2D) {
 		this.data.points.push(point);
 		this.inform();
 		this.whiteboard.emit('update');
 	}
 
+	/**
+	 * Draw the SVG path based on current points and selection state.
+	 *
+	 * @returns {void} No return value.
+	 */
 	draw() {
 		this.target.setAttribute('stroke-linecap', 'round');
 		this.target.setAttribute('stroke-width', '0.01');
@@ -85,6 +106,11 @@ export class Path extends WritableBase<PathState> {
 		this.target.setAttribute('d', d);
 	}
 
+	/**
+	 * Initialize event listeners for the path element.
+	 *
+	 * @returns {() => void} Cleanup function to remove listeners.
+	 */
 	init() {
 		const oncontextmenu = (e: PointerEvent) => {
 			this.select();
@@ -171,6 +197,11 @@ export class Path extends WritableBase<PathState> {
 		};
 	}
 
+	/**
+	 * Select this path and clear other selections.
+	 *
+	 * @returns {void} No return value.
+	 */
 	select() {
 		this.whiteboard.clearSelection();
 		this.data.selected = true;
@@ -186,6 +217,11 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 	public readonly once = this.em.once.bind(this.em);
 	public readonly emit = this.em.emit.bind(this.em);
 
+	/**
+	 * Hydrate a whiteboard from stored data.
+	 *
+	 * @returns {ReturnType<typeof attempt>} Result wrapper containing the whiteboard.
+	 */
 	public static from(config: WhiteboardConfig, data: Strategy.MatchWhiteboardData) {
 		return attempt(() => {
 			if (!data.data.board) throw new Error('No board data');
@@ -219,6 +255,11 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 		});
 	}
 
+	/**
+	 * Create a blank whiteboard state.
+	 *
+	 * @returns {WhiteboardState} Empty state object.
+	 */
 	public static blank() {
 		return {
 			paths: []
@@ -257,6 +298,11 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 		return this.data.paths;
 	}
 
+	/**
+	 * Initialize DOM and interaction handlers for the whiteboard.
+	 *
+	 * @returns {() => void} Cleanup function to remove handlers.
+	 */
 	init() {
 		Stack.use(this.stack);
 		this.target.style.position = 'relative';

@@ -1,3 +1,17 @@
+<!--
+@fileoverview Action frequency list for a single match.
+
+@component MatchActions
+
+@description
+Parses the scouting trace to count occurrences of each action and lists them in
+the order defined by the year action map.
+
+@example
+```svelte
+<MatchActions {scouting} classes="list-group-flush" />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import YearInfo2025 from 'tatorscout/years/2025.js';
@@ -9,7 +23,9 @@
 	};
 
 	interface Props {
+		/** Match scouting record to summarize. */
 		scouting: Scouting.MatchScoutingExtended;
+		/** Optional CSS classes for list styling. */
 		classes?: string;
 	}
 

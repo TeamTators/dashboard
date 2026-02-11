@@ -1,3 +1,16 @@
+<!--
+@fileoverview Team ranking breakdown table for an event.
+
+@component Ranking
+
+@description
+Fetches event summary data and renders the team's ranking positions by group and metric.
+
+@example
+```svelte
+<Ranking {event} team={1234} />
+```
+-->
 <script lang="ts">
 	import { FIRST } from '$lib/model/FIRST';
 	import type { TBAEvent } from '$lib/utils/tba';
@@ -5,7 +18,9 @@
 	import { after } from 'ts-utils';
 
 	interface Props {
+		/** Event context for rankings. */
 		event: TBAEvent;
+		/** Team number to extract rankings for. */
 		team: number;
 	}
 

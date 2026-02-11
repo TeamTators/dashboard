@@ -1,3 +1,10 @@
+<!--
+@component
+Team overview dashboard for a specific event and team.
+
+Combines scouting, comments, pit scouting, photos, and performance charts into a single view.
+Includes summary cards, match tables, and heatmaps for quick performance review.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import Card from '$lib/components/dashboard/Card.svelte';

@@ -1,3 +1,9 @@
+<!--
+@component
+Drive team dashboard for live match planning.
+
+Shows the next match, alliance lineup, and strategy whiteboards.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import { TBAMatch, TBATeam } from '$lib/utils/tba';

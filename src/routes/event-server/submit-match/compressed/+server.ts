@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Event server endpoint for compressed match submissions.
+ * @description
+ * Decompresses payloads and upserts match scouting, traces, and comments.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { z } from 'zod';
 import terminal from '$lib/server/utils/terminal';
@@ -10,6 +16,11 @@ import { str } from '$lib/server/utils/env.js';
 import { decompress } from '$lib/server/utils/compression';
 import type { RequestEvent } from './$types';
 
+/**
+ * Handles compressed match submissions from the event server.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with success status and message.
+ */
 export const POST = async (event: RequestEvent) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');

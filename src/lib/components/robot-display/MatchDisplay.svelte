@@ -1,3 +1,18 @@
+<!--
+@fileoverview Full match scouting display with media, charts, and actions.
+
+@component MatchDisplay
+
+@description
+Renders a comprehensive view of a match: videos, contribution chart, comments, checks,
+actions, endgame, trace replay, and administrative actions like archiving or restoring
+older versions.
+
+@example
+```svelte
+<MatchDisplay {match} {team} {event} {scouting} strategies={[]} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
@@ -17,12 +32,18 @@
 	import TraceHTML from './TraceHTML.svelte';
 
 	interface Props {
+		/** TBA match for display and media. */
 		match: TBAMatch;
+		/** Optional scouting record (may be undefined). */
 		scouting?: Scouting.MatchScoutingExtended;
+		/** Team being displayed. */
 		team: TBATeam;
 		// focus: Focus;
+		/** Event context for navigation and scoring. */
 		event: TBAEvent;
+		/** Optional strategies for quick navigation. */
 		strategies?: Strategy.StrategyData[];
+		/** Optional scout username override. */
 		scout?: string;
 	}
 

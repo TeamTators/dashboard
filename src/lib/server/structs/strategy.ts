@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Server-side strategy Structs and retrieval helpers.
+ *
+ * @description
+ * Defines Drizzle-backed Structs for strategies, partners, opponents, and whiteboards.
+ */
 import { integer, text } from 'drizzle-orm/pg-core';
 import { Struct, StructData } from 'drizzle-struct';
 import { attemptAsync } from 'ts-utils/check';
@@ -9,10 +15,15 @@ export namespace Strategy {
 	export const MatchWhiteboards = new Struct({
 		name: 'match_whiteboards',
 		structure: {
+			/** Event key for the whiteboard. */
 			eventKey: text('event_key').notNull(),
+			/** Match number. */
 			matchNumber: integer('match_number').notNull(),
+			/** Competition level (qm, qf, sf, f). */
 			compLevel: text('comp_level').notNull(),
+			/** Serialized whiteboard data. */
 			board: text('board').notNull(),
+			/** Display name for the whiteboard. */
 			name: text('name').notNull()
 		}
 	});
@@ -22,8 +33,11 @@ export namespace Strategy {
 	export const Whiteboards = new Struct({
 		name: 'whiteboards',
 		structure: {
+			/** Parent strategy id. */
 			strategyId: text('strategy_id').notNull(),
+			/** Serialized whiteboard data. */
 			board: text('board').notNull(),
+			/** Display name for the whiteboard. */
 			name: text('name').notNull()
 		}
 	});
@@ -31,21 +45,34 @@ export namespace Strategy {
 	export const Strategy = new Struct({
 		name: 'strategy',
 		structure: {
+			/** Event key for the strategy. */
 			eventKey: text('event_key').notNull(),
+			/** Strategy display name. */
 			name: text('name').notNull(),
+			/** Account id that created the strategy. */
 			createdBy: text('created_by').notNull(),
+			/** Alliance color for the strategy. */
 			alliance: text('alliance').notNull(),
+			/** Strategy type/category. */
 			type: text('type').notNull(),
 
+			/** Match number (or -1 if not applicable). */
 			matchNumber: integer('match_number').notNull(), // -1 for not applicable (type != 'match')
+			/** Competition level (or 'na' if not applicable). */
 			compLevel: text('comp_level').notNull(), // na for not applicable (type != 'match')
 
+			/** Partner team 1 number. */
 			partner1: integer('partner1').notNull(),
+			/** Partner team 2 number. */
 			partner2: integer('partner2').notNull(),
+			/** Partner team 3 number. */
 			partner3: integer('partner3').notNull(),
 
+			/** Opponent team 1 number. */
 			opponent1: integer('opponent1').notNull(),
+			/** Opponent team 2 number. */
 			opponent2: integer('opponent2').notNull(),
+			/** Opponent team 3 number. */
 			opponent3: integer('opponent3').notNull()
 		},
 		validators: {
@@ -142,14 +169,22 @@ export namespace Strategy {
 	export const Partners = new Struct({
 		name: 'strategy_partners',
 		structure: {
+			/** Parent strategy id. */
 			strategyId: text('strategy_id').notNull(),
+			/** Partner position (1-3). */
 			position: integer('position').notNull(), // 1, 2, 3
 
+			/** Starting position notes. */
 			startingPosition: text('starting_position').notNull(),
+			/** Auto plan notes. */
 			auto: text('auto').notNull(),
+			/** Post-auto plan notes. */
 			postAuto: text('post_auto').notNull(),
+			/** Role notes. */
 			role: text('role').notNull(),
+			/** Endgame plan notes. */
 			endgame: text('endgame').notNull(),
+			/** Freeform notes. */
 			notes: text('notes').notNull()
 		}
 	});
@@ -159,17 +194,27 @@ export namespace Strategy {
 	export const Opponents = new Struct({
 		name: 'strategy_opponents',
 		structure: {
+			/** Parent strategy id. */
 			strategyId: text('strategy_id').notNull(),
+			/** Opponent position (1-3). */
 			position: integer('position').notNull(), // 1, 2, 3
 
+			/** Post-auto plan notes. */
 			postAuto: text('post_auto').notNull(),
+			/** Role notes. */
 			role: text('role').notNull(),
+			/** Freeform notes. */
 			notes: text('notes').notNull()
 		}
 	});
 
 	export type OpponentData = StructData<typeof Opponents.data.structure>;
 
+	/**
+	 * Fetch strategies matching a specific event and match.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing strategies.
+	 */
 	export const getMatchStrategy = (matchNumber: number, compLevel: string, eventKey: string) => {
 		return attemptAsync(async () => {
 			const res = await DB.select()
@@ -185,6 +230,11 @@ export namespace Strategy {
 		});
 	};
 
+	/**
+	 * Fetch a strategy with its partners and opponents.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the strategy bundle.
+	 */
 	export const getStrategy = (strategy: StrategyData) => {
 		return attemptAsync(async () => {
 			const partners = await Partners.get({ strategyId: strategy.id }, { type: 'stream' })
@@ -209,11 +259,17 @@ export namespace Strategy {
 	export const Alliances = new Struct({
 		name: 'alliances',
 		structure: {
+			/** Alliance display name. */
 			name: text('name').notNull(),
+			/** Event key for the alliance. */
 			eventKey: text('event_key').notNull(),
+			/** Alliance team 1 number. */
 			team1: integer('team1').notNull(),
+			/** Alliance team 2 number. */
 			team2: integer('team2').notNull(),
+			/** Alliance team 3 number. */
 			team3: integer('team3').notNull(),
+			/** Alliance team 4 number. */
 			team4: integer('team4').notNull()
 		}
 	});

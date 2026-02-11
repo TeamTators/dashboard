@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Server loader for a team's trace view.
+ * @description
+ * Loads scouting traces and match list for the selected team.
+ * Builds a lookup map of scout usernames for trace attribution.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
@@ -5,6 +12,11 @@ import { Scouting } from '$lib/server/structs/scouting';
 import terminal from '$lib/server/utils/terminal';
 import { Account } from '$lib/server/structs/account';
 
+/**
+ * Loads trace data and scouting accounts for a team.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing traces, matches, and scout username map.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const eventKey = event.params.eventKey;

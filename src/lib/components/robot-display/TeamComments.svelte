@@ -1,18 +1,35 @@
+<!--
+@fileoverview Team-level comments grid with archive actions.
+
+@component TeamComments
+
+@description
+Displays all team comments in a grid with context-menu actions to archive entries and
+supports adding new comments.
+
+@example
+```svelte
+<TeamComments {team} {event} {comments} {scouting} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import Grid from '../general/Grid.svelte';
 	import { onMount } from 'svelte';
 	import { Account } from '$lib/model/account';
 	import { alert, prompt, confirm, notify } from '$lib/utils/prompts';
-	import { writable, type Writable } from 'svelte/store';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { RowAutoHeightModule, TextFilterModule, NumberFilterModule } from 'ag-grid-community';
 	import { WritableArray } from '$lib/services/writables';
 
 	interface Props {
+		/** Team number for comment scoping. */
 		team: number;
+		/** Event key for comment scoping. */
 		event: string;
+		/** Comment store for the team. */
 		comments: Scouting.TeamCommentsArr;
+		/** Scouting data used to resolve match labels. */
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 

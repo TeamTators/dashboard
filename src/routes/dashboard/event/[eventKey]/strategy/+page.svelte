@@ -1,3 +1,9 @@
+<!--
+@component
+Strategy list and creation page for an event.
+
+Allows selecting teams or matches to create strategy records.
+-->
 <script lang="ts">
 	import MatchSelect from '$lib/components/FIRST/MatchSelect.svelte';
 	import TeamSelect from '$lib/components/FIRST/TeamSelect.svelte';
