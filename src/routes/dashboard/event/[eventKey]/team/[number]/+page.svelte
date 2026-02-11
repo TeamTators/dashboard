@@ -47,8 +47,6 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	const answerAccounts = $derived(data.answerAccounts);
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const scoutingAccounts = $derived(data.scoutingAccounts);
-	const checksSum = $derived(data.checksSum);
-
 
 	$effect(() => nav(event.tba));
 
@@ -717,11 +715,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 					>
 						<i class="material-icons">copy_all</i>
 					</button>
-					<RadarCapabilityChart
-						bind:this={radarChartComp}
-						{team}
-						scouting={scoutingArr}
-					/>
+					<RadarCapabilityChart bind:this={radarChartComp} {team} scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 			<Card card={picturesCard}>

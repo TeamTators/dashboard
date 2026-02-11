@@ -28,7 +28,6 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	import { TBATeam } from '$lib/utils/tba';
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
-	import YearInfo2025 from 'tatorscout/years/2025.js';
 
 	/** Component props for `RadarChart`. */
 	interface Props {

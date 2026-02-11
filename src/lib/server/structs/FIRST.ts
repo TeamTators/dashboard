@@ -18,7 +18,6 @@ import { Trace } from 'tatorscout/trace';
 import { DataAction, PropertyAction } from '../../types/struct';
 import structRegistry from '../services/struct-registry';
 import { hash } from 'crypto';
-import { Summary } from 'tatorscout/summary';
 
 export namespace FIRST {
 	export const EventSummary = new Struct({
@@ -92,24 +91,19 @@ export namespace FIRST {
 		});
 	};
 
-	export const hashSummary = (
-		summary: Summary<
+	export const hashSummary = (summary: {
+		[key: string]: {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			any,
-			{
-				[key: string]: {
-					[key: string]: () => number;
-				};
-			}
-		>
-	) => {
+			[key: string]: (data: any) => number;
+		};
+	}) => {
 		const normalizeFunction = (fn: (data: unknown) => number) => {
 			return fn.toString().replace(/\s+/g, ' ').trim();
 		};
-		const canonical = Object.keys(summary['schema'])
+		const canonical = Object.keys(summary)
 			.sort()
 			.map((outerKey) => {
-				const inner = summary['schema'][outerKey];
+				const inner = summary[outerKey];
 				const innerCanonical = Object.keys(inner)
 					.sort()
 					.map((innerKey) => {
@@ -135,12 +129,12 @@ export namespace FIRST {
 			).unwrap();
 			if (res) {
 				if (year === 2024) {
-					const hash = hashSummary(Summary2024);
+					const hash = hashSummary(Summary2024.schema);
 					if (res.data.summaryHash === hash) {
 						return Summary2024.deserialize(res.data.summary).unwrap();
 					}
 				} else {
-					const hash = hashSummary(Summary2025);
+					const hash = hashSummary(Summary2025.schema);
 					if (res.data.summaryHash === hash) {
 						return Summary2025.deserialize(res.data.summary).unwrap();
 					}
@@ -150,7 +144,7 @@ export namespace FIRST {
 			await EventSummary.new({
 				eventKey,
 				summary: summary.serialize(),
-				summaryHash: hashSummary(summary.parser)
+				summaryHash: hashSummary(summary.parser.schema)
 			});
 			return summary;
 		});

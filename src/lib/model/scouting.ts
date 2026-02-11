@@ -24,7 +24,7 @@ import YearInfo2024 from 'tatorscout/years/2024.js';
 import YearInfo2025 from 'tatorscout/years/2025.js';
 import YearInfo2026 from 'tatorscout/years/2026.js';
 import * as remote from '$lib/remotes/scouting.remote';
-import type { YearInfo } from 'tatorscout/years';
+import type { ParsedBreakdown } from 'tatorscout/years';
 
 /**
  * Client-side scouting models, helpers, and batch utilities.
@@ -569,10 +569,100 @@ export namespace Scouting {
 			}
 		}
 
+		breakdown(year: number, reactive: false): Result<ParsedBreakdown<string>>;
+		breakdown(year: number, reactive: true): WritableBase<ParsedBreakdown<string>>;
+		breakdown(year: number, reactive: boolean) {
+			const get = (matches: MatchScoutingExtended[]) => {
+				const info = getYearInfo(year);
+				const breakdown: ParsedBreakdown<string> = {
+					auto: {
+						total: 0
+					},
+					teleop: {
+						total: 0
+					},
+					endgame: {
+						total: 0
+					},
+					total: 0
+				};
+				if (info.isErr()) {
+					console.error(info.error);
+					return breakdown;
+				}
 
-		averageAutoScore(reactive: boolean, year: number) {}
-		averageTeleopScore(reactive: boolean, year: number) {}
-		averageEndgameScore(reactive: boolean, year: number) {}
+				for (const match of matches) {
+					const { auto, teleop, endgame, total } = info.value.parse(match.trace);
+					for (const [key, val] of Object.entries(auto)) {
+						if (!breakdown.auto[key]) {
+							breakdown.auto[key] = 0;
+						}
+						breakdown.auto[key] += val;
+					}
+
+					breakdown.auto.total += auto.total;
+
+					for (const [key, val] of Object.entries(teleop)) {
+						if (!breakdown.teleop[key]) {
+							breakdown.teleop[key] = 0;
+						}
+						breakdown.teleop[key] += val;
+					}
+
+					breakdown.teleop.total += teleop.total;
+
+					for (const [key, val] of Object.entries(endgame)) {
+						if (!breakdown.endgame[key]) {
+							breakdown.endgame[key] = 0;
+						}
+						breakdown.endgame[key] += val;
+					}
+
+					breakdown.endgame.total += endgame.total;
+
+					breakdown.total = total;
+				}
+				return breakdown;
+			};
+
+			if (reactive) {
+				return this.derive(get);
+			} else {
+				return attempt(() => {
+					return get(this.data);
+				});
+			}
+		}
+
+		averageVelocity(reactive: false): Result<number>;
+		averageVelocity(reactive: true): WritableBase<number>;
+		averageVelocity(reactive: boolean): Result<number> | WritableBase<number> {
+			const get = (data: MatchScoutingExtended[]): number => {
+				return (
+					data.reduce((cur, acc) => {
+						return cur + acc.averageVelocity;
+					}, 0) / data.length
+				);
+			};
+
+			if (reactive) return this.derive(get);
+			else return attempt(() => get(this.data));
+		}
+
+		averageSecondsNotMoving(reactive: false): Result<number>;
+		averageSecondsNotMoving(reactive: true): WritableBase<number>;
+		averageSecondsNotMoving(reactive: boolean): Result<number> | WritableBase<number> {
+			const get = (data: MatchScoutingExtended[]): number => {
+				return (
+					data.reduce((cur, acc) => {
+						return cur + acc.secondsNotMoving;
+					}, 0) / data.length
+				);
+			};
+
+			if (reactive) return this.derive(get);
+			else return attempt(() => get(this.data));
+		}
 	}
 
 	/**
@@ -1245,19 +1335,18 @@ export namespace Scouting {
 		};
 	}
 
-
 	export const getYearInfo = (year: number) => {
 		return attempt(() => {
 			switch (year) {
-			case 2024:
-				return YearInfo2024;
-			case 2025:
-				return YearInfo2025;
-			case 2026:
-				return YearInfo2026;
-			default:
-				throw new Error(`Unsupported year: ${year}`);
-		}
+				case 2024:
+					return YearInfo2024;
+				case 2025:
+					return YearInfo2025;
+				case 2026:
+					return YearInfo2026;
+				default:
+					throw new Error(`Unsupported year: ${year}`);
+			}
 		});
-	}
+	};
 }
