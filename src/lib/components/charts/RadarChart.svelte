@@ -28,13 +28,14 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	import { TBATeam } from '$lib/utils/tba';
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
+	import { type Readable, get } from 'svelte/store';
 
 	/** Component props for `RadarChart`. */
 	interface Props {
 		/** Team whose metrics are displayed. */
 		team: TBATeam;
 		/** Metric values keyed by display label. */
-		data: T;
+		data: Readable<T>;
 		/** Optional min/max for the radial scale. */
 		opts?: {
 			max?: number;
@@ -58,11 +59,13 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	 * ```
 	 */
 	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
-
-	const render = () => {
-		if (chartInstance) {
-			chartInstance.destroy();
-		}
+		const destroy = () => {
+			if (chartInstance) {
+				chartInstance.destroy();
+			}
+		};
+	const render = (data: T) => {
+		destroy();
 
 		chartInstance = new Chart(chartCanvas, {
 			type: 'radar',
@@ -99,12 +102,10 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	};
 
 	onMount(() => {
-		render();
-		return () => {
-			if (chartInstance) {
-				chartInstance.destroy();
-			}
-		};
+		setTimeout(() => {
+			render(get(data));
+		})
+		return data.subscribe(render);
 	});
 </script>
 

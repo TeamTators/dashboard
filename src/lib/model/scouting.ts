@@ -376,32 +376,43 @@ export namespace Scouting {
 		 * const contribStore = ext.getContribution(true);
 		 * contribStore.subscribe((value) => console.log(value));
 		 */
-		getContribution(reactive: false): Result<Record<string, number>>;
-		getContribution(reactive: true): WritableBase<Record<string, number>>;
+		getContribution(year: number, reactive: false, actionLabels?: boolean): Result<Record<string, number>>;
+		getContribution(year: number, reactive: true, actionLabels?: boolean): WritableBase<Record<string, number>>;
 		getContribution(
-			reactive: boolean
+			year: number, 
+			reactive: boolean,
+			actionLabels = true,
 		): Result<Record<string, number>> | WritableBase<Record<string, number>> {
+			const get = (data: {
+				scouting: MatchScoutingData;
+				trace: Trace;
+			}) => {
+				const info = getYearInfo(year);
+				if (info.isErr()) return {};
+
+				const contrib: Record<string, number> = {};
+
+				for (const key of Object.keys(info.value.actions)) {
+					contrib[key] = 0;
+				}
+
+				for (const [,,,a] of data.trace.points) {
+					if (a) {
+						contrib[a] = (contrib[a] || 0) + 1;
+					}
+				}
+				if (!actionLabels) return contrib;
+				const labels: Record<string, number> = {};
+				for (const [key, label] of Object.entries(info.value.actions)) {
+					labels[label] = contrib[key];
+				}
+				return labels;
+			};
 			if (reactive) {
-				return this.derive((data) => {
-					const contrib: Record<string, number> = {};
-					data.trace.points.forEach((point) => {
-						const action = point[3];
-						if (action) {
-							contrib[action] = (contrib[action] || 0) + 1;
-						}
-					});
-					return contrib;
-				});
+				return this.derive(get);
 			} else {
 				return attempt(() => {
-					const contrib: Record<string, number> = {};
-					this.data.trace.points.forEach((point) => {
-						const action = point[3];
-						if (action) {
-							contrib[action] = (contrib[action] || 0) + 1;
-						}
-					});
-					return contrib;
+					return get(this.data);
 				});
 			}
 		}
@@ -480,8 +491,7 @@ export namespace Scouting {
 		checksSummary(reactive: true): WritableBase<Record<string, number>>;
 		checksSummary(reactive: boolean) {
 			if (reactive) {
-				const summary = new WritableBase<Record<string, number>>({});
-				summary.pipeData(this, (data) => {
+				return this.derive((data) => {
 					const result: Record<string, number> = {};
 					for (const ms of data) {
 						const checks = ms.getChecks(false);
@@ -495,7 +505,6 @@ export namespace Scouting {
 					}
 					return result;
 				});
-				return summary;
 			} else {
 				return attempt(() => {
 					const result: Record<string, number> = {};
@@ -524,19 +533,19 @@ export namespace Scouting {
 		 * const averagesStore = extArr.averageContribution(true);
 		 * averagesStore.subscribe((value) => console.log(value));
 		 */
-		averageContribution(reactive: false): Result<Record<string, number>>;
-		averageContribution(reactive: true): WritableBase<Record<string, number>>;
-		averageContribution(reactive: boolean) {
+		averageContribution(year: number, reactive: false, actionLabels?: boolean): Result<Record<string, number>>;
+		averageContribution(year: number, reactive: true, actionLabels?: boolean): WritableBase<Record<string, number>>;
+		averageContribution(year: number, reactive: boolean, actionLabels = true) {
 			if (reactive) {
-				const contribution = new WritableBase<Record<string, number>>({});
-				contribution.pipeData(this, (data) => {
+				return this.derive((data) => {
 					const totals: Record<string, number> = {};
-					data.forEach((ms) => {
-						const contrib = ms.getContribution(false);
-						Object.entries(contrib).forEach(([key, value]) => {
+					for (const ms of data) {
+						const contrib = ms.getContribution(year, false);
+						if (contrib.isErr()) continue;
+						Object.entries(contrib.value).forEach(([key, value]) => {
 							totals[key] = (totals[key] || 0) + value;
 						});
-					});
+					}
 
 					const count = data.length;
 					const averages: Record<string, number> = {};
@@ -545,14 +554,14 @@ export namespace Scouting {
 					});
 
 					return averages;
+				}, {
+					debug: true,
 				});
-
-				return contribution;
 			} else {
 				return attempt(() => {
 					const totals: Record<string, number> = {};
 					this.data.forEach((ms) => {
-						const contrib = ms.getContribution(false);
+						const contrib = ms.getContribution(year, false);
 						Object.entries(contrib).forEach(([key, value]) => {
 							totals[key] = (totals[key] || 0) + value;
 						});

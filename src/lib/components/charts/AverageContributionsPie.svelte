@@ -149,7 +149,7 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 			}
 		});
 
-		const contrib = scouting.averageContribution(true);
+		const contrib = scouting.averageContribution(event.tba.year, true);
 		return contrib.subscribe(render);
 	});
 </script>
