@@ -14,7 +14,7 @@ text label.
 -->
 <script lang="ts">
 	import type { Scouting } from '$lib/model/scouting';
-	import { WritableBase } from '$lib/utils/writables';
+	import { WritableBase } from '$lib/services/writeables';
 	import { onMount } from 'svelte';
 
 	interface Props {

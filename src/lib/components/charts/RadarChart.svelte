@@ -47,9 +47,8 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
 
-	for ([keys, str] in Object.entries(YearInfo2025.actions)) {
-		
-	}
+	// for ([keys, str] in Object.entries(YearInfo2025.actions)) {
+	// }
 
 	/**
 	 * Copy the chart canvas to the clipboard.

@@ -32,6 +32,11 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 	import { Scouting } from '$lib/model/scouting';
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
+	import YearInfo2024 from 'tatorscout/years/2024.js';
+	import YearInfo2025 from 'tatorscout/years/2025.js';
+	import YearInfo2026 from 'tatorscout/years/2026.js';
+	import { YearInfo } from 'tatorscout/years';
+	import { Color } from 'colors/color';
 
 	/** Component props for `AverageContributionsPie`. */
 	interface Props {
@@ -45,14 +50,7 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 		matches: TBAMatch[];
 	}
 
-	const { scouting }: Props = $props();
-
-	let cl1 = $state(0);
-	let cl2 = $state(0);
-	let cl3 = $state(0);
-	let cl4 = $state(0);
-	let brg = $state(0);
-	let prc = $state(0);
+	const { scouting, event }: Props = $props();
 
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
@@ -67,6 +65,48 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 	 */
 	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
 
+	const render = (data: Record<string, number>) => {
+		if (chartInstance) chartInstance.destroy();
+
+		let yearInfo: YearInfo | undefined = undefined;
+
+		switch (event.tba.year) {
+			case 2024:
+				yearInfo = YearInfo2024;
+				break;
+			case 2025:
+				yearInfo = YearInfo2025;
+				break;
+			case 2026:
+				yearInfo = YearInfo2026;
+				break;
+		}
+
+		if (!yearInfo) return;
+
+		const labels = Object.values(yearInfo.actions);
+		const dataset = Object.keys(yearInfo.actions).map((action) => data[action] || 0);
+		const primary = Color.fromBootstrap('primary');
+		const compliment = primary.compliment(labels.length).colors;
+
+		chartInstance = new Chart(chartCanvas, {
+			type: 'pie',
+			data: {
+				labels,
+				datasets: [
+					{
+						label: 'Average Contributions',
+						data: dataset,
+						backgroundColor: compliment.map((c) => c.setAlpha(0.2).toString()),
+						borderColor: compliment.map((c) => c.setAlpha(1).toString()),
+						borderWidth: 1
+					}
+				]
+			},
+			options: {}
+		});
+	};
+
 	onMount(() => {
 		chartInstance = new Chart(chartCanvas, {
 			type: 'pie',
@@ -75,7 +115,7 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 				datasets: [
 					{
 						label: 'Average Contributions',
-						data: [cl1, cl2, cl3, cl4, brg, prc],
+						data: [],
 						backgroundColor: [
 							'rgba(255, 99, 132, 0.2)',
 							'rgba(54, 162, 235, 0.2)',
@@ -109,21 +149,8 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 			}
 		});
 
-		return scouting.subscribe((s) => {
-			const contribution = Scouting.averageContributions(s);
-
-			if (contribution) {
-				cl1 = contribution.cl1;
-				cl2 = contribution.cl2;
-				cl3 = contribution.cl3;
-				cl4 = contribution.cl4;
-				brg = contribution.brg;
-				prc = contribution.prc;
-
-				chartInstance.data.datasets[0].data = [cl1, cl2, cl3, cl4, brg, prc];
-				chartInstance.update();
-			}
-		});
+		const contrib = scouting.averageContribution(true);
+		return contrib.subscribe(render);
 	});
 </script>
 

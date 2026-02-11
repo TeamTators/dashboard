@@ -14,9 +14,7 @@ Subscribes to a single match scouting record and renders the checks returned by
 -->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import { WritableArray } from '$lib/utils/writables';
 	import type { BootstrapColor } from 'colors/color';
-	import { onMount } from 'svelte';
 	import { capitalize, fromCamelCase } from 'ts-utils/text';
 
 	interface Props {
@@ -27,7 +25,7 @@ Subscribes to a single match scouting record and renders the checks returned by
 	}
 
 	const { scouting, classes }: Props = $props();
-	let checks = $state(new WritableArray<string>([]));
+	let checks = $derived(scouting.getChecks(true));
 
 	const checkColors: {
 		[key: string]: BootstrapColor;
@@ -42,17 +40,6 @@ Subscribes to a single match scouting record and renders the checks returned by
 		groundPicks: 'primary',
 		default: 'secondary'
 	};
-
-	onMount(() => {
-		return scouting.subscribe(() => {
-			try {
-				checks = scouting.getChecks();
-				// checks.set(parsed);
-			} catch (error) {
-				console.error(error);
-			}
-		});
-	});
 </script>
 
 <div>
@@ -64,7 +51,7 @@ Subscribes to a single match scouting record and renders the checks returned by
 			</li>
 		{/each}
 	</ul>
-	{#if !checks.length}
+	{#if !$checks.length}
 		<p class="text-muted text-center">No checks available.</p>
 	{/if}
 </div>

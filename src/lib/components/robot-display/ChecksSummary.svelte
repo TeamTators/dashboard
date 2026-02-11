@@ -39,19 +39,15 @@ Aggregates a map of check arrays into a frequency table and renders each check w
 </script> -->
 
 <script lang="ts">
-	import { Scouting } from "$lib/model/scouting";
+	import { Scouting } from '$lib/model/scouting';
 
 	interface Props {
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
 	const { scouting }: Props = $props();
-	
-	const checks = $derived(scouting.checksSummary);
 
-	$effect(() => checks.subscribe(val => {
-		console.log("Checks summary updated:", val);
-	}));
+	const checks = $derived(scouting.checksSummary(true));
 </script>
 
 <ul class="list">
