@@ -7,8 +7,42 @@ export default YearInfo2026.summary({
 			const hubData = data.scoring.map((d) => d.auto.hub1 + d.auto.hub5 + d.auto.hub10);
 			return Aggregators.average(hubData);
 		},
-		'Average Climb': () => 0,
-		'Average Total': () => 0
+		'Average Climb': (data) => {
+			const climbData = data.matches.map(m => {
+				const parsed = YearInfo2026.parseMatch(m).unwrap();
+				const redPosition = m.alliances.red.team_keys.indexOf('frc' + data.team);
+				const bluePosition = m.alliances.blue.team_keys.indexOf('frc' + data.team);
+				const alliance = redPosition !== -1 ? 'red' : bluePosition !== -1 ? 'blue' : null;
+				const position = alliance === 'red' ? redPosition : alliance === 'blue' ? bluePosition : -1;
+				if (alliance && position !== -1) {
+					const autoClimb = [
+						parsed.score_breakdown[alliance].autoTowerRobot1,
+						parsed.score_breakdown[alliance].autoTowerRobot2,
+						parsed.score_breakdown[alliance].autoTowerRobot3
+					][position];
+
+					// const endClimb = [
+					// 	parsed.score_breakdown[alliance].endgameTowerRobot1,
+					// 	parsed.score_breakdown[alliance].endgameTowerRobot2,
+					// 	parsed.score_breakdown[alliance].endgameTowerRobot3
+					// ][position];
+
+					let points = 0;
+					if (autoClimb !== 'None') points += 15;
+
+					// const end = {
+					// 	'Level1': 10,
+					// 	'Level2': 20,
+					// 	'Level3': 30
+					// };
+					// if (endClimb in end) points += end[endClimb as keyof typeof end];
+					return points;
+				}
+				return 0;
+			});
+			return Aggregators.average(climbData);
+		},
+		'Average Total': (data) => 0
 	},
 	'Teleop Points': {
 		'Average Hub Scored': () => 0,
