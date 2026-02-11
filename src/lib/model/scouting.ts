@@ -163,25 +163,7 @@ export namespace Scouting {
 					}
 				>
 			>({});
-			// w.pipe(this);
-			// setTimeout(() => {
-			// 	const res = z
-			// 		.record(
-			// 			z.string(),
-			// 			z.object({
-			// 				value: z.number(),
-			// 				text: z.string(),
-			// 				color: z.string().default('#000000')
-			// 			})
-			// 		)
-			// 		.safeParse(JSON.parse(this.data.scouting.data.sliders || '{}'));
-			// 	if (res.success) {
-			// 		w.set(res.data);
-			// 	} else {
-			// 		console.error('Failed to parse sliders:', res.error);
-			// 	}
-			// });
-			 w.pipeData(this, (data) => {
+			w.pipeData(this, (data) => {
 				const res = z
 					.record(
 						z.string(),
