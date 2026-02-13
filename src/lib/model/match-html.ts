@@ -22,6 +22,13 @@ import { catmullRom } from 'math/spline';
 const PATH_COLOR = Color.fromBootstrap('primary');
 
 /**
+ * Generates a set of visually distinct colors for action markers based on the number of actions.
+ * @param num Number of distinct actions to generate colors for.
+ * @returns {Color[]} Array of Color objects representing the compliment colors.
+ */
+export const compliment = (num: number) => PATH_COLOR.compliment(num).colors;
+
+/**
  * Renders a single match trace on top of the field image.
  *
  * @example
@@ -409,8 +416,17 @@ export class ActionHeatmap<A extends string> {
 	 */
 	constructor(
 		public readonly matches: Scouting.MatchScoutingExtendedArr,
-		public readonly year: number
-	) {}
+		public readonly year: number,
+		public config: {
+			doButtons?: boolean;
+			actions?: A[];
+		} = {
+			doButtons: true,
+			actions: [],
+		}
+	) {
+		this._filter = config.actions || [];
+	}
 
 	/**
 	 * Current action filter applied to points.
@@ -424,6 +440,12 @@ export class ActionHeatmap<A extends string> {
 	 */
 	filter(...actions: A[]) {
 		this._filter = actions;
+		this.render();
+	}
+
+
+	doButtons(bool: boolean) {
+		this.config.doButtons = bool;
 		this.render();
 	}
 
@@ -479,97 +501,99 @@ export class ActionHeatmap<A extends string> {
 			this.timeouts.splice(this.timeouts.indexOf(to), 1);
 		}
 		this.target.querySelectorAll('.heatmap-item').forEach((a) => a.remove());
-		const container = document.createElement('div');
-		container.classList.add('heatmap-item');
-		container.style.position = 'relative';
-		container.style.maxWidth = '100%';
-		container.style.aspectRatio = '2 / 1';
-		container.style.overflow = 'hidden';
-		this.target.appendChild(container);
+			const container = document.createElement('div');
+			container.classList.add('heatmap-item');
+			container.style.position = 'relative';
+			container.style.maxWidth = '100%';
+			container.style.aspectRatio = '2 / 1';
+			container.style.overflow = 'hidden';
+			this.target.appendChild(container);
+			const colors = compliment(Object.keys(this.yearInfo.actions).length);
+		if (this.config?.doButtons) {
 
-		const legend = document.createElement('div');
-		legend.classList.add('heatmap-item');
-		legend.style.display = 'flex';
-		legend.style.justifyContent = 'space-between';
-		legend.style.flexWrap = 'wrap';
-		legend.style.position = 'absolute';
-		legend.style.zIndex = '1';
-		legend.style.width = '100%';
-		legend.style.top = '0';
-		const { colors } = PATH_COLOR.compliment(Object.keys(this.yearInfo.actions).length);
-		const keys = Object.keys(this.yearInfo.actions);
-		for (let i = 0; i < keys.length; i++) {
-			const color = colors[i] || PATH_COLOR;
-			const item = document.createElement('div');
-			item.classList.add('heatmap-item');
-			item.style.alignItems = 'center';
-			item.style.marginBottom = '4px';
-			item.style.backgroundColor = color.toString('rgba');
-			item.style.padding = '4px 8px';
-			item.style.borderRadius = '4px';
-			item.style.display = 'flex';
-			item.style.cursor = 'pointer';
-			item.style.margin = '4px';
-			item.style.opacity = '0.9';
-			item.style.width = '12%';
-			item.style.minWidth = '100px';
-			item.style.justifyContent = 'center';
-			item.style.minHeight = '10%';
-			if (this._filter.length && this._filter.includes(keys[i] as A)) {
-				item.style.border = '2px solid white';
-				item.style.padding = '2px 6px';
-			} else {
-				item.style.border = '2px solid transparent';
-				item.style.padding = '2px 6px';
-			}
-
-			const label = document.createElement('p');
-			label.textContent = this.yearInfo.actions[keys[i] as A];
-			if (color.detectContrast(Color.fromName('white')) > 3) {
-				label.style.color = 'white';
-			} else {
-				label.style.color = 'black';
-			}
-
-			label.style.fontWeight = 'bold';
-			label.style.fontSize = '1em';
-			label.style.whiteSpace = 'nowrap';
-			label.style.lineHeight = '1em';
-			label.style.margin = 'auto';
-			label.style.padding = '0';
-			item.appendChild(label);
-
-			item.onclick = () => {
-				if (this._filter.includes(keys[i] as A)) {
-					this._filter = this._filter.filter((a) => a !== keys[i]);
+			const legend = document.createElement('div');
+			legend.classList.add('heatmap-item');
+			legend.style.display = 'flex';
+			legend.style.justifyContent = 'space-between';
+			legend.style.flexWrap = 'wrap';
+			legend.style.position = 'absolute';
+			legend.style.zIndex = '1';
+			legend.style.width = '100%';
+			legend.style.top = '0';
+			const keys = Object.keys(this.yearInfo.actions);
+			for (let i = 0; i < keys.length; i++) {
+				const color = colors[i] || PATH_COLOR;
+				const item = document.createElement('div');
+				item.classList.add('heatmap-item');
+				item.style.alignItems = 'center';
+				item.style.marginBottom = '4px';
+				item.style.backgroundColor = color.toString('rgba');
+				item.style.padding = '4px 8px';
+				item.style.borderRadius = '4px';
+				item.style.display = 'flex';
+				item.style.cursor = 'pointer';
+				item.style.margin = '4px';
+				item.style.opacity = '0.9';
+				item.style.width = '12%';
+				item.style.minWidth = '100px';
+				item.style.justifyContent = 'center';
+				item.style.minHeight = '10%';
+				if (this._filter.length && this._filter.includes(keys[i] as A)) {
+					item.style.border = '2px solid white';
+					item.style.padding = '2px 6px';
 				} else {
-					this._filter.push(keys[i] as A);
+					item.style.border = '2px solid transparent';
+					item.style.padding = '2px 6px';
 				}
-				this.render();
-			};
 
-			legend.appendChild(item);
+				const label = document.createElement('p');
+				label.textContent = this.yearInfo.actions[keys[i] as A];
+				if (color.detectContrast(Color.fromName('white')) > 3) {
+					label.style.color = 'white';
+				} else {
+					label.style.color = 'black';
+				}
+
+				label.style.fontWeight = 'bold';
+				label.style.fontSize = '1em';
+				label.style.whiteSpace = 'nowrap';
+				label.style.lineHeight = '1em';
+				label.style.margin = 'auto';
+				label.style.padding = '0';
+				item.appendChild(label);
+
+				item.onclick = () => {
+					if (this._filter.includes(keys[i] as A)) {
+						this._filter = this._filter.filter((a) => a !== keys[i]);
+					} else {
+						this._filter.push(keys[i] as A);
+					}
+					this.render();
+				};
+
+				legend.appendChild(item);
+			}
+			container.appendChild(legend);
 		}
-		container.appendChild(legend);
 
-		const img = document.createElement('img');
-		img.src = `/assets/field/${this.year}.png`;
-		img.style.position = 'absolute';
-		img.style.bottom = '0';
-		img.style.left = '0';
-		img.style.width = '100%';
-		img.style.zIndex = '0';
-		container.appendChild(img);
+			const img = document.createElement('img');
+			img.src = `/assets/field/${this.year}.png`;
+			img.style.position = 'absolute';
+			img.style.bottom = '0';
+			img.style.left = '0';
+			img.style.width = '100%';
+			img.style.zIndex = '0';
+			container.appendChild(img);
 
-		const imgContainer = document.createElement('div');
-		imgContainer.style.position = 'absolute';
-		imgContainer.style.bottom = '0';
-		imgContainer.style.left = '0';
-		imgContainer.style.width = img.style.width;
-		imgContainer.style.height = img.style.height;
-		imgContainer.style.aspectRatio = '2 / 1';
-		// imgContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
-		container.appendChild(imgContainer);
+			const imgContainer = document.createElement('div');
+			imgContainer.style.position = 'absolute';
+			imgContainer.style.bottom = '0';
+			imgContainer.style.left = '0';
+			imgContainer.style.width = img.style.width;
+			imgContainer.style.height = img.style.height;
+			imgContainer.style.aspectRatio = '2 / 1';
+			// imgContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+			container.appendChild(imgContainer);
 
 		const { Tooltip } = await import('bootstrap');
 
