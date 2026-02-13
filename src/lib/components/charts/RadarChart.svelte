@@ -96,7 +96,8 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 							backdropColor: 'rgba(0, 0, 0, 0)'
 						}
 					}
-				}
+				},
+				responsive: true,
 			}
 		});
 	};

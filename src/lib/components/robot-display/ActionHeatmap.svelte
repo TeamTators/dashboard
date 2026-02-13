@@ -32,6 +32,8 @@ actions and access the resolved action list.
 		scouting: Scouting.MatchScoutingExtendedArr;
 		/** Competition year to select the action set. */
 		year: number;
+		/** Whether to display action buttons. */
+		doButtons: boolean;
 	}
 
 	let actions: Actions[] = $state([]);
@@ -46,9 +48,9 @@ actions and access the resolved action list.
 	 */
 	export const getActions = () => actions;
 
-	const { scouting, year }: Props = $props();
+	const { scouting, year, doButtons }: Props = $props();
 
-	const h = $derived(new ActionHeatmap(scouting, year));
+	const h = $derived(new ActionHeatmap(scouting, year, { doButtons }));
 
 	/**
 	 * Filter the heatmap to only show the provided actions.
