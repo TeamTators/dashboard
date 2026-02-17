@@ -76,7 +76,7 @@ export namespace Scouting {
 			sliders: 'string'
 		},
 		socket: sse,
-		browser,
+		browser
 	});
 
 	/**
@@ -556,26 +556,24 @@ export namespace Scouting {
 		): WritableBase<Record<string, number>>;
 		averageContribution(year: number, reactive: boolean, actionLabels = true) {
 			if (reactive) {
-				return this.derive(
-					(data) => {
-						const totals: Record<string, number> = {};
-						for (const ms of data) {
-							const contrib = ms.getContribution(year, false, actionLabels);
-							if (contrib.isErr()) continue;
-							Object.entries(contrib.value).forEach(([key, value]) => {
-								totals[key] = (totals[key] || 0) + value;
-							});
-						}
-
-						const count = data.length;
-						const averages: Record<string, number> = {};
-						Object.entries(totals).forEach(([key, value]) => {
-							averages[key] = value / count;
+				return this.derive((data) => {
+					const totals: Record<string, number> = {};
+					for (const ms of data) {
+						const contrib = ms.getContribution(year, false, actionLabels);
+						if (contrib.isErr()) continue;
+						Object.entries(contrib.value).forEach(([key, value]) => {
+							totals[key] = (totals[key] || 0) + value;
 						});
-
-						return averages;
 					}
-				);
+
+					const count = data.length;
+					const averages: Record<string, number> = {};
+					Object.entries(totals).forEach(([key, value]) => {
+						averages[key] = value / count;
+					});
+
+					return averages;
+				});
 			} else {
 				return attempt(() => {
 					const totals: Record<string, number> = {};

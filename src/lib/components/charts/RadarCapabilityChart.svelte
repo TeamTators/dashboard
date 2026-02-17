@@ -40,13 +40,13 @@
 </script>
 
 {#key data}
-<RadarChart
-	bind:this={chart}
-	{team}
-	{data}
-	opts={{
-		min,
-		max
-	}}
-/>
+	<RadarChart
+		bind:this={chart}
+		{team}
+		{data}
+		opts={{
+			min,
+			max
+		}}
+	/>
 {/key}

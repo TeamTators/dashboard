@@ -618,8 +618,6 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		}
 	});
 
-
-
 	let progressChart: Progress | undefined = $state(undefined);
 	let teamEventStatsChart: TeamEventStats | undefined = $state(undefined);
 	let averageContributionsPieChart: AverageContributionsPie | undefined = $state(undefined);

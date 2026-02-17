@@ -60,7 +60,7 @@ whenever the scouting store updates, ensuring the visual stays in sync with inco
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
 
-	const labels = $derived(scouting.map(s => `${s.compLevel}${s.matchNumber}`));
+	const labels = $derived(scouting.map((s) => `${s.compLevel}${s.matchNumber}`));
 
 	/**
 	 * Copy the chart canvas to the clipboard.
@@ -72,60 +72,69 @@ whenever the scouting store updates, ensuring the visual stays in sync with inco
 	 */
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
-	const frequencyDataset  = $derived(scouting.derive(matches => {
-		const yearInfo = Scouting.getYearInfo(event.tba.year);
-		if (yearInfo.isErr()) {
-			console.error(`Failed to get year info for ${event.tba.year}: ${yearInfo.error}`);
-			return [];
-		}
-
-		const actions = yearInfo.value.actions;
-		const colors = compliment(Object.values(actions).length);
-
-		return Object.entries(actions).map(([key, name], i) => {
-			return {
-				label: name,
-				data: matches.map(match => {
-					let count = 0;
-					for (const [,,,a] of match.data.trace.points) {
-						if (a === key) count++;
-					}
-					return count;
-				}),
-				backgroundColor: colors[i].clone().setAlpha(0.3).toString('rgba'),
-				borderColor: colors[i].clone().setAlpha(0.7).toString('rgba'),
-				borderWidth: 1,
+	const frequencyDataset = $derived(
+		scouting.derive((matches) => {
+			const yearInfo = Scouting.getYearInfo(event.tba.year);
+			if (yearInfo.isErr()) {
+				console.error(`Failed to get year info for ${event.tba.year}: ${yearInfo.error}`);
+				return [];
 			}
-		});
-	}));
-	const pointDataset = $derived(scouting.derive(matches => {
-		const yearInfo = Scouting.getYearInfo(event.tba.year);
-		if (yearInfo.isErr()) {
-			console.error(`Failed to get year info for ${event.tba.year}: ${yearInfo.error}`);
-			return [];	
-		}
 
-		const actions = yearInfo.value.actions;
-		const colors = compliment(Object.values(actions).length);
+			const actions = yearInfo.value.actions;
+			const colors = compliment(Object.values(actions).length);
 
-		const parsed = matches.map(match => yearInfo.value.parse(match.data.trace));
+			return Object.entries(actions).map(([key, name], i) => {
+				return {
+					label: name,
+					data: matches.map((match) => {
+						let count = 0;
+						for (const [, , , a] of match.data.trace.points) {
+							if (a === key) count++;
+						}
+						return count;
+					}),
+					backgroundColor: colors[i].clone().setAlpha(0.3).toString('rgba'),
+					borderColor: colors[i].clone().setAlpha(0.7).toString('rgba'),
+					borderWidth: 1
+				};
+			});
+		})
+	);
+	const pointDataset = $derived(
+		scouting.derive((matches) => {
+			const yearInfo = Scouting.getYearInfo(event.tba.year);
+			if (yearInfo.isErr()) {
+				console.error(`Failed to get year info for ${event.tba.year}: ${yearInfo.error}`);
+				return [];
+			}
 
-		const num = (data: unknown) => {
-			if (isNaN(Number(data))) return 0;
-			return Number(data);
-		}
+			const actions = yearInfo.value.actions;
+			const colors = compliment(Object.values(actions).length);
 
-		return Object.entries(actions).map(([key, name], i) => {
-			return {
-				label: name,
-				// +num to convert to number if undefined
-				data: parsed.map(p => num(p.auto[key as keyof typeof p.auto]) + num(p.teleop[key as keyof typeof p.teleop]) + num(p.endgame[key as keyof typeof p.endgame])),
-				backgroundColor: colors[i].clone().setAlpha(0.3).toString('rgba'),
-				borderColor: colors[i].clone().setAlpha(0.7).toString('rgba'),
-				borderWidth: 1,
+			const parsed = matches.map((match) => yearInfo.value.parse(match.data.trace));
+
+			const num = (data: unknown) => {
+				if (isNaN(Number(data))) return 0;
+				return Number(data);
 			};
-		});
-	}));
+
+			return Object.entries(actions).map(([key, name], i) => {
+				return {
+					label: name,
+					// +num to convert to number if undefined
+					data: parsed.map(
+						(p) =>
+							num(p.auto[key as keyof typeof p.auto]) +
+							num(p.teleop[key as keyof typeof p.teleop]) +
+							num(p.endgame[key as keyof typeof p.endgame])
+					),
+					backgroundColor: colors[i].clone().setAlpha(0.3).toString('rgba'),
+					borderColor: colors[i].clone().setAlpha(0.7).toString('rgba'),
+					borderWidth: 1
+				};
+			});
+		})
+	);
 
 	const render = debounce(() => {
 		if (chart) chart.destroy();
@@ -133,21 +142,21 @@ whenever the scouting store updates, ensuring the visual stays in sync with inco
 			type: 'bar',
 			data: {
 				labels: labels.data,
-				datasets: view === 'frequency' ? frequencyDataset.data : pointDataset.data,
+				datasets: view === 'frequency' ? frequencyDataset.data : pointDataset.data
 			},
 			options: {
 				responsive: true,
 				scales: {
 					x: {
-						stacked: true,
+						stacked: true
 					},
 					y: {
 						stacked: true,
 						beginAtZero: true,
-						max: view === 'frequency' ? undefined : staticY || undefined,
-					},
-				},
-			},
+						max: view === 'frequency' ? undefined : staticY || undefined
+					}
+				}
+			}
 		});
 	}, 100);
 
@@ -155,11 +164,11 @@ whenever the scouting store updates, ensuring the visual stays in sync with inco
 		const unsubs = [
 			scouting.subscribe(render),
 			frequencyDataset.subscribe(render),
-			pointDataset.subscribe(render),
+			pointDataset.subscribe(render)
 		];
 
 		return () => {
-			unsubs.forEach(unsub => unsub());
+			unsubs.forEach((unsub) => unsub());
 			if (chart) chart.destroy();
 		};
 	});

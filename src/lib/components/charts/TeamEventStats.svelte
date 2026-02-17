@@ -65,63 +65,65 @@ specific action (e.g., Level 1, Barge, Shallow Climb).
 	 */
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
-	const datasets = $derived(scouting.derive(matches => {
-		const yearInfo = Scouting.getYearInfo(event.tba.year);
-		if (yearInfo.isErr()) {
-			return [];
-		}
-
-		const actions = yearInfo.value.actions;
-		const colors = compliment(Object.keys(actions).length);
-
-		const parsed = matches.map(m  => yearInfo.value.parse(m.data.trace));
-	
-		return Object.entries(actions).map(([key, name], i) => {
-			let minAuto = Infinity;
-			let maxAuto = -Infinity;
-			let avgAuto = 0;
-			let minTele = Infinity;
-			let maxTele = -Infinity;
-			let avgTele = 0;
-			let minEnd = Infinity;
-			let maxEnd = -Infinity;
-			let avgEnd = 0;
-
-			for (const m of parsed) {
-				const auto = m.auto[key as keyof typeof m.auto] || 0;
-				const tele = m.teleop[key as keyof typeof m.teleop] || 0;
-				const end = m.endgame[key as keyof typeof m.endgame] || 0;
-
-				minAuto = Math.min(minAuto, auto);
-				maxAuto = Math.max(maxAuto, auto);
-				avgAuto += auto;
-
-				minTele = Math.min(minTele, tele);
-				maxTele = Math.max(maxTele, tele);
-				avgTele += tele;
-
-				minEnd = Math.min(minEnd, end);
-				maxEnd = Math.max(maxEnd, end);
-				avgEnd += end;
+	const datasets = $derived(
+		scouting.derive((matches) => {
+			const yearInfo = Scouting.getYearInfo(event.tba.year);
+			if (yearInfo.isErr()) {
+				return [];
 			}
 
-			avgAuto /= parsed.length;
-			avgTele /= parsed.length;
-			avgEnd /= parsed.length;
+			const actions = yearInfo.value.actions;
+			const colors = compliment(Object.keys(actions).length);
 
-			return {
-				label: name,
-				data: [minAuto, avgAuto, maxAuto, minTele, avgTele, maxTele, minEnd, avgEnd, maxEnd],
-				backgroundColor: colors[i].clone().setAlpha(0.3).toString('rgba'),
-				borderColor: colors[i].clone().setAlpha(0.7).toString('rgba'),
-				borderWidth: 1,
-			};
-		});
-	}));
+			const parsed = matches.map((m) => yearInfo.value.parse(m.data.trace));
+
+			return Object.entries(actions).map(([key, name], i) => {
+				let minAuto = Infinity;
+				let maxAuto = -Infinity;
+				let avgAuto = 0;
+				let minTele = Infinity;
+				let maxTele = -Infinity;
+				let avgTele = 0;
+				let minEnd = Infinity;
+				let maxEnd = -Infinity;
+				let avgEnd = 0;
+
+				for (const m of parsed) {
+					const auto = m.auto[key as keyof typeof m.auto] || 0;
+					const tele = m.teleop[key as keyof typeof m.teleop] || 0;
+					const end = m.endgame[key as keyof typeof m.endgame] || 0;
+
+					minAuto = Math.min(minAuto, auto);
+					maxAuto = Math.max(maxAuto, auto);
+					avgAuto += auto;
+
+					minTele = Math.min(minTele, tele);
+					maxTele = Math.max(maxTele, tele);
+					avgTele += tele;
+
+					minEnd = Math.min(minEnd, end);
+					maxEnd = Math.max(maxEnd, end);
+					avgEnd += end;
+				}
+
+				avgAuto /= parsed.length;
+				avgTele /= parsed.length;
+				avgEnd /= parsed.length;
+
+				return {
+					label: name,
+					data: [minAuto, avgAuto, maxAuto, minTele, avgTele, maxTele, minEnd, avgEnd, maxEnd],
+					backgroundColor: colors[i].clone().setAlpha(0.3).toString('rgba'),
+					borderColor: colors[i].clone().setAlpha(0.7).toString('rgba'),
+					borderWidth: 1
+				};
+			});
+		})
+	);
 
 	const render = () => {
 		if (chart) chart.destroy();
-		
+
 		const chartLabels = [
 			'Min Auto',
 			'Avg Auto',

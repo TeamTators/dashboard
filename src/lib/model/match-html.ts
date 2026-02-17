@@ -422,7 +422,7 @@ export class ActionHeatmap<A extends string> {
 			actions?: A[];
 		} = {
 			doButtons: true,
-			actions: [],
+			actions: []
 		}
 	) {
 		this._filter = config.actions || [];
@@ -442,7 +442,6 @@ export class ActionHeatmap<A extends string> {
 		this._filter = actions;
 		this.render();
 	}
-
 
 	doButtons(bool: boolean) {
 		this.config.doButtons = bool;
@@ -501,16 +500,15 @@ export class ActionHeatmap<A extends string> {
 		}
 		this.timeouts.length = 0;
 		this.target.querySelectorAll('.heatmap-item').forEach((a) => a.remove());
-			const container = document.createElement('div');
-			container.classList.add('heatmap-item');
-			container.style.position = 'relative';
-			container.style.maxWidth = '100%';
-			container.style.aspectRatio = '2 / 1';
-			container.style.overflow = 'hidden';
-			this.target.appendChild(container);
-			const colors = compliment(Object.keys(this.yearInfo.actions).length);
+		const container = document.createElement('div');
+		container.classList.add('heatmap-item');
+		container.style.position = 'relative';
+		container.style.maxWidth = '100%';
+		container.style.aspectRatio = '2 / 1';
+		container.style.overflow = 'hidden';
+		this.target.appendChild(container);
+		const colors = compliment(Object.keys(this.yearInfo.actions).length);
 		if (this.config?.doButtons) {
-
 			const legend = document.createElement('div');
 			legend.classList.add('heatmap-item');
 			legend.style.display = 'flex';
@@ -576,24 +574,24 @@ export class ActionHeatmap<A extends string> {
 			container.appendChild(legend);
 		}
 
-			const img = document.createElement('img');
-			img.src = `/assets/field/${this.year}.png`;
-			img.style.position = 'absolute';
-			img.style.bottom = '0';
-			img.style.left = '0';
-			img.style.width = '100%';
-			img.style.zIndex = '0';
-			container.appendChild(img);
+		const img = document.createElement('img');
+		img.src = `/assets/field/${this.year}.png`;
+		img.style.position = 'absolute';
+		img.style.bottom = '0';
+		img.style.left = '0';
+		img.style.width = '100%';
+		img.style.zIndex = '0';
+		container.appendChild(img);
 
-			const imgContainer = document.createElement('div');
-			imgContainer.style.position = 'absolute';
-			imgContainer.style.bottom = '0';
-			imgContainer.style.left = '0';
-			imgContainer.style.width = img.style.width;
-			imgContainer.style.height = img.style.height;
-			imgContainer.style.aspectRatio = '2 / 1';
-			// imgContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
-			container.appendChild(imgContainer);
+		const imgContainer = document.createElement('div');
+		imgContainer.style.position = 'absolute';
+		imgContainer.style.bottom = '0';
+		imgContainer.style.left = '0';
+		imgContainer.style.width = img.style.width;
+		imgContainer.style.height = img.style.height;
+		imgContainer.style.aspectRatio = '2 / 1';
+		// imgContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+		container.appendChild(imgContainer);
 
 		const { Tooltip } = await import('bootstrap');
 
