@@ -10,15 +10,16 @@ import { Stack } from '$lib/utils/stack';
 import { WritableBase } from '$lib/services/writables';
 import { Color } from 'colors/color';
 import type { Point2D } from 'math/point';
-// import { catmullRom } from 'math/spline';
-import type { TBAEvent, TBAMatch } from 'tatorscout/tba';
 import { attempt, SimpleEventEmitter } from 'ts-utils';
 import z from 'zod';
 
 export type WhiteboardConfig = {
 	target: HTMLDivElement;
-	event: TBAEvent;
-	match: TBAMatch;
+	event: string;
+	matchNumber: number;
+	compLevel: string;
+	red: [number, number, number];
+	blue: [number, number, number];
 };
 
 export type PathState = {
@@ -97,12 +98,6 @@ export class Path extends WritableBase<PathState> {
 			// SVG uses viewBox 0 0 1 1, so use normalized coordinates
 			d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
 		}
-		// const fn = catmullRom(this.points);
-		// const points = 2 * this.points.length; // More points for smoother curves
-		// for (let i = 0; i < 1; i +=  1 / points) {
-		//     const [x, y] = fn(i);
-		//     d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-		// }
 		this.target.setAttribute('d', d);
 	}
 
@@ -279,15 +274,15 @@ export class Whiteboard extends WritableBase<WhiteboardState> {
 	}
 
 	get matchNumber(): number {
-		return this.config.match.match_number;
+		return this.config.matchNumber
 	}
 
 	get compLevel(): string {
-		return this.config.match.comp_level;
+		return this.config.compLevel;
 	}
 
 	get year(): number {
-		return this.config.event.year;
+		return parseInt(this.config.event.slice(0, 4));
 	}
 
 	get target(): HTMLDivElement {

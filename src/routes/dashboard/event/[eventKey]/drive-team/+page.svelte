@@ -117,8 +117,9 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 		const renderRes = Whiteboard.from(
 			{
 				target: whiteboardEl,
-				event: event.tba,
-				match: match.tba
+				event: event.tba.key,
+				matchNumber: match.tba.match_number,
+				compLevel: match.tba.comp_level
 			},
 			wb
 		);
@@ -363,8 +364,9 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 								whiteboard = new Whiteboard(
 									{
 										target: div,
-										event: event.tba,
-										match: match.tba
+										event: event.tba.key,
+										matchNumber: match.tba.match_number,
+										compLevel: match.tba.comp_level
 									},
 									{
 										paths: []
