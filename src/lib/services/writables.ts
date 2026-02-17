@@ -973,6 +973,30 @@ export class WritableArray<T> extends WritableBase<T[]> {
 		}
 		return uniqueStore;
 	}
+
+	/**
+	 * Toggles the presence of an item in the array. If the item exists, it is removed; if it does not exist, it is added. Returns true if the item was added, or false if it was removed.
+	 * @param item - The item to toggle in the array
+	 * @returns {boolean} True if the item was added, false if it was removed
+	 * @example
+	 * ```typescript
+	 * const store = new WritableArray(['a', 'b']);
+	 * store.toggle('b'); // returns false, array is now ['a']
+	 * store.toggle('c'); // returns true, array is now ['a', 'c']
+	 * ```
+	 */
+	toggle(item: T): boolean {
+		const has = this.data.includes(item);
+		this.update((arr) => {
+			if (arr.includes(item)) {
+				return arr.filter((i) => i !== item);
+			} else {
+				arr.push(item);
+				return arr;
+			}
+		});
+		return !has;
+	}
 }
 
 /**

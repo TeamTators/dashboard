@@ -32,6 +32,12 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 	import { Scouting } from '$lib/model/scouting';
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
+	import YearInfo2024 from 'tatorscout/years/2024.js';
+	import YearInfo2025 from 'tatorscout/years/2025.js';
+	import YearInfo2026 from 'tatorscout/years/2026.js';
+	import { YearInfo } from 'tatorscout/years';
+	import { Color } from 'colors/color';
+	import { compliment } from '$lib/model/match-html';
 
 	/** Component props for `AverageContributionsPie`. */
 	interface Props {
@@ -45,14 +51,7 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 		matches: TBAMatch[];
 	}
 
-	const { scouting }: Props = $props();
-
-	let cl1 = $state(0);
-	let cl2 = $state(0);
-	let cl3 = $state(0);
-	let cl4 = $state(0);
-	let brg = $state(0);
-	let prc = $state(0);
+	const { scouting, event }: Props = $props();
 
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
@@ -67,33 +66,23 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 	 */
 	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
 
-	onMount(() => {
+	const render = (data: Record<string, number>) => {
+		if (chartInstance) chartInstance.destroy();
+
+		const labels = Object.keys(data);
+		const dataset = Object.values(data);
+		const colors = compliment(labels.length);
+
 		chartInstance = new Chart(chartCanvas, {
 			type: 'pie',
 			data: {
-				labels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Barge', 'Processor'],
+				labels,
 				datasets: [
 					{
 						label: 'Average Contributions',
-						data: [cl1, cl2, cl3, cl4, brg, prc],
-						backgroundColor: [
-							'rgba(255, 99, 132, 0.2)',
-							'rgba(54, 162, 235, 0.2)',
-							'rgba(255, 206, 86, 0.2)',
-							'rgba(75, 192, 192, 0.2)',
-							'rgba(153, 102, 255, 0.2)',
-							'rgba(255, 159, 64, 0.2)',
-							'rgba(199, 199, 199, 0.2)'
-						],
-						borderColor: [
-							'rgba(255, 99, 132, 1)',
-							'rgba(54, 162, 235, 1)',
-							'rgba(255, 206, 86, 1)',
-							'rgba(75, 192, 192, 1)',
-							'rgba(153, 102, 255, 1)',
-							'rgba(255, 159, 64, 1)',
-							'rgba(199, 199, 199, 1)'
-						],
+						data: dataset,
+						backgroundColor: colors.map((c) => c.setAlpha(0.2).toString()),
+						borderColor: colors.map((c) => c.setAlpha(1).toString()),
 						borderWidth: 1
 					}
 				]
@@ -108,22 +97,13 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 				}
 			}
 		});
+	};
 
-		return scouting.subscribe((s) => {
-			const contribution = Scouting.averageContributions(s);
+	onMount(() => {
+		render({});
 
-			if (contribution) {
-				cl1 = contribution.cl1;
-				cl2 = contribution.cl2;
-				cl3 = contribution.cl3;
-				cl4 = contribution.cl4;
-				brg = contribution.brg;
-				prc = contribution.prc;
-
-				chartInstance.data.datasets[0].data = [cl1, cl2, cl3, cl4, brg, prc];
-				chartInstance.update();
-			}
-		});
+		const contrib = scouting.averageContribution(event.tba.year, true, true);
+		return contrib.subscribe(render);
 	});
 </script>
 

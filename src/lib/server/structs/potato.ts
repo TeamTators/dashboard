@@ -14,6 +14,7 @@ import { FIRST } from './FIRST';
 import { eq } from 'drizzle-orm';
 import { Permissions } from './permissions';
 import { DB } from '../db';
+import structRegistry from '../services/struct-registry';
 
 export namespace Potato {
 	export const LevelUpMap = {
@@ -122,6 +123,9 @@ export namespace Potato {
 			mana: integer('mana').notNull().default(0)
 		}
 	});
+
+	structRegistry.register(Friend);
+
 	const randomStats = (level: number) => {
 		const stats = ['attack', 'defense', 'speed', 'health', 'mana'];
 		let values = Array(stats.length).fill(0);
@@ -163,6 +167,8 @@ export namespace Potato {
 			reason: text('reason').notNull()
 		}
 	});
+
+	structRegistry.register(Log);
 
 	export type FriendData = typeof Friend.sample;
 
