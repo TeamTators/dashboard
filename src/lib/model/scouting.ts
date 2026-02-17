@@ -567,6 +567,9 @@ export namespace Scouting {
 						});
 
 						return averages;
+					},
+					{
+						debug: true,
 					}
 				);
 			} else {
