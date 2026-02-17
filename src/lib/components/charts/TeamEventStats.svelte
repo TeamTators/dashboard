@@ -34,6 +34,7 @@ specific action (e.g., Level 1, Barge, Shallow Climb).
 	import { onMount } from 'svelte';
 	import { Trace, type P } from 'tatorscout/trace';
 	import { copyCanvas } from '$lib/utils/clipboard';
+	import { compliment } from '$lib/model/match-html';
 
 	/** Component props for `TeamEventStats`. */
 	interface Props {
@@ -49,7 +50,7 @@ specific action (e.g., Level 1, Barge, Shallow Climb).
 		matches: TBAMatch[];
 	}
 
-	let { team, staticY = $bindable(), scouting }: Props = $props();
+	let { team, staticY = $bindable(), scouting, event }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
@@ -64,309 +65,103 @@ specific action (e.g., Level 1, Barge, Shallow Climb).
 	 */
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
-	onMount(() => {
-		scouting.sort((a, b) => {
-			if (a.compLevel === b.compLevel) return Number(a.matchNumber) - Number(b.matchNumber);
-			const order = ['qm', 'qf', 'sf', 'f'];
-			return order.indexOf(String(a.compLevel)) - order.indexOf(String(b.compLevel));
+	const datasets = $derived(scouting.derive(matches => {
+		const yearInfo = Scouting.getYearInfo(event.tba.year);
+		if (yearInfo.isErr()) {
+			return [];
+		}
+
+		const actions = yearInfo.value.actions;
+		const colors = compliment(Object.keys(actions).length);
+
+		const parsed = matches.map(m  => yearInfo.value.parse(m.data.trace));
+	
+		return Object.entries(actions).map(([key, name], i) => {
+			let minAuto = Infinity;
+			let maxAuto = -Infinity;
+			let avgAuto = 0;
+			let minTele = Infinity;
+			let maxTele = -Infinity;
+			let avgTele = 0;
+			let minEnd = Infinity;
+			let maxEnd = -Infinity;
+			let avgEnd = 0;
+
+			for (const m of parsed) {
+				const auto = m.auto[key as keyof typeof m.auto] || 0;
+				const tele = m.teleop[key as keyof typeof m.teleop] || 0;
+				const end = m.endgame[key as keyof typeof m.endgame] || 0;
+
+				minAuto = Math.min(minAuto, auto);
+				maxAuto = Math.max(maxAuto, auto);
+				avgAuto += auto;
+
+				minTele = Math.min(minTele, tele);
+				maxTele = Math.max(maxTele, tele);
+				avgTele += tele;
+
+				minEnd = Math.min(minEnd, end);
+				maxEnd = Math.max(maxEnd, end);
+				avgEnd += end;
+			}
+
+			avgAuto /= parsed.length;
+			avgTele /= parsed.length;
+			avgEnd /= parsed.length;
+
+			return {
+				label: name,
+				data: [minAuto, avgAuto, maxAuto, minTele, avgTele, maxTele, minEnd, avgEnd, maxEnd],
+				backgroundColor: colors[i].clone().setAlpha(0.3).toString('rgba'),
+				borderColor: colors[i].clone().setAlpha(0.7).toString('rgba'),
+				borderWidth: 1,
+			};
 		});
+	}));
 
-		return scouting.subscribe(async (data) => {
-			if (chart) chart.destroy();
-			try {
-				const counts = data.map((s) => {
-					const sectionCounts = s.trace.points.reduce(
-						(acc, curr) => {
-							if (!curr[3]) return acc;
-							const section = Trace.getSection(curr as P);
-							if (!section) {
-								return acc;
-							}
-							if (!acc[section]) acc[section] = {};
-							acc[section][curr[3] as string] = (acc[section][curr[3] as string] || 0) + 1;
-							return acc;
-						},
-						{ auto: {}, teleop: {}, endgame: {} } as Record<
-							'auto' | 'teleop' | 'endgame',
-							Record<string, number>
-						>
-					);
+	const render = () => {
+		if (chart) chart.destroy();
+		
+		const chartLabels = [
+			'Min Auto',
+			'Avg Auto',
+			'Max Auto',
+			'Min Tele',
+			'Avg Tele',
+			'Max Tele',
+			'Min End',
+			'Avg End',
+			'Max End'
+		];
 
-					return {
-						autoCounts: sectionCounts.auto,
-						teleopCounts: sectionCounts.teleop,
-						endgameCounts: sectionCounts.endgame
-					};
-				});
-
-				const calculateAverage = (numbers: number[]) => {
-					return numbers.reduce((acc, n) => acc + n, 0) / numbers.length;
-				};
-
-				const chartColors = [
-					'rgba(255, 99, 132, 0.2)',
-					'rgba(54, 162, 235, 0.2)',
-					'rgba(255, 206, 86, 0.2)',
-					'rgba(75, 192, 192, 0.2)',
-					'rgba(153, 102, 255, 0.2)',
-					'rgba(255, 159, 64, 0.2)',
-					'rgba(201, 203, 207, 0.2)',
-					'rgba(100, 149, 237, 0.2)',
-					'rgba(255, 215, 0, 0.2)'
-				];
-
-				const chartBorderColors = [
-					'rgba(255, 99, 132, 1)',
-					'rgba(54, 162, 235, 1)',
-					'rgba(255, 206, 86, 1)',
-					'rgba(75, 192, 192, 1)',
-					'rgba(153, 102, 255, 1)',
-					'rgba(255, 159, 64, 1)',
-					'rgba(201, 203, 207, 1)',
-					'rgba(100, 149, 237, 1)',
-					'rgba(255, 215, 0, 1)'
-				];
-
-				const actionDatasets = [
-					{
-						label: 'Level 1',
-						data: [
-							Math.min(...counts.map((c) => c.autoCounts.cl1 || 0)),
-							calculateAverage(counts.map((c) => c.autoCounts.cl1 || 0)),
-							Math.max(...counts.map((c) => c.autoCounts.cl1 || 0)),
-							Math.min(...counts.map((c) => c.teleopCounts.cl1 || 0)),
-							calculateAverage(counts.map((c) => c.teleopCounts.cl1 || 0)),
-							Math.max(...counts.map((c) => c.teleopCounts.cl1 || 0)),
-							0,
-							0,
-							0,
-							Math.min(...counts.map((c) => (c.autoCounts.cl1 || 0) + (c.teleopCounts.cl1 || 0))),
-							calculateAverage(
-								counts.map((c) => (c.autoCounts.cl1 || 0) + (c.teleopCounts.cl1 || 0))
-							),
-							Math.max(...counts.map((c) => (c.autoCounts.cl1 || 0) + (c.teleopCounts.cl1 || 0)))
-						],
-						backgroundColor: chartColors[0],
-						borderColor: chartBorderColors[0],
-						borderWidth: 1
+		chart = new Chart(canvas, {
+			type: 'bar',
+			data: {
+				labels: chartLabels,
+				datasets: datasets.data
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					y: {
+						beginAtZero: true,
+						stacked: true
 					},
-					{
-						label: 'Level 2',
-						data: [
-							Math.min(...counts.map((c) => c.autoCounts.cl2 || 0)),
-							calculateAverage(counts.map((c) => c.autoCounts.cl2 || 0)),
-							Math.max(...counts.map((c) => c.autoCounts.cl2 || 0)),
-							Math.min(...counts.map((c) => c.teleopCounts.cl2 || 0)),
-							calculateAverage(counts.map((c) => c.teleopCounts.cl2 || 0)),
-							Math.max(...counts.map((c) => c.teleopCounts.cl2 || 0)),
-							0,
-							0,
-							0,
-							Math.min(...counts.map((c) => (c.autoCounts.cl2 || 0) + (c.teleopCounts.cl2 || 0))),
-							calculateAverage(
-								counts.map((c) => (c.autoCounts.cl2 || 0) + (c.teleopCounts.cl2 || 0))
-							),
-							Math.max(...counts.map((c) => (c.autoCounts.cl2 || 0) + (c.teleopCounts.cl2 || 0)))
-						],
-						backgroundColor: chartColors[1],
-						borderColor: chartBorderColors[1],
-						borderWidth: 1
-					},
-					{
-						label: 'Level 3',
-						data: [
-							Math.min(...counts.map((c) => c.autoCounts.cl3 || 0)),
-							calculateAverage(counts.map((c) => c.autoCounts.cl3 || 0)),
-							Math.max(...counts.map((c) => c.autoCounts.cl3 || 0)),
-							Math.min(...counts.map((c) => c.teleopCounts.cl3 || 0)),
-							calculateAverage(counts.map((c) => c.teleopCounts.cl3 || 0)),
-							Math.max(...counts.map((c) => c.teleopCounts.cl3 || 0)),
-							0,
-							0,
-							0,
-							Math.min(...counts.map((c) => (c.autoCounts.cl3 || 0) + (c.teleopCounts.cl3 || 0))),
-							calculateAverage(
-								counts.map((c) => (c.autoCounts.cl3 || 0) + (c.teleopCounts.cl3 || 0))
-							),
-							Math.max(...counts.map((c) => (c.autoCounts.cl3 || 0) + (c.teleopCounts.cl3 || 0)))
-						],
-						backgroundColor: chartColors[2],
-						borderColor: chartBorderColors[2],
-						borderWidth: 1
-					},
-					{
-						label: 'Level 4',
-						data: [
-							Math.min(...counts.map((c) => c.autoCounts.cl4 || 0)),
-							calculateAverage(counts.map((c) => c.autoCounts.cl4 || 0)),
-							Math.max(...counts.map((c) => c.autoCounts.cl4 || 0)),
-							Math.min(...counts.map((c) => c.teleopCounts.cl4 || 0)),
-							calculateAverage(counts.map((c) => c.teleopCounts.cl4 || 0)),
-							Math.max(...counts.map((c) => c.teleopCounts.cl4 || 0)),
-							0,
-							0,
-							0,
-							Math.min(...counts.map((c) => (c.autoCounts.cl4 || 0) + (c.teleopCounts.cl4 || 0))),
-							calculateAverage(
-								counts.map((c) => (c.autoCounts.cl4 || 0) + (c.teleopCounts.cl4 || 0))
-							),
-							Math.max(...counts.map((c) => (c.autoCounts.cl4 || 0) + (c.teleopCounts.cl4 || 0)))
-						],
-						backgroundColor: chartColors[3],
-						borderColor: chartBorderColors[3],
-						borderWidth: 1
-					},
-					{
-						label: 'Barge',
-						data: [
-							Math.min(...counts.map((c) => c.autoCounts.brg || 0)),
-							calculateAverage(counts.map((c) => c.autoCounts.brg || 0)),
-							Math.max(...counts.map((c) => c.autoCounts.brg || 0)),
-							Math.min(...counts.map((c) => c.teleopCounts.brg || 0)),
-							calculateAverage(counts.map((c) => c.teleopCounts.brg || 0)),
-							Math.max(...counts.map((c) => c.teleopCounts.brg || 0)),
-							0,
-							0,
-							0,
-							Math.min(...counts.map((c) => (c.autoCounts.brg || 0) + (c.teleopCounts.brg || 0))),
-							calculateAverage(
-								counts.map((c) => (c.autoCounts.brg || 0) + (c.teleopCounts.brg || 0))
-							),
-							Math.max(...counts.map((c) => (c.autoCounts.brg || 0) + (c.teleopCounts.brg || 0)))
-						],
-						backgroundColor: chartColors[4],
-						borderColor: chartBorderColors[4],
-						borderWidth: 1
-					},
-					{
-						label: 'Processor',
-						data: [
-							Math.min(...counts.map((c) => c.autoCounts.prc || 0)),
-							calculateAverage(counts.map((c) => c.autoCounts.prc || 0)),
-							Math.max(...counts.map((c) => c.autoCounts.prc || 0)),
-							Math.min(...counts.map((c) => c.teleopCounts.prc || 0)),
-							calculateAverage(counts.map((c) => c.teleopCounts.prc || 0)),
-							Math.max(...counts.map((c) => c.teleopCounts.prc || 0)),
-							0,
-							0,
-							0,
-							Math.min(...counts.map((c) => (c.autoCounts.prc || 0) + (c.teleopCounts.prc || 0))),
-							calculateAverage(
-								counts.map((c) => (c.autoCounts.prc || 0) + (c.teleopCounts.prc || 0))
-							),
-							Math.max(...counts.map((c) => (c.autoCounts.prc || 0) + (c.teleopCounts.prc || 0)))
-						],
-						backgroundColor: chartColors[5],
-						borderColor: chartBorderColors[5],
-						borderWidth: 1
-					},
-					{
-						label: 'Shallow Climb',
-						data: [
-							0, // auto
-							0, // auto
-							0, // auto
-							0, // tele
-							0, // tele
-							0, // tele
-							Math.min(...counts.map((c) => c.endgameCounts.shc || 0)),
-							calculateAverage(counts.map((c) => c.endgameCounts.shc || 0)),
-							Math.max(...counts.map((c) => c.endgameCounts.shc || 0)),
-							Math.min(...counts.map((c) => c.endgameCounts.shc || 0)),
-							calculateAverage(counts.map((c) => c.endgameCounts.shc || 0)),
-							Math.max(...counts.map((c) => c.endgameCounts.shc || 0))
-						],
-						backgroundColor: chartColors[6],
-						borderColor: chartBorderColors[6],
-						borderWidth: 1
-					},
-					{
-						label: 'Deep Climb',
-						data: [
-							0, // auto
-							0, // auto
-							0, // auto
-							0, // tele
-							0, // tele
-							0, // tele
-							Math.min(...counts.map((c) => c.endgameCounts.dpc || 0)),
-							calculateAverage(counts.map((c) => c.endgameCounts.dpc || 0)),
-							Math.max(...counts.map((c) => c.endgameCounts.dpc || 0)),
-							Math.min(...counts.map((c) => c.endgameCounts.dpc || 0)),
-							calculateAverage(counts.map((c) => c.endgameCounts.dpc || 0)),
-							Math.max(...counts.map((c) => c.endgameCounts.dpc || 0))
-						],
-						backgroundColor: chartColors[7],
-						borderColor: chartBorderColors[7],
-						borderWidth: 1
-					},
-					{
-						label: 'Parked',
-						data: [
-							0, // auto
-							0, // auto
-							0, // auto
-							0, // tele
-							0, // tele
-							0, // tele
-							Math.min(...counts.map((c) => c.endgameCounts.prk || 0)),
-							calculateAverage(counts.map((c) => c.endgameCounts.prk || 0)),
-							Math.max(...counts.map((c) => c.endgameCounts.prk || 0)),
-							Math.min(...counts.map((c) => c.endgameCounts.prk || 0)),
-							calculateAverage(counts.map((c) => c.endgameCounts.prk || 0)),
-							Math.max(...counts.map((c) => c.endgameCounts.prk || 0))
-						],
-						backgroundColor: chartColors[8],
-						borderColor: chartBorderColors[8],
-						borderWidth: 1
+					x: {
+						stacked: true
 					}
-				];
-
-				for (let i = 0; i < actionDatasets.length; i++) {
-					actionDatasets[i].backgroundColor = chartColors[i];
-					actionDatasets[i].borderColor = chartBorderColors[i];
-					actionDatasets[i].borderWidth = 1;
 				}
-
-				const chartLabels = [
-					'Min Auto',
-					'Avg Auto',
-					'Max Auto',
-					'Min Tele',
-					'Avg Tele',
-					'Max Tele',
-					'Min End',
-					'Avg End',
-					'Max End',
-					'Min Total',
-					'Avg Total',
-					'Max Total'
-				];
-
-				chart = new Chart(canvas, {
-					type: 'bar',
-					data: {
-						labels: chartLabels,
-						datasets: actionDatasets
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						scales: {
-							y: {
-								beginAtZero: true,
-								stacked: true
-							},
-							x: {
-								stacked: true
-							}
-						}
-					}
-				});
-			} catch (error) {
-				console.error(`Error generating progress chart for team ${team.tba.team_number}:`, error);
 			}
 		});
+	};
+
+	onMount(() => {
+		const unsub = datasets.subscribe(render);
+		return () => {
+			unsub();
+			if (chart) chart.destroy();
+		};
 	});
 </script>
 

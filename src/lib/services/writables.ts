@@ -5,7 +5,6 @@
  * import { WritableBase } from '$lib/services/writables';
  * const store = new WritableBase(0);
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Subscriber, Unsubscriber, Writable } from 'svelte/store';
 import { attempt, attemptAsync, debounce, ResultPromise } from 'ts-utils';
 import deepEqual from 'fast-deep-equal';
@@ -599,15 +598,19 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 */
 	map<U>(fn: (item: T) => U, reactive = true) {
 		const mapped = new WritableArray<U>(this.data.map(fn));
-		// Copy filter, sort, and reverse settings
-		(mapped as any)._filter = this._filter as any;
-		(mapped as any)._sort = this._sort as any;
-		(mapped as any)._reverse = this._reverse;
-
 		if (reactive) {
-			mapped.pipeData(this, (arr) => arr.map(fn));
+			mapped.pipeData(this, (arr) => {
+				const copy = [
+				...arr
+			];
+			if (this._reverse) {
+				copy.reverse();
+			}
+			return copy.filter(this._filter)
+			.sort(this._sort)
+			.map(fn);
+			});
 		}
-
 		return mapped;
 	}
 

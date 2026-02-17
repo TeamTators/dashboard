@@ -444,6 +444,13 @@ export namespace Scouting {
 				const data = arr instanceof DataArr ? arr.data : arr;
 				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
 				const extendedArr = new MatchScoutingExtendedArr(ms);
+				const compLevels = ['pr', 'qm', 'qf', 'sf', 'f'];
+				extendedArr.sort((a, b) => {
+					if (a.compLevel === b.compLevel) {
+						return a.matchNumber - b.matchNumber;
+					}
+					return compLevels.indexOf(String(a.compLevel)) - compLevels.indexOf(String(b.compLevel));
+				});
 				if (arr instanceof DataArr) {
 					extendedArr.pipeData(arr, (data) => {
 						return data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
@@ -567,9 +574,6 @@ export namespace Scouting {
 						});
 
 						return averages;
-					},
-					{
-						debug: true,
 					}
 				);
 			} else {
