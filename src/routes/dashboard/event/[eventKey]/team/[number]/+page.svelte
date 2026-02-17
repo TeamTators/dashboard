@@ -849,7 +849,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			</Card>
 			<Card card={actionHeatmap}>
 				{#snippet body()}
-					<ActionHeatmap scouting={scoutingArr} year={event.tba.year} doButtons={true} bind:this={hm} />
+					<ActionHeatmap scouting={scoutingArr} year={event.tba.year} doButtons={true} />
 				{/snippet}
 			</Card>
 		{/key}

@@ -16,7 +16,7 @@ Lets users select teams and compare scouting data with charts.
 	import EventSummary from '$lib/components/robot-display/EventSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
-	import { WritableArray } from '$lib/services/writables.js';
+	import { WritableArray, WritableBase } from '$lib/services/writables.js';
 	import { page } from '$app/state';
 	import RadarCapabilityChart from '$lib/components/charts/RadarCapabilityChart.svelte';
 
@@ -37,8 +37,24 @@ Lets users select teams and compare scouting data with charts.
 	);
 	const teams = $derived(data.teams);
 	const matches = $derived(data.matches);
+	let yearActions : WritableBase<Record<string, string>> = new WritableBase({});
+	let activeActions:WritableBase<string[]> = new WritableBase([""]);
 
-	$effect(() => nav(event.tba));
+	let hm:ActionHeatmap<string> | undefined = $state(undefined);
+	activeActions.subscribe(() => {
+		hm?.filter(...activeActions.data);
+	})
+
+	$effect(() => {
+		nav(event.tba)
+		const res = Scouting.getYearInfo(event.tba.year);
+		if (res.isOk()) {
+			yearActions.data = res.value.actions;
+			console.log(yearActions);
+		} else {
+			console.log("No year found") // TODO: I dont know what to put here
+		}
+	});
 
 	let scroller: HTMLDivElement;
 	let staticY = $state(0);
@@ -195,6 +211,27 @@ Lets users select teams and compare scouting data with charts.
 				</div>
 			</div>
 		</div>
+		{#if view === "action"}
+			{#each Object.entries($yearActions) as [action, name]}
+				<input
+					type="checkbox"
+					class="btn-check"
+					id="btn-check-{action}"
+					autocomplete="off"
+					checked={$activeActions.includes(action)}
+					onchange= {() => {
+						activeActions.update(a => {
+							if (a.includes(action)) {
+								return a.filter(i => i !== action)
+							} else {
+								return [...a, action]
+							}
+						})
+					}}
+				/>
+				<label class="btn btn-outline-primary me-2" for="btn-check-{action}">{name}</label>
+			{/each}
+		{/if}
 		<div class="row mb-3">
 			{#each $selectedTeams as team (team.team.tba.team_number)}
 				<div class="col-md-4 mb-3">
@@ -235,7 +272,7 @@ Lets users select teams and compare scouting data with charts.
 								{:else if view === 'checkSum'}
 									<ChecksSummary scouting={team.data} />
 								{:else if view === 'action'}
-									<ActionHeatmap scouting={team.data} year={event.tba.year} />
+									<ActionHeatmap scouting={team.data} year={event.tba.year} doButtons={false} bind:this={hm}/>
 								{:else}
 									<TeamEventStats
 										bind:this={team.component}
