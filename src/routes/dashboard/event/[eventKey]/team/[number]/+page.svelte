@@ -48,6 +48,52 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 
+	onMount(() => {
+		const offScouting = listen(
+			scouting,
+			(d) => d.data.eventKey === event.tba.key && d.data.team === team.tba.team_number
+		);
+		const offComments = listen(
+			comments,
+			(d) => d.data.team === team.tba.team_number && d.data.eventKey === event.tba.key
+		);
+		const offAnswers = listen(
+			answers,
+			(d) =>
+				d.data.team === team.tba.team_number &&
+				!!questions.data.find((q) => q.data.id === d.data.questionId)
+		);
+		const offQuestions = listen(
+			questions,
+			(d) => !!groups.data.find((s) => s.data.id === d.data.groupId)
+		);
+		const offGroups = listen(
+			groups,
+			(d) => !!sections.data.find((s) => s.data.id === d.data.sectionId)
+		);
+		const offSections = listen(sections, (d) => d.data.eventKey === event.tba.key);
+		const offPictures = listen(
+			pictures,
+			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
+		);
+
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		if (res.isErr()) {
+			console.error('Failed to create extended scouting array:', res.error);
+		} else {
+			scoutingArr.set(res.value.data);
+		}
+		return () => {
+			offScouting();
+			offComments();
+			offAnswers();
+			offQuestions();
+			offGroups();
+			offSections();
+			offPictures();
+		};
+	});
+
 	$effect(() => nav(event.tba));
 
 	const summary = new Dashboard.Card({
@@ -572,51 +618,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		}
 	});
 
-	onMount(() => {
-		const offScouting = listen(
-			scouting,
-			(d) => d.data.eventKey === event.tba.key && d.data.team === team.tba.team_number
-		);
-		const offComments = listen(
-			comments,
-			(d) => d.data.team === team.tba.team_number && d.data.eventKey === event.tba.key
-		);
-		const offAnswers = listen(
-			answers,
-			(d) =>
-				d.data.team === team.tba.team_number &&
-				!!questions.data.find((q) => q.data.id === d.data.questionId)
-		);
-		const offQuestions = listen(
-			questions,
-			(d) => !!groups.data.find((s) => s.data.id === d.data.groupId)
-		);
-		const offGroups = listen(
-			groups,
-			(d) => !!sections.data.find((s) => s.data.id === d.data.sectionId)
-		);
-		const offSections = listen(sections, (d) => d.data.eventKey === event.tba.key);
-		const offPictures = listen(
-			pictures,
-			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
-		);
 
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
-		if (res.isErr()) {
-			console.error('Failed to create extended scouting array:', res.error);
-		} else {
-			scoutingArr.set(res.value.data);
-		}
-		return () => {
-			offScouting();
-			offComments();
-			offAnswers();
-			offQuestions();
-			offGroups();
-			offSections();
-			offPictures();
-		};
-	});
 
 	let progressChart: Progress | undefined = $state(undefined);
 	let teamEventStatsChart: TeamEventStats | undefined = $state(undefined);
