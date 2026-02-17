@@ -24,19 +24,29 @@
 	let max = $derived(yearOpts[team.event.tba.year][1] ?? 10);
 	const data = $derived(scouting.averageContribution(year, true));
 
+	/**
+	 * Copy the chart to the clipboard.
+	 * @param notify Whether to show a notification after copying.
+	 * @example
+	 * ```ts
+	 * chartRef.copy(true);
+	 * ```
+	 */
 	export const copy = (notify: boolean) => {
-		chart.copy(notify);
+		chart?.copy(notify);
 	};
 
-	let chart: RadarChart<Record<string, number>>;
+	let chart: RadarChart<Record<string, number>> | undefined = $state(undefined);
 </script>
 
-<RadarChart
-	bind:this={chart}
-	{team}
-	{data}
-	opts={{
-		min,
-		max
-	}}
-/>
+{#key data}
+	<RadarChart
+		bind:this={chart}
+		{team}
+		{data}
+		opts={{
+			min,
+			max
+		}}
+	/>
+{/key}

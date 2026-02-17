@@ -22,10 +22,10 @@ Lets users select teams and compare scouting data with charts.
 	import { compliment } from '$lib/model/match-html';
 
 	type TeamConfig = {
-			team: TBATeam;
-			component: Progress | TeamEventStats | ActionHeatmap<string> | undefined;
-			data: Scouting.MatchScoutingExtendedArr;
-	}
+		team: TBATeam;
+		component: Progress | TeamEventStats | ActionHeatmap<string> | undefined;
+		data: Scouting.MatchScoutingExtendedArr;
+	};
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -40,27 +40,38 @@ Lets users select teams and compare scouting data with charts.
 	);
 	const teams = $derived(data.teams);
 	const matches = $derived(data.matches);
-	const yearActions = new WritableBase<Record<string, {
-		name: string;
-		color: string;
-	}>>({});
-	const activeActions = new WritableArray<string>(page.url.searchParams.getAll('actions').filter(Boolean));
+	const yearActions = new WritableBase<
+		Record<
+			string,
+			{
+				name: string;
+				color: string;
+			}
+		>
+	>({});
+	const activeActions = new WritableArray<string>(
+		page.url.searchParams.getAll('actions').filter(Boolean)
+	);
 
 	$effect(() => {
-		nav(event.tba)
+		nav(event.tba);
 		const res = Scouting.getYearInfo(event.tba.year);
 		if (res.isOk()) {
 			const colors = compliment(Object.values(res.value.actions).length);
-			yearActions.set(Object.fromEntries(Object.entries(res.value.actions).map(([key, value], i) => [
-				key,
-				{
-					name: value,
-					color: colors[i].clone().setAlpha(0.5).toString('rgba')
-				}
-			])))
+			yearActions.set(
+				Object.fromEntries(
+					Object.entries(res.value.actions).map(([key, value], i) => [
+						key,
+						{
+							name: value,
+							color: colors[i].clone().setAlpha(0.5).toString('rgba')
+						}
+					])
+				)
+			);
 			console.log(yearActions);
 		} else {
-			console.log("No year found") // TODO: I dont know what to put here
+			console.log('No year found'); // TODO: I dont know what to put here
 		}
 	});
 
@@ -141,7 +152,7 @@ Lets users select teams and compare scouting data with charts.
 	<div class="container-fluid">
 		<div class="row mb-3">
 			<div class="d-flex align-items-center">
-				<h1>Compare Teams: { $selectedTeams.map(t => t.team.tba.team_number).join(', ') }</h1>
+				<h1>Compare Teams: {$selectedTeams.map((t) => t.team.tba.team_number).join(', ')}</h1>
 			</div>
 		</div>
 		<div class="row mb-3">
@@ -234,30 +245,34 @@ Lets users select teams and compare scouting data with charts.
 				<label class="btn btn-outline-primary h-min" for="action-view">Action Heatmap</label>
 			</div>
 		</div>
-			{#if view === "action"}
-		<div class="row mb-3">
+		{#if view === 'action'}
+			<div class="row mb-3">
 				{#each Object.entries($yearActions) as [action, { name, color }]}
-				<div class="col-auto">
-					<input
-						type="checkbox"
-						class="btn-check w-100"
-						id="btn-check-{action}"
-						autocomplete="off"
-						checked={$activeActions.includes(action)}
-						onchange= {() => {
-							activeActions.toggle(action);
-							runSearchParams();
-						}}
-					/>
-					<label class="btn me-2 w-100" style="
+					<div class="col-auto">
+						<input
+							type="checkbox"
+							class="btn-check w-100"
+							id="btn-check-{action}"
+							autocomplete="off"
+							checked={$activeActions.includes(action)}
+							onchange={() => {
+								activeActions.toggle(action);
+								runSearchParams();
+							}}
+						/>
+						<label
+							class="btn me-2 w-100"
+							style="
 						background-color: {color};
 						color: 'black';
 					}}
-					" for="btn-check-{action}">{name}</label>
-				</div>
+					"
+							for="btn-check-{action}">{name}</label
+						>
+					</div>
 				{/each}
-		</div>
-			{/if}
+			</div>
+		{/if}
 		<div class="row mb-3">
 			{#each $selectedTeams as team (team.team.tba.team_number)}
 				<div class="col-md-4 mb-3">
@@ -298,11 +313,16 @@ Lets users select teams and compare scouting data with charts.
 								{:else if view === 'checkSum'}
 									<ChecksSummary scouting={team.data} />
 								{:else if view === 'action'}
-									<ActionHeatmap init={(hm) => {
-										return activeActions.subscribe((actions) => {
-											hm.filter(...actions);
-										});
-									}} scouting={team.data} year={event.tba.year} doButtons={false}/>
+									<ActionHeatmap
+										init={(hm) => {
+											return activeActions.subscribe((actions) => {
+												hm.filter(...actions);
+											});
+										}}
+										scouting={team.data}
+										year={event.tba.year}
+										doButtons={false}
+									/>
 								{:else}
 									<TeamEventStats
 										bind:this={team.component}

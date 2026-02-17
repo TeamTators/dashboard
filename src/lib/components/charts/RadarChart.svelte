@@ -97,7 +97,7 @@ numeric score for the current team. Optional min/max bounds can be provided for 
 						}
 					}
 				},
-				responsive: true,
+				responsive: true
 			}
 		});
 	};

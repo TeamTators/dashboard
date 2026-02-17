@@ -76,7 +76,7 @@ export namespace Scouting {
 			sliders: 'string'
 		},
 		socket: sse,
-		browser,
+		browser
 	});
 
 	/**
@@ -444,6 +444,13 @@ export namespace Scouting {
 				const data = arr instanceof DataArr ? arr.data : arr;
 				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
 				const extendedArr = new MatchScoutingExtendedArr(ms);
+				const compLevels = ['pr', 'qm', 'qf', 'sf', 'f'];
+				extendedArr.sort((a, b) => {
+					if (a.compLevel === b.compLevel) {
+						return a.matchNumber - b.matchNumber;
+					}
+					return compLevels.indexOf(String(a.compLevel)) - compLevels.indexOf(String(b.compLevel));
+				});
 				if (arr instanceof DataArr) {
 					extendedArr.pipeData(arr, (data) => {
 						return data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
@@ -549,29 +556,24 @@ export namespace Scouting {
 		): WritableBase<Record<string, number>>;
 		averageContribution(year: number, reactive: boolean, actionLabels = true) {
 			if (reactive) {
-				return this.derive(
-					(data) => {
-						const totals: Record<string, number> = {};
-						for (const ms of data) {
-							const contrib = ms.getContribution(year, false, actionLabels);
-							if (contrib.isErr()) continue;
-							Object.entries(contrib.value).forEach(([key, value]) => {
-								totals[key] = (totals[key] || 0) + value;
-							});
-						}
-
-						const count = data.length;
-						const averages: Record<string, number> = {};
-						Object.entries(totals).forEach(([key, value]) => {
-							averages[key] = value / count;
+				return this.derive((data) => {
+					const totals: Record<string, number> = {};
+					for (const ms of data) {
+						const contrib = ms.getContribution(year, false, actionLabels);
+						if (contrib.isErr()) continue;
+						Object.entries(contrib.value).forEach(([key, value]) => {
+							totals[key] = (totals[key] || 0) + value;
 						});
-
-						return averages;
-					},
-					{
-						debug: true,
 					}
-				);
+
+					const count = data.length;
+					const averages: Record<string, number> = {};
+					Object.entries(totals).forEach(([key, value]) => {
+						averages[key] = value / count;
+					});
+
+					return averages;
+				});
 			} else {
 				return attempt(() => {
 					const totals: Record<string, number> = {};
