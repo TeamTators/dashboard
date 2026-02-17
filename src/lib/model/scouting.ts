@@ -77,7 +77,6 @@ export namespace Scouting {
 		},
 		socket: sse,
 		browser,
-		log: true
 	});
 
 	/**
@@ -568,9 +567,6 @@ export namespace Scouting {
 						});
 
 						return averages;
-					},
-					{
-						debug: true
 					}
 				);
 			} else {

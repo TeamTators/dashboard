@@ -34,6 +34,7 @@ actions and access the resolved action list.
 		year: number;
 		/** Whether to display action buttons. */
 		doButtons: boolean;
+		init?: (heatmap: ActionHeatmap<Actions>) => (() => void) | void;
 	}
 
 	let actions: Actions[] = $state([]);
@@ -48,9 +49,9 @@ actions and access the resolved action list.
 	 */
 	export const getActions = () => actions;
 
-	const { scouting, year, doButtons }: Props = $props();
+	const { scouting, year, doButtons, init }: Props = $props();
 
-	const h = $derived(new ActionHeatmap(scouting, year, { doButtons }));
+	const h = $derived(new ActionHeatmap<Actions>(scouting, year, { doButtons }));
 
 	/**
 	 * Filter the heatmap to only show the provided actions.
@@ -67,7 +68,12 @@ actions and access the resolved action list.
 	let target: HTMLDivElement;
 
 	onMount(() => {
-		return h.init(target);
+		const unsub = init?.(h);
+		const deinit = h.init(target);
+		return () => {
+			unsub?.();
+			deinit?.();
+		};
 	});
 </script>
 

@@ -484,10 +484,10 @@ export class ActionHeatmap<A extends string> {
 	}
 
 	/**
-	 * Pending animation timeouts used for staggered rendering.
-	 * @type {ReturnType<typeof setTimeout>[]}
+	 * Pending animation frames used for staggered rendering.
+	 * @type {{ id: number }[]}
 	 */
-	private readonly timeouts: ReturnType<typeof setTimeout>[] = [];
+	private readonly timeouts: { id: number }[] = [];
 
 	/**
 	 * Clears and rebuilds the heatmap UI and action markers.
@@ -497,9 +497,9 @@ export class ActionHeatmap<A extends string> {
 		if (!this.target) throw new Error('ActionHeatmap is not initialized');
 		if (!this.yearInfo) throw new Error("ActionHeatmap doesn't have yearInfo");
 		for (const to of this.timeouts) {
-			clearTimeout(to);
-			this.timeouts.splice(this.timeouts.indexOf(to), 1);
+			cancelAnimationFrame(to.id);
 		}
+		this.timeouts.length = 0;
 		this.target.querySelectorAll('.heatmap-item').forEach((a) => a.remove());
 			const container = document.createElement('div');
 			container.classList.add('heatmap-item');
@@ -629,12 +629,22 @@ export class ActionHeatmap<A extends string> {
 				actionEl.title = this.yearInfo.actions[a as A];
 				actionEl.classList.add('hover-grow', 'hover-grow-xl', 'no-select');
 
-				const to = setTimeout(() => {
-					imgContainer.appendChild(actionEl);
-					this.timeouts.splice(this.timeouts.indexOf(to), 1);
-				}, i * 2);
+				const delay = i * 3;
+				const start = performance.now();
+				const frame = { id: 0 };
+				const tick = (now: number) => {
+					if (now - start >= delay) {
+						imgContainer.appendChild(actionEl);
+						const index = this.timeouts.indexOf(frame);
+						if (index !== -1) this.timeouts.splice(index, 1);
+						return;
+					}
 
-				this.timeouts.push(to);
+					frame.id = requestAnimationFrame(tick);
+				};
+
+				frame.id = requestAnimationFrame(tick);
+				this.timeouts.push(frame);
 
 				const tt = Tooltip.getOrCreateInstance(actionEl);
 				tt.enable();
