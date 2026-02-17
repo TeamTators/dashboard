@@ -5,13 +5,14 @@
  */
 
 import { expect, test, describe } from 'vitest';
-import { summarize } from '$lib/server/utils/google-summary';
+import { summarize as summarize2025 } from '$lib/server/utils/google-summary/2025';
+import { summarize as summarize2026 } from '$lib/server/utils/google-summary/2026';
 import { DB } from '$lib/server/db';
 import { resolveAll } from 'ts-utils/check';
 import { TBA } from '$lib/server/structs/TBA';
 import { Scouting } from '$lib/server/structs/scouting';
 
-describe('Run google summary on 2025utwv', async () => {
+describe('Multi Year Google Summary', async () => {
 	resolveAll(
 		await Promise.all([
 			TBA.Requests.build(DB),
@@ -26,8 +27,12 @@ describe('Run google summary on 2025utwv', async () => {
 			Scouting.PIT.Sections.build(DB)
 		])
 	).unwrap();
-	test('Google summary', async () => {
-		const res = await (await summarize('2025utwv')).unwrap().serialize();
+	test('Summary for 2025utwv', async () => {
+		const res = await (await summarize2025('2025utwv')).unwrap().serialize();
 		expect(res.isOk()).toBe(true);
 	}, 60_000);
+	test('Summary for 2026idbo', async () => {
+		const res  = await (await summarize2026('2026idbo')).unwrap().serialize();
+		expect(res.isOk()).toBe(true);
+	});
 });

@@ -8,6 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import { teamsFromMatch } from 'tatorscout/tba';
 import YearInfo2026 from 'tatorscout/years/2026.js';
 import { Table, memoize } from '.';
+import { FIRST } from '$lib/server/structs/FIRST';
 
 
 
@@ -16,8 +17,6 @@ export const summarize = (eventKey: string) => {
         const t = new Table(eventKey);
         const event = (await Event.getEvent(eventKey)).unwrap();
         const matches = (await event.getMatches()).unwrap();
-
-        if (event.tba.year !== 2025) throw new Error('Only 2025 events are currently supported');
 
         const cache = new Map<number, Scouting.MatchScoutingExtended[]>();
 
@@ -297,6 +296,61 @@ export const summarize = (eventKey: string) => {
             const scores = await getScores(t);
             return Math.max(...scores.endgame.map((s) => s.dpc + s.shc + s.park));
         });
+
+        // dynamic
+        for (const [key, name] of Object.entries(YearInfo2026.actions)) {
+            // average
+            // std dev
+            // max
+            t.column(`Average ${name} Auto Score`, async (t) => {
+                return getScores(t).then(scores => average(scores.traceScore.map(s => s.auto[key as keyof typeof s.auto] ?? 0)));
+            });
+            t.column(`Average ${name} Teleop Score`, async (t) => {
+                return getScores(t).then(scores => average(scores.traceScore.map(s => s.teleop[key as keyof typeof s.teleop] ?? 0)));
+            });
+            t.column(`Average ${name} Endgame Score`, async (t) => {
+                return getScores(t).then(scores => average(scores.traceScore.map(s => s.endgame[key as keyof typeof s.endgame] ?? 0)));
+            });
+            t.column(`StdDev ${name} Auto Score`, async (t) => {
+                return getScores(t).then(scores => standardDeviation(scores.traceScore.map(s => s.auto[key as keyof typeof s.auto] ?? 0)));
+            });
+            t.column(`StdDev ${name} Teleop Score`, async (t) => {
+                return getScores(t).then(scores => standardDeviation(scores.traceScore.map(s => s.teleop[key as keyof typeof s.teleop] ?? 0)));
+            });
+            t.column(`StdDev ${name} Endgame Score`, async (t) => {
+                return getScores(t).then(scores => standardDeviation(scores.traceScore.map(s => s.endgame[key as keyof typeof s.endgame] ?? 0)));
+            });
+            t.column(`Max ${name} Auto Score`, async (t) => {
+                return getScores(t).then(scores => Math.max(...scores.traceScore.map(s => s.auto[key as keyof typeof s.auto] ?? 0)));
+            });
+            t.column(`Max ${name} Teleop Score`, async (t) => {
+                return getScores(t).then(scores => Math.max(...scores.traceScore.map(s => s.teleop[key as keyof typeof s.teleop] ?? 0)));
+            });
+            t.column(`Max ${name} Endgame Score`, async (t) => {
+                return getScores(t).then(scores => Math.max(...scores.traceScore.map(s => s.endgame[key as keyof typeof s.endgame] ?? 0)));
+            });
+        }
+
+        // summary
+        const summary = await FIRST.getSummary(event.tba.key, 2026);
+
+        if (summary.isOk()) {
+            for (const [section, group] of Object.entries(summary.value.summary)) {
+                for (const question of Object.keys(group)) {
+                    t.column(`${section} - ${question}`, async (t) => {
+                        const data = summary.value.getTeam(t.tba.team_number);
+                        if (section in data) {
+                            const s = data[section as keyof typeof data];
+                                if (s && question in s) {
+                                    return s[question as keyof typeof s];
+                                }
+                        }
+                        return 'unknown';
+                    });
+                }
+            }
+        }
+
         return t;
     });
 };

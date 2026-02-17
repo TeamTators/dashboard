@@ -27,8 +27,6 @@ export const summarize = async (eventKey: string) => {
         const event = (await Event.getEvent(eventKey)).unwrap();
         const matches = (await event.getMatches()).unwrap();
 
-        if (event.tba.year !== 2025) throw new Error('Only 2025 events are currently supported');
-
         const cache = new Map<number, Scouting.MatchScoutingExtended[]>();
 
         const getAllScouting = async (team: Team) => {

@@ -125,7 +125,7 @@ export namespace FIRST {
 		return hash('sha256', canonical);
 	};
 
-	export const getSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
+	export const getSummary = <Year extends 2024 | 2025 | 2026>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
 			const res = await EventSummary.get(
 				{ eventKey: eventKey },
@@ -139,11 +139,17 @@ export namespace FIRST {
 					if (res.data.summaryHash === hash) {
 						return Summary2024.deserialize(res.data.summary).unwrap();
 					}
-				} else {
+				} else if (year === 2025) {
 					const hash = hashSummary(Summary2025);
 					if (res.data.summaryHash === hash) {
 						return Summary2025.deserialize(res.data.summary).unwrap();
 					}
+				} else if (year === 2026) {
+					throw new Error('2026 summary caching not yet implemented');
+					// const hash = hashSummary(Summary2026);
+					// if (res.data.summaryHash === hash) {
+					// 	return Summary2026.deserialize(res.data.summary).unwrap();
+					// }
 				}
 			}
 			const summary = await generateSummary(eventKey, year).unwrap();
