@@ -12,28 +12,32 @@ import type { Trace } from 'tatorscout/trace';
  * @param fn The function to apply to the score breakdown for the team's alliance. It receives the score breakdown for the alliance as an argument and should return a value of type T.
  * @returns The average of the values returned by the function for all matches.
  */
-const summariesViaTBA = <T, Match extends TBAMatch2025 | TBAMatch2026>(
+const summariesViaTBA = <Match extends TBAMatch2025 | TBAMatch2026>(
 	team: number,
 	matches: TBAMatch[],
 	matchSchema: z.ZodSchema<Match>,
-	fn: (data: Match['score_breakdown']['red'], position: number) => T
+	fn: (data: Match['score_breakdown']['red'], position: number) => number
 ) => {
-	const summaryData = matches.map((m) => {
+	return matches.map((m) => {
 		const parsed = matchSchema.parse(m);
 		const redPosition = m.alliances.red.team_keys.indexOf('frc' + team);
 		const bluePosition = m.alliances.blue.team_keys.indexOf('frc' + team);
 		const alliance = redPosition !== -1 ? 'red' : bluePosition !== -1 ? 'blue' : null;
 		const position = alliance === 'red' ? redPosition : alliance === 'blue' ? bluePosition : -1;
 		if (alliance && position !== -1) {
-			fn(parsed.score_breakdown[alliance], position);
+			return fn(parsed.score_breakdown[alliance], position);
 		}
 		return 0;
 	});
-	return Aggregators.average(summaryData);
 };
 
 const exapleSummary = summariesViaTBA(2122, [], Match2026Schema, (match, position) => {
-
+	const autoClimb = [
+		match.autoTowerRobot1,
+		match.autoTowerRobot2,
+		match.autoTowerRobot3
+	][position];
+	return 0;
 });
 
 
@@ -43,39 +47,48 @@ export default YearInfo2026.summary({
 			return Aggregators.average(data.scoring.map((d) => d.auto.hub1 + d.auto.hub5 + d.auto.hub10));
 		},
 		'Average Climb': (data) => {
-			const climbData = data.matches.map((m) => {
-				const parsed = YearInfo2026.parseMatch(m).unwrap();
-				const redPosition = m.alliances.red.team_keys.indexOf('frc' + data.team);
-				const bluePosition = m.alliances.blue.team_keys.indexOf('frc' + data.team);
-				const alliance = redPosition !== -1 ? 'red' : bluePosition !== -1 ? 'blue' : null;
-				const position = alliance === 'red' ? redPosition : alliance === 'blue' ? bluePosition : -1;
-				if (alliance && position !== -1) {
-					const autoClimb = [
-						parsed.score_breakdown[alliance].autoTowerRobot1,
-						parsed.score_breakdown[alliance].autoTowerRobot2,
-						parsed.score_breakdown[alliance].autoTowerRobot3
-					][position];
+			// const climbData = data.matches.map((m) => {
+			// 	const parsed = YearInfo2026.parseMatch(m).unwrap();
+			// 	const redPosition = m.alliances.red.team_keys.indexOf('frc' + data.team);
+			// 	const bluePosition = m.alliances.blue.team_keys.indexOf('frc' + data.team);
+			// 	const alliance = redPosition !== -1 ? 'red' : bluePosition !== -1 ? 'blue' : null;
+			// 	const position = alliance === 'red' ? redPosition : alliance === 'blue' ? bluePosition : -1;
+			// 	if (alliance && position !== -1) {
+			// 		const autoClimb = [
+			// 			parsed.score_breakdown[alliance].autoTowerRobot1,
+			// 			parsed.score_breakdown[alliance].autoTowerRobot2,
+			// 			parsed.score_breakdown[alliance].autoTowerRobot3
+			// 		][position];
 
-					// const endClimb = [
-					// 	parsed.score_breakdown[alliance].endgameTowerRobot1,
-					// 	parsed.score_breakdown[alliance].endgameTowerRobot2,
-					// 	parsed.score_breakdown[alliance].endgameTowerRobot3
-					// ][position];
+			// 		// const endClimb = [
+			// 		// 	parsed.score_breakdown[alliance].endgameTowerRobot1,
+			// 		// 	parsed.score_breakdown[alliance].endgameTowerRobot2,
+			// 		// 	parsed.score_breakdown[alliance].endgameTowerRobot3
+			// 		// ][position];
 
-					let points = 0;
-					if (autoClimb !== 'None') points += 15;
+			// 		let points = 0;
+			// 		if (autoClimb !== 'None') points += 15;
 
-					// const end = {
-					// 	'Level1': 10,
-					// 	'Level2': 20,
-					// 	'Level3': 30
-					// };
-					// if (endClimb in end) points += end[endClimb as keyof typeof end];
-					return points;
-				}
+			// 		// const end = {
+			// 		// 	'Level1': 10,
+			// 		// 	'Level2': 20,
+			// 		// 	'Level3': 30
+			// 		// };
+			// 		// if (endClimb in end) points += end[endClimb as keyof typeof end];
+			// 		return points;
+			// 	}
+			// 	return 0;
+			// });
+			const autoClimbData = summariesViaTBA(data.team, data.matches, Match2026Schema, (allianceData, position) => {
+				const autoClimb = [
+					allianceData.autoTowerRobot1,
+					allianceData.autoTowerRobot2,
+					allianceData.autoTowerRobot3,
+				][position];
+				if (autoClimb && autoClimb !== 'None') return 15;
 				return 0;
 			});
-			return Aggregators.average(climbData);
+			return Aggregators.average(autoClimbData);
 		},
 		'Average Total': (data) => 0
 	},
