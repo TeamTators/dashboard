@@ -159,6 +159,13 @@ Includes quick navigation across teams and links back to the robot display.
 								<h5 class="card-title">
 									{s.compLevel}{s.matchNumber} - {s.eventKey}
 								</h5>
+								<a
+									class="btn btn-sm btn-primary mb-2"
+									href={`/dashboard/event/${event.tba.key}/team/${team.tba.team_number}/match/${s.compLevel}/${s.matchNumber}`}
+								>
+									See Scouting Page
+								</a>
+
 								<Trace scouting={s} {focus} />
 							</div>
 						</div>
