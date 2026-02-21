@@ -66,7 +66,7 @@ specific action (e.g., Level 1, Barge, Shallow Climb).
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	const datasets = $derived(
-		scouting.derive((matches) => {
+		scouting.derived((matches) => {
 			const yearInfo = Scouting.getYearInfo(event.tba.year);
 			if (yearInfo.isErr()) {
 				return [];
