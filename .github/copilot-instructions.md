@@ -50,3 +50,5 @@
 - [Drizzle ORM](https://orm.drizzle.team/)
 - [TS Utils](https://github.com/tsaxking/ts-utils)
 - [Drizzle Struct](https://github.com/tsaxking/drizzle-struct)
+- [Tatorscout Utils](https://github.com/TeamTators/tatorscout-utils)
+- [Scouting App](https://github.com/TeamTators/scouting-app)

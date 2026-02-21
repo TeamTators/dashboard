@@ -186,9 +186,9 @@ export const createRole = command(
  * Determines whether `self` can manage `data.account` membership for `data.role`.
  *
  * @param {Account.AccountData} self - Acting account.
- * @param {object} data - Target data.
- * @param {Permissions.RoleData} data.role - Role being managed.
- * @param {Account.AccountData} data.account - Account being managed.
+ * @param {object} scouting - Target data.
+ * @param {Permissions.RoleData} scouting.role - Role being managed.
+ * @param {Account.AccountData} scouting.account - Account being managed.
  * @returns {Promise<true|string>} True if permitted, otherwise an error message.
  */
 const canManage = async (
