@@ -31,6 +31,21 @@ export class Comment extends WritableBase<CommentConfig> {
 		// make it look like a sticky note with a small triangle at the bottom right corner
 		container.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, 10px 100%, 0 100%)';
 
+        const renderText = () => {
+            const lines = this.data.text.trim().split('\n');
+            textEl.textContent = '';
+            for (const line of lines) {
+                if (!line.trim().length) {
+                    const br = document.createElement('br');
+                    textEl.appendChild(br);
+                    continue;
+                }
+                const lineEl = document.createElement('div');
+                lineEl.textContent = line;
+                textEl.appendChild(lineEl);
+            }
+        };
+
 		const renderPos = () => {
 			const {
 				position: [posX, posY],
@@ -43,17 +58,18 @@ export class Comment extends WritableBase<CommentConfig> {
 		};
 		renderPos();
 
-		const unsub = this.subscribe((config) => {
-			textEl.textContent = config.text;
+		const unsub = this.subscribe(() => {
+			renderText();
 		});
 
 		const ondblclick = async () => {
 			const res = await prompt('Edit comment text', {
-				default: this.data.text
+				default: this.data.text,
+                multiline: true,
 			});
 			if (!res) return;
 			this.update((config) => ({ ...config, text: res }));
-			renderPos();
+			renderText();
 		};
 
 		window.addEventListener('resize', renderPos);

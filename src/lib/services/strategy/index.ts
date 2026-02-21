@@ -157,7 +157,9 @@ export class Strategy extends WritableBase<StrategyConfig> {
 							name: 'add'
 						},
 						action: async () => {
-							const res = await prompt('Enter comment text');
+							const res = await prompt('Enter comment text', {
+                                multiline: true,
+                            });
 							if (!res) return;
 							const newComment: CommentConfig = {
 								position: [x, y],
