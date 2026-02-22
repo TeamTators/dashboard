@@ -18,12 +18,12 @@ Lists archived scouting matches and related comments by team.
 	const scouting = $derived(
 		Scouting.MatchScouting.arr(data.scouting.map((c) => Scouting.MatchScouting.Generator(c)))
 	);
-	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
+	let scoutingArr = $derived(new Scouting.MatchScoutingExtendedArr([], -1));
 
 	$effect(() => nav(event.tba));
 
 	onMount(() => {
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, -1);
 		if (res.isOk()) {
 			scoutingArr = res.value;
 		} else {

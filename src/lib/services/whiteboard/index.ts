@@ -140,12 +140,15 @@ export class Board {
 				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${red}`;
 				a.style.display = 'block';
 				a.style.position = 'absolute';
-				a.classList.add('btn', 'btn-danger', 'btn-sm');
+				a.classList.add('btn', 'btn-danger', 'btn-lg');
 				const pos = driveTeamPositions[this.match.event.tba.year]?.red[i] || [0.9, 0.1 + i * 0.1];
 				a.style.left = pos[0] * 100 + '%';
 				a.style.top = pos[1] * 100 + '%';
 				a.style.transform = 'translate(50%, -50%)';
+				a.style.zIndex = '20';
 				teamsContainer.appendChild(a);
+				registerTool(a);
+				registerSub(() => a.remove());
 			}
 			for (let i = 0; i < 3; i++) {
 				const blue = [b1, b2, b3][i];
@@ -154,12 +157,15 @@ export class Board {
 				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${blue}`;
 				a.style.display = 'block';
 				a.style.position = 'absolute';
-				a.classList.add('btn', 'btn-primary', 'btn-sm');
+				a.classList.add('btn', 'btn-primary', 'btn-lg');
 				const pos = driveTeamPositions[this.match.event.tba.year]?.blue[i] || [0.1, 0.1 + i * 0.1];
 				a.style.left = pos[0] * 100 + '%';
 				a.style.top = pos[1] * 100 + '%';
 				a.style.transform = 'translate(-50%, -50%)';
+				a.style.zIndex = '20';
 				teamsContainer.appendChild(a);
+				registerTool(a);
+				registerSub(() => a.remove());
 			}
 			target.appendChild(teamsContainer);
 			registerTool(teamsContainer);

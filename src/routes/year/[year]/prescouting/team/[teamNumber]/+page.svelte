@@ -22,13 +22,13 @@ Displays traces, actions, checks, and comments across prescouted matches.
 	const year = $derived(data.year);
 	const teamNumber = $derived(data.teamNumber);
 	const scouting = $derived(data.scouting);
-	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
+	let scoutingArr = $derived(new Scouting.MatchScoutingExtendedArr([], teamNumber));
 	const team = $derived(data.team);
 	const events = $derived(data.events);
 
 	const focus = writable<'auto' | 'teleop' | 'endgame' | 'all'>('all');
 	onMount(() => {
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, teamNumber);
 		if (res.isOk()) {
 			scoutingArr = res.value;
 		} else {

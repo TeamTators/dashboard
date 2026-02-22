@@ -22,6 +22,7 @@ export class Comment extends WritableBase<CommentConfig> {
 	}
 	render(target: HTMLDivElement, stack: Stack) {
 		const container = document.createElement('div');
+		container.style.zIndex = '10';
 		container.classList.add('comment');
 		container.style.padding = '5px';
 		container.style.backgroundColor = 'rgba(243, 193, 55, 0.9)';

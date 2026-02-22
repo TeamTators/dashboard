@@ -16,6 +16,7 @@ import { attempt, attemptAsync } from 'ts-utils';
 import * as remote from '$lib/remotes/strategy.remote';
 import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
+import { Scouting } from './scouting';
 
 export namespace Strategy {
 	// export const MatchWhiteboards = new Struct({
@@ -181,7 +182,6 @@ export namespace Strategy {
 			this.onAllUnsubscribe(
 				data.strategy.subscribe(({ board }) => {
 					if (board === data.whiteboard.serialize()) return;
-					console.log('Board changed, updating whiteboard data');
 					const whiteboard = Board.from(String(board));
 					if (whiteboard.isOk()) {
 						data.whiteboard.setState(whiteboard.unwrap().data);
@@ -198,6 +198,40 @@ export namespace Strategy {
 					...data,
 					board: this.board.serialize()
 				};
+			});
+		}
+
+		getPartnerScouting() {
+			return attempt(() => {
+				return [this.data.partner1, this.data.partner2, this.data.partner3].map((partner) => {
+					const ms = Scouting.scoutingFromTeam(
+						Number(partner.data.number),
+						String(this.data.strategy.data.eventKey)
+					);
+					const arr = Scouting.MatchScoutingExtendedArr.fromArr(
+						ms,
+						Number(partner.data.number)
+					).unwrap();
+					this.pipe(arr);
+					return arr;
+				});
+			});
+		}
+
+		getOpponentScouting() {
+			return attempt(() => {
+				return [this.data.opponent1, this.data.opponent2, this.data.opponent3].map((opponent) => {
+					const ms = Scouting.scoutingFromTeam(
+						Number(opponent.data.number),
+						String(this.data.strategy.data.eventKey)
+					);
+					const arr = Scouting.MatchScoutingExtendedArr.fromArr(
+						ms,
+						Number(opponent.data.number)
+					).unwrap();
+					this.pipe(arr);
+					return arr;
+				});
 			});
 		}
 	}

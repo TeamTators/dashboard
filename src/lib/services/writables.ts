@@ -97,6 +97,7 @@ export class WritableBase<T> implements Writable<T> {
 			if (this.subscribers.size === 0) {
 				for (const callback of this._onAllUnsubscribeCallbacks) {
 					callback();
+					this.log('All subscribers removed');
 					this.destroy();
 				}
 			}
@@ -105,6 +106,7 @@ export class WritableBase<T> implements Writable<T> {
 				this.log('Last subscriber removed');
 				for (const callback of this._onAllUnsubscribeCallbacks) {
 					callback();
+					this.log('All subscribers removed');
 					this.destroy();
 				}
 				this.subscribers.clear();
@@ -336,6 +338,7 @@ export class WritableBase<T> implements Writable<T> {
 		this.interceptors.clear();
 		this.validators.clear();
 		this._onAllUnsubscribeCallbacks.clear();
+		this.log('Writable destroyed and all resources cleared');
 	}
 
 	/**

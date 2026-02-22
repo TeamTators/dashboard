@@ -25,6 +25,7 @@ import YearInfo2025 from 'tatorscout/years/2025.js';
 import YearInfo2026 from 'tatorscout/years/2026.js';
 import * as remote from '$lib/remotes/scouting.remote';
 import type { ParsedBreakdown } from 'tatorscout/years';
+import type { TBAEvent } from '$lib/utils/tba';
 
 /**
  * Client-side scouting models, helpers, and batch utilities.
@@ -439,11 +440,11 @@ export namespace Scouting {
 		 * @example
 		 * const extArr = Scouting.MatchScoutingExtendedArr.fromArr(res).unwrap();
 		 */
-		static fromArr(arr: MatchScoutingArr | MatchScoutingData[]) {
+		static fromArr(arr: MatchScoutingArr | MatchScoutingData[], team: number) {
 			return attempt(() => {
 				const data = arr instanceof DataArr ? arr.data : arr;
 				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
-				const extendedArr = new MatchScoutingExtendedArr(ms);
+				const extendedArr = new MatchScoutingExtendedArr(ms, team);
 				const compLevels = ['pr', 'qm', 'qf', 'sf', 'f'];
 				extendedArr.sort((a, b) => {
 					if (a.compLevel === b.compLevel) {
@@ -466,9 +467,12 @@ export namespace Scouting {
 		 * @param arr - Extended scouting records.
 		 *
 		 * @example
-		 * const extArr = new Scouting.MatchScoutingExtendedArr([ext]);
+		 * const extArr = new Scouting.MatchScoutingExtendedArr([ext], 33);
 		 */
-		constructor(arr: MatchScoutingExtended[]) {
+		constructor(
+			arr: MatchScoutingExtended[],
+			public readonly team: number
+		) {
 			super(arr);
 		}
 
@@ -481,7 +485,7 @@ export namespace Scouting {
 		 * const copy = extArr.clone();
 		 */
 		clone() {
-			return new MatchScoutingExtendedArr([...this.data]);
+			return new MatchScoutingExtendedArr([...this.data], this.team);
 		}
 
 		/**
@@ -531,67 +535,58 @@ export namespace Scouting {
 		}
 
 		/**
-		 * Average contributions across all records.
+		 * Compute average or max action contributions across a set of scouting traces.
 		 *
-		 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
-		 * @returns Average contributions as a plain object or reactive writable.
-		 *
-		 * @example
-		 * const averages = extArr.averageContribution(false);
-		 * const scoreAvg = averages.Score ?? 0;
+		 * @param year - Competition year to use for action mapping.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain object.
+		 * @param type - Aggregation type: 'average' or 'max'.
+		 * @returns Contribution map as a plain object or reactive writable.
 		 *
 		 * @example
-		 * const averagesStore = extArr.averageContribution(true);
-		 * averagesStore.subscribe((value) => console.log(value));
+		 * const avg = extArr.contribution(2025, false, 'average').unwrap();
+		 * const max = extArr.contribution(2025, false, 'max').unwrap();
+		 * const avgStore = extArr.contribution(2025, true, 'average');
+		 * avgStore.subscribe((value) => console.log(value));
 		 */
-		averageContribution(
+		contribution(
 			year: number,
 			reactive: false,
-			actionLabels?: boolean
+			type: 'average' | 'max'
 		): Result<Record<string, number>>;
-		averageContribution(
+		contribution(
 			year: number,
 			reactive: true,
-			actionLabels?: boolean
+			type: 'average' | 'max'
 		): WritableBase<Record<string, number>>;
-		averageContribution(year: number, reactive: boolean, actionLabels = true) {
-			if (reactive) {
-				return this.derive((data) => {
-					const totals: Record<string, number> = {};
-					for (const ms of data) {
-						const contrib = ms.getContribution(year, false, actionLabels);
-						if (contrib.isErr()) continue;
-						Object.entries(contrib.value).forEach(([key, value]) => {
-							totals[key] = (totals[key] || 0) + value;
-						});
+		contribution(year: number, reactive: boolean, type: 'average' | 'max') {
+			const get = (data: MatchScoutingExtended[]) => {
+				const totals: Record<string, number[]> = {};
+				for (const ms of data) {
+					const contrib = ms.getContribution(year, false);
+					if (contrib.isErr()) continue;
+					Object.entries(contrib.value).forEach(([key, value]) => {
+						if (!totals[key]) {
+							totals[key] = [];
+						}
+						totals[key].push(value);
+					});
+				}
+
+				const result: Record<string, number> = {};
+				Object.entries(totals).forEach(([key, values]) => {
+					if (type === 'average') {
+						result[key] = values.reduce((a, b) => a + b, 0) / values.length;
+					} else if (type === 'max') {
+						result[key] = Math.max(...values);
 					}
-
-					const count = data.length;
-					const averages: Record<string, number> = {};
-					Object.entries(totals).forEach(([key, value]) => {
-						averages[key] = value / count;
-					});
-
-					return averages;
 				});
+				return result;
+			};
+
+			if (reactive) {
+				return this.derive(get);
 			} else {
-				return attempt(() => {
-					const totals: Record<string, number> = {};
-					this.data.forEach((ms) => {
-						const contrib = ms.getContribution(year, false, actionLabels);
-						Object.entries(contrib).forEach(([key, value]) => {
-							totals[key] = (totals[key] || 0) + value;
-						});
-					});
-
-					const count = this.data.length;
-					const averages: Record<string, number> = {};
-					Object.entries(totals).forEach(([key, value]) => {
-						averages[key] = value / count;
-					});
-
-					return averages;
-				});
+				return attempt(() => get(this.data));
 			}
 		}
 
@@ -689,6 +684,13 @@ export namespace Scouting {
 			if (reactive) return this.derive(get);
 			else return attempt(() => get(this.data));
 		}
+
+		getTeam(event: TBAEvent, force: boolean, expires: Date) {
+			return attemptAsync(async () => {
+				const teams = await event.getTeams(force, expires).unwrap();
+				return teams.find((t) => t.tba.team_number === this.team);
+			});
+		}
 	}
 
 	/**
@@ -725,7 +727,7 @@ export namespace Scouting {
 				type: 'all'
 			}
 		);
-		return MatchScoutingExtendedArr.fromArr(res);
+		return MatchScoutingExtendedArr.fromArr(res, team);
 	};
 
 	/**
