@@ -123,7 +123,7 @@ export class Board {
 	 */
 	render(target: HTMLDivElement, stack: Stack) {
 		if (this._rendered) {
-			throw new Error('Strategy already rendered');
+			throw new Error('Board already rendered');
 		}
 		stack.on('undo', () => this.emit('change'));
 		stack.on('redo', () => this.emit('change'));

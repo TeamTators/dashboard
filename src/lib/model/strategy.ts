@@ -12,7 +12,7 @@ import { sse } from '../services/sse';
 import { browser } from '$app/environment';
 import { WritableBase } from '$lib/services/writables';
 import { Board } from '$lib/services/whiteboard';
-import { attempt, attemptAsync } from 'ts-utils';
+import { attempt, attemptAsync, debounce } from 'ts-utils';
 import * as remote from '$lib/remotes/strategy.remote';
 import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
@@ -192,9 +192,9 @@ export namespace Strategy {
 			this.pipe(data.opponent2);
 			this.pipe(data.opponent3);
 
-			data.whiteboard.on('change', () => {
-				this.save();
-			});
+			const save = debounce(() => this.save(), 1000);
+
+			this.onAllUnsubscribe(data.whiteboard.on('change', save));
 
 			this.onAllUnsubscribe(
 				data.strategy.subscribe(({ board }) => {

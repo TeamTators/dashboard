@@ -183,7 +183,7 @@ export namespace Strategy {
 				}
 			).unwrap();
 			for (const data of [...partners, ...opponents]) {
-				data.setArchive(true).unwrap();
+				await data.setArchive(true).unwrap();
 			}
 		} catch (error) {
 			terminal.error(
@@ -208,7 +208,7 @@ export namespace Strategy {
 				}
 			).unwrap();
 			for (const data of [...partners, ...opponents]) {
-				data.setArchive(false).unwrap();
+				await data.setArchive(false).unwrap();
 			}
 		} catch (error) {
 			terminal.error(
