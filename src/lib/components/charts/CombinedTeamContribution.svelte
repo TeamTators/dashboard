@@ -14,7 +14,7 @@ future chart should visualize once implemented.
 -->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
-	import type { TBAEvent, TBATeam } from '$lib/utils/tba';
+	import type { TBAEvent } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
 	import { registerables } from 'chart.js';
@@ -43,7 +43,7 @@ future chart should visualize once implemented.
 
 		const maxValue = Object.fromEntries(Object.entries(actions).map(([_, key]) => [key, 0]));
 
-		const datasets = (chart = new Chart(canvas, {
+		chart = new Chart(canvas, {
 			type: 'bar',
 			data: {
 				labels: Object.values(actions),
@@ -78,7 +78,7 @@ future chart should visualize once implemented.
 					}
 				}
 			}
-		}));
+		});
 
 		if (Math.max(...Object.values(maxValue)) > staticY.data) {
 			staticY.set(Math.max(...Object.values(maxValue)));

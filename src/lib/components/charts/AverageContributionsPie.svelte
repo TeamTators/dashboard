@@ -32,11 +32,6 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 	import { Scouting } from '$lib/model/scouting';
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
-	import YearInfo2024 from 'tatorscout/years/2024.js';
-	import YearInfo2025 from 'tatorscout/years/2025.js';
-	import YearInfo2026 from 'tatorscout/years/2026.js';
-	import { YearInfo } from 'tatorscout/years';
-	import { Color } from 'colors/color';
 	import { compliment } from '$lib/model/match-html';
 
 	/** Component props for `AverageContributionsPie`. */

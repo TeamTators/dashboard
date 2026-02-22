@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import Select from '../forms/Select.svelte';
 	import Whiteboard from './Whiteboard.svelte';
-	import { WritableArray, WritableBase } from '$lib/services/writables';
+	import { WritableBase } from '$lib/services/writables';
 	import type { Scouting } from '$lib/model/scouting';
 	import CombinedTeamContribution from '../charts/CombinedTeamContribution.svelte';
 	import RadarCapabilityChart from '../charts/RadarCapabilityChart.svelte';

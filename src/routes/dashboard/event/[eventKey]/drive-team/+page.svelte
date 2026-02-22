@@ -13,7 +13,6 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 	import { Strategy } from '$lib/model/strategy.js';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { prompt } from '$lib/utils/prompts.js';
-	import Grid from '$lib/components/general/Grid.svelte';
 	import StrategyGrid from '$lib/components/strategy/StrategyGrid.svelte';
 
 	const { data } = $props();
