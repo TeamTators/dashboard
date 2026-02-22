@@ -1,18 +1,17 @@
 <script lang="ts">
-    import { Board } from "$lib/services/whiteboard/index.ts";
-	import { Stack } from "$lib/utils/stack";
+	import { Board } from '$lib/services/whiteboard/index.ts';
+	import { Stack } from '$lib/utils/stack';
 
-    interface Props {
-        board: Board;
-    }
+	interface Props {
+		board: Board;
+	}
 
-    export const save = () => {};
+	export const save = () => {};
 
-    // export const clear = () => {};
+	// export const clear = () => {};
 
-    const { board }: Props = $props();
+	const { board }: Props = $props();
 </script>
-
 
 <div
 	{@attach (div) =>

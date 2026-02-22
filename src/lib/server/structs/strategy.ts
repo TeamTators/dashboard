@@ -81,7 +81,7 @@ export namespace Strategy {
 			notes: text('notes').notNull(),
 
 			/** Serialized whiteboard data for the strategy. */
-			board: text('board').notNull(),
+			board: text('board').notNull()
 		},
 		validators: {
 			alliance: (value) => ['red', 'blue', 'unknown'].includes(String(value))
@@ -108,39 +108,39 @@ export namespace Strategy {
 				postAuto: '',
 				role: '',
 				endgame: '',
-				notes: '',
-			}
+				notes: ''
+			};
 			const defaultOpponent = {
 				auto: '',
 				postAuto: '',
 				endgame: '',
 				role: '',
-				notes: '',
-			}
+				notes: ''
+			};
 			const [p1, p2, p3, o1, o2, o3] = await Promise.all([
 				Partners.new({
 					...defaultPartner,
-					number: partners[0],
+					number: partners[0]
 				}).unwrap(),
 				Partners.new({
 					...defaultPartner,
-					number: partners[1],
+					number: partners[1]
 				}).unwrap(),
 				Partners.new({
 					...defaultPartner,
-					number: partners[2],
+					number: partners[2]
 				}).unwrap(),
 				Opponents.new({
 					...defaultOpponent,
-					number: opponents[0],
+					number: opponents[0]
 				}).unwrap(),
 				Opponents.new({
 					...defaultOpponent,
-					number: opponents[1],
+					number: opponents[1]
 				}).unwrap(),
 				Opponents.new({
 					...defaultOpponent,
-					number: opponents[2],
+					number: opponents[2]
 				}).unwrap()
 			]);
 
@@ -156,8 +156,8 @@ export namespace Strategy {
 				notes: '',
 				board: JSON.stringify({
 					comments: [],
-					paths: [],
-				}),
+					paths: []
+				})
 			}).unwrap();
 		});
 	};
@@ -165,12 +165,18 @@ export namespace Strategy {
 	Strategy.on('delete', async (strategy) => {
 		try {
 			// delete partners/opponents
-			const partners = await Partners.fromIds([strategy.data.partner1, strategy.data.partner2, strategy.data.partner3], {
-				type: 'all',
-			}).unwrap();
-			const opponents = await Opponents.fromIds([strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3], {
-				type: 'all',
-			}).unwrap();
+			const partners = await Partners.fromIds(
+				[strategy.data.partner1, strategy.data.partner2, strategy.data.partner3],
+				{
+					type: 'all'
+				}
+			).unwrap();
+			const opponents = await Opponents.fromIds(
+				[strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3],
+				{
+					type: 'all'
+				}
+			).unwrap();
 			for (const data of [...partners, ...opponents]) {
 				await data.delete();
 			}
@@ -181,12 +187,18 @@ export namespace Strategy {
 
 	Strategy.on('archive', async (strategy) => {
 		try {
-			const partners = await Partners.fromIds([strategy.data.partner1, strategy.data.partner2, strategy.data.partner3], {
-				type: 'all',
-			}).unwrap();
-			const opponents = await Opponents.fromIds([strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3], {
-				type: 'all',
-			}).unwrap();
+			const partners = await Partners.fromIds(
+				[strategy.data.partner1, strategy.data.partner2, strategy.data.partner3],
+				{
+					type: 'all'
+				}
+			).unwrap();
+			const opponents = await Opponents.fromIds(
+				[strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3],
+				{
+					type: 'all'
+				}
+			).unwrap();
 			for (const data of [...partners, ...opponents]) {
 				data.setArchive(true);
 			}
@@ -197,12 +209,18 @@ export namespace Strategy {
 
 	Strategy.on('restore', async (strategy) => {
 		try {
-			const partners = await Partners.fromIds([strategy.data.partner1, strategy.data.partner2, strategy.data.partner3], {
-				type: 'all',
-			}).unwrap();
-			const opponents = await Opponents.fromIds([strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3], {
-				type: 'all',
-			}).unwrap();
+			const partners = await Partners.fromIds(
+				[strategy.data.partner1, strategy.data.partner2, strategy.data.partner3],
+				{
+					type: 'all'
+				}
+			).unwrap();
+			const opponents = await Opponents.fromIds(
+				[strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3],
+				{
+					type: 'all'
+				}
+			).unwrap();
 			for (const data of [...partners, ...opponents]) {
 				data.setArchive(false);
 			}
@@ -233,19 +251,20 @@ export namespace Strategy {
 		}
 	});
 
-
-
-
 	structRegistry.register(Partners);
 
 	export type PartnerData = StructData<typeof Partners.data.structure>;
 	export const getPartners = (strategy: StrategyData) => {
 		return attemptAsync(async () => {
-			const partners = await Partners.fromIds([strategy.data.partner1, strategy.data.partner2, strategy.data.partner3], {
-				type: 'all',
-			}).unwrap();
+			const partners = await Partners.fromIds(
+				[strategy.data.partner1, strategy.data.partner2, strategy.data.partner3],
+				{
+					type: 'all'
+				}
+			).unwrap();
 
-			if (partners.length !== 3) throw new Error('Partners length is not correct: ' + partners.length);
+			if (partners.length !== 3)
+				throw new Error('Partners length is not correct: ' + partners.length);
 			const order = [strategy.data.partner1, strategy.data.partner2, strategy.data.partner3];
 			return partners.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
 		});
@@ -272,15 +291,19 @@ export namespace Strategy {
 	export type OpponentData = StructData<typeof Opponents.data.structure>;
 	export const getOpponents = (strategy: StrategyData) => {
 		return attemptAsync(async () => {
-			const opponents = await Opponents.fromIds([strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3], {
-				type: 'all',
-			}).unwrap();
+			const opponents = await Opponents.fromIds(
+				[strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3],
+				{
+					type: 'all'
+				}
+			).unwrap();
 
-			if (opponents.length !== 3) throw new Error('Opponents length is not correct: ' + opponents.length);
+			if (opponents.length !== 3)
+				throw new Error('Opponents length is not correct: ' + opponents.length);
 			const order = [strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3];
 			return opponents.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
 		});
-	}
+	};
 
 	/**
 	 * Fetch strategies matching a specific event and match.
@@ -288,13 +311,16 @@ export namespace Strategy {
 	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing strategies.
 	 */
 	export const getMatchStrategy = (matchNumber: number, compLevel: string, eventKey: string) => {
-		return Strategy.get({
-			matchNumber,
-			compLevel,
-			eventKey
-		}, {
-			type: 'all'
-		});
+		return Strategy.get(
+			{
+				matchNumber,
+				compLevel,
+				eventKey
+			},
+			{
+				type: 'all'
+			}
+		);
 	};
 
 	/**
@@ -307,7 +333,7 @@ export namespace Strategy {
 			return {
 				strategy,
 				partners: await getPartners(strategy).unwrap(),
-				opponents: await getOpponents(strategy).unwrap(),
+				opponents: await getOpponents(strategy).unwrap()
 			};
 		});
 	};
@@ -334,8 +360,8 @@ export namespace Strategy {
 
 	Permissions.createEntitlement({
 		name: 'view-strategy',
-		structs: [/* Whiteboards, */Strategy, Alliances],
-		permissions: [/* 'whiteboards:read:*', */'strategy:read:*', 'alliances:read:*'],
+		structs: [/* Whiteboards, */ Strategy, Alliances],
+		permissions: [/* 'whiteboards:read:*', */ 'strategy:read:*', 'alliances:read:*'],
 		group: 'Strategy',
 		description: 'View strategy information',
 		features: []

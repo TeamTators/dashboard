@@ -14,6 +14,7 @@ Shows match videos and a minimal endgame summary when a scouting record is missi
 <script lang="ts">
 	import type { Strategy } from '$lib/model/strategy';
 	import { TBAEvent, TBATeam, TBAMatch } from '$lib/utils/tba';
+	import StrategyGrid from '../strategy/StrategyGrid.svelte';
 	import MatchEndgame from './MatchEndgame.svelte';
 
 	interface Props {
@@ -25,7 +26,7 @@ Shows match videos and a minimal endgame summary when a scouting record is missi
 		/** Event context for messaging and navigation. */
 		event: TBAEvent;
 		/** Optional strategies for navigation. */
-		strategies?: Strategy.StrategyData[];
+		strategies?: Strategy.StrategyArr;
 	}
 
 	const { team, event, match, strategies }: Props = $props();
@@ -65,11 +66,8 @@ Shows match videos and a minimal endgame summary when a scouting record is missi
 		</div>
 	</div>
 	<div class="row mb-3">
-		{#if strategies && strategies.length}
-			<button type="button" class="btn btn-primary" onclick={() => {}}>
-				<i class="material-icons"> auto_graph </i>
-				Open Strategy ({strategies.length})
-			</button>
+		{#if strategies}
+			<StrategyGrid {strategies} />
 		{/if}
 	</div>
 </div>

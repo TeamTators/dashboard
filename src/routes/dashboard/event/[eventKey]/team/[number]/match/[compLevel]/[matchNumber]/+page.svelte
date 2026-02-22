@@ -30,7 +30,7 @@ Falls back to a no-scout view when a scouting record is missing.
 	let prev: TBAMatch | null = $state(null);
 	let next: TBAMatch | null = $state(null);
 
-	let strategies = $state(new DataArr(Strategy.Strategy, []));
+	let strategies = $state(Strategy.Strategy.arr());
 
 	$effect(() => {
 		const i = matches.findIndex((m) => m.tba.key === match.tba.key);
@@ -43,11 +43,13 @@ Falls back to a no-scout view when a scouting record is missing.
 	});
 
 	afterNavigate(() => {
-		strategies = Strategy.fromMatch(
-			match.tba.event_key,
-			match.tba.match_number,
-			match.tba.comp_level
-		);
+		strategies = Strategy.Strategy.get({
+			eventKey: event.tba.key,
+			compLevel: match.tba.comp_level,
+			matchNumber: match.tba.match_number
+		}, {
+			type: 'all',
+		});
 
 		if (scouting) {
 			const res = Scouting.MatchScoutingExtended.from(scouting);
@@ -106,11 +108,11 @@ Falls back to a no-scout view when a scouting record is missing.
 					{team}
 					{event}
 					{match}
-					strategies={$strategies}
+					strategies={strategies}
 					scout={account}
 				/>
 			{:else}
-				<MatchDisplayNoScout {match} {team} {event} strategies={$strategies} />
+				<MatchDisplayNoScout {match} {team} {event} strategies={strategies} />
 			{/if}
 		{/key}
 	</div>

@@ -14,6 +14,7 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { prompt } from '$lib/utils/prompts.js';
 	import Grid from '$lib/components/general/Grid.svelte';
+	import StrategyGrid from '$lib/components/strategy/StrategyGrid.svelte';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -61,14 +62,16 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 
 		match = closest;
 
-		
-		strategies = Strategy.Strategy.get({
-			eventKey: event.tba.key,
-			matchNumber: match.tba.match_number,
-			compLevel: match.tba.comp_level,
-		}, {
-			type: 'all',
-		});
+		strategies = Strategy.Strategy.get(
+			{
+				eventKey: event.tba.key,
+				matchNumber: match.tba.match_number,
+				compLevel: match.tba.comp_level
+			},
+			{
+				type: 'all'
+			}
+		);
 
 		countdown.setTarget(new Date(Number(closest.tba.time) * 1000));
 
@@ -81,7 +84,6 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 	onMount(() => {
 		const loop = new Loop(render, 1000 * 60);
 		loop.start();
-
 
 		return () => {
 			loop.stop();
@@ -182,61 +184,30 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 			</div>
 			<div class="row mb-3">
 				<div class="col-12">
-					<h2>
-						Strategies
-					</h2>
-					<button type="button" class="btn btn-primary" onclick={async () => {
-						if (!match) return;
-						const name = await prompt('Strategy name');
-						if (!name) return;
-						const res = await Strategy.create({
-							match,
-							name,
-							alliance: tatorAlliance || 'red',
-						});
-						if (res.isErr()) {
-							console.error(res.error);
-							alert('Failed to create strategy. Please try again later.');
-						} else {
-							const strategy = res.value;
-							window.location.href = `/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`;
-						}
-					}}>Create Strategy</button>
+					<h2>Strategies</h2>
+					<button
+						type="button"
+						class="btn btn-primary"
+						onclick={async () => {
+							if (!match) return;
+							const name = await prompt('Strategy name');
+							if (!name) return;
+							const res = await Strategy.create({
+								match,
+								name,
+								alliance: tatorAlliance || 'red'
+							});
+							if (res.isErr()) {
+								console.error(res.error);
+								alert('Failed to create strategy. Please try again later.');
+							} else {
+								const strategy = res.value;
+								window.location.href = `/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`;
+							}
+						}}>Create Strategy</button
+					>
 					{#if $strategies.length > 0}
-						<p class="small text-muted">
-							Double-click a strategy to view.
-						</p>
-						<Grid 
-							data={strategies}
-							opts={{
-								columnDefs: [
-									{
-										field: 'data.name',
-										headerName: 'Name',
-									},
-									{
-										field: 'data.alliance',
-										headerName: 'Alliance',
-									},
-									{
-										field: 'data.created',
-										headerName: 'Created At',
-										valueFormatter: (params) => new Date(params.value).toLocaleString(),
-									},
-									{
-										field: 'data.updated',
-										headerName: 'Updated At',
-										valueFormatter: (params) => new Date(params.value).toLocaleString(),
-									},
-								],
-								onRowDoubleClicked: (params) => {
-									if (!params.data) return;
-									const strategy = params.data;
-									window.location.href = `/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`;
-								}
-							}}
-							height="400px"
-						/>
+						<StrategyGrid {strategies} />
 					{:else}
 						<p>No strategies created for this match yet.</p>
 					{/if}

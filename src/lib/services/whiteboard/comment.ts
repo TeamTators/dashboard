@@ -14,7 +14,10 @@ export type CommentConfig = {
 };
 
 export class Comment extends WritableBase<CommentConfig> {
-	constructor(data: CommentConfig, public board: Board) {
+	constructor(
+		data: CommentConfig,
+		public board: Board
+	) {
 		super(data);
 	}
 	render(target: HTMLDivElement, stack: Stack) {

@@ -171,7 +171,6 @@ export class Stack {
 		change: State;
 	}>();
 
-	
 	public readonly on = this.em.on.bind(this.em);
 	public readonly off = this.em.off.bind(this.em);
 	public readonly once = this.em.once.bind(this.em);

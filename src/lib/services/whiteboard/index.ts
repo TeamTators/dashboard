@@ -15,7 +15,7 @@ type BoardConfig = {
 };
 
 export class Board {
-    private readonly em = new SimpleEventEmitter<'change' | 'incomming'>();
+	private readonly em = new SimpleEventEmitter<'change' | 'incomming'>();
 
 	public readonly on = this.em.on.bind(this.em);
 	public readonly off = this.em.off.bind(this.em);
@@ -47,14 +47,17 @@ export class Board {
 								),
 							color: z.string()
 						})
-					),
+					)
 				})
 				.parse(JSON.parse(data));
 			return new Board(res, match);
 		});
 	}
 
-	constructor(public data: BoardConfig, public readonly match?: TBAMatch) {}
+	constructor(
+		public data: BoardConfig,
+		public readonly match?: TBAMatch
+	) {}
 	private readonly comments = new WritableArray<Comment>([]);
 	private readonly paths = new WritableArray<Path>([]);
 
@@ -136,30 +139,31 @@ export class Board {
 		createColor('Red', 'red');
 		createColor('Blue', 'blue');
 		createColor('Black', 'black');
-if (this.match) {
-		const teamsContainer = document.createElement('div');
-		teamsContainer.style.position = 'absolute';
-		teamsContainer.style.right = '10px';
-		teamsContainer.style.top = '10px';
-		const [r1, r2, r3, b1, b2, b3] = teamsFromMatch(this.match.tba);
-		for (const red of [r1, r2, r3]) {
-			const a = document.createElement('a');
-			a.textContent = `${red}`;
-			a.href = `/dashboard/event/${this.match.event.tba.key}/team/${red}`;
-			a.style.display = 'block';
-			a.classList.add('btn', 'btn-danger', 'btn-sm');
-			teamsContainer.appendChild(a);
+		if (this.match) {
+			const teamsContainer = document.createElement('div');
+			teamsContainer.style.position = 'absolute';
+			teamsContainer.style.right = '10px';
+			teamsContainer.style.top = '10px';
+			const [r1, r2, r3, b1, b2, b3] = teamsFromMatch(this.match.tba);
+			for (const red of [r1, r2, r3]) {
+				const a = document.createElement('a');
+				a.textContent = `${red}`;
+				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${red}`;
+				a.style.display = 'block';
+				a.classList.add('btn', 'btn-danger', 'btn-sm');
+				teamsContainer.appendChild(a);
+			}
+			for (const blue of [b1, b2, b3]) {
+				const a = document.createElement('a');
+				a.textContent = `${blue}`;
+				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${blue}`;
+				a.style.display = 'block';
+				a.classList.add('btn', 'btn-primary', 'btn-sm');
+				teamsContainer.appendChild(a);
+			}
+			target.appendChild(teamsContainer);
+			registerTool(teamsContainer);
 		}
-		for (const blue of [b1, b2, b3]) {
-			const a = document.createElement('a');
-			a.textContent = `${blue}`;
-			a.href = `/dashboard/event/${this.match.event.tba.key}/team/${blue}`;
-			a.style.display = 'block';
-			a.classList.add('btn', 'btn-primary', 'btn-sm');
-			teamsContainer.appendChild(a);
-		}
-		target.appendChild(teamsContainer);
-		registerTool(teamsContainer);}
 
 		const comments = this.comments;
 		const paths = this.paths;
@@ -428,10 +432,12 @@ if (this.match) {
 		const prevStack = Stack.current;
 		Stack.use(stack);
 
-		registerSub(this.on('incomming', () => {
-			cleanup();
-			this.render(target, stack);
-		}));
+		registerSub(
+			this.on('incomming', () => {
+				cleanup();
+				this.render(target, stack);
+			})
+		);
 
 		const cleanup = () => {
 			stack.clear();
@@ -466,16 +472,17 @@ if (this.match) {
 	serialize() {
 		const round = (num: number) => Math.round(num * 1000);
 		return JSON.stringify({
-			comments: this.comments.data.map((c) => ({
-				...c.data,
-				position: c.data.position.map(round) as [number, number],
-				size: c.data.size.map(round) as [number, number]
-			}))
-			.filter(c => !c.hidden),
+			comments: this.comments.data
+				.map((c) => ({
+					...c.data,
+					position: c.data.position.map(round) as [number, number],
+					size: c.data.size.map(round) as [number, number]
+				}))
+				.filter((c) => !c.hidden),
 			paths: this.paths.data.map((p) => ({
 				...p.data,
 				points: p.data.points.map(([x, y]) => [round(x), round(y)])
-			})),
+			}))
 		});
 	}
 
