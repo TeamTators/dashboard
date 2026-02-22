@@ -22,7 +22,7 @@
 
 	let min = $derived(yearOpts[team.event.tba.year][0] ?? 0);
 	let max = $derived(yearOpts[team.event.tba.year][1] ?? 10);
-	const data = $derived(scouting.averageContribution(year, true));
+	const data = $derived(scouting.contribution(year, true, 'average'));
 
 	/**
 	 * Copy the chart to the clipboard.

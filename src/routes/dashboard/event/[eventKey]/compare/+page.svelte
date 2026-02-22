@@ -118,7 +118,8 @@ Lets users select teams and compare scouting data with charts.
 					onchange={async (e) => {
 						if (e.currentTarget.checked) {
 							const data = Scouting.MatchScoutingExtendedArr.fromArr(
-								Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key)
+								Scouting.scoutingFromTeam(team.tba.team_number, event.tba.key),
+								team.tba.team_number
 							);
 							if (data.isErr()) {
 								return console.error('Error parsing data:', data);

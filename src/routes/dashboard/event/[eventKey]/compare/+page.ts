@@ -20,13 +20,14 @@ export const load = (event) => {
 		selectedTeams: event.data.selectedTeams.map((t) => {
 			if (!t.team) throw new Error('Selected team data is missing team information');
 			const res = Scouting.MatchScoutingExtendedArr.fromArr(
-				t.scouting.map((s) => Scouting.MatchScouting.Generator(s))
+				t.scouting.map((s) => Scouting.MatchScouting.Generator(s)),
+				t.team.team_number
 			);
 			if (res.isErr()) {
 				console.error('Failed to parse scouting data for team', t.team.team_number, res.error);
 				return {
 					team: new TBATeam(t.team, e),
-					scouting: new Scouting.MatchScoutingExtendedArr([])
+					scouting: new Scouting.MatchScoutingExtendedArr([], t.team.team_number)
 				};
 			}
 			return {
