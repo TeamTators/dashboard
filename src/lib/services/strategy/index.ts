@@ -17,40 +17,53 @@ type StrategyConfig = {
 };
 
 export class Strategy {
-    public static from(data: string) {
-        return attempt(() => {
-            const res = z.object({
-                comments: z.array(z.object({
-                    position: z.tuple([z.number(), z.number()]).transform(([x, y]) => [x / 1000, y / 1000] as [number, number]),
-                    text: z.string(),
-                    size: z.tuple([z.number(), z.number()]).transform(([w, h]) => [w / 1000, h / 1000] as [number, number]),
-                    hidden: z.boolean(),
-                    selected: z.boolean(),
-                })),
-                paths: z.array(z.object({
-                    points: z.array(z.tuple([z.number(), z.number()])).transform(points => points.map(([x, y]) => [x / 1000, y / 1000] as [number, number])),
-                    color: z.string(),
-                })),
-                red: z.tuple([z.number(), z.number(), z.number()]),
-                blue: z.tuple([z.number(), z.number(), z.number()]),
-                event: z.string(),
-                year: z.number(),
-            }).parse(JSON.parse(data));
-            return new Strategy(res);
-        });
-    }
+	public static from(data: string) {
+		return attempt(() => {
+			const res = z
+				.object({
+					comments: z.array(
+						z.object({
+							position: z
+								.tuple([z.number(), z.number()])
+								.transform(([x, y]) => [x / 1000, y / 1000] as [number, number]),
+							text: z.string(),
+							size: z
+								.tuple([z.number(), z.number()])
+								.transform(([w, h]) => [w / 1000, h / 1000] as [number, number]),
+							hidden: z.boolean(),
+							selected: z.boolean()
+						})
+					),
+					paths: z.array(
+						z.object({
+							points: z
+								.array(z.tuple([z.number(), z.number()]))
+								.transform((points) =>
+									points.map(([x, y]) => [x / 1000, y / 1000] as [number, number])
+								),
+							color: z.string()
+						})
+					),
+					red: z.tuple([z.number(), z.number(), z.number()]),
+					blue: z.tuple([z.number(), z.number(), z.number()]),
+					event: z.string(),
+					year: z.number()
+				})
+				.parse(JSON.parse(data));
+			return new Strategy(res);
+		});
+	}
 
+	constructor(public data: StrategyConfig) {}
+	private readonly comments = new WritableArray<Comment>([]);
+	private readonly paths = new WritableArray<Path>([]);
 
-    constructor(public data: StrategyConfig) {}
-    private readonly comments = new WritableArray<Comment>([]);
-    private readonly paths = new WritableArray<Path>([]);
-
-    private _rendered = false;
+	private _rendered = false;
 	render(target: HTMLDivElement, stack: Stack) {
-        if (this._rendered) {
-            throw new Error('Strategy already rendered');
-        }
-        this._rendered = true;
+		if (this._rendered) {
+			throw new Error('Strategy already rendered');
+		}
+		this._rendered = true;
 		target.style.position = 'relative';
 		target.style.width = '100%';
 		target.style.aspectRatio = '2 / 1';
@@ -64,10 +77,10 @@ export class Strategy {
 		field.src = `/assets/field/${this.data.year}.png`;
 		target.appendChild(field);
 
-        const unsubs: (() => void)[] = [];
-        const registerSub = (sub: () => void) => {
-            unsubs.push(sub);
-        }
+		const unsubs: (() => void)[] = [];
+		const registerSub = (sub: () => void) => {
+			unsubs.push(sub);
+		};
 
 		const tools: HTMLElement[] = [];
 		const registerTool = (el: HTMLElement) => {
@@ -166,30 +179,34 @@ export class Strategy {
 		registerTool(teamsContainer);
 
 		const comments = this.comments;
-        const paths = this.paths;
+		const paths = this.paths;
 
-        comments.set(this.data.comments.map(c => {
-            const comment = new Comment(c);
-            registerSub(comment.render(commentContainer, stack));
-            return comment;
-        }));
+		comments.set(
+			this.data.comments.map((c) => {
+				const comment = new Comment(c);
+				registerSub(comment.render(commentContainer, stack));
+				return comment;
+			})
+		);
 
-        paths.set(this.data.paths.map(p => {
-            const path = new Path(p);
-            registerSub(path.render(svg));
-            return path;
-        }));
+		paths.set(
+			this.data.paths.map((p) => {
+				const path = new Path(p);
+				registerSub(path.render(svg));
+				return path;
+			})
+		);
 
-        const deselect = () => {
-            comments.each(comment => comment.deselect());
-        }
+		const deselect = () => {
+			comments.each((comment) => comment.deselect());
+		};
 
-        const getSelected = () => {
-            return comments.data.filter(comment => comment.data.selected);
-        }
+		const getSelected = () => {
+			return comments.data.filter((comment) => comment.data.selected);
+		};
 
 		const oncontextmenu = (event: PointerEvent) => {
-            deselect();
+			deselect();
 			event.preventDefault();
 			const rect = target.getBoundingClientRect();
 			// normalized x and y between 0 and 1
@@ -204,30 +221,30 @@ export class Strategy {
 							name: 'add'
 						},
 						action: async () => {
-                            const res = await prompt('Enter comment text', {
-                                multiline: true,
-                            });
-                            if (!res) return;
-                            const newComment: CommentConfig = {
-                                position: [x, y],
-                                text: res,
-                                size: [150, 50],
-                                hidden: false,
-                                selected: true,
-                            };
-                            const comment = new Comment(newComment);
-                            registerSub(comment.render(commentContainer, stack));
+							const res = await prompt('Enter comment text', {
+								multiline: true
+							});
+							if (!res) return;
+							const newComment: CommentConfig = {
+								position: [x, y],
+								text: res,
+								size: [150, 50],
+								hidden: false,
+								selected: true
+							};
+							const comment = new Comment(newComment);
+							registerSub(comment.render(commentContainer, stack));
 							stack.push({
-                                do: async () => {
-                                    comments.push(comment);
-                                    comment.show();
-                                },
-                                undo: () => {
-                                    comments.remove(comment);
-                                    comment.hide();
-                                },
-                                name: 'Add Comment',
-                            });
+								do: async () => {
+									comments.push(comment);
+									comment.show();
+								},
+								undo: () => {
+									comments.remove(comment);
+									comment.hide();
+								},
+								name: 'Add Comment'
+							});
 						}
 					}
 				],
@@ -261,7 +278,7 @@ export class Strategy {
 		};
 
 		const down = (x: number, y: number) => {
-            deselect();
+			deselect();
 			const newPathConfig: PathConfig = {
 				points: [[x, y]],
 				color: currentColor
@@ -269,30 +286,30 @@ export class Strategy {
 
 			const path = new Path(newPathConfig);
 			let unrender = () => {};
-            setHidden(true);
+			setHidden(true);
 
-            stack.push({
-                do: () => {
-                    unrender = path.render(svg);
-                    paths.push(path);
-                    currentPath = path;
-                },
-                undo: () => {
-                    unrender();
-                    path.destroy();
-                    paths.remove(path);
-                    currentPath = null;
-                },
-                name: 'Draw Path',
-            });
+			stack.push({
+				do: () => {
+					unrender = path.render(svg);
+					paths.push(path);
+					currentPath = path;
+				},
+				undo: () => {
+					unrender();
+					path.destroy();
+					paths.remove(path);
+					currentPath = null;
+				},
+				name: 'Draw Path'
+			});
 		};
 		const move = (x: number, y: number) => {
 			if (!currentPath) return;
-            deselect();
+			deselect();
 			currentPath.update((config) => ({ ...config, points: [...config.points, [x, y]] }));
 		};
 		const up = () => {
-            deselect();
+			deselect();
 			currentPath = null;
 			setHidden(false);
 		};
@@ -381,64 +398,63 @@ export class Strategy {
 		target.addEventListener('touchmove', ontouchmove);
 		target.addEventListener('touchend', ontouchend);
 
-        const onkeydown = (event: KeyboardEvent) => {
-            switch (event.key) {
-                case 'Escape':
-                    deselect();
-                    break;
-                case 'Delete':
-                case 'Backspace':
-                    {const selected = getSelected();
-                    if (selected.length === 0) return;
-                    stack.push({
-                        do: () => {
-                            for (const comment of selected) {
-                                comment.hide();
-                            }
-                        },
-                        undo: () => {
-                            for (const comment of selected) {
-                                comment.show();
-                            }
-                        },
-                        name: 'Delete Comment(s)',
-                    });
-                    break;}
-            }
+		const onkeydown = (event: KeyboardEvent) => {
+			switch (event.key) {
+				case 'Escape':
+					deselect();
+					break;
+				case 'Delete':
+				case 'Backspace': {
+					const selected = getSelected();
+					if (selected.length === 0) return;
+					stack.push({
+						do: () => {
+							for (const comment of selected) {
+								comment.hide();
+							}
+						},
+						undo: () => {
+							for (const comment of selected) {
+								comment.show();
+							}
+						},
+						name: 'Delete Comment(s)'
+					});
+					break;
+				}
+			}
 
-            if (event.ctrlKey || event.metaKey) {
-                switch (event.key) {
-                    case 'a':
-                    {
-                        event.preventDefault();
-                        comments.each(c => c.select());
-                        break;
-                    }
-                    case 's':
-                        {
-                            event.preventDefault();
-                        const res = this.serialize();
-                        console.log(res);
-                        break;
-                    }
-                }
-            }
-        };
+			if (event.ctrlKey || event.metaKey) {
+				switch (event.key) {
+					case 'a': {
+						event.preventDefault();
+						comments.each((c) => c.select());
+						break;
+					}
+					case 's': {
+						event.preventDefault();
+						const res = this.serialize();
+						console.log(res);
+						break;
+					}
+				}
+			}
+		};
 
-        window.addEventListener('keydown', onkeydown);
+		window.addEventListener('keydown', onkeydown);
 
-        const prevStack = Stack.current;
-        Stack.use(stack);
+		const prevStack = Stack.current;
+		Stack.use(stack);
 
 		return () => {
-            if (prevStack) {
-                Stack.use(prevStack);
-            } else {
-                Stack.current = undefined;
-            }
+			if (prevStack) {
+				Stack.use(prevStack);
+			} else {
+				Stack.current = undefined;
+			}
 			for (const unsub of unsubs) {
-                unsub();
-            }
+				unsub();
+			}
 
 			target.removeEventListener('dblclick', ondblclick);
 			target.removeEventListener('contextmenu', oncontextmenu);
@@ -449,7 +465,7 @@ export class Strategy {
 			target.removeEventListener('touchmove', ontouchmove);
 			target.removeEventListener('touchend', ontouchend);
 
-            window.removeEventListener('keydown', onkeydown);
+			window.removeEventListener('keydown', onkeydown);
 
 			red.removeEventListener('click', onRed);
 			blue.removeEventListener('click', onBlue);
@@ -458,26 +474,26 @@ export class Strategy {
 			target.removeChild(field);
 			target.removeChild(svg);
 			target.removeChild(commentContainer);
-            this._rendered = false;
+			this._rendered = false;
 		};
 	}
 
-    serialize() {
-        const round = (num: number) => Math.round(num * 1000);
-        return {
-            comments: this.comments.data.map(c => ({
-                ...c.data,
-                position: c.data.position.map(round) as [number, number],
-                size: c.data.size.map(round) as [number, number],
-            })),
-            paths: this.paths.data.map(p => ({
-                ...p.data,
-                points: p.data.points.map(([x, y]) => [round(x), round(y)]),
-            })),
-            red: this.data.red,
-            blue: this.data.blue,
-            event: this.data.event,
-            year: this.data.year,
-        }
-    }
+	serialize() {
+		const round = (num: number) => Math.round(num * 1000);
+		return {
+			comments: this.comments.data.map((c) => ({
+				...c.data,
+				position: c.data.position.map(round) as [number, number],
+				size: c.data.size.map(round) as [number, number]
+			})),
+			paths: this.paths.data.map((p) => ({
+				...p.data,
+				points: p.data.points.map(([x, y]) => [round(x), round(y)])
+			})),
+			red: this.data.red,
+			blue: this.data.blue,
+			event: this.data.event,
+			year: this.data.year
+		};
+	}
 }

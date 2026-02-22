@@ -12,7 +12,13 @@
 	});
 </script>
 
-<div {@attach (div) => strategy.render(div, new Stack({
-    name: 'strategy',
-    debug: true,
-}))}></div>
+<div
+	{@attach (div) =>
+		strategy.render(
+			div,
+			new Stack({
+				name: 'strategy',
+				debug: true
+			})
+		)}
+></div>
