@@ -19,39 +19,12 @@ import { teamsFromMatch } from 'tatorscout/tba';
 import { Scouting } from './scouting';
 
 export namespace Strategy {
-	// export const MatchWhiteboards = new Struct({
-	// 	name: 'match_whiteboards',
-	// 	structure: {
-	// 		/** Event key this whiteboard belongs to. */
-	// 		eventKey: 'string',
-	// 		/** Match number for the whiteboard. */
-	// 		matchNumber: 'number',
-	// 		/** Competition level (qm, qf, sf, f). */
-	// 		compLevel: 'string',
-	// 		/** Serialized board data. */
-	// 		board: 'string',
-	// 		/** Display name for the whiteboard. */
-	// 		name: 'string'
-	// 	},
-	// 	socket: sse,
-	// 	browser
-	// });
-
-	// export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;
-
-	// export const Whiteboards = new Struct({
-	// 	name: 'whiteboards',
-	// 	structure: {
-	// 		name: 'string',
-	// 		strategyId: 'string'
-	// 	},
-	// 	socket: sse,
-	// 	browser
-	// });
-
-	// export type WhiteboardData = StructData<typeof Whiteboards.data.structure>;
-	// export type WhiteboardArr = DataArr<typeof Whiteboards.data.structure>;
-
+	/**
+	 * Struct for strategy records.
+	 *
+	 * @example
+	 * const strategy = Strategy.Strategy.get({ eventKey: '2025miket' }, { type: 'all' });
+	 */
 	export const Strategy = new Struct({
 		name: 'strategy',
 		structure: {
@@ -93,6 +66,12 @@ export namespace Strategy {
 		browser
 	});
 
+	/**
+	 * Extended wrapper for a strategy record, partners, opponents, and whiteboard.
+	 *
+	 * @example
+	 * const ext = Strategy.StrategyExtended.from(strategy, partners, opponents);
+	 */
 	export class StrategyExtended extends WritableBase<{
 		strategy: StrategyData;
 		whiteboard: Board;
@@ -103,6 +82,16 @@ export namespace Strategy {
 		opponent2: OpponentData;
 		opponent3: OpponentData;
 	}> {
+		/**
+		 * Create an extended wrapper from strategy, partners, opponents, and optional match.
+		 * @param strategy - Strategy record.
+		 * @param partners - Array of partner records.
+		 * @param opponents - Array of opponent records.
+		 * @param match - Optional TBAMatch for whiteboard context.
+		 * @returns Attempt-wrapped extended strategy.
+		 * @example
+		 * const ext = Strategy.StrategyExtended.from(strategy, partners, opponents, match).unwrap();
+		 */
 		public static from(
 			strategy: StrategyData,
 			partners: [PartnerData, PartnerData, PartnerData],
@@ -124,22 +113,42 @@ export namespace Strategy {
 			});
 		}
 
+		/**
+		 * Reactive derived store for strategy name.
+		 * @returns Derived writable for name.
+		 */
 		get name() {
 			return this.data.strategy.derive((s) => s.name);
 		}
 
+		/**
+		 * Reactive derived store for strategy notes.
+		 * @returns Derived writable for notes.
+		 */
 		get notes() {
 			return this.data.strategy.derive((s) => s.notes);
 		}
 
+		/**
+		 * Access the underlying strategy record.
+		 * @returns StrategyData instance.
+		 */
 		get strategy() {
 			return this.data.strategy;
 		}
 
+		/**
+		 * Access the whiteboard instance.
+		 * @returns Board instance.
+		 */
 		get board() {
 			return this.data.whiteboard;
 		}
 
+		/**
+		 * Array of partner records.
+		 * @returns Array of PartnerData.
+		 */
 		get partners() {
 			return [this.data.partner1, this.data.partner2, this.data.partner3] as [
 				PartnerData,
@@ -148,6 +157,10 @@ export namespace Strategy {
 			];
 		}
 
+		/**
+		 * Array of opponent records.
+		 * @returns Array of OpponentData.
+		 */
 		get opponents() {
 			return [this.data.opponent1, this.data.opponent2, this.data.opponent3] as [
 				OpponentData,
@@ -156,6 +169,10 @@ export namespace Strategy {
 			];
 		}
 
+		/**
+		 * Construct an extended strategy wrapper.
+		 * @param data - Object containing strategy, whiteboard, partners, and opponents.
+		 */
 		constructor(data: {
 			strategy: StrategyData;
 			whiteboard: Board;
@@ -192,6 +209,10 @@ export namespace Strategy {
 			);
 		}
 
+		/**
+		 * Save the current whiteboard state to the strategy record.
+		 * @returns Update result.
+		 */
 		save() {
 			return this.strategy.update((data) => {
 				return {
@@ -201,6 +222,10 @@ export namespace Strategy {
 			});
 		}
 
+		/**
+		 * Fetch scouting data for all partners.
+		 * @returns Array of MatchScoutingExtendedArr for each partner.
+		 */
 		getPartnerScouting() {
 			return attempt(() => {
 				return [this.data.partner1, this.data.partner2, this.data.partner3].map((partner) => {
@@ -218,6 +243,10 @@ export namespace Strategy {
 			});
 		}
 
+		/**
+		 * Fetch scouting data for all opponents.
+		 * @returns Array of MatchScoutingExtendedArr for each opponent.
+		 */
 		getOpponentScouting() {
 			return attempt(() => {
 				return [this.data.opponent1, this.data.opponent2, this.data.opponent3].map((opponent) => {
@@ -238,13 +267,12 @@ export namespace Strategy {
 
 	/**
 	 * Fetch strategy records that match the event and match identifiers.
-	 *
-	 * @returns {ReturnType<typeof Strategy.get>} Struct query result.
-	 *
+	 * @param eventKey - Event key.
+	 * @param matchNumber - Match number.
+	 * @param compLevel - Competition level.
+	 * @returns AttemptAsync-wrapped array of StrategyExtended.
 	 * @example
-	 * ```ts
 	 * const strategies = Strategy.fromMatch('2025miket', 12, 'qm');
-	 * ```
 	 */
 	export const fromMatch = (eventKey: string, matchNumber: number, compLevel: string) => {
 		return attemptAsync(async () => {
@@ -262,6 +290,14 @@ export namespace Strategy {
 		});
 	};
 
+	/**
+	 * Fetch a strategy record by id, optionally matching against provided TBAMatch array.
+	 * @param id - Strategy record id.
+	 * @param matches - Optional array of TBAMatch.
+	 * @returns AttemptAsync-wrapped StrategyExtended.
+	 * @example
+	 * const ext = await Strategy.fromId('abc123', matches).unwrap();
+	 */
 	export const fromId = (id: string, matches: TBAMatch[] = []) => {
 		return attemptAsync(async () => {
 			const data = await remote.fromId({ id });
@@ -284,9 +320,24 @@ export namespace Strategy {
 		});
 	};
 
+	/**
+	 * Type for a strategy record.
+	 * @example
+	 * const s: Strategy.StrategyData = ...;
+	 */
 	export type StrategyData = StructData<typeof Strategy.data.structure>;
+	/**
+	 * Type for an array of strategy records.
+	 * @example
+	 * const arr: Strategy.StrategyArr = ...;
+	 */
 	export type StrategyArr = DataArr<typeof Strategy.data.structure>;
 
+	/**
+	 * Struct for partner records.
+	 * @example
+	 * const partner = Strategy.Partners.get({ number: 33 }, { type: 'all' });
+	 */
 	export const Partners = new Struct({
 		name: 'strategy_partners',
 		structure: {
@@ -309,9 +360,24 @@ export namespace Strategy {
 		browser
 	});
 
+	/**
+	 * Type for a partner record.
+	 * @example
+	 * const p: Strategy.PartnerData = ...;
+	 */
 	export type PartnerData = StructData<typeof Partners.data.structure>;
+	/**
+	 * Type for an array of partner records.
+	 * @example
+	 * const arr: Strategy.PartnerArr = ...;
+	 */
 	export type PartnerArr = DataArr<typeof Partners.data.structure>;
 
+	/**
+	 * Struct for opponent records.
+	 * @example
+	 * const opponent = Strategy.Opponents.get({ number: 254 }, { type: 'all' });
+	 */
 	export const Opponents = new Struct({
 		name: 'strategy_opponents',
 		structure: {
@@ -331,26 +397,26 @@ export namespace Strategy {
 		socket: sse,
 		browser
 	});
+	/**
+	 * Type for an opponent record.
+	 * @example
+	 * const o: Strategy.OpponentData = ...;
+	 */
 	export type OpponentData = StructData<typeof Opponents.data.structure>;
+	/**
+	 * Type for an array of opponent records.
+	 * @example
+	 * const arr: Strategy.OpponentArr = ...;
+	 */
 	export type OpponentArr = DataArr<typeof Opponents.data.structure>;
 
-	// export const Alliances = new Struct({
-	// 	name: 'alliances',
-	// 	structure: {
-	// 		name: 'string',
-	// 		eventKey: 'string',
-	// 		team1: 'number',
-	// 		team2: 'number',
-	// 		team3: 'number',
-	// 		team4: 'number'
-	// 	},
-	// 	socket: sse,
-	// 	browser
-	// });
-
-	// export type AlliancesData = StructData<typeof Alliances.data.structure>;
-	// export type AlliancesArr = DataArr<typeof Alliances.data.structure>;
-
+	/**
+	 * Create a new strategy record for a match and alliance.
+	 * @param config - Object containing match, name, and alliance.
+	 * @returns AttemptAsync-wrapped Strategy record.
+	 * @example
+	 * const s = await Strategy.create({ match, name: 'My Strat', alliance: 'red' }).unwrap();
+	 */
 	export const create = (config: { match: TBAMatch; name: string; alliance: 'red' | 'blue' }) => {
 		return attemptAsync(async () => {
 			const [r1, r2, r3, b1, b2, b3] = teamsFromMatch(config.match.tba);

@@ -5,6 +5,15 @@ import { prompt } from '$lib/utils/prompts';
 import { Stack } from '$lib/utils/stack';
 import { Board } from './index';
 
+/**
+ * Configuration for a whiteboard comment.
+ * @typedef CommentConfig
+ * @property {Point2D} position - Position of the comment.
+ * @property {string} text - Comment text.
+ * @property {Point2D} size - Size of the comment.
+ * @property {boolean} hidden - Whether the comment is hidden.
+ * @property {boolean} selected - Whether the comment is selected.
+ */
 export type CommentConfig = {
 	position: Point2D;
 	text: string;
@@ -13,13 +22,28 @@ export type CommentConfig = {
 	selected: boolean;
 };
 
+/**
+ * Whiteboard comment element with rendering, selection, and serialization.
+ * @extends WritableBase<CommentConfig>
+ */
 export class Comment extends WritableBase<CommentConfig> {
+	/**
+	 * Construct a comment instance.
+	 * @param {CommentConfig} data - Comment configuration.
+	 * @param {Board} board - Parent board instance.
+	 */
 	constructor(
 		data: CommentConfig,
 		public board: Board
 	) {
 		super(data);
 	}
+	/**
+	 * Render the comment onto a div element and attach interactions.
+	 * @param {HTMLDivElement} target - Div element to render into.
+	 * @param {Stack} stack - Undo/redo stack.
+	 * @returns {() => void} Cleanup function to remove the comment.
+	 */
 	render(target: HTMLDivElement, stack: Stack) {
 		const container = document.createElement('div');
 		container.style.zIndex = '10';
@@ -236,21 +260,31 @@ export class Comment extends WritableBase<CommentConfig> {
 		};
 	}
 
+	/**
+	 * Hide the comment.
+	 */
 	hide() {
 		this.update((config) => ({ ...config, hidden: true }));
 	}
 
+	/**
+	 * Show the comment.
+	 */
 	show() {
 		this.update((config) => ({ ...config, hidden: false }));
 	}
 
+	/**
+	 * Select the comment.
+	 */
 	select() {
 		this.update((config) => ({ ...config, selected: true }));
 	}
 
+	/**
+	 * Deselect the comment.
+	 */
 	deselect() {
 		this.update((config) => ({ ...config, selected: false }));
 	}
-
-	serialize() {}
 }

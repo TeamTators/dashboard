@@ -311,6 +311,16 @@ export namespace Scouting {
 		 * slidersStore.subscribe((value) => console.log(value));
 		 */
 		getSliders(
+			/**
+			 * Parse the sliders map from the record.
+			 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
+			 * @returns Sliders map as a plain object or reactive writable.
+			 * @example
+			 * const sliders = ext.getSliders(false);
+			 * const defense = sliders.defense?.value ?? 0;
+			 * const slidersStore = ext.getSliders(true);
+			 * slidersStore.subscribe((value) => console.log(value));
+			 */
 			reactive: false
 		): Result<Record<string, { value: number; text: string; color: string }>>;
 		getSliders(
@@ -377,6 +387,18 @@ export namespace Scouting {
 		 * contribStore.subscribe((value) => console.log(value));
 		 */
 		getContribution(
+			/**
+			 * Count action contributions from trace points.
+			 * @param year - Competition year.
+			 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
+			 * @param actionLabels - If true, returns action labels; otherwise returns raw keys.
+			 * @returns Contribution map as a plain object or reactive writable.
+			 * @example
+			 * const contrib = ext.getContribution(false);
+			 * const score = contrib.Score ?? 0;
+			 * const contribStore = ext.getContribution(true);
+			 * contribStore.subscribe((value) => console.log(value));
+			 */
 			year: number,
 			reactive: false,
 			actionLabels?: boolean
@@ -432,6 +454,13 @@ export namespace Scouting {
 	 */
 	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
 		/**
+		 * Writable array wrapper for extended scouting records.
+		 * @param arr - Extended scouting records.
+		 * @param team - Team number for the wrapper.
+		 * @example
+		 * const extArr = new Scouting.MatchScoutingExtendedArr([ext], 33);
+		 */
+		/**
 		 * Convert a Struct array or plain array into an extended array wrapper.
 		 *
 		 * @param arr - Struct array or raw array of records.
@@ -441,6 +470,14 @@ export namespace Scouting {
 		 * const extArr = Scouting.MatchScoutingExtendedArr.fromArr(res).unwrap();
 		 */
 		static fromArr(arr: MatchScoutingArr | MatchScoutingData[], team: number) {
+			/**
+			 * Convert a Struct array or plain array into an extended array wrapper.
+			 * @param arr - Struct array or raw array of records.
+			 * @param team - Team number for the wrapper.
+			 * @returns Attempt-wrapped extended array.
+			 * @example
+			 * const extArr = Scouting.MatchScoutingExtendedArr.fromArr(res, 33).unwrap();
+			 */
 			return attempt(() => {
 				const data = arr instanceof DataArr ? arr.data : arr;
 				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
@@ -485,6 +522,12 @@ export namespace Scouting {
 		 * const copy = extArr.clone();
 		 */
 		clone() {
+			/**
+			 * Shallow clone the array wrapper.
+			 * @returns New wrapper with the same items.
+			 * @example
+			 * const copy = extArr.clone();
+			 */
 			return new MatchScoutingExtendedArr([...this.data], this.team);
 		}
 
@@ -503,6 +546,16 @@ export namespace Scouting {
 		 * summaryStore.subscribe((value) => console.log(value));
 		 */
 		checksSummary(reactive: false): Result<Record<string, number>>;
+		/**
+		 * Summarize checks across all records.
+		 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
+		 * @returns Check counts as a plain object or reactive writable.
+		 * @example
+		 * const summary = extArr.checksSummary(false);
+		 * const intakeCount = summary.Intake ?? 0;
+		 * const summaryStore = extArr.checksSummary(true);
+		 * summaryStore.subscribe((value) => console.log(value));
+		 */
 		checksSummary(reactive: true): WritableBase<Record<string, number>>;
 		checksSummary(reactive: boolean) {
 			if (reactive) {
@@ -590,6 +643,16 @@ export namespace Scouting {
 			}
 		}
 
+		/**
+		 * Compute parsed breakdown totals for auto, teleop, endgame, and overall.
+		 * @param year - Competition year.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain object.
+		 * @returns Parsed breakdown as a plain object or reactive writable.
+		 * @example
+		 * const breakdown = extArr.breakdown(2025, false).unwrap();
+		 * const breakdownStore = extArr.breakdown(2025, true);
+		 * breakdownStore.subscribe((value) => console.log(value));
+		 */
 		breakdown(year: number, reactive: false): Result<ParsedBreakdown<string>>;
 		breakdown(year: number, reactive: true): WritableBase<ParsedBreakdown<string>>;
 		breakdown(year: number, reactive: boolean) {
@@ -655,6 +718,15 @@ export namespace Scouting {
 			}
 		}
 
+		/**
+		 * Compute average velocity across all records.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain number.
+		 * @returns Average velocity as a number or reactive writable.
+		 * @example
+		 * const avg = extArr.averageVelocity(false).unwrap();
+		 * const avgStore = extArr.averageVelocity(true);
+		 * avgStore.subscribe((value) => console.log(value));
+		 */
 		averageVelocity(reactive: false): Result<number>;
 		averageVelocity(reactive: true): WritableBase<number>;
 		averageVelocity(reactive: boolean): Result<number> | WritableBase<number> {
@@ -670,6 +742,15 @@ export namespace Scouting {
 			else return attempt(() => get(this.data));
 		}
 
+		/**
+		 * Compute average seconds not moving across all records.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain number.
+		 * @returns Average seconds not moving as a number or reactive writable.
+		 * @example
+		 * const avg = extArr.averageSecondsNotMoving(false).unwrap();
+		 * const avgStore = extArr.averageSecondsNotMoving(true);
+		 * avgStore.subscribe((value) => console.log(value));
+		 */
 		averageSecondsNotMoving(reactive: false): Result<number>;
 		averageSecondsNotMoving(reactive: true): WritableBase<number>;
 		averageSecondsNotMoving(reactive: boolean): Result<number> | WritableBase<number> {
@@ -685,6 +766,15 @@ export namespace Scouting {
 			else return attempt(() => get(this.data));
 		}
 
+		/**
+		 * Find the team object for this wrapper's team number from a TBA event.
+		 * @param event - TBAEvent instance.
+		 * @param force - If true, forces a fresh fetch.
+		 * @param expires - Expiry date for cache.
+		 * @returns AttemptAsync-wrapped team object.
+		 * @example
+		 * const teamObj = await extArr.getTeam(event, false, new Date()).unwrap();
+		 */
 		getTeam(event: TBAEvent, force: boolean, expires: Date) {
 			return attemptAsync(async () => {
 				const teams = await event.getTeams(force, expires).unwrap();
@@ -1363,6 +1453,13 @@ export namespace Scouting {
 		};
 	}
 
+	/**
+	 * Get year-specific game info object.
+	 * @param year - Competition year.
+	 * @returns Attempt-wrapped year info object.
+	 * @example
+	 * const info = Scouting.getYearInfo(2025).unwrap();
+	 */
 	export const getYearInfo = (year: number) => {
 		return attempt(() => {
 			switch (year) {

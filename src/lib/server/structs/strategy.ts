@@ -12,40 +12,6 @@ import structRegistry from '../services/struct-registry';
 import terminal from '../utils/terminal';
 
 export namespace Strategy {
-	// export const MatchWhiteboards = new Struct({
-	// 	name: 'match_whiteboards',
-	// 	structure: {
-	// 		/** Event key for the whiteboard. */
-	// 		eventKey: text('event_key').notNull(),
-	// 		/** Match number. */
-	// 		matchNumber: integer('match_number').notNull(),
-	// 		/** Competition level (qm, qf, sf, f). */
-	// 		compLevel: text('comp_level').notNull(),
-	// 		/** Serialized whiteboard data. */
-	// 		board: text('board').notNull(),
-	// 		/** Display name for the whiteboard. */
-	// 		name: text('name').notNull()
-	// 	}
-	// });
-
-	// structRegistry.register(MatchWhiteboards);
-
-	// export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;
-
-	// export const Whiteboards = new Struct({
-	// 	name: 'whiteboards',
-	// 	structure: {
-	// 		/** Parent strategy id. */
-	// 		strategyId: text('strategy_id').notNull(),
-	// 		/** Serialized whiteboard data. */
-	// 		board: text('board').notNull(),
-	// 		/** Display name for the whiteboard. */
-	// 		name: text('name').notNull()
-	// 	}
-	// });
-
-	// structRegistry.register(Whiteboards);
-
 	export const Strategy = new Struct({
 		name: 'strategy',
 		structure: {
@@ -102,6 +68,20 @@ export namespace Strategy {
 	}) => {
 		return attemptAsync(async () => {
 			const { partners, opponents, ...strategyConfig } = config;
+			if (partners.length !== 3) {
+				throw new Error(
+					'Partners length is not correct: ' +
+						partners.length +
+						' - Must be 3 partners for a strategy'
+				);
+			}
+			if (opponents.length !== 3) {
+				throw new Error(
+					'Opponents length is not correct: ' +
+						opponents.length +
+						' - Must be 3 opponents for a strategy'
+				);
+			}
 			const defaultPartner = {
 				startingPosition: '',
 				auto: '',
@@ -178,10 +158,13 @@ export namespace Strategy {
 				}
 			).unwrap();
 			for (const data of [...partners, ...opponents]) {
-				await data.delete();
+				await data.delete().unwrap();
 			}
 		} catch (error) {
-			terminal.error('Failed to delete strategy partners/opponents', error);
+			terminal.error(
+				'Failed to delete strategy partners/opponents when deleting strategy: ' + strategy.id,
+				error
+			);
 		}
 	});
 
@@ -200,10 +183,13 @@ export namespace Strategy {
 				}
 			).unwrap();
 			for (const data of [...partners, ...opponents]) {
-				data.setArchive(true);
+				data.setArchive(true).unwrap();
 			}
 		} catch (error) {
-			terminal.error('Failed to archive strategy partners/opponents', error);
+			terminal.error(
+				'Failed to archive strategy partners/opponents when archiving strategy: ' + strategy.id,
+				error
+			);
 		}
 	});
 
@@ -222,10 +208,13 @@ export namespace Strategy {
 				}
 			).unwrap();
 			for (const data of [...partners, ...opponents]) {
-				data.setArchive(false);
+				data.setArchive(false).unwrap();
 			}
 		} catch (error) {
-			terminal.error('Failed to restore strategy partners/opponents', error);
+			terminal.error(
+				'Failed to restore strategy partners/opponents when restoring strategy: ' + strategy.id,
+				error
+			);
 		}
 	});
 
@@ -264,7 +253,11 @@ export namespace Strategy {
 			).unwrap();
 
 			if (partners.length !== 3)
-				throw new Error('Partners length is not correct: ' + partners.length);
+				throw new Error(
+					'Partners length is not correct: ' +
+						partners.length +
+						' - Must be 3 partners for a strategy'
+				);
 			const order = [strategy.data.partner1, strategy.data.partner2, strategy.data.partner3];
 			return partners.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
 		});
@@ -299,7 +292,11 @@ export namespace Strategy {
 			).unwrap();
 
 			if (opponents.length !== 3)
-				throw new Error('Opponents length is not correct: ' + opponents.length);
+				throw new Error(
+					'Opponents length is not correct: ' +
+						opponents.length +
+						' - Must be 3 opponents for a strategy'
+				);
 			const order = [strategy.data.opponent1, strategy.data.opponent2, strategy.data.opponent3];
 			return opponents.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
 		});
@@ -360,17 +357,15 @@ export namespace Strategy {
 
 	Permissions.createEntitlement({
 		name: 'view-strategy',
-		structs: [/* Whiteboards, */ Strategy, Alliances],
-		permissions: [/* 'whiteboards:read:*', */ 'strategy:read:*', 'alliances:read:*'],
+		structs: [Strategy, Alliances],
+		permissions: ['strategy:read:*', 'alliances:read:*'],
 		group: 'Strategy',
 		description: 'View strategy information',
 		features: []
 	});
 }
 
-// export const _strategyWhiteboardsTable = Strategy.Whiteboards.table;
 export const _strategyTable = Strategy.Strategy.table;
 export const _strategyAlliancesTable = Strategy.Alliances.table;
 export const _strategyPartnersTable = Strategy.Partners.table;
 export const _strategyOpponentsTable = Strategy.Opponents.table;
-// export const _matchWhiteboardsTable = Strategy.MatchWhiteboards.table;

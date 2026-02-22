@@ -119,22 +119,6 @@ export default (event: TBAEvent) => {
 				},
 				external: true
 			},
-			// {
-			// 	name: 'Qualifications Strategy',
-			// 	href: 'https://padlet.com/tatorscout/bordie-strategy-sheet-xvmkd3uf631sg64s',
-			// 	icon: {
-			// 		type: 'material-icons',
-			// 		name: 'assessment'
-			// 	}
-			// },
-			// {
-			// 	name: 'Playoff Strategy',
-			// 	href: 'https://padlet.com/tatorscout/eliminations-bordie-26u9obktpg4da31v',
-			// 	icon: {
-			// 		type: 'material-icons',
-			// 		name: 'insights'
-			// 	}
-			// },
 			{
 				name: 'Strategy',
 				href: `/dashboard/event/${event.key}/strategy`,
@@ -142,7 +126,6 @@ export default (event: TBAEvent) => {
 					type: 'material-icons',
 					name: 'assessment'
 				}
-				// external: true
 			},
 			{
 				name: 'Checklist',

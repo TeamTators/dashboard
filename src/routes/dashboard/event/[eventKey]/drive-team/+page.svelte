@@ -14,6 +14,7 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { prompt } from '$lib/utils/prompts.js';
 	import StrategyGrid from '$lib/components/strategy/StrategyGrid.svelte';
+	import { goto } from '$app/navigation';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -201,7 +202,7 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 								alert('Failed to create strategy. Please try again later.');
 							} else {
 								const strategy = res.value;
-								window.location.href = `/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`;
+								goto(`/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`);
 							}
 						}}>Create Strategy</button
 					>

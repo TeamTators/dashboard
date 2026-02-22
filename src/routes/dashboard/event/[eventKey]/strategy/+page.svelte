@@ -1,41 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Strategy } from '$lib/model/strategy';
-	import { onMount } from 'svelte';
-	import nav from '$lib/nav/robot-display.js';
-	import { TBAEvent, TBAMatch } from '$lib/utils/tba';
-	import { tomorrow } from 'ts-utils';
 	import StrategyGrid from '$lib/components/strategy/StrategyGrid.svelte';
 	import { alert, prompt, select } from '$lib/utils/prompts';
 	import { teamsFromMatch } from 'tatorscout/tba';
 	import { goto } from '$app/navigation';
-
-	let strategies = $state(Strategy.Strategy.arr());
-	let matches: TBAMatch[] = $state([]);
-
-	onMount(() => {
-		strategies = Strategy.Strategy.get(
-			{
-				eventKey: String(page.params.eventKey)
-			},
-			{
-				type: 'all'
-			}
-		);
-
-		TBAEvent.getEvent(String(page.params.eventKey), false, tomorrow()).then(async (res) => {
-			if (res.isOk()) {
-				nav(res.value.tba);
-				const matchesRes = await res.value.getMatches(false, tomorrow());
-				if (matchesRes.isOk()) {
-					matches = matchesRes.value;
-				} else {
-					console.error(matchesRes.error);
-					alert('Error loading strategies: Could not load the match data. Please try again later.');
-				}
-			}
-		});
-	});
+	const { data } = $props();
+	const strategies = $derived(data.strategies);
+	const matches = $derived(data.matches);
 </script>
 
 <div class="container">
@@ -67,7 +39,7 @@
 				const strategy = await Strategy.create({
 					match,
 					name,
-					alliance: teams.indexOf(2122) < 2 ? 'red' : 'blue'
+					alliance: teams.indexOf(2122) < 3 ? 'red' : 'blue'
 				});
 				if (strategy.isErr()) {
 					console.error(strategy.error);

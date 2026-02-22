@@ -171,10 +171,14 @@ older versions.
 					>
 						<i class="material-icons"> archive </i> Archive Scouting Data
 					</button>
-					{#if strategies}
-						<StrategyGrid {strategies} />
-					{/if}
 				</div>
+			</div>
+		</div>
+		<div class="row mb-3">
+			<div class="col-12">
+				{#if strategies}
+					<StrategyGrid {strategies} />
+				{/if}
 			</div>
 		</div>
 		{#if $versions.length}

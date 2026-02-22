@@ -10,6 +10,7 @@
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import StrategyGrid from '$lib/components/strategy/StrategyGrid.svelte';
 	import { prompt } from '$lib/utils/prompts.js';
+	import { goto } from '$app/navigation';
 
 	const { data } = $props();
 
@@ -253,7 +254,7 @@
 				});
 
 				if (newStrategy.isOk()) {
-					window.location.href = `/dashboard/event/${event.tba.key}/strategy/${newStrategy.value.data.id}`;
+					goto(`/dashboard/event/${event.tba.key}/strategy/${newStrategy.value.data.id}`);
 				} else {
 					console.error('Failed to create strategy:', newStrategy.error);
 					alert('Failed to create strategy. Please try again later.');

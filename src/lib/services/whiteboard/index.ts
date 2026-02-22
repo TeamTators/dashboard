@@ -10,6 +10,12 @@ import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
 import type { Point2D } from 'math/point';
 
+/**
+ * Configuration for a whiteboard board.
+ * @typedef BoardConfig
+ * @property {CommentConfig[]} comments - Array of comment configs.
+ * @property {PathConfig[]} paths - Array of path configs.
+ */
 type BoardConfig = {
 	comments: CommentConfig[];
 	paths: PathConfig[];
@@ -47,13 +53,22 @@ const driveTeamPositions: {
 	}
 };
 
+/**
+ * Whiteboard board element with rendering, serialization, and state management.
+ */
 export class Board {
-	private readonly em = new SimpleEventEmitter<'change' | 'incomming'>();
+	private readonly em = new SimpleEventEmitter<'change' | 'incoming'>();
 
 	public readonly on = this.em.on.bind(this.em);
 	public readonly off = this.em.off.bind(this.em);
 	public readonly emit = this.em.emit.bind(this.em);
 
+	/**
+	 * Create a Board instance from serialized data.
+	 * @param {string} data - Serialized board data.
+	 * @param {TBAMatch} [match] - Optional match context.
+	 * @returns {Attempt<Board>} Attempt-wrapped Board instance.
+	 */
 	public static from(data: string, match?: TBAMatch) {
 		return attempt(() => {
 			const res = z
@@ -87,6 +102,11 @@ export class Board {
 		});
 	}
 
+	/**
+	 * Construct a Board instance.
+	 * @param {BoardConfig} data - Board configuration.
+	 * @param {TBAMatch} [match] - Optional match context.
+	 */
 	constructor(
 		public data: BoardConfig,
 		public readonly match?: TBAMatch
@@ -95,6 +115,12 @@ export class Board {
 	private readonly paths = new WritableArray<Path>([]);
 
 	private _rendered = false;
+	/**
+	 * Render the board onto a div element and attach interactions.
+	 * @param {HTMLDivElement} target - Div element to render into.
+	 * @param {Stack} stack - Undo/redo stack.
+	 * @returns {() => void} Cleanup function to cleanup board rendering.
+	 */
 	render(target: HTMLDivElement, stack: Stack) {
 		if (this._rendered) {
 			throw new Error('Strategy already rendered');
@@ -486,13 +512,6 @@ export class Board {
 		const prevStack = Stack.current;
 		Stack.use(stack);
 
-		registerSub(
-			this.on('incomming', () => {
-				cleanup();
-				this.render(target, stack);
-			})
-		);
-
 		const cleanup = () => {
 			this._rendered = false;
 			stack.clear();
@@ -524,9 +543,20 @@ export class Board {
 				tool.remove();
 			}
 		};
+		registerSub(
+			this.on('incoming', () => {
+				cleanup();
+				this.render(target, stack);
+			})
+		);
 		return cleanup;
 	}
 
+	/**
+	 * Serialize the board to a storable format.
+	 * This will round all positions and sizes to 3 decimal places to reduce storage size while maintaining reasonable accuracy.
+	 * @returns {string} Serialized board data.
+	 */
 	serialize() {
 		const round = (num: number) => Math.round(num * 1000);
 		return JSON.stringify({
@@ -544,8 +574,12 @@ export class Board {
 		});
 	}
 
+	/**
+	 * Set the board state and emit update event.
+	 * @param {BoardConfig} data - New board configuration.
+	 */
 	setState(data: BoardConfig) {
 		this.data = data;
-		this.emit('incomming');
+		this.emit('incoming');
 	}
 }

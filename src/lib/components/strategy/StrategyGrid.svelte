@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Strategy } from '$lib/model/strategy';
 	import { contextmenu } from '$lib/utils/contextmenu';
 	import { confirm } from '$lib/utils/prompts';
@@ -26,7 +27,7 @@
 		],
 		onRowDoubleClicked: (params) => {
 			if (!params.data) return;
-			window.location.href = `/dashboard/event/${params.data.data.eventKey}/strategy/${params.data.data.id}`;
+			goto(`/dashboard/event/${params.data.data.eventKey}/strategy/${params.data.data.id}`);
 		},
 		preventDefaultOnContextMenu: true,
 		onCellContextMenu: (params) => {
@@ -37,7 +38,7 @@
 					{
 						name: 'View/Edit',
 						action: () => {
-							window.location.href = `/dashboard/event/${strategy.data.eventKey}/strategy/${strategy.data.id}`;
+							goto(`/dashboard/event/${strategy.data.eventKey}/strategy/${strategy.data.id}`);
 						},
 						icon: {
 							type: 'material-icons',
@@ -49,7 +50,7 @@
 						action: async () => {
 							if (
 								await confirm(
-									'Are you sure you want to archive this strategy? This action cannot be undone.'
+									'Are you sure you want to archive this strategy? You can restore it later from the archived strategies viewer.'
 								)
 							) {
 								strategy.setArchive(true);
