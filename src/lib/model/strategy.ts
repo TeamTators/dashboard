@@ -105,10 +105,11 @@ export namespace Strategy {
 		public static from(
 			strategy: StrategyData,
 			partners: [PartnerData, PartnerData, PartnerData],
-			opponents: [OpponentData, OpponentData, OpponentData]
+			opponents: [OpponentData, OpponentData, OpponentData],
+			match?: TBAMatch,
 		) {
 			return attempt(() => {
-				const whiteboard = Board.from(String(strategy.data.board)).unwrap();
+				const whiteboard = Board.from(String(strategy.data.board), match).unwrap();
 				return new StrategyExtended({
 					strategy: strategy,
 					whiteboard,
@@ -227,16 +228,24 @@ export namespace Strategy {
 		});
 	};
 
-	export const fromId = (id: string) => {
+	export const fromId = (id: string, matches: TBAMatch[] = []) => {
 		return attemptAsync(async () => {
 			const data = await remote.fromId({ id });
 			const strategy = Strategy.Generator(data.strategy);
 			const partners = data.partners.map((p) => Partners.Generator(p));
 			const opponents = data.opponents.map((o) => Opponents.Generator(o));
+			const match = matches.find((m) => {
+				return (
+					m.tba.event_key === data.strategy.eventKey &&
+					m.tba.match_number === data.strategy.matchNumber &&
+					m.tba.comp_level === data.strategy.compLevel
+				);
+			});
 			return StrategyExtended.from(
 				strategy,
 				partners as [PartnerData, PartnerData, PartnerData],
-				opponents as [OpponentData, OpponentData, OpponentData]
+				opponents as [OpponentData, OpponentData, OpponentData],
+				match,
 			).unwrap();
 		});
 	};

@@ -8,10 +8,51 @@ import { attempt, SimpleEventEmitter } from 'ts-utils';
 import z from 'zod';
 import type { TBAMatch } from '$lib/utils/tba';
 import { teamsFromMatch } from 'tatorscout/tba';
+import type { Point2D } from 'math/point';
 
 type BoardConfig = {
 	comments: CommentConfig[];
 	paths: PathConfig[];
+};
+
+const driveTeamPositions: {
+	[year: number]: {
+		red: [
+			Point2D,
+			Point2D,
+			Point2D,
+		];
+		blue: [
+			Point2D,
+			Point2D,
+			Point2D,
+		];
+	}
+} = {
+	2026: {
+		red: [
+			[0.05, 0.25],
+			[0.05, 0.4],
+			[0.05, 0.6]
+		],
+		blue: [
+			[0.95, 0.3],
+			[0.95, 0.6],
+			[0.95, 0.75]
+		],
+	},
+	2025: {
+		red: [
+			[0, 0.3],
+			[0, 0.5],
+			[0, 0.7]
+		],
+		blue: [
+			[0.95, 0.3],
+			[0.95, 0.5],
+			[0.95, 0.7]
+		],
+	}
 };
 
 export class Board {
@@ -92,6 +133,45 @@ export class Board {
 			el.style.transition = 'all 0.3s';
 			tools.push(el);
 		};
+		if (this.match) {
+			const teamsContainer = document.createElement('div');
+			teamsContainer.style.position = 'absolute';
+			teamsContainer.style.left = '0px';
+			teamsContainer.style.top = '0px';
+			teamsContainer.style.width = '100%';
+			teamsContainer.style.height = '100%';
+			const [r1, r2, r3, b1, b2, b3] = teamsFromMatch(this.match.tba);
+			for (let i = 0; i < 3; i++) {
+				const red = [r1, r2, r3][i];
+				const a = document.createElement('a');
+				a.textContent = `${red}`;
+				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${red}`;
+				a.style.display = 'block';
+				a.style.position = 'absolute';
+				a.classList.add('btn', 'btn-danger', 'btn-sm');
+				const pos = driveTeamPositions[this.match.event.tba.year]?.red[i] || [0.9, 0.1 + i * 0.1];
+				a.style.left = pos[0] * 100 + '%';
+				a.style.top = pos[1] * 100 + '%';
+				a.style.transform = 'translate(50%, -50%)';
+				teamsContainer.appendChild(a);
+			}
+			for (let i = 0; i < 3; i++) {
+				const blue = [b1, b2, b3][i];
+				const a = document.createElement('a');
+				a.textContent = `${blue}`;
+				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${blue}`;
+				a.style.display = 'block';
+				a.style.position = 'absolute';
+				a.classList.add('btn', 'btn-primary', 'btn-sm');
+				const pos = driveTeamPositions[this.match.event.tba.year]?.blue[i] || [0.1, 0.1 + i * 0.1];
+				a.style.left = pos[0] * 100 + '%';
+				a.style.top = pos[1] * 100 + '%';
+				a.style.transform = 'translate(-50%, -50%)';
+				teamsContainer.appendChild(a);
+			}
+			target.appendChild(teamsContainer);
+			registerTool(teamsContainer);
+		}
 
 		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		svg.style.position = 'absolute';
@@ -139,31 +219,6 @@ export class Board {
 		createColor('Red', 'red');
 		createColor('Blue', 'blue');
 		createColor('Black', 'black');
-		if (this.match) {
-			const teamsContainer = document.createElement('div');
-			teamsContainer.style.position = 'absolute';
-			teamsContainer.style.right = '10px';
-			teamsContainer.style.top = '10px';
-			const [r1, r2, r3, b1, b2, b3] = teamsFromMatch(this.match.tba);
-			for (const red of [r1, r2, r3]) {
-				const a = document.createElement('a');
-				a.textContent = `${red}`;
-				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${red}`;
-				a.style.display = 'block';
-				a.classList.add('btn', 'btn-danger', 'btn-sm');
-				teamsContainer.appendChild(a);
-			}
-			for (const blue of [b1, b2, b3]) {
-				const a = document.createElement('a');
-				a.textContent = `${blue}`;
-				a.href = `/dashboard/event/${this.match.event.tba.key}/team/${blue}`;
-				a.style.display = 'block';
-				a.classList.add('btn', 'btn-primary', 'btn-sm');
-				teamsContainer.appendChild(a);
-			}
-			target.appendChild(teamsContainer);
-			registerTool(teamsContainer);
-		}
 
 		const comments = this.comments;
 		const paths = this.paths;
@@ -307,10 +362,9 @@ export class Board {
 		const isTool = (event: Event) => {
 			if (!(event.target instanceof HTMLElement)) return false;
 			// iterate through the parents of the event target to see if any of them have the class 'comment-container'
-			let el: HTMLElement | null = event.target;
-			while (el) {
-				if (el.classList.contains('comment')) return true;
-				el = el.parentElement;
+
+			if (commentContainer.contains(event.target) && event.target !== commentContainer) {
+				return true;
 			}
 
 			if (
@@ -342,7 +396,9 @@ export class Board {
 			move(x, y);
 		};
 
-		const onmouseup = () => {
+		const onmouseup = (event: MouseEvent) => {
+			if (event.button !== 0) return;
+			if (isTool(event)) return;
 			up();
 		};
 

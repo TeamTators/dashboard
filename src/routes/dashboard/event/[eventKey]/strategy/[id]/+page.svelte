@@ -12,28 +12,32 @@
 	let event: TBAEvent | undefined = $state(undefined);
 
 	onMount(() => {
-		TBAEvent.getEvent(String(page.params.eventKey), false, tomorrow()).then((res) => {
-			console.log('Event data:', res);
-			if (res.isOk()) {
-				event = res.value;
+		TBAEvent.getEvent(String(page.params.eventKey), false, tomorrow()).then(async (eventRes) => {
+			console.log('Event data:', eventRes);
+			if (eventRes.isOk()) {
+				event = eventRes.value;
 				nav(event.tba);
+				const matches = await event.getMatches(false, tomorrow());
+				if (matches.isErr()) {
+					console.error(matches.error);
+					alert('Error loading strategy: Could not load the match data. Please try again later.');
+					return;
+				}
+				const strategyRes = await Strategy.fromId(String(page.params.id), matches.value);
+				if (strategyRes.isErr()) {
+					console.error(strategyRes.error);
+					alert('Error loading strategy: Could not load the strategy data. Please try again later.');
+					return;
+				}
+				strategy = strategyRes.value;
 			} else {
-				console.error(res.error);
+				console.error(eventRes.error);
 				event = undefined;
 				alert('Error loading strategy: Could not load the event data. Please try again later.');
 			}
 		});
 
-		Strategy.fromId(String(page.params.id)).then((res) => {
-			console.log('Strategy data:', res);
-			if (res.isOk()) {
-				strategy = res.value;
-			} else {
-				console.error(res.error);
-				strategy = undefined;
-				alert('Error loading strategy: Could not load the strategy. Please try again later.');
-			}
-		});
+		
 	});
 </script>
 
