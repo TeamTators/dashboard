@@ -22,24 +22,24 @@ Displays and edits strategy details, partners, opponents, and charts for a given
 	import CombinedTeamContribution from '../charts/CombinedTeamContribution.svelte';
 	import RadarCapabilityChart from '../charts/RadarCapabilityChart.svelte';
 
-    /**
-     * @typedef Props
-     * @property {Strategy.StrategyExtended} strategy - Strategy data to display and edit. Should include eventKey and id for navigation.
-     * @property {TBAEvent} event - Event context for the strategy, used for charts and team lookups.
-     * @property {TBATeam[]} teams - List of all teams for lookup when displaying partner/opponent details. Each team should include its team_number and nickname.
-     */
+	/**
+	 * @typedef Props
+	 * @property {Strategy.StrategyExtended} strategy - Strategy data to display and edit. Should include eventKey and id for navigation.
+	 * @property {TBAEvent} event - Event context for the strategy, used for charts and team lookups.
+	 * @property {TBATeam[]} teams - List of all teams for lookup when displaying partner/opponent details. Each team should include its team_number and nickname.
+	 */
 	interface Props {
-        /**
-         * Strategy data to display and edit. Should include eventKey and id for navigation.
-         */
+		/**
+		 * Strategy data to display and edit. Should include eventKey and id for navigation.
+		 */
 		strategy: Strategy.StrategyExtended;
-        /**
-         * Event context for the strategy, used for charts and team lookups.
-         */
+		/**
+		 * Event context for the strategy, used for charts and team lookups.
+		 */
 		event: TBAEvent;
-        /**
-         * List of all teams for lookup when displaying partner/opponent details. Each team should include its team_number and nickname.
-         */
+		/**
+		 * List of all teams for lookup when displaying partner/opponent details. Each team should include its team_number and nickname.
+		 */
 		teams: TBATeam[];
 	}
 
