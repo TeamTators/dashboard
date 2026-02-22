@@ -24,12 +24,12 @@ older versions.
 	import { dateTime } from 'ts-utils/clock';
 	import MatchActions from './MatchActions.svelte';
 	import MatchEndgame from './MatchEndgame.svelte';
-	import { confirm, select } from '$lib/utils/prompts';
+	import { confirm } from '$lib/utils/prompts';
 	import MatchContribution from '../charts/MatchContribution.svelte';
 	import type { Strategy } from '$lib/model/strategy';
-	import { goto } from '$app/navigation';
 	import Slider from './Slider.svelte';
 	import TraceHTML from './TraceHTML.svelte';
+	import StrategyGrid from '../strategy/StrategyGrid.svelte';
 
 	interface Props {
 		/** TBA match for display and media. */
@@ -42,7 +42,7 @@ older versions.
 		/** Event context for navigation and scoring. */
 		event: TBAEvent;
 		/** Optional strategies for quick navigation. */
-		strategies?: Strategy.StrategyData[];
+		strategies?: Strategy.StrategyArr;
 		/** Optional scout username override. */
 		scout?: string;
 	}
@@ -171,25 +171,14 @@ older versions.
 					>
 						<i class="material-icons"> archive </i> Archive Scouting Data
 					</button>
-					{#if strategies && strategies.length}
-						<button
-							type="button"
-							class="btn btn-primary"
-							onclick={async () => {
-								if (!strategies) return;
-								const s = await select('Select a strategy to view', strategies, {
-									render: (s) => String(s.data.name),
-									title: 'Select a strategy'
-								});
-								if (!s) return;
-								goto(`/dashboard/event/${event.tba.key}/strategy/${s.data.id}`);
-							}}
-						>
-							<i class="material-icons"> auto_graph </i>
-							Open Strategy ({strategies.length})
-						</button>
-					{/if}
 				</div>
+			</div>
+		</div>
+		<div class="row mb-3">
+			<div class="col-12">
+				{#if strategies}
+					<StrategyGrid {strategies} />
+				{/if}
 			</div>
 		</div>
 		{#if $versions.length}

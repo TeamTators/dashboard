@@ -27,7 +27,7 @@ Loads archived matches for a team/event pair and renders each trace with a resto
 
 	const { team, event }: Props = $props();
 
-	let matches = $state(new Scouting.MatchScoutingExtendedArr([]));
+	let matches = $state(new Scouting.MatchScoutingExtendedArr([], -1));
 
 	onMount(() => {
 		const res = Scouting.getArchivedMatches(team.tba.team_number, event.tba.key);

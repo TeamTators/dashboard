@@ -32,7 +32,6 @@ specific action (e.g., Level 1, Barge, Shallow Climb).
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 	import { Chart } from 'chart.js';
 	import { onMount } from 'svelte';
-	import { Trace, type P } from 'tatorscout/trace';
 	import { copyCanvas } from '$lib/utils/clipboard';
 	import { compliment } from '$lib/model/match-html';
 
@@ -50,7 +49,7 @@ specific action (e.g., Level 1, Barge, Shallow Climb).
 		matches: TBAMatch[];
 	}
 
-	let { team, staticY = $bindable(), scouting, event }: Props = $props();
+	let { staticY = $bindable(), scouting, event }: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;

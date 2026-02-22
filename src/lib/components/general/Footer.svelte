@@ -61,8 +61,7 @@ If the selected quote is "Click me for points!", it renders a link to the easter
 		'Click me for points!',
 		'Gaff tape is duct tape that went to college and grew up - Adam Savage',
 		'hellooooo',
-		'Nothing is more permanent than a temporary solution.',
-		'When you click on "Click me for points!" you get as many points as it takes for you to realise nothing happens.'
+		'Nothing is more permanent than a temporary solution.'
 	];
 
 	const quote = Random.choose(quotes);

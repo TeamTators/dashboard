@@ -10,7 +10,6 @@ Falls back to a no-scout view when a scouting record is missing.
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import type { TBAMatch } from '$lib/utils/tba';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Strategy } from '$lib/model/strategy.js';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { afterNavigate } from '$app/navigation';
@@ -30,7 +29,7 @@ Falls back to a no-scout view when a scouting record is missing.
 	let prev: TBAMatch | null = $state(null);
 	let next: TBAMatch | null = $state(null);
 
-	let strategies = $state(new DataArr(Strategy.Strategy, []));
+	let strategies = $state(Strategy.Strategy.arr());
 
 	$effect(() => {
 		const i = matches.findIndex((m) => m.tba.key === match.tba.key);
@@ -43,10 +42,15 @@ Falls back to a no-scout view when a scouting record is missing.
 	});
 
 	afterNavigate(() => {
-		strategies = Strategy.fromMatch(
-			match.tba.event_key,
-			match.tba.match_number,
-			match.tba.comp_level
+		strategies = Strategy.Strategy.get(
+			{
+				eventKey: event.tba.key,
+				compLevel: match.tba.comp_level,
+				matchNumber: match.tba.match_number
+			},
+			{
+				type: 'all'
+			}
 		);
 
 		if (scouting) {
@@ -101,16 +105,9 @@ Falls back to a no-scout view when a scouting record is missing.
 	<div class="row">
 		{#key scoutingData}
 			{#if scoutingData}
-				<MatchDisplay
-					scouting={scoutingData}
-					{team}
-					{event}
-					{match}
-					strategies={$strategies}
-					scout={account}
-				/>
+				<MatchDisplay scouting={scoutingData} {team} {event} {match} {strategies} scout={account} />
 			{:else}
-				<MatchDisplayNoScout {match} {team} {event} strategies={$strategies} />
+				<MatchDisplayNoScout {match} {team} {event} {strategies} />
 			{/if}
 		{/key}
 	</div>

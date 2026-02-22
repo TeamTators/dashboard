@@ -25,6 +25,7 @@ import YearInfo2025 from 'tatorscout/years/2025.js';
 import YearInfo2026 from 'tatorscout/years/2026.js';
 import * as remote from '$lib/remotes/scouting.remote';
 import type { ParsedBreakdown } from 'tatorscout/years';
+import type { TBAEvent } from '$lib/utils/tba';
 
 /**
  * Client-side scouting models, helpers, and batch utilities.
@@ -310,6 +311,16 @@ export namespace Scouting {
 		 * slidersStore.subscribe((value) => console.log(value));
 		 */
 		getSliders(
+			/**
+			 * Parse the sliders map from the record.
+			 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
+			 * @returns Sliders map as a plain object or reactive writable.
+			 * @example
+			 * const sliders = ext.getSliders(false);
+			 * const defense = sliders.defense?.value ?? 0;
+			 * const slidersStore = ext.getSliders(true);
+			 * slidersStore.subscribe((value) => console.log(value));
+			 */
 			reactive: false
 		): Result<Record<string, { value: number; text: string; color: string }>>;
 		getSliders(
@@ -376,6 +387,18 @@ export namespace Scouting {
 		 * contribStore.subscribe((value) => console.log(value));
 		 */
 		getContribution(
+			/**
+			 * Count action contributions from trace points.
+			 * @param year - Competition year.
+			 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
+			 * @param actionLabels - If true, returns action labels; otherwise returns raw keys.
+			 * @returns Contribution map as a plain object or reactive writable.
+			 * @example
+			 * const contrib = ext.getContribution(false);
+			 * const score = contrib.Score ?? 0;
+			 * const contribStore = ext.getContribution(true);
+			 * contribStore.subscribe((value) => console.log(value));
+			 */
 			year: number,
 			reactive: false,
 			actionLabels?: boolean
@@ -431,6 +454,13 @@ export namespace Scouting {
 	 */
 	export class MatchScoutingExtendedArr extends WritableArray<MatchScoutingExtended> {
 		/**
+		 * Writable array wrapper for extended scouting records.
+		 * @param arr - Extended scouting records.
+		 * @param team - Team number for the wrapper.
+		 * @example
+		 * const extArr = new Scouting.MatchScoutingExtendedArr([ext], 33);
+		 */
+		/**
 		 * Convert a Struct array or plain array into an extended array wrapper.
 		 *
 		 * @param arr - Struct array or raw array of records.
@@ -439,11 +469,19 @@ export namespace Scouting {
 		 * @example
 		 * const extArr = Scouting.MatchScoutingExtendedArr.fromArr(res).unwrap();
 		 */
-		static fromArr(arr: MatchScoutingArr | MatchScoutingData[]) {
+		static fromArr(arr: MatchScoutingArr | MatchScoutingData[], team: number) {
+			/**
+			 * Convert a Struct array or plain array into an extended array wrapper.
+			 * @param arr - Struct array or raw array of records.
+			 * @param team - Team number for the wrapper.
+			 * @returns Attempt-wrapped extended array.
+			 * @example
+			 * const extArr = Scouting.MatchScoutingExtendedArr.fromArr(res, 33).unwrap();
+			 */
 			return attempt(() => {
 				const data = arr instanceof DataArr ? arr.data : arr;
 				const ms = data.map((scouting) => MatchScoutingExtended.from(scouting).unwrap());
-				const extendedArr = new MatchScoutingExtendedArr(ms);
+				const extendedArr = new MatchScoutingExtendedArr(ms, team);
 				const compLevels = ['pr', 'qm', 'qf', 'sf', 'f'];
 				extendedArr.sort((a, b) => {
 					if (a.compLevel === b.compLevel) {
@@ -466,9 +504,12 @@ export namespace Scouting {
 		 * @param arr - Extended scouting records.
 		 *
 		 * @example
-		 * const extArr = new Scouting.MatchScoutingExtendedArr([ext]);
+		 * const extArr = new Scouting.MatchScoutingExtendedArr([ext], 33);
 		 */
-		constructor(arr: MatchScoutingExtended[]) {
+		constructor(
+			arr: MatchScoutingExtended[],
+			public readonly team: number
+		) {
 			super(arr);
 		}
 
@@ -481,7 +522,13 @@ export namespace Scouting {
 		 * const copy = extArr.clone();
 		 */
 		clone() {
-			return new MatchScoutingExtendedArr([...this.data]);
+			/**
+			 * Shallow clone the array wrapper.
+			 * @returns New wrapper with the same items.
+			 * @example
+			 * const copy = extArr.clone();
+			 */
+			return new MatchScoutingExtendedArr([...this.data], this.team);
 		}
 
 		/**
@@ -499,6 +546,16 @@ export namespace Scouting {
 		 * summaryStore.subscribe((value) => console.log(value));
 		 */
 		checksSummary(reactive: false): Result<Record<string, number>>;
+		/**
+		 * Summarize checks across all records.
+		 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
+		 * @returns Check counts as a plain object or reactive writable.
+		 * @example
+		 * const summary = extArr.checksSummary(false);
+		 * const intakeCount = summary.Intake ?? 0;
+		 * const summaryStore = extArr.checksSummary(true);
+		 * summaryStore.subscribe((value) => console.log(value));
+		 */
 		checksSummary(reactive: true): WritableBase<Record<string, number>>;
 		checksSummary(reactive: boolean) {
 			if (reactive) {
@@ -531,70 +588,71 @@ export namespace Scouting {
 		}
 
 		/**
-		 * Average contributions across all records.
+		 * Compute average or max action contributions across a set of scouting traces.
 		 *
-		 * @param reactive - When true, returns a derived writable; otherwise returns a plain object.
-		 * @returns Average contributions as a plain object or reactive writable.
-		 *
-		 * @example
-		 * const averages = extArr.averageContribution(false);
-		 * const scoreAvg = averages.Score ?? 0;
+		 * @param year - Competition year to use for action mapping.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain object.
+		 * @param type - Aggregation type: 'average' or 'max'.
+		 * @returns Contribution map as a plain object or reactive writable.
 		 *
 		 * @example
-		 * const averagesStore = extArr.averageContribution(true);
-		 * averagesStore.subscribe((value) => console.log(value));
+		 * const avg = extArr.contribution(2025, false, 'average').unwrap();
+		 * const max = extArr.contribution(2025, false, 'max').unwrap();
+		 * const avgStore = extArr.contribution(2025, true, 'average');
+		 * avgStore.subscribe((value) => console.log(value));
 		 */
-		averageContribution(
+		contribution(
 			year: number,
 			reactive: false,
-			actionLabels?: boolean
+			type: 'average' | 'max'
 		): Result<Record<string, number>>;
-		averageContribution(
+		contribution(
 			year: number,
 			reactive: true,
-			actionLabels?: boolean
+			type: 'average' | 'max'
 		): WritableBase<Record<string, number>>;
-		averageContribution(year: number, reactive: boolean, actionLabels = true) {
-			if (reactive) {
-				return this.derive((data) => {
-					const totals: Record<string, number> = {};
-					for (const ms of data) {
-						const contrib = ms.getContribution(year, false, actionLabels);
-						if (contrib.isErr()) continue;
-						Object.entries(contrib.value).forEach(([key, value]) => {
-							totals[key] = (totals[key] || 0) + value;
-						});
+		contribution(year: number, reactive: boolean, type: 'average' | 'max') {
+			const get = (data: MatchScoutingExtended[]) => {
+				const totals: Record<string, number[]> = {};
+				for (const ms of data) {
+					const contrib = ms.getContribution(year, false);
+					if (contrib.isErr()) continue;
+					Object.entries(contrib.value).forEach(([key, value]) => {
+						if (!totals[key]) {
+							totals[key] = [];
+						}
+						totals[key].push(value);
+					});
+				}
+
+				const result: Record<string, number> = {};
+				Object.entries(totals).forEach(([key, values]) => {
+					if (type === 'average') {
+						result[key] = values.reduce((a, b) => a + b, 0) / values.length;
+					} else if (type === 'max') {
+						result[key] = Math.max(...values);
 					}
-
-					const count = data.length;
-					const averages: Record<string, number> = {};
-					Object.entries(totals).forEach(([key, value]) => {
-						averages[key] = value / count;
-					});
-
-					return averages;
 				});
+				return result;
+			};
+
+			if (reactive) {
+				return this.derive(get);
 			} else {
-				return attempt(() => {
-					const totals: Record<string, number> = {};
-					this.data.forEach((ms) => {
-						const contrib = ms.getContribution(year, false, actionLabels);
-						Object.entries(contrib).forEach(([key, value]) => {
-							totals[key] = (totals[key] || 0) + value;
-						});
-					});
-
-					const count = this.data.length;
-					const averages: Record<string, number> = {};
-					Object.entries(totals).forEach(([key, value]) => {
-						averages[key] = value / count;
-					});
-
-					return averages;
-				});
+				return attempt(() => get(this.data));
 			}
 		}
 
+		/**
+		 * Compute parsed breakdown totals for auto, teleop, endgame, and overall.
+		 * @param year - Competition year.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain object.
+		 * @returns Parsed breakdown as a plain object or reactive writable.
+		 * @example
+		 * const breakdown = extArr.breakdown(2025, false).unwrap();
+		 * const breakdownStore = extArr.breakdown(2025, true);
+		 * breakdownStore.subscribe((value) => console.log(value));
+		 */
 		breakdown(year: number, reactive: false): Result<ParsedBreakdown<string>>;
 		breakdown(year: number, reactive: true): WritableBase<ParsedBreakdown<string>>;
 		breakdown(year: number, reactive: boolean) {
@@ -660,6 +718,15 @@ export namespace Scouting {
 			}
 		}
 
+		/**
+		 * Compute average velocity across all records.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain number.
+		 * @returns Average velocity as a number or reactive writable.
+		 * @example
+		 * const avg = extArr.averageVelocity(false).unwrap();
+		 * const avgStore = extArr.averageVelocity(true);
+		 * avgStore.subscribe((value) => console.log(value));
+		 */
 		averageVelocity(reactive: false): Result<number>;
 		averageVelocity(reactive: true): WritableBase<number>;
 		averageVelocity(reactive: boolean): Result<number> | WritableBase<number> {
@@ -675,6 +742,15 @@ export namespace Scouting {
 			else return attempt(() => get(this.data));
 		}
 
+		/**
+		 * Compute average seconds not moving across all records.
+		 * @param reactive - If true, returns a derived writable; otherwise returns a plain number.
+		 * @returns Average seconds not moving as a number or reactive writable.
+		 * @example
+		 * const avg = extArr.averageSecondsNotMoving(false).unwrap();
+		 * const avgStore = extArr.averageSecondsNotMoving(true);
+		 * avgStore.subscribe((value) => console.log(value));
+		 */
 		averageSecondsNotMoving(reactive: false): Result<number>;
 		averageSecondsNotMoving(reactive: true): WritableBase<number>;
 		averageSecondsNotMoving(reactive: boolean): Result<number> | WritableBase<number> {
@@ -688,6 +764,22 @@ export namespace Scouting {
 
 			if (reactive) return this.derive(get);
 			else return attempt(() => get(this.data));
+		}
+
+		/**
+		 * Find the team object for this wrapper's team number from a TBA event.
+		 * @param event - TBAEvent instance.
+		 * @param force - If true, forces a fresh fetch.
+		 * @param expires - Expiry date for cache.
+		 * @returns AttemptAsync-wrapped team object.
+		 * @example
+		 * const teamObj = await extArr.getTeam(event, false, new Date()).unwrap();
+		 */
+		getTeam(event: TBAEvent, force: boolean, expires: Date) {
+			return attemptAsync(async () => {
+				const teams = await event.getTeams(force, expires).unwrap();
+				return teams.find((t) => t.tba.team_number === this.team);
+			});
 		}
 	}
 
@@ -725,7 +817,7 @@ export namespace Scouting {
 				type: 'all'
 			}
 		);
-		return MatchScoutingExtendedArr.fromArr(res);
+		return MatchScoutingExtendedArr.fromArr(res, team);
 	};
 
 	/**
@@ -1361,6 +1453,13 @@ export namespace Scouting {
 		};
 	}
 
+	/**
+	 * Get year-specific game info object.
+	 * @param year - Competition year.
+	 * @returns Attempt-wrapped year info object.
+	 * @example
+	 * const info = Scouting.getYearInfo(2025).unwrap();
+	 */
 	export const getYearInfo = (year: number) => {
 		return attempt(() => {
 			switch (year) {
