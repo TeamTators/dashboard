@@ -215,7 +215,6 @@
 	</div>
 {/snippet}
 
-{#key render}
 	<div class="container-fluid layer-1">
 		<div class="row mb-3">
 			<div class="container">
@@ -255,6 +254,7 @@
 					</div>
 				</div>
 				<div class="row mb-3">
+                {#key render}
 					<div class="col-md-6 col-sm-12 mb-3">
 						<h5>Partners</h5>
 						{@render partner($strategy.partner1, 'red')}
@@ -267,6 +267,7 @@
 						{@render opponent($strategy.opponent2, 'blue')}
 						{@render opponent($strategy.opponent3, 'blue')}
 					</div>
+                {/key}
 				</div>
 			</div>
 		</div>
@@ -274,4 +275,3 @@
 			<Whiteboard board={strategy.board} />
 		</div>
 	</div>
-{/key}

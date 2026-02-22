@@ -10,7 +10,6 @@ Falls back to a no-scout view when a scouting record is missing.
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import type { TBAMatch } from '$lib/utils/tba';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';
-	import { DataArr } from '$lib/services/struct/data-arr';
 	import { Strategy } from '$lib/model/strategy.js';
 	import { Scouting } from '$lib/model/scouting.js';
 	import { afterNavigate } from '$app/navigation';

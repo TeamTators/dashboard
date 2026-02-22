@@ -1,7 +1,8 @@
 <script lang="ts">
     import { Strategy } from "$lib/model/strategy";
+	import { contextmenu } from "$lib/utils/contextmenu";
+	import { confirm } from "$lib/utils/prompts";
 	import Grid from "../general/Grid.svelte";
-    import { TBAEvent } from "$lib/utils/tba";
 
     interface Props {
         strategies: Strategy.StrategyArr;
@@ -28,7 +29,36 @@
         onRowDoubleClicked: (params) => {
             if (!params.data) return;
             window.location.href = `/dashboard/event/${params.data.data.eventKey}/strategy/${params.data.data.id}`;
-        }
+        },
+        preventDefaultOnContextMenu: true,
+        onCellContextMenu: (params) => {
+            if (!params.data) return;
+            const strategy = params.data;
+            contextmenu(params.event as PointerEvent, {
+                options: [{
+                    name: 'View/Edit',
+                    action: () => {
+                        window.location.href = `/dashboard/event/${strategy.data.eventKey}/strategy/${strategy.data.id}`;
+                    },
+                    icon: {
+                        type: 'material-icons',
+                        name: 'edit',
+                    },
+                }, {
+                    name: 'Archive',
+                    action: async () => {
+                        if (await confirm('Are you sure you want to archive this strategy? This action cannot be undone.')) {
+                            strategy.setArchive(true);
+                        }
+                    },
+                    icon: {
+                        type: 'material-icons',
+                        name: 'archive',
+                    }
+                }],
+                width: '150px',
+            });
+        },
     }}
     height={`${height ?? 400}px`}
 />

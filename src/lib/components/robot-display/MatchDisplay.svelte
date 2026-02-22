@@ -24,10 +24,9 @@ older versions.
 	import { dateTime } from 'ts-utils/clock';
 	import MatchActions from './MatchActions.svelte';
 	import MatchEndgame from './MatchEndgame.svelte';
-	import { confirm, select } from '$lib/utils/prompts';
+	import { confirm } from '$lib/utils/prompts';
 	import MatchContribution from '../charts/MatchContribution.svelte';
 	import type { Strategy } from '$lib/model/strategy';
-	import { goto } from '$app/navigation';
 	import Slider from './Slider.svelte';
 	import TraceHTML from './TraceHTML.svelte';
 	import StrategyGrid from '../strategy/StrategyGrid.svelte';

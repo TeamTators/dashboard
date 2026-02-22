@@ -5,7 +5,6 @@
     import nav from '$lib/nav/robot-display.js';
 	import { TBAEvent } from "$lib/utils/tba";
 	import { tomorrow } from "ts-utils";
-	import Grid from "$lib/components/general/Grid.svelte";
 	import StrategyGrid from "$lib/components/strategy/StrategyGrid.svelte";
 
     let strategies = $state(Strategy.Strategy.arr());
@@ -31,6 +30,12 @@
         <div class="col">
             <h1>Strategies</h1>
         </div>
+        <a href={`/dashboard/event/${page.params.eventKey}/matches`} class="btn btn-outline-primary">
+            View Matches
+            <span class="text-muted">
+                (to create new strategies)
+            </span>
+        </a>
     </div>
     <div class="row mb-3">
         <div class="col">

@@ -6,6 +6,10 @@
 	import { onMount } from 'svelte';
 	import { SvelteDate } from 'svelte/reactivity';
 	import { dateTime } from 'ts-utils/clock';
+	import { Strategy } from '$lib/model/strategy.js';
+	import Modal from '$lib/components/bootstrap/Modal.svelte';
+	import StrategyGrid from '$lib/components/strategy/StrategyGrid.svelte';
+	import { prompt } from '$lib/utils/prompts.js';
 
 	const { data } = $props();
 
@@ -13,6 +17,7 @@
 
 	const event = $derived(new TBAEvent(data.event));
 	const matchScouting = $derived(new DataArr(Scouting.MatchScouting, data.scouting));
+	let strategies = $state(Strategy.Strategy.arr());
 
 	let selectedMatches: TBAMatch[] = $state([]);
 
@@ -84,6 +89,8 @@
 			if (m.isOk()) matches = m.value;
 		});
 
+		strategies = Strategy.Strategy.get({ eventKey: event.tba.key }, { type: 'all' });
+
 		return () => {
 			offNew();
 			offDelete();
@@ -92,6 +99,16 @@
 			offRestore();
 		};
 	});
+
+	let selectedMatch: TBAMatch | null = $state(null);
+	let shownStrategies = $state(Strategy.Strategy.arr());
+	let strategyModal: Modal | undefined = $state(undefined);
+
+	const showStrategies = (strategies: Strategy.StrategyData[], match: TBAMatch) => {
+		shownStrategies = Strategy.Strategy.arr(strategies);
+		strategyModal?.show();
+		selectedMatch = match;
+	};
 </script>
 
 {#snippet teamLink(teamKey: string, color: 'red' | 'blue', match: TBAMatch)}
@@ -129,6 +146,8 @@
 			<br />
 			Highlight teams in all of their matches from a specific match by selecting the checkbox next to
 			it.
+			<br>
+			You can create strategies for a specific match by clicking the button on the right. Matches with existing strategies will have a red badge indicating the number of strategies for that match.
 		</p>
 	</div>
 	<div class="row">
@@ -136,6 +155,7 @@
 			<table class="table table-striped">
 				<tbody>
 					{#each matches as match}
+						{@const matchStrategies = $strategies.filter(s => s.data.matchNumber === match.tba.match_number && s.data.compLevel === match.tba.comp_level)}
 						<tr class:has-2122={has2122(match)}>
 							<td>
 								<input
@@ -180,6 +200,23 @@
 							{@render teamLink(match.tba.alliances.blue.team_keys[0], 'blue', match)}
 							{@render teamLink(match.tba.alliances.blue.team_keys[1], 'blue', match)}
 							{@render teamLink(match.tba.alliances.blue.team_keys[2], 'blue', match)}
+							<td>
+								<button type="button" class="btn btn-sm btm-primary position-relative" onclick={() => showStrategies(matchStrategies, match)}>
+									<i class="material-icons">
+										analytics
+									</i>
+									{#if matchStrategies.length > 0}
+									<span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+										<span class="visually-hidden">
+											{matchStrategies.length} strategies
+										</span>
+									</span>
+									{/if}
+								</button>
+								{#if matchStrategies.length}
+									({matchStrategies.length})
+								{/if}
+							</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -207,3 +244,39 @@
 		border: 2px solid purple;
 	}
 </style>
+
+<Modal 
+	bind:this={strategyModal}
+	title="Match Strategies"
+	size="lg"
+>
+	{#snippet body()}
+		{#if selectedMatch}
+			<h5>{event.tba.name} - {selectedMatch.tba.comp_level}{selectedMatch.tba.match_number}</h5>
+		{/if}
+		<button type="button" class="btn btn-primary" onclick={async () => {
+			if (!selectedMatch) return;
+			const name = await prompt('Enter a name for the new strategy:');
+			if (!name) return;
+			const newStrategy = await Strategy.create({
+				match: selectedMatch,
+				alliance: selectedMatch.tba.alliances.red.team_keys.includes('frc2122') ? 'red' : 'blue',
+				name,
+			});
+
+			if (newStrategy.isOk()) {
+				window.location.href = `/dashboard/event/${event.tba.key}/strategy/${newStrategy.value.data.id}`;
+			} else {
+				console.error('Failed to create strategy:', newStrategy.error);
+				alert('Failed to create strategy. Please try again later.');
+			}
+		}}>
+			<i class="material-icons">add</i> Create Strategy
+		</button>
+		{#key shownStrategies}
+			<StrategyGrid 
+				strategies={shownStrategies}
+			/>
+		{/key}
+	{/snippet}
+</Modal>

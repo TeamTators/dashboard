@@ -27,7 +27,7 @@ export class Path extends WritableBase<PathConfig> {
 
 		return () => {
 			unsub();
-			target.removeChild(path);
+			path.remove();
 		};
 	}
 

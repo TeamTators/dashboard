@@ -436,10 +436,11 @@ export class Board {
 			this.on('incomming', () => {
 				cleanup();
 				this.render(target, stack);
-			})
+			}),
 		);
 
 		const cleanup = () => {
+			this._rendered = false;
 			stack.clear();
 			if (prevStack) {
 				Stack.use(prevStack);
@@ -461,10 +462,13 @@ export class Board {
 
 			window.removeEventListener('keydown', onkeydown);
 
-			target.removeChild(field);
-			target.removeChild(svg);
-			target.removeChild(commentContainer);
-			this._rendered = false;
+			target.innerHTML = '';
+			svg.remove();
+			commentContainer.remove();
+			colorsContainer.remove();
+			for (const tool of tools) {
+				tool.remove();
+			}
 		};
 		return cleanup;
 	}

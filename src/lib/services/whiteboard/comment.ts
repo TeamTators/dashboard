@@ -230,7 +230,7 @@ export class Comment extends WritableBase<CommentConfig> {
 			window.removeEventListener('resize', onresize);
 			interact(container).unset();
 			container.removeEventListener('dblclick', ondblclick);
-			target.removeChild(container);
+			container.remove();
 			container.removeEventListener('click', onclick);
 		};
 	}
