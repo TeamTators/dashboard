@@ -13,6 +13,7 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 	import { Strategy } from '$lib/model/strategy.js';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { prompt } from '$lib/utils/prompts.js';
+	import Grid from '$lib/components/general/Grid.svelte';
 
 	const { data } = $props();
 	const event = $derived(data.event);
@@ -59,6 +60,16 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 		if (!closest) return;
 
 		match = closest;
+
+		
+		strategies = Strategy.Strategy.get({
+			eventKey: event.tba.key,
+			matchNumber: match.tba.match_number,
+			compLevel: match.tba.comp_level,
+		}, {
+			type: 'all',
+		});
+
 		countdown.setTarget(new Date(Number(closest.tba.time) * 1000));
 
 		tatorAlliance = match.tba.alliances.red.team_keys.includes('frc2122') ? 'red' : 'blue';
@@ -71,13 +82,6 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 		const loop = new Loop(render, 1000 * 60);
 		loop.start();
 
-		strategies = Strategy.Strategy.get({
-			eventKey: event.tba.key,
-			matchNumber: match?.tba.match_number,
-			compLevel: match?.tba.comp_level,
-		}, {
-			type: 'all',
-		});
 
 		return () => {
 			loop.stop();
@@ -181,19 +185,6 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 					<h2>
 						Strategies
 					</h2>
-					{#if $strategies.length > 0}
-						<ul>
-							{#each $strategies as strategy}
-								<li>
-									<a href="/dashboard/strategy/{strategy.data.id}">
-										{strategy.data.name}
-									</a>
-								</li>
-							{/each}
-						</ul>
-					{:else}
-						<p>No strategies created for this match yet.</p>
-					{/if}
 					<button type="button" class="btn btn-primary" onclick={async () => {
 						if (!match) return;
 						const name = await prompt('Strategy name');
@@ -211,6 +202,44 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 							window.location.href = `/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`;
 						}
 					}}>Create Strategy</button>
+					{#if $strategies.length > 0}
+						<p class="small text-muted">
+							Double-click a strategy to view.
+						</p>
+						<Grid 
+							data={strategies}
+							opts={{
+								columnDefs: [
+									{
+										field: 'data.name',
+										headerName: 'Name',
+									},
+									{
+										field: 'data.alliance',
+										headerName: 'Alliance',
+									},
+									{
+										field: 'data.created',
+										headerName: 'Created At',
+										valueFormatter: (params) => new Date(params.value).toLocaleString(),
+									},
+									{
+										field: 'data.updated',
+										headerName: 'Updated At',
+										valueFormatter: (params) => new Date(params.value).toLocaleString(),
+									},
+								],
+								onRowDoubleClicked: (params) => {
+									if (!params.data) return;
+									const strategy = params.data;
+									window.location.href = `/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`;
+								}
+							}}
+							height="400px"
+						/>
+					{:else}
+						<p>No strategies created for this match yet.</p>
+					{/if}
 				</div>
 			</div>
 		{:else}

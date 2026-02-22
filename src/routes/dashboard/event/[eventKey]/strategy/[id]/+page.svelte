@@ -5,6 +5,7 @@
 	import { onMount } from "svelte";
 	import S from "$lib/components/strategy/Strategy.svelte";
 	import { TBAEvent } from "$lib/utils/tba";
+    import nav from '$lib/nav/robot-display';
 	import { tomorrow } from "ts-utils";
 
 	let strategy: Strategy.StrategyExtended | undefined = $state(undefined);
@@ -15,6 +16,7 @@
 			console.log('Event data:', res);
 			if (res.isOk()) {
 				event = res.value;
+				nav(event.tba);
 			} else {
 				console.error(res.error);
 				event = undefined;
