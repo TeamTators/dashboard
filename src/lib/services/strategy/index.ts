@@ -1,8 +1,11 @@
-import { WritableArray, WritableBase } from '../writables';
+import { WritableArray } from '../writables';
 import { contextmenu } from '$lib/utils/contextmenu';
 import { type CommentConfig, Comment } from './comment';
 import { type PathConfig, Path } from './path';
 import { prompt } from '$lib/utils/prompts';
+import { Stack } from '$lib/utils/stack';
+import { attempt } from 'ts-utils';
+import z from 'zod';
 
 type StrategyConfig = {
 	comments: CommentConfig[];
@@ -13,8 +16,41 @@ type StrategyConfig = {
 	year: number;
 };
 
-export class Strategy extends WritableBase<StrategyConfig> {
-	render(target: HTMLDivElement) {
+export class Strategy {
+    public static from(data: string) {
+        return attempt(() => {
+            const res = z.object({
+                comments: z.array(z.object({
+                    position: z.tuple([z.number(), z.number()]).transform(([x, y]) => [x / 1000, y / 1000] as [number, number]),
+                    text: z.string(),
+                    size: z.tuple([z.number(), z.number()]).transform(([w, h]) => [w / 1000, h / 1000] as [number, number]),
+                    hidden: z.boolean(),
+                    selected: z.boolean(),
+                })),
+                paths: z.array(z.object({
+                    points: z.array(z.tuple([z.number(), z.number()])).transform(points => points.map(([x, y]) => [x / 1000, y / 1000] as [number, number])),
+                    color: z.string(),
+                })),
+                red: z.tuple([z.number(), z.number(), z.number()]),
+                blue: z.tuple([z.number(), z.number(), z.number()]),
+                event: z.string(),
+                year: z.number(),
+            }).parse(JSON.parse(data));
+            return new Strategy(res);
+        });
+    }
+
+
+    constructor(public data: StrategyConfig) {}
+    private readonly comments = new WritableArray<Comment>([]);
+    private readonly paths = new WritableArray<Path>([]);
+
+    private _rendered = false;
+	render(target: HTMLDivElement, stack: Stack) {
+        if (this._rendered) {
+            throw new Error('Strategy already rendered');
+        }
+        this._rendered = true;
 		target.style.position = 'relative';
 		target.style.width = '100%';
 		target.style.aspectRatio = '2 / 1';
@@ -27,13 +63,17 @@ export class Strategy extends WritableBase<StrategyConfig> {
 		field.style.height = '100%';
 		field.src = `/assets/field/${this.data.year}.png`;
 		target.appendChild(field);
+
+        const unsubs: (() => void)[] = [];
+        const registerSub = (sub: () => void) => {
+            unsubs.push(sub);
+        }
+
 		const tools: HTMLElement[] = [];
 		const registerTool = (el: HTMLElement) => {
-			el.style.transition = 'opacity 0.3s';
+			el.style.transition = 'all 0.3s';
 			tools.push(el);
 		};
-
-		const unsub = this.subscribe(() => {});
 
 		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		svg.style.position = 'absolute';
@@ -125,24 +165,31 @@ export class Strategy extends WritableBase<StrategyConfig> {
 		target.appendChild(teamsContainer);
 		registerTool(teamsContainer);
 
-		const comments = new WritableArray<Comment>(
-			this.data.comments.map((c) => {
-				const comment = new Comment(c, {
-					debounceMs: 0
-				});
-				comment.render(commentContainer);
-				return comment;
-			})
-		);
-		const paths = new WritableArray<Path>(
-			this.data.paths.map((p) => {
-				const path = new Path(p);
-				path.render(svg);
-				return path;
-			})
-		);
+		const comments = this.comments;
+        const paths = this.paths;
+
+        comments.set(this.data.comments.map(c => {
+            const comment = new Comment(c);
+            registerSub(comment.render(commentContainer, stack));
+            return comment;
+        }));
+
+        paths.set(this.data.paths.map(p => {
+            const path = new Path(p);
+            registerSub(path.render(svg));
+            return path;
+        }));
+
+        const deselect = () => {
+            comments.each(comment => comment.deselect());
+        }
+
+        const getSelected = () => {
+            return comments.data.filter(comment => comment.data.selected);
+        }
 
 		const oncontextmenu = (event: PointerEvent) => {
+            deselect();
 			event.preventDefault();
 			const rect = target.getBoundingClientRect();
 			// normalized x and y between 0 and 1
@@ -157,19 +204,30 @@ export class Strategy extends WritableBase<StrategyConfig> {
 							name: 'add'
 						},
 						action: async () => {
-							const res = await prompt('Enter comment text', {
+                            const res = await prompt('Enter comment text', {
                                 multiline: true,
                             });
-							if (!res) return;
-							const newComment: CommentConfig = {
-								position: [x, y],
-								text: res,
-								size: [150, 50]
-							};
-							this.update((config) => ({ ...config, comments: [...config.comments, newComment] }));
-							const comment = new Comment(newComment);
-							comment.render(commentContainer);
-							comments.push(comment);
+                            if (!res) return;
+                            const newComment: CommentConfig = {
+                                position: [x, y],
+                                text: res,
+                                size: [150, 50],
+                                hidden: false,
+                                selected: true,
+                            };
+                            const comment = new Comment(newComment);
+                            registerSub(comment.render(commentContainer, stack));
+							stack.push({
+                                do: async () => {
+                                    comments.push(comment);
+                                    comment.show();
+                                },
+                                undo: () => {
+                                    comments.remove(comment);
+                                    comment.hide();
+                                },
+                                name: 'Add Comment',
+                            });
 						}
 					}
 				],
@@ -203,23 +261,38 @@ export class Strategy extends WritableBase<StrategyConfig> {
 		};
 
 		const down = (x: number, y: number) => {
+            deselect();
 			const newPathConfig: PathConfig = {
 				points: [[x, y]],
 				color: currentColor
 			};
 
 			const path = new Path(newPathConfig);
-			path.render(svg);
-			paths.push(path);
-			this.update((config) => ({ ...config, paths: [...config.paths, newPathConfig] }));
-			currentPath = path;
-			setHidden(true);
+			let unrender = () => {};
+            setHidden(true);
+
+            stack.push({
+                do: () => {
+                    unrender = path.render(svg);
+                    paths.push(path);
+                    currentPath = path;
+                },
+                undo: () => {
+                    unrender();
+                    path.destroy();
+                    paths.remove(path);
+                    currentPath = null;
+                },
+                name: 'Draw Path',
+            });
 		};
 		const move = (x: number, y: number) => {
 			if (!currentPath) return;
+            deselect();
 			currentPath.update((config) => ({ ...config, points: [...config.points, [x, y]] }));
 		};
 		const up = () => {
+            deselect();
 			currentPath = null;
 			setHidden(false);
 		};
@@ -308,8 +381,64 @@ export class Strategy extends WritableBase<StrategyConfig> {
 		target.addEventListener('touchmove', ontouchmove);
 		target.addEventListener('touchend', ontouchend);
 
+        const onkeydown = (event: KeyboardEvent) => {
+            switch (event.key) {
+                case 'Escape':
+                    deselect();
+                    break;
+                case 'Delete':
+                case 'Backspace':
+                    {const selected = getSelected();
+                    if (selected.length === 0) return;
+                    stack.push({
+                        do: () => {
+                            for (const comment of selected) {
+                                comment.hide();
+                            }
+                        },
+                        undo: () => {
+                            for (const comment of selected) {
+                                comment.show();
+                            }
+                        },
+                        name: 'Delete Comment(s)',
+                    });
+                    break;}
+            }
+
+            if (event.ctrlKey || event.metaKey) {
+                switch (event.key) {
+                    case 'a':
+                    {
+                        event.preventDefault();
+                        comments.each(c => c.select());
+                        break;
+                    }
+                    case 's':
+                        {
+                            event.preventDefault();
+                        const res = this.serialize();
+                        console.log(res);
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', onkeydown);
+
+        const prevStack = Stack.current;
+        Stack.use(stack);
+
 		return () => {
-			unsub();
+            if (prevStack) {
+                Stack.use(prevStack);
+            } else {
+                Stack.current = undefined;
+            }
+			for (const unsub of unsubs) {
+                unsub();
+            }
 
 			target.removeEventListener('dblclick', ondblclick);
 			target.removeEventListener('contextmenu', oncontextmenu);
@@ -320,6 +449,8 @@ export class Strategy extends WritableBase<StrategyConfig> {
 			target.removeEventListener('touchmove', ontouchmove);
 			target.removeEventListener('touchend', ontouchend);
 
+            window.removeEventListener('keydown', onkeydown);
+
 			red.removeEventListener('click', onRed);
 			blue.removeEventListener('click', onBlue);
 			black.removeEventListener('click', onBlack);
@@ -327,6 +458,26 @@ export class Strategy extends WritableBase<StrategyConfig> {
 			target.removeChild(field);
 			target.removeChild(svg);
 			target.removeChild(commentContainer);
+            this._rendered = false;
 		};
 	}
+
+    serialize() {
+        const round = (num: number) => Math.round(num * 1000);
+        return {
+            comments: this.comments.data.map(c => ({
+                ...c.data,
+                position: c.data.position.map(round) as [number, number],
+                size: c.data.size.map(round) as [number, number],
+            })),
+            paths: this.paths.data.map(p => ({
+                ...p.data,
+                points: p.data.points.map(([x, y]) => [round(x), round(y)]),
+            })),
+            red: this.data.red,
+            blue: this.data.blue,
+            event: this.data.event,
+            year: this.data.year,
+        }
+    }
 }

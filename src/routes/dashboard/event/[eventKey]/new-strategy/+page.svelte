@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Strategy } from '$lib/services/strategy';
+	import { Stack } from '$lib/utils/stack';
 
 	const strategy = new Strategy({
 		paths: [],
@@ -11,4 +12,7 @@
 	});
 </script>
 
-<div {@attach (div) => strategy.render(div)}></div>
+<div {@attach (div) => strategy.render(div, new Stack({
+    name: 'strategy',
+    debug: true,
+}))}></div>
