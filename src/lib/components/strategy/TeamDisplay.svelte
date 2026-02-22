@@ -1,16 +1,3 @@
-/**
- * @fileoverview Strategy team comparison charts for an event.
- *
- * @component TeamDisplay
- *
- * @description
- * Renders team event stats and progress charts side-by-side for the selected team number.
- *
- * @example
- * ```svelte
- * <TeamDisplay teams={teams} teamNumber={1234} event={event} matches={matches} scouting={scouting} />
- * ```
- */
 <!--
 @fileoverview Strategy team comparison charts for an event.
 
@@ -21,7 +8,7 @@ Renders team event stats and progress charts side-by-side for the selected team 
 
 @example
 ```svelte
-<TeamDisplay {teams} teamNumber={1234} {event} {matches} {scouting} />
+<TeamDisplay teams={teams} teamNumber={1234} event={event} matches={matches} scouting={scouting} />
 ```
 -->
 <script lang="ts">

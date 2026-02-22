@@ -1,16 +1,3 @@
-/**
- * @fileoverview Alliance-level graph for 2025 scoring categories.
- *
- * @component CombinedTeamContribution
- *
- * @description
- * Visualizes team contributions for an alliance in a stacked bar chart for a given event year.
- *
- * @example
- * ```svelte
- * <CombinedTeamContribution event={event} teams={teams} staticY={staticY} type="average" />
- * ```
- */
 <!--
 @fileoverview Placeholder for an alliance-level graph for 2025 scoring categories.
 

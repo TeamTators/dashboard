@@ -1,16 +1,16 @@
-/**
- * @fileoverview Strategy grid viewer for event strategies.
- *
- * @component StrategyGrid
- *
- * @description
- * Displays a grid of strategies for an event, allowing double-click to view/edit and context menu actions.
- *
- * @example
- * ```svelte
- * <StrategyGrid strategies={strategies} height={400} />
- * ```
- */
+<!--
+@fileoverview Strategy grid viewer for event strategies.
+
+@component StrategyGrid
+
+@description
+Displays a grid of strategies for an event, allowing double-click to view/edit and context menu actions.
+
+@example
+```svelte
+<StrategyGrid strategies={strategies} height={400} />
+```
+-->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Strategy } from '$lib/model/strategy';
@@ -20,11 +20,17 @@
 
 	/**
 	 * @typedef Props
-	 * @property {Strategy.StrategyArr} strategies - Array of strategies to display.
+	 * @property {Strategy.StrategyArr} strategies - Array of strategies to display in the grid. Each strategy should include its eventKey and id for navigation.
 	 * @property {number} [height] - Optional height for the grid.
 	 */
 	interface Props {
+		/**
+		 * Array of strategies to display in the grid. Each strategy should include its eventKey and id for navigation.
+		 */
 		strategies: Strategy.StrategyArr;
+		/**
+		 * Optional height for the grid.
+		 */
 		height?: number;
 	}
 
