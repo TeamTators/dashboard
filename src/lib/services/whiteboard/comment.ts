@@ -3,6 +3,7 @@ import { WritableBase } from '../writables';
 import interact from 'interactjs';
 import { prompt } from '$lib/utils/prompts';
 import { Stack } from '$lib/utils/stack';
+import { Board } from './index';
 
 export type CommentConfig = {
 	position: Point2D;
@@ -13,6 +14,9 @@ export type CommentConfig = {
 };
 
 export class Comment extends WritableBase<CommentConfig> {
+	constructor(data: CommentConfig, public board: Board) {
+		super(data);
+	}
 	render(target: HTMLDivElement, stack: Stack) {
 		const container = document.createElement('div');
 		container.classList.add('comment');
@@ -68,9 +72,11 @@ export class Comment extends WritableBase<CommentConfig> {
 		const unsub = this.subscribe((state) => {
 			renderText();
 			if (state.hidden) {
-				container.style.opacity = '0';
+				// container.style.opacity = '0';
+				container.style.display = 'none';
 			} else {
-				container.style.opacity = '1';
+				// container.style.opacity = '1';
+				container.style.display = 'block';
 			}
 			if (state.selected) {
 				container.style.border = '2px solid blue';
@@ -147,6 +153,7 @@ export class Comment extends WritableBase<CommentConfig> {
 									size: this.data.size
 								});
 								currentPos = newPos;
+								this.board.emit('change');
 							},
 							undo: () => {
 								this.update((config) => ({ ...config, position: prevState }));
@@ -155,6 +162,7 @@ export class Comment extends WritableBase<CommentConfig> {
 									size: this.data.size
 								});
 								currentPos = prevState;
+								this.board.emit('change');
 							},
 							name: 'Move Comment'
 						});
@@ -194,6 +202,7 @@ export class Comment extends WritableBase<CommentConfig> {
 									size: newSize
 								});
 								currentSize = newSize;
+								this.board.emit('change');
 							},
 							undo: () => {
 								this.update((config) => ({ ...config, size: prevState }));
@@ -202,6 +211,7 @@ export class Comment extends WritableBase<CommentConfig> {
 									size: prevState
 								});
 								currentSize = prevState;
+								this.board.emit('change');
 							},
 							name: 'Resize Comment'
 						});

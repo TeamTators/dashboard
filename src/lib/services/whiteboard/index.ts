@@ -1,506 +1,486 @@
-/**
- * @fileoverview Interactive strategy whiteboard rendering and editing.
- *
- * @description
- * Provides SVG-based whiteboard paths with undo/redo stack and context menu tools.
- */
-import type { Strategy } from '$lib/model/strategy';
+import { WritableArray } from '../writables';
 import { contextmenu } from '$lib/utils/contextmenu';
+import { type CommentConfig, Comment } from './comment';
+import { type PathConfig, Path } from './path';
+import { prompt } from '$lib/utils/prompts';
 import { Stack } from '$lib/utils/stack';
-import { WritableBase } from '$lib/services/writables';
-import { Color } from 'colors/color';
-import type { Point2D } from 'math/point';
-// import { catmullRom } from 'math/spline';
-import type { TBAEvent, TBAMatch } from 'tatorscout/tba';
 import { attempt, SimpleEventEmitter } from 'ts-utils';
 import z from 'zod';
+import type { TBAMatch } from '$lib/utils/tba';
+import { teamsFromMatch } from 'tatorscout/tba';
 
-export type WhiteboardConfig = {
-	target: HTMLDivElement;
-	event: TBAEvent;
-	match: TBAMatch;
+type BoardConfig = {
+	comments: CommentConfig[];
+	paths: PathConfig[];
 };
 
-export type PathState = {
-	points: Point2D[];
-	color: string;
-	selected: boolean;
-	id: number;
-};
-
-export type WhiteboardState = {
-	paths: Path[];
-};
-
-const CLICK_THRESHOLD = 100; // ms before mouseup to consider as click
-
-export class Path extends WritableBase<PathState> {
-	constructor(
-		public readonly whiteboard: Whiteboard,
-		public readonly target: SVGPathElement,
-		state: PathState
-	) {
-		super(state);
-	}
-
-	get color() {
-		return this.data.color;
-	}
-
-	get points() {
-		return this.data.points;
-	}
-
-	/**
-	 * Remove this path from the whiteboard and DOM.
-	 *
-	 * @returns {void} No return value.
-	 */
-	remove() {
-		this.whiteboard.update((wb) => {
-			wb.paths = wb.paths.filter((p) => p.data.id !== this.data.id);
-			return wb;
-		});
-		this.target.remove();
-		this.whiteboard.emit('update');
-	}
-
-	/**
-	 * Append a point to the path and re-render.
-	 *
-	 * @returns {void} No return value.
-	 */
-	add(point: Point2D) {
-		this.data.points.push(point);
-		this.inform();
-		this.whiteboard.emit('update');
-	}
-
-	/**
-	 * Draw the SVG path based on current points and selection state.
-	 *
-	 * @returns {void} No return value.
-	 */
-	draw() {
-		this.target.setAttribute('stroke-linecap', 'round');
-		this.target.setAttribute('stroke-width', '0.01');
-		this.target.setAttribute('fill', 'none');
-		this.target.setAttribute('filter', 'drop-shadow(0 0 0.005 white)');
-		if (this.data.selected) {
-			this.target.setAttribute('stroke', Color.fromName('yellow').setAlpha(0.8).toString('rgba'));
-		} else {
-			this.target.setAttribute('stroke', this.color);
-		}
-		let d = '';
-		for (let i = 0; i < this.points.length; i++) {
-			const [x, y] = this.points[i];
-			// SVG uses viewBox 0 0 1 1, so use normalized coordinates
-			d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-		}
-		// const fn = catmullRom(this.points);
-		// const points = 2 * this.points.length; // More points for smoother curves
-		// for (let i = 0; i < 1; i +=  1 / points) {
-		//     const [x, y] = fn(i);
-		//     d += `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-		// }
-		this.target.setAttribute('d', d);
-	}
-
-	/**
-	 * Initialize event listeners for the path element.
-	 *
-	 * @returns {() => void} Cleanup function to remove listeners.
-	 */
-	init() {
-		const oncontextmenu = (e: PointerEvent) => {
-			this.select();
-			e.preventDefault();
-			contextmenu(e, {
-				options: [
-					'Options',
-					{
-						name: 'Cancel',
-						icon: {
-							type: 'material-icons',
-							name: 'close'
-						},
-						action: () => {}
-					},
-					{
-						name: 'Delete Path',
-						icon: {
-							type: 'material-icons',
-							name: 'delete'
-						},
-						action: () => {
-							this.remove();
-						}
-					}
-				],
-				width: '100px'
-			});
-		};
-		const unsub = this.subscribe(() => {
-			requestAnimationFrame(() => this.draw());
-		});
-		this.target.addEventListener('click', oncontextmenu);
-		this.target.addEventListener('contextmenu', oncontextmenu);
-
-		// Synthesize click from touch events for mobile
-		let touchStartTime: number | null = null;
-		let touchStartX: number | null = null;
-		let touchStartY: number | null = null;
-		const TOUCH_CLICK_THRESHOLD = 200; // ms
-		const TOUCH_MOVE_THRESHOLD = 10; // px
-
-		const onTouchStart = (e: TouchEvent) => {
-			if (e.touches.length === 1) {
-				touchStartTime = Date.now();
-				touchStartX = e.touches[0].clientX;
-				touchStartY = e.touches[0].clientY;
-			}
-		};
-		const onTouchEnd = (e: TouchEvent) => {
-			if (
-				touchStartTime !== null &&
-				e.changedTouches.length === 1 &&
-				touchStartX !== null &&
-				touchStartY !== null
-			) {
-				const dt = Date.now() - touchStartTime;
-				const dx = e.changedTouches[0].clientX - touchStartX;
-				const dy = e.changedTouches[0].clientY - touchStartY;
-				const dist = Math.sqrt(dx * dx + dy * dy);
-				if (dt < TOUCH_CLICK_THRESHOLD && dist < TOUCH_MOVE_THRESHOLD) {
-					// Synthesize click event
-					oncontextmenu(
-						new PointerEvent('click', {
-							clientX: e.changedTouches[0].clientX,
-							clientY: e.changedTouches[0].clientY
-						})
-					);
-				}
-			}
-			touchStartTime = null;
-			touchStartX = null;
-			touchStartY = null;
-		};
-		this.target.addEventListener('touchstart', onTouchStart);
-		this.target.addEventListener('touchend', onTouchEnd);
-
-		return () => {
-			this.target.removeEventListener('click', oncontextmenu);
-			this.target.removeEventListener('contextmenu', oncontextmenu);
-			this.target.removeEventListener('touchstart', onTouchStart);
-			this.target.removeEventListener('touchend', onTouchEnd);
-			unsub();
-		};
-	}
-
-	/**
-	 * Select this path and clear other selections.
-	 *
-	 * @returns {void} No return value.
-	 */
-	select() {
-		this.whiteboard.clearSelection();
-		this.data.selected = true;
-		this.inform();
-	}
-}
-
-export class Whiteboard extends WritableBase<WhiteboardState> {
-	private readonly em = new SimpleEventEmitter<'update' | 'destroy'>();
+export class Board {
+    private readonly em = new SimpleEventEmitter<'change' | 'incomming'>();
 
 	public readonly on = this.em.on.bind(this.em);
 	public readonly off = this.em.off.bind(this.em);
-	public readonly once = this.em.once.bind(this.em);
 	public readonly emit = this.em.emit.bind(this.em);
 
-	/**
-	 * Hydrate a whiteboard from stored data.
-	 *
-	 * @returns {ReturnType<typeof attempt>} Result wrapper containing the whiteboard.
-	 */
-	public static from(config: WhiteboardConfig, data: Strategy.MatchWhiteboardData) {
+	public static from(data: string, match?: TBAMatch) {
 		return attempt(() => {
-			if (!data.data.board) throw new Error('No board data');
-			const rendered = z
+			const res = z
 				.object({
+					comments: z.array(
+						z.object({
+							position: z
+								.tuple([z.number(), z.number()])
+								.transform(([x, y]) => [x / 1000, y / 1000] as [number, number]),
+							text: z.string(),
+							size: z
+								.tuple([z.number(), z.number()])
+								.transform(([w, h]) => [w / 1000, h / 1000] as [number, number]),
+							hidden: z.boolean(),
+							selected: z.boolean()
+						})
+					),
 					paths: z.array(
 						z.object({
-							points: z.array(z.tuple([z.number(), z.number()])),
+							points: z
+								.array(z.tuple([z.number(), z.number()]))
+								.transform((points) =>
+									points.map(([x, y]) => [x / 1000, y / 1000] as [number, number])
+								),
 							color: z.string()
 						})
-					)
+					),
 				})
-				.parse(JSON.parse(data.data.board));
-
-			const wb = new Whiteboard(config, {
-				paths: []
-			});
-			for (const pathData of rendered.paths) {
-				const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-				wb.svg.appendChild(pathEl);
-				const path = new Path(wb, pathEl, {
-					points: pathData.points,
-					color: pathData.color,
-					selected: false,
-					id: wb.data.paths.length
-				});
-				wb.on('destroy', path.init());
-				wb.data.paths.push(path);
-			}
-			return wb;
+				.parse(JSON.parse(data));
+			return new Board(res, match);
 		});
 	}
 
-	/**
-	 * Create a blank whiteboard state.
-	 *
-	 * @returns {WhiteboardState} Empty state object.
-	 */
-	public static blank() {
-		return {
-			paths: []
-		};
-	}
+	constructor(public data: BoardConfig, public readonly match?: TBAMatch) {}
+	private readonly comments = new WritableArray<Comment>([]);
+	private readonly paths = new WritableArray<Path>([]);
 
-	public readonly svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-	public readonly stack = new Stack({
-		name: 'whiteboard'
-	});
-
-	constructor(
-		public readonly config: WhiteboardConfig,
-		state: WhiteboardState
-	) {
-		super(state);
-	}
-
-	get matchNumber(): number {
-		return this.config.match.match_number;
-	}
-
-	get compLevel(): string {
-		return this.config.match.comp_level;
-	}
-
-	get year(): number {
-		return this.config.event.year;
-	}
-
-	get target(): HTMLDivElement {
-		return this.config.target;
-	}
-
-	get paths() {
-		return this.data.paths;
-	}
-
-	/**
-	 * Initialize DOM and interaction handlers for the whiteboard.
-	 *
-	 * @returns {() => void} Cleanup function to remove handlers.
-	 */
-	init() {
-		Stack.use(this.stack);
-		this.target.style.position = 'relative';
-		this.target.style.width = '100%';
-		this.target.style.height = '100%';
+	private _rendered = false;
+	render(target: HTMLDivElement, stack: Stack) {
+		if (this._rendered) {
+			throw new Error('Strategy already rendered');
+		}
+		stack.on('undo', () => this.emit('change'));
+		stack.on('redo', () => this.emit('change'));
+		this._rendered = true;
+		target.style.position = 'relative';
+		target.style.width = '100%';
+		target.style.aspectRatio = '2 / 1';
 
 		const field = document.createElement('img');
-		field.src = `/assets/field/${this.year}.png`;
 		field.style.position = 'absolute';
-		field.style.top = '0';
 		field.style.left = '0';
+		field.style.top = '0';
 		field.style.width = '100%';
 		field.style.height = '100%';
-		this.target.append(field);
+		field.src = `/assets/field/${this.match?.event.tba.year || 2026}.png`;
+		target.appendChild(field);
 
-		this.svg.setAttribute('viewBox', '0 0 2 1');
-		this.svg.style.position = 'absolute';
-		this.svg.style.top = '0';
-		this.svg.style.left = '0';
-		this.svg.style.width = '100%';
-		this.svg.style.height = '100%';
-		this.target.append(this.svg);
-
-		let currentPath: Path | undefined = undefined;
-		const deinit: (() => void)[] = [];
-		let timeout: ReturnType<typeof setTimeout> | null = null;
-
-		const push = (point: Point2D) => {
-			if (!currentPath) return;
-			const rect = this.target.getBoundingClientRect();
-			const normalizedX = ((point[0] - rect.left) * 2) / rect.width;
-			const normalizedY = (point[1] - rect.top) / rect.height;
-			const normalizedPoint: Point2D = [normalizedX, normalizedY];
-			currentPath.add(normalizedPoint);
+		const unsubs: (() => void)[] = [];
+		const registerSub = (sub: () => void) => {
+			unsubs.push(sub);
 		};
 
-		const createPath = (point: Point2D) => {
-			this.clearSelection();
-			const color = Color.fromName('white').setAlpha(0.8).toString('rgba');
-			const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-			this.svg.appendChild(pathEl);
-			const p = new Path(this, pathEl, {
-				points: [],
-				color,
-				selected: false,
-				id: this.data.paths.length
-			});
-			deinit.push(p.init());
-			this.data.paths.push(p);
-			this.inform();
-			push(point);
-			this.pipe(p);
+		const tools: HTMLElement[] = [];
+		const registerTool = (el: HTMLElement) => {
+			el.style.transition = 'all 0.3s';
+			tools.push(el);
+		};
 
-			this.stack.push({
+		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		svg.style.position = 'absolute';
+		svg.style.left = '0';
+		svg.style.top = '0';
+		svg.style.width = '100%';
+		svg.style.height = '100%';
+		target.appendChild(svg);
+
+		const commentContainer = document.createElement('div');
+		commentContainer.style.position = 'absolute';
+		commentContainer.style.left = '0';
+		commentContainer.style.top = '0';
+		commentContainer.style.width = '100%';
+		commentContainer.style.height = '100%';
+		target.appendChild(commentContainer);
+		registerTool(commentContainer);
+
+		const colorsContainer = document.createElement('div');
+		colorsContainer.style.position = 'absolute';
+		colorsContainer.style.left = '10px';
+		colorsContainer.style.top = '10px';
+		colorsContainer.style.display = 'flex';
+		colorsContainer.style.gap = '10px';
+		target.appendChild(colorsContainer);
+		registerTool(colorsContainer);
+
+		let currentColor: string = 'black';
+
+		const changeColor = (color: string) => (currentColor = color);
+
+		const createColor = (name: string, color: string) => {
+			const button = document.createElement('button');
+			button.classList.add('btn');
+			button.textContent = name;
+			button.style.backgroundColor = color;
+			colorsContainer.appendChild(button);
+			const onchange = () => {
+				changeColor(color);
+			};
+			button.addEventListener('click', onchange);
+			registerSub(() => button.removeEventListener('click', onchange));
+		};
+
+		createColor('Red', 'red');
+		createColor('Blue', 'blue');
+		createColor('Black', 'black');
+if (this.match) {
+		const teamsContainer = document.createElement('div');
+		teamsContainer.style.position = 'absolute';
+		teamsContainer.style.right = '10px';
+		teamsContainer.style.top = '10px';
+		const [r1, r2, r3, b1, b2, b3] = teamsFromMatch(this.match.tba);
+		for (const red of [r1, r2, r3]) {
+			const a = document.createElement('a');
+			a.textContent = `${red}`;
+			a.href = `/dashboard/event/${this.match.event.tba.key}/team/${red}`;
+			a.style.display = 'block';
+			a.classList.add('btn', 'btn-danger', 'btn-sm');
+			teamsContainer.appendChild(a);
+		}
+		for (const blue of [b1, b2, b3]) {
+			const a = document.createElement('a');
+			a.textContent = `${blue}`;
+			a.href = `/dashboard/event/${this.match.event.tba.key}/team/${blue}`;
+			a.style.display = 'block';
+			a.classList.add('btn', 'btn-primary', 'btn-sm');
+			teamsContainer.appendChild(a);
+		}
+		target.appendChild(teamsContainer);
+		registerTool(teamsContainer);}
+
+		const comments = this.comments;
+		const paths = this.paths;
+
+		comments.set(
+			this.data.comments.map((c) => {
+				const comment = new Comment(c, this);
+				registerSub(comment.render(commentContainer, stack));
+				return comment;
+			})
+		);
+
+		paths.set(
+			this.data.paths.map((p) => {
+				const path = new Path(p);
+				registerSub(path.render(svg));
+				return path;
+			})
+		);
+
+		const deselect = () => {
+			comments.each((comment) => comment.deselect());
+		};
+
+		const getSelected = () => {
+			return comments.data.filter((comment) => comment.data.selected);
+		};
+
+		const oncontextmenu = (event: PointerEvent) => {
+			deselect();
+			event.preventDefault();
+			const rect = target.getBoundingClientRect();
+			// normalized x and y between 0 and 1
+			const x = (event.clientX - rect.left) / rect.width;
+			const y = (event.clientY - rect.top) / rect.height;
+			contextmenu(event, {
+				options: [
+					{
+						name: 'Add Comment',
+						icon: {
+							type: 'material-icons',
+							name: 'add'
+						},
+						action: async () => {
+							const res = await prompt('Enter comment text', {
+								multiline: true
+							});
+							if (!res) return;
+							const newComment: CommentConfig = {
+								position: [x, y],
+								text: res,
+								size: [150, 50],
+								hidden: false,
+								selected: true
+							};
+							const comment = new Comment(newComment, this);
+							registerSub(comment.render(commentContainer, stack));
+							stack.push({
+								do: async () => {
+									comments.push(comment);
+									comment.show();
+									this.emit('change');
+								},
+								undo: () => {
+									comments.remove(comment);
+									comment.hide();
+									this.emit('change');
+								},
+								name: 'Add Comment'
+							});
+						}
+					}
+				],
+				width: '150px'
+			});
+		};
+
+		const ondblclick = (event: MouseEvent) => {
+			if (isTool(event)) return;
+			event.preventDefault();
+			oncontextmenu(
+				new PointerEvent('contextmenu', { clientX: event.clientX, clientY: event.clientY })
+			);
+		};
+
+		target.addEventListener('contextmenu', oncontextmenu);
+		target.addEventListener('dblclick', ondblclick);
+
+		let currentPath: Path | null = null;
+
+		const setHidden = (hidden: boolean) => {
+			if (hidden) {
+				for (const tool of tools) {
+					tool.style.opacity = '0';
+				}
+			} else {
+				for (const tool of tools) {
+					tool.style.opacity = '1';
+				}
+			}
+		};
+
+		const down = (x: number, y: number) => {
+			deselect();
+			const newPathConfig: PathConfig = {
+				points: [[x, y]],
+				color: currentColor
+			};
+
+			const path = new Path(newPathConfig);
+			let unrender = () => {};
+			setHidden(true);
+
+			stack.push({
 				do: () => {
-					this.data.paths.push(p);
-					this.svg.appendChild(pathEl);
-					p.inform();
+					unrender = path.render(svg);
+					paths.push(path);
+					currentPath = path;
 				},
 				undo: () => {
-					this.data.paths = this.data.paths.filter((path) => !Object.is(path, p));
-					pathEl.remove();
-					this.inform();
+					unrender();
+					path.destroy();
+					paths.remove(path);
+					currentPath = null;
 				},
-				name: 'Add Path'
+				name: 'Draw Path'
 			});
-
-			currentPath = p;
+		};
+		const move = (x: number, y: number) => {
+			if (!currentPath) return;
+			deselect();
+			currentPath.update((config) => ({ ...config, points: [...config.points, [x, y]] }));
+		};
+		const up = () => {
+			deselect();
+			currentPath = null;
+			setHidden(false);
+			this.emit('change');
 		};
 
-		const down = (point: Point2D) => {
-			timeout = setTimeout(() => {
-				createPath(point);
-			}, CLICK_THRESHOLD);
+		const isTool = (event: Event) => {
+			if (!(event.target instanceof HTMLElement)) return false;
+			// iterate through the parents of the event target to see if any of them have the class 'comment-container'
+			let el: HTMLElement | null = event.target;
+			while (el) {
+				if (el.classList.contains('comment')) return true;
+				el = el.parentElement;
+			}
+
+			if (
+				event.target instanceof HTMLButtonElement ||
+				event.target.parentElement instanceof HTMLButtonElement
+			) {
+				return true;
+			}
+
+			return false;
 		};
-		const move = (point: Point2D) => {
-			if (currentPath) {
-				push(point);
+
+		const onmousedown = (event: MouseEvent) => {
+			if (event.button !== 0) return;
+			if (isTool(event)) return;
+			event.preventDefault();
+			const rect = target.getBoundingClientRect();
+			const x = (event.clientX - rect.left) / rect.width;
+			const y = (event.clientY - rect.top) / rect.height;
+			down(x, y);
+		};
+
+		const onmousemove = (event: MouseEvent) => {
+			if (event.buttons !== 1) return;
+			event.preventDefault();
+			const rect = target.getBoundingClientRect();
+			const x = (event.clientX - rect.left) / rect.width;
+			const y = (event.clientY - rect.top) / rect.height;
+			move(x, y);
+		};
+
+		const onmouseup = () => {
+			up();
+		};
+
+		let lastTouchStart = 0;
+
+		const ontouchstart = (event: TouchEvent) => {
+			const now = performance.now();
+			if (now - lastTouchStart < 250) {
+				lastTouchStart = 0;
+				oncontextmenu(
+					new PointerEvent('contextmenu', {
+						clientX: event.touches[0].clientX,
+						clientY: event.touches[0].clientY
+					})
+				);
+				return;
+			}
+			lastTouchStart = now;
+			if (isTool(event)) return;
+			event.preventDefault();
+			const rect = target.getBoundingClientRect();
+			const x = (event.touches[0].clientX - rect.left) / rect.width;
+			const y = (event.touches[0].clientY - rect.top) / rect.height;
+			down(x, y);
+		};
+
+		const ontouchmove = (event: TouchEvent) => {
+			event.preventDefault();
+			const rect = target.getBoundingClientRect();
+			const x = (event.touches[0].clientX - rect.left) / rect.width;
+			const y = (event.touches[0].clientY - rect.top) / rect.height;
+			move(x, y);
+		};
+
+		const ontouchend = () => {
+			up();
+		};
+
+		target.addEventListener('mousedown', onmousedown);
+		target.addEventListener('mousemove', onmousemove);
+		target.addEventListener('mouseup', onmouseup);
+		target.addEventListener('touchstart', ontouchstart);
+		target.addEventListener('touchmove', ontouchmove);
+		target.addEventListener('touchend', ontouchend);
+
+		const onkeydown = (event: KeyboardEvent) => {
+			switch (event.key) {
+				case 'Escape':
+					deselect();
+					break;
+				case 'Delete':
+				case 'Backspace': {
+					const selected = getSelected();
+					if (selected.length === 0) return;
+					stack.push({
+						do: () => {
+							for (const comment of selected) {
+								comment.hide();
+							}
+							this.emit('change');
+						},
+						undo: () => {
+							for (const comment of selected) {
+								comment.show();
+							}
+							this.emit('change');
+						},
+						name: 'Delete Comment(s)'
+					});
+					break;
+				}
+			}
+
+			if (event.ctrlKey || event.metaKey) {
+				switch (event.key) {
+					case 'a': {
+						event.preventDefault();
+						comments.each((c) => c.select());
+						break;
+					}
+				}
 			}
 		};
-		const up = (point: Point2D) => {
-			if (timeout) {
-				clearTimeout(timeout);
-				timeout = null;
+
+		window.addEventListener('keydown', onkeydown);
+
+		const prevStack = Stack.current;
+		Stack.use(stack);
+
+		registerSub(this.on('incomming', () => {
+			cleanup();
+			this.render(target, stack);
+		}));
+
+		const cleanup = () => {
+			stack.clear();
+			if (prevStack) {
+				Stack.use(prevStack);
+			} else {
+				Stack.current = undefined;
 			}
-			// Only finish the path if it was actually started (i.e., user held long enough)
-			if (currentPath) {
-				push(point);
-				currentPath = undefined;
-
-				this.emit('update');
+			for (const unsub of unsubs) {
+				unsub();
 			}
-		};
 
-		const mousedown = (e: MouseEvent) => {
-			// not right click
-			if (e.button !== 0) return;
-			e.preventDefault();
-			down([e.clientX, e.clientY]);
-		};
-		const mousemove = (e: MouseEvent) => {
-			e.preventDefault();
-			move([e.clientX, e.clientY]);
-		};
-		const mouseup = (e: MouseEvent) => {
-			e.preventDefault();
-			up([e.clientX, e.clientY]);
-		};
+			target.removeEventListener('dblclick', ondblclick);
+			target.removeEventListener('contextmenu', oncontextmenu);
+			target.removeEventListener('mousedown', onmousedown);
+			target.removeEventListener('mousemove', onmousemove);
+			target.removeEventListener('mouseup', onmouseup);
+			target.removeEventListener('touchstart', ontouchstart);
+			target.removeEventListener('touchmove', ontouchmove);
+			target.removeEventListener('touchend', ontouchend);
 
-		const touchstart = (e: TouchEvent) => {
-			e.preventDefault();
-			if (e.touches.length > 0) {
-				down([e.touches[0].clientX, e.touches[0].clientY]);
-			}
+			window.removeEventListener('keydown', onkeydown);
+
+			target.removeChild(field);
+			target.removeChild(svg);
+			target.removeChild(commentContainer);
+			this._rendered = false;
 		};
-		const touchmove = (e: TouchEvent) => {
-			e.preventDefault();
-			if (e.touches.length > 0) {
-				move([e.touches[0].clientX, e.touches[0].clientY]);
-			}
-		};
-		const touchend = (e: TouchEvent) => {
-			e.preventDefault();
-			// Use changedTouches for end event
-			if (e.changedTouches.length > 0) {
-				up([e.changedTouches[0].clientX, e.changedTouches[0].clientY]);
-			}
-		};
-
-		this.target.addEventListener('mousedown', mousedown);
-		this.target.addEventListener('mousemove', mousemove);
-		this.target.addEventListener('mouseup', mouseup);
-		this.target.addEventListener('touchstart', touchstart);
-		this.target.addEventListener('touchmove', touchmove);
-		this.target.addEventListener('touchend', touchend);
-		this.target.addEventListener('touchcancel', touchend);
-
-		this.deinit = () => {
-			Stack.current = undefined;
-			this.target.removeEventListener('mousedown', mousedown);
-			this.target.removeEventListener('mousemove', mousemove);
-			this.target.removeEventListener('mouseup', mouseup);
-			this.target.removeEventListener('touchstart', touchstart);
-			this.target.removeEventListener('touchmove', touchmove);
-			this.target.removeEventListener('touchend', touchend);
-			this.target.removeEventListener('touchcancel', touchend);
-			for (const fn of deinit) fn();
-			this.target.innerHTML = '';
-			this.emit('destroy');
-		};
-		return this.deinit;
-	}
-
-	deinit = () => {};
-
-	clearSelection() {
-		this.update((wb) => {
-			for (const path of wb.paths) {
-				path.data.selected = false;
-				path.inform();
-			}
-			return wb;
-		});
-	}
-
-	clear() {
-		this.update((wb) => {
-			for (const path of wb.paths) {
-				path.target.remove();
-			}
-			wb.paths = [];
-			return wb;
-		});
+		return cleanup;
 	}
 
 	serialize() {
-		const round = (num: number) => {
-			return num.toFixed(3);
-		};
-		const uniquePoints = new Set<string>();
-		const rendered = {
-			paths: this.data.paths
-				.map((p) => {
-					const uniquePointsArray: Point2D[] = [];
-					for (const pt of p.points) {
-						const pointString = JSON.stringify(pt);
-						if (!uniquePoints.has(pointString)) {
-							uniquePoints.add(pointString);
-							uniquePointsArray.push(pt);
-						}
-					}
-					return {
-						points: uniquePointsArray,
-						color: p.color
-					};
-				})
-				.filter((p) => p.points.length > 0)
-		};
-		return `{"paths": [${rendered.paths.map((p) => `{"points": [${p.points.map((pt) => `[${round(pt[0])}, ${round(pt[1])}]`).join(', ')}],"color": "${p.color}"}`).join(', ')}]}`;
+		const round = (num: number) => Math.round(num * 1000);
+		return JSON.stringify({
+			comments: this.comments.data.map((c) => ({
+				...c.data,
+				position: c.data.position.map(round) as [number, number],
+				size: c.data.size.map(round) as [number, number]
+			}))
+			.filter(c => !c.hidden),
+			paths: this.paths.data.map((p) => ({
+				...p.data,
+				points: p.data.points.map(([x, y]) => [round(x), round(y)])
+			})),
+		});
+	}
+
+	setState(data: BoardConfig) {
+		this.data = data;
+		this.emit('incomming');
 	}
 }

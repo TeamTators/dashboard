@@ -10,27 +10,33 @@ import { Struct } from '$lib/services/struct';
 import { StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
+import { WritableBase } from '$lib/services/writables';
+import { Board } from '$lib/services/whiteboard';
+import { attempt, attemptAsync } from 'ts-utils';
+import * as remote from '$lib/remotes/strategy.remote';
+import type { TBAMatch } from '$lib/utils/tba';
+import { teamsFromMatch } from 'tatorscout/tba';
 
 export namespace Strategy {
-	export const MatchWhiteboards = new Struct({
-		name: 'match_whiteboards',
-		structure: {
-			/** Event key this whiteboard belongs to. */
-			eventKey: 'string',
-			/** Match number for the whiteboard. */
-			matchNumber: 'number',
-			/** Competition level (qm, qf, sf, f). */
-			compLevel: 'string',
-			/** Serialized board data. */
-			board: 'string',
-			/** Display name for the whiteboard. */
-			name: 'string'
-		},
-		socket: sse,
-		browser
-	});
+	// export const MatchWhiteboards = new Struct({
+	// 	name: 'match_whiteboards',
+	// 	structure: {
+	// 		/** Event key this whiteboard belongs to. */
+	// 		eventKey: 'string',
+	// 		/** Match number for the whiteboard. */
+	// 		matchNumber: 'number',
+	// 		/** Competition level (qm, qf, sf, f). */
+	// 		compLevel: 'string',
+	// 		/** Serialized board data. */
+	// 		board: 'string',
+	// 		/** Display name for the whiteboard. */
+	// 		name: 'string'
+	// 	},
+	// 	socket: sse,
+	// 	browser
+	// });
 
-	export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;
+	// export type MatchWhiteboardData = StructData<typeof MatchWhiteboards.data.structure>;
 
 	// export const Whiteboards = new Struct({
 	// 	name: 'whiteboards',
@@ -56,8 +62,6 @@ export namespace Strategy {
 			eventKey: 'string',
 			/** Alliance color for the strategy (red/blue). */
 			alliance: 'string',
-			/** Strategy type or category. */
-			type: 'string',
 
 			/** Match number for the strategy. */
 			matchNumber: 'number',
@@ -65,22 +69,123 @@ export namespace Strategy {
 			compLevel: 'string',
 
 			/** Partner team 1 number. */
-			partner1: 'number',
+			partner1: 'string',
 			/** Partner team 2 number. */
-			partner2: 'number',
+			partner2: 'string',
 			/** Partner team 3 number. */
-			partner3: 'number',
+			partner3: 'string',
 
 			/** Opponent team 1 number. */
-			opponent1: 'number',
+			opponent1: 'string',
 			/** Opponent team 2 number. */
-			opponent2: 'number',
+			opponent2: 'string',
 			/** Opponent team 3 number. */
-			opponent3: 'number'
+			opponent3: 'string',
+
+			/** Freeform notes for the strategy. */
+			notes: 'string',
+
+			/** Serialized whiteboard data for the strategy. */
+			board: 'string'
 		},
 		socket: sse,
-		browser
+		browser,
 	});
+
+	export class StrategyExtended extends WritableBase<{
+		strategy: StrategyData;
+		whiteboard: Board;
+		partner1: PartnerData;
+		partner2: PartnerData;
+		partner3: PartnerData;
+		opponent1: OpponentData;
+		opponent2: OpponentData;
+		opponent3: OpponentData;
+	}> {
+		public static from(strategy: StrategyData, partners: [PartnerData,PartnerData,PartnerData], opponents: [OpponentData,OpponentData,OpponentData]) {
+			return attempt(() => {
+				const whiteboard = Board.from(String(strategy.data.board)).unwrap();
+				return new StrategyExtended({
+					strategy: strategy,
+					whiteboard,
+					partner1: partners[0],
+					partner2: partners[1],
+					partner3: partners[2],
+					opponent1: opponents[0],
+					opponent2: opponents[1],
+					opponent3: opponents[2],
+				});
+			});
+		}
+
+		get name() {
+			return this.data.strategy.derive(s => s.name);
+		}
+
+		get notes() {
+			return this.data.strategy.derive(s => s.notes);
+		}
+
+		get strategy() {
+			return this.data.strategy;
+		}
+
+		get board() {
+			return this.data.whiteboard;
+		}
+
+		get partners() {
+			return [this.data.partner1, this.data.partner2, this.data.partner3] as [PartnerData, PartnerData, PartnerData];
+		}
+
+		get opponents() {
+			return [this.data.opponent1, this.data.opponent2, this.data.opponent3] as [OpponentData, OpponentData, OpponentData];
+		}
+
+		constructor(data: {
+			strategy: StrategyData;
+			whiteboard: Board;
+			partner1: PartnerData;
+			partner2: PartnerData;
+			partner3: PartnerData;
+			opponent1: OpponentData;
+			opponent2: OpponentData;
+			opponent3: OpponentData;
+		}) {
+			super(data);
+			this.pipe(data.strategy);
+			this.pipe(data.partner1);
+			this.pipe(data.partner2);
+			this.pipe(data.partner3);
+			this.pipe(data.opponent1);
+			this.pipe(data.opponent2);
+			this.pipe(data.opponent3);
+
+			data.whiteboard.on('change', () => {
+				this.save();
+			});
+
+			this.onAllUnsubscribe(data.strategy.subscribe(({ board }) => {
+				if (board === data.whiteboard.serialize()) return;
+				console.log('Board changed, updating whiteboard data');
+				const whiteboard = Board.from(String(board));
+				if (whiteboard.isOk()) {
+					data.whiteboard.setState(whiteboard.unwrap().data);
+				} else {
+					console.error('Failed to parse whiteboard data:', whiteboard.error);
+				}
+			}));
+		}
+
+		save() {
+			return this.strategy.update((data) => {
+				return {
+					...data,
+					board: this.board.serialize(),
+				}
+			});
+		}
+	}
 
 	/**
 	 * Fetch strategy records that match the event and match identifiers.
@@ -93,16 +198,25 @@ export namespace Strategy {
 	 * ```
 	 */
 	export const fromMatch = (eventKey: string, matchNumber: number, compLevel: string) => {
-		return Strategy.get(
-			{
-				eventKey,
-				matchNumber,
-				compLevel
-			},
-			{
-				type: 'all'
-			}
-		);
+		return attemptAsync(async () => {
+			const data = await remote.fromMatch({ eventKey, matchNumber, compLevel });
+			return data.map((d) => {
+				const strategy = Strategy.Generator(d.strategy);
+				const partners = d.partners.map(p => Partners.Generator(p));
+				const opponents = d.opponents.map(o => Opponents.Generator(o));
+				return StrategyExtended.from(strategy, partners as [PartnerData, PartnerData, PartnerData], opponents as [OpponentData, OpponentData, OpponentData]).unwrap();
+			});
+		});
+	};
+
+	export const fromId = (id: string) => {
+		return attemptAsync(async () => {
+			const data = await remote.fromId({ id });
+			const strategy = Strategy.Generator(data.strategy);
+			const partners = data.partners.map(p => Partners.Generator(p));
+			const opponents = data.opponents.map(o => Opponents.Generator(o));
+			return StrategyExtended.from(strategy, partners as [PartnerData, PartnerData, PartnerData], opponents as [OpponentData, OpponentData, OpponentData]).unwrap();
+		});
 	};
 
 	export type StrategyData = StructData<typeof Strategy.data.structure>;
@@ -111,11 +225,6 @@ export namespace Strategy {
 	export const Partners = new Struct({
 		name: 'strategy_partners',
 		structure: {
-			/** Parent strategy id. */
-			strategyId: 'string',
-			/** Partner position in the alliance. */
-			position: 'number',
-
 			/** Starting position description. */
 			startingPosition: 'string',
 			/** Auto plan notes. */
@@ -127,7 +236,9 @@ export namespace Strategy {
 			/** Endgame plan notes. */
 			endgame: 'string',
 			/** Freeform notes. */
-			notes: 'string'
+			notes: 'string',
+			/** Team Number */
+			number: 'number',
 		},
 		socket: sse,
 		browser
@@ -139,17 +250,18 @@ export namespace Strategy {
 	export const Opponents = new Struct({
 		name: 'strategy_opponents',
 		structure: {
-			/** Parent strategy id. */
-			strategyId: 'string',
-			/** Opponent position in the alliance. */
-			position: 'number',
-
 			/** Post-auto plan notes. */
 			postAuto: 'string',
 			/** Assigned role for the opponent. */
 			role: 'string',
 			/** Freeform notes. */
-			notes: 'string'
+			notes: 'string',
+			/** Team Number */
+			number: 'number',
+			/** Auto plan notes. */
+			auto: 'string',
+			/** Endgame plan notes. */
+			endgame: 'string',
 		},
 		socket: sse,
 		browser
@@ -173,4 +285,26 @@ export namespace Strategy {
 
 	// export type AlliancesData = StructData<typeof Alliances.data.structure>;
 	// export type AlliancesArr = DataArr<typeof Alliances.data.structure>;
+
+	export const create = (config: {
+		match: TBAMatch;
+		name: string;
+		alliance: 'red' | 'blue';
+	}) => {
+		return attemptAsync(async () => {
+			const [r1, r2, r3, b1, b2, b3] = teamsFromMatch(config.match.tba);
+			const partners = config.alliance === 'red' ? [r1, r2, r3] : [b1, b2, b3];
+			const opponents = config.alliance === 'red' ? [b1, b2, b3] : [r1, r2, r3];
+
+			return Strategy.Generator(await remote.create({
+				eventKey: config.match.tba.event_key,
+				matchNumber: config.match.tba.match_number,
+				compLevel: config.match.tba.comp_level,
+				name: config.name,
+				alliance: config.alliance,
+				partners: partners as [number, number, number],
+				opponents: opponents as [number, number, number],
+			}));
+		});
+	};
 }

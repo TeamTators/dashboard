@@ -10,21 +10,18 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 	import { onMount } from 'svelte';
 	import { Loop } from 'ts-utils/loop';
 	import { Countdown } from '$lib/utils/countdown.js';
-	import { Whiteboard } from '$lib/services/whiteboard/index.js';
 	import { Strategy } from '$lib/model/strategy.js';
-	import { alert, prompt, select } from '$lib/utils/prompts.js';
-	import { debounce } from 'ts-utils';
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
+	import { prompt } from '$lib/utils/prompts.js';
 
 	const { data } = $props();
 	const event = $derived(data.event);
 	const teams = $derived(data.teams);
-	let whiteboards = $state(Strategy.MatchWhiteboards.arr());
-	let lastBoardState = '';
 
 	$effect(() => nav(event.tba));
 	let match: TBAMatch | undefined = $state(undefined);
 	let tatorAlliance: 'red' | 'blue' | undefined = $state(undefined);
+	let strategies = $state(Strategy.Strategy.arr());
 
 	const render = async () => {
 		const matches = await event.getMatches(true, new Date());
@@ -65,15 +62,6 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 		countdown.setTarget(new Date(Number(closest.tba.time) * 1000));
 
 		tatorAlliance = match.tba.alliances.red.team_keys.includes('frc2122') ? 'red' : 'blue';
-
-		whiteboards = Strategy.MatchWhiteboards.get(
-			{
-				eventKey: event.tba.key
-			},
-			{
-				type: 'all'
-			}
-		);
 	};
 
 	const countdown = new Countdown(new Date(2025, 3, 14, 0, 0, 0));
@@ -83,69 +71,21 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 		const loop = new Loop(render, 1000 * 60);
 		loop.start();
 
-		const offUpdate = Strategy.MatchWhiteboards.on('update', (wb) => {
-			if (wb.data.id && currentMatchWhiteboard?.data.id === wb.data.id) {
-				if (lastBoardState === wb.data.board) return;
-				open(wb);
-			}
+		strategies = Strategy.Strategy.get({
+			eventKey: event.tba.key,
+			matchNumber: match?.tba.match_number,
+			compLevel: match?.tba.comp_level,
+		}, {
+			type: 'all',
 		});
 
 		return () => {
 			loop.stop();
 			countdown.stop();
-			offUpdate();
-			unsub();
-			offSave();
 		};
 	});
 
 	let container: HTMLDivElement;
-	let whiteboard: Whiteboard | undefined;
-	let whiteboardEl: HTMLDivElement | undefined = $state(undefined);
-	let currentMatchWhiteboard: Strategy.MatchWhiteboardData | undefined = $state(undefined);
-
-	let unsub = () => {};
-	let offSave = () => {};
-
-	const open = (wb: Strategy.MatchWhiteboardData) => {
-		if (!whiteboardEl) return;
-		if (!match) return;
-		unsub();
-		offSave();
-		currentMatchWhiteboard = wb;
-		whiteboard?.deinit();
-		const renderRes = Whiteboard.from(
-			{
-				target: whiteboardEl,
-				event: event.tba,
-				match: match.tba
-			},
-			wb
-		);
-		if (renderRes.isErr()) {
-			return alert('Error loading whiteboard. Contact support.');
-		}
-		whiteboard = renderRes.value;
-		unsub = whiteboard.init();
-		offSave = whiteboard.on('update', save);
-		for (const p of whiteboard.paths) {
-			whiteboard.svg.appendChild(p.target);
-			p.draw();
-		}
-	};
-
-	const save = debounce(() => {
-		if (!whiteboard) return;
-		if (!match) return;
-		if (!currentMatchWhiteboard) return;
-		const serialized = whiteboard.serialize();
-		lastBoardState = serialized;
-
-		currentMatchWhiteboard.update((d) => ({
-			...d,
-			board: serialized
-		}));
-	}, 100);
 
 	let infoModal: Modal;
 </script>
@@ -237,249 +177,40 @@ Shows the next match, alliance lineup, and strategy whiteboards.
 				</div>
 			</div>
 			<div class="row mb-3">
-				<div class="col-6">
-					<button
-						type="button"
-						class="btn btn-outline-success w-100"
-						onclick={async () => {
-							const name = await prompt('Enter a name for the new whiteboard:', {
-								default: `Match ${match?.tba.comp_level.toUpperCase()} ${match?.tba.match_number} Whiteboard`
-							});
-							if (!name) return;
-							if (!match) return;
-
-							const onNew = (wb: Strategy.MatchWhiteboardData) => {
-								clearTimeout(timeout);
-								Strategy.MatchWhiteboards.off('new', onNew);
-
-								open(wb);
-							};
-
-							Strategy.MatchWhiteboards.on('new', onNew);
-
-							const timeout = setTimeout(() => {
-								Strategy.MatchWhiteboards.off('new', onNew);
-								alert('Timed out waiting for whiteboard creation. Please try again.');
-							}, 1000 * 10); // 10 seconds
-
-							const res = await Strategy.MatchWhiteboards.new({
-								eventKey: event.tba.key,
-								matchNumber: match.tba.match_number,
-								compLevel: match.tba.comp_level,
-								board: JSON.stringify(Whiteboard.blank()),
-								name
-							});
-
-							if (res.isErr()) {
-								return alert('Error creating whiteboard. Please try again.');
-							}
-						}}
-					>
-						New <i class="material-icons">add</i>
-					</button>
-				</div>
-				<div class="col-6">
-					<button
-						type="button"
-						disabled={$whiteboards.length === 0}
-						class="btn btn-outline-success w-100"
-						onclick={async () => {
-							if (!match) return;
-							if (!whiteboardEl) return;
-							const res = await select('Select Whiteboard', whiteboards.data, {
-								render: (wb) => `${wb.data.name} (${wb.data.compLevel}${wb.data.matchNumber})`,
-								title: 'Load Whiteboard'
-							});
-							if (res) {
-								open(res);
-							}
-						}}
-					>
-						Load <i class="material-icons">cached</i> ({$whiteboards.length})
-					</button>
-				</div>
-			</div>
-			{#if currentMatchWhiteboard}
-				<div class="row mb-3">
-					<div class="col py-2 bg-secondary">
-						<h5 class="m-0 text-center">
-							Loaded: {currentMatchWhiteboard.data.name}
-						</h5>
-					</div>
-				</div>
-			{/if}
-			<div class="row mb-3">
-				<div class="col-md-5 col-4">
-					<button
-						type="button"
-						class="btn btn-outline-secondary w-100"
-						onclick={() => whiteboard?.stack.undo()}
-					>
-						<i class="material-icons">undo</i>
-					</button>
-				</div>
-				<div class="col-md-2 col-4">
-					<button
-						type="button"
-						class="btn btn-info w-100"
-						onclick={() => {
-							infoModal.show();
-						}}
-					>
-						<i class="material-icons">info</i>
-					</button>
-				</div>
-				<div class="col-md-5 col-4">
-					<button
-						type="button"
-						class="btn btn-outline-secondary w-100"
-						onclick={() => whiteboard?.stack.redo()}
-					>
-						<i class="material-icons">redo</i>
-					</button>
-				</div>
-			</div>
-			<div class="row mb-3">
-				<div
-					style="
-					position: relative;
-					width: 100%;
-					aspect-ratio: 2 / 1;
-				"
-				>
-					<div
-						style="
-						position: absolute;
-						top: 0;
-						left: 0;
-						width: 100%;
-						height: 100%;
-					"
-					>
-						<div
-							bind:this={whiteboardEl}
-							{@attach (div) => {
-								if (!match) return;
-								whiteboard = new Whiteboard(
-									{
-										target: div,
-										event: event.tba,
-										match: match.tba
-									},
-									{
-										paths: []
-									}
-								);
-								unsub = whiteboard.init();
-							}}
-						></div>
-					</div>
-					<a
-						href="/dashboard/event/{event.tba.key}/team/{teams.find(
-							(t) => t.tba.key === match?.tba.alliances.blue.team_keys[0]
-						)?.tba.team_number}"
-						type="button"
-						class="btn btn-primary"
-						style="
-                        position: absolute; 
-                        width: min-content;
-                        white-space: nowrap;
-                        z-index: 10;
-                        top: 66%;
-                        left: 92%;
-                    "
-						>Blue 1: {teams.find((t) => t.tba.key === match?.tba.alliances.blue.team_keys[0])?.tba
-							.team_number}
-					</a>
-
-					<a
-						href="/dashboard/event/{event.tba.key}/team/{teams.find(
-							(t) => t.tba.key === match?.tba.alliances.blue.team_keys[1]
-						)?.tba.team_number}"
-						type="button"
-						class="btn btn-primary"
-						style="
-                        position: absolute; 
-                        width: min-content;
-                        white-space: nowrap;
-                        z-index: 10;
-                        top: 48%;
-                        left: 92%;
-                    "
-						>Blue 2: {teams.find((t) => t.tba.key === match?.tba.alliances.blue.team_keys[1])?.tba
-							.team_number}
-					</a>
-
-					<a
-						href="/dashboard/event/{event.tba.key}/team/{teams.find(
-							(t) => t.tba.key === match?.tba.alliances.blue.team_keys[2]
-						)?.tba.team_number}"
-						type="button"
-						class="btn btn-primary"
-						style="
-                        position: absolute; 
-                        width: min-content;
-                        white-space: nowrap;
-                        z-index: 10;
-                        top: 28%;
-                        left: 92%;
-                    "
-						>Blue 3: {teams.find((t) => t.tba.key === match?.tba.alliances.blue.team_keys[2])?.tba
-							.team_number}
-					</a>
-					<a
-						href="/dashboard/event/{event.tba.key}/team/{teams.find(
-							(t) => t.tba.key === match?.tba.alliances.red.team_keys[2]
-						)?.tba.team_number}"
-						type="button"
-						class="btn btn-danger"
-						style="
-                            position: absolute; 
-                            width: min-content;
-                            white-space: nowrap;
-                            z-index: 10;
-                            top: 66%;
-                            left: 2%;
-                        "
-						>Red 3: {teams.find((t) => t.tba.key === match?.tba.alliances.red.team_keys[2])?.tba
-							.team_number}
-					</a>
-
-					<a
-						href="/dashboard/event/{event.tba.key}/team/{teams.find(
-							(t) => t.tba.key === match?.tba.alliances.red.team_keys[1]
-						)?.tba.team_number}"
-						type="button"
-						class="btn btn-danger"
-						style="
-                            position: absolute; 
-                            width: min-content;
-                            white-space: nowrap;
-                            z-index: 10;
-                            top: 48%;
-                            left: 2%;
-                        "
-						>Red 2: {teams.find((t) => t.tba.key === match?.tba.alliances.red.team_keys[1])?.tba
-							.team_number}
-					</a>
-
-					<a
-						href="/dashboard/event/{event.tba.key}/team/{teams.find(
-							(t) => t.tba.key === match?.tba.alliances.red.team_keys[0]
-						)?.tba.team_number}"
-						type="button"
-						class="btn btn-danger"
-						style="
-                            position: absolute; 
-                            width: min-content;
-                            white-space: nowrap;
-                            z-index: 10;
-                            top: 28%;
-                            left: 2%;
-                        "
-						>Red 1: {teams.find((t) => t.tba.key === match?.tba.alliances.red.team_keys[0])?.tba
-							.team_number}
-					</a>
+				<div class="col-12">
+					<h2>
+						Strategies
+					</h2>
+					{#if $strategies.length > 0}
+						<ul>
+							{#each $strategies as strategy}
+								<li>
+									<a href="/dashboard/strategy/{strategy.data.id}">
+										{strategy.data.name}
+									</a>
+								</li>
+							{/each}
+						</ul>
+					{:else}
+						<p>No strategies created for this match yet.</p>
+					{/if}
+					<button type="button" class="btn btn-primary" onclick={async () => {
+						if (!match) return;
+						const name = await prompt('Strategy name');
+						if (!name) return;
+						const res = await Strategy.create({
+							match,
+							name,
+							alliance: tatorAlliance || 'red',
+						});
+						if (res.isErr()) {
+							console.error(res.error);
+							alert('Failed to create strategy. Please try again later.');
+						} else {
+							const strategy = res.value;
+							window.location.href = `/dashboard/event/${event.tba.key}/strategy/${strategy.data.id}`;
+						}
+					}}>Create Strategy</button>
 				</div>
 			</div>
 		{:else}
