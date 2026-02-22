@@ -1,0 +1,17 @@
+{
+	"name": "Dashboard",
+	"short_name": "Dashboard",
+	"description": "TatorScout scouting dashboard",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#0d6efd",
+	"icons": [
+		{
+			"src": "/favicon.png",
+			"sizes": "128x128",
+			"type": "image/png",
+			"purpose": "any maskable"
+		}
+	]
+}
