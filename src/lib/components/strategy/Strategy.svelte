@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Strategy editor and viewer for match planning.
+ *
+ * @component Strategy
+ *
+ * @description
+ * Displays and edits strategy details, partners, opponents, and charts for a given event.
+ *
+ * @example
+ * ```svelte
+ * <Strategy strategy={strategy} event={event} teams={teams} />
+ * ```
+ */
 <script lang="ts">
 	import { Strategy } from '$lib/model/strategy';
 	import type { TBAEvent, TBATeam } from '$lib/utils/tba';
@@ -9,6 +22,12 @@
 	import CombinedTeamContribution from '../charts/CombinedTeamContribution.svelte';
 	import RadarCapabilityChart from '../charts/RadarCapabilityChart.svelte';
 
+	/**
+	 * @typedef Props
+	 * @property {Strategy.StrategyExtended} strategy - Strategy extended instance.
+	 * @property {TBAEvent} event - Event context.
+	 * @property {TBATeam[]} teams - Array of teams for lookup.
+	 */
 	interface Props {
 		strategy: Strategy.StrategyExtended;
 		event: TBAEvent;

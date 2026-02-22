@@ -427,25 +427,36 @@ export class Board {
 		};
 
 		let lastTouchStart = 0;
+		let lastTouchPoint: Point2D | null = null;
+		const DOUBLE_TAP_THRESHOLD = 10; // pixels
 
 		const ontouchstart = (event: TouchEvent) => {
 			const now = performance.now();
-			if (now - lastTouchStart < 250) {
-				lastTouchStart = 0;
-				oncontextmenu(
-					new PointerEvent('contextmenu', {
-						clientX: event.touches[0].clientX,
-						clientY: event.touches[0].clientY
-					})
-				);
-				return;
-			}
-			lastTouchStart = now;
-			if (isTool(event)) return;
-			event.preventDefault();
 			const rect = target.getBoundingClientRect();
 			const x = (event.touches[0].clientX - rect.left) / rect.width;
 			const y = (event.touches[0].clientY - rect.top) / rect.height;
+			const touchPoint: Point2D = [event.touches[0].clientX, event.touches[0].clientY];
+			if (now - lastTouchStart < 250 && lastTouchPoint) {
+				// Check if the touch point is within DOUBLE_TAP_THRESHOLD pixels
+				const dx = touchPoint[0] - lastTouchPoint[0];
+				const dy = touchPoint[1] - lastTouchPoint[1];
+				const dist = Math.sqrt(dx * dx + dy * dy);
+				if (dist <= DOUBLE_TAP_THRESHOLD) {
+					lastTouchStart = 0;
+					lastTouchPoint = null;
+					oncontextmenu(
+						new PointerEvent('contextmenu', {
+							clientX: event.touches[0].clientX,
+							clientY: event.touches[0].clientY
+						})
+					);
+					return;
+				}
+			}
+			lastTouchStart = now;
+			lastTouchPoint = touchPoint;
+			if (isTool(event)) return;
+			event.preventDefault();
 			down(x, y);
 		};
 

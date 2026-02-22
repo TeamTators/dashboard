@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Strategy grid viewer for event strategies.
+ *
+ * @component StrategyGrid
+ *
+ * @description
+ * Displays a grid of strategies for an event, allowing double-click to view/edit and context menu actions.
+ *
+ * @example
+ * ```svelte
+ * <StrategyGrid strategies={strategies} height={400} />
+ * ```
+ */
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Strategy } from '$lib/model/strategy';
@@ -5,6 +18,11 @@
 	import { confirm } from '$lib/utils/prompts';
 	import Grid from '../general/Grid.svelte';
 
+	/**
+	 * @typedef Props
+	 * @property {Strategy.StrategyArr} strategies - Array of strategies to display.
+	 * @property {number} [height] - Optional height for the grid.
+	 */
 	interface Props {
 		strategies: Strategy.StrategyArr;
 		height?: number;

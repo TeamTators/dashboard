@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Alliance-level graph for 2025 scoring categories.
+ *
+ * @component CombinedTeamContribution
+ *
+ * @description
+ * Visualizes team contributions for an alliance in a stacked bar chart for a given event year.
+ *
+ * @example
+ * ```svelte
+ * <CombinedTeamContribution event={event} teams={teams} staticY={staticY} type="average" />
+ * ```
+ */
 <!--
 @fileoverview Placeholder for an alliance-level graph for 2025 scoring categories.
 
@@ -22,6 +35,13 @@ future chart should visualize once implemented.
 
 	Chart.register(...registerables);
 
+	/**
+	 * @typedef Props
+	 * @property {TBAEvent} event - Event context for chart.
+	 * @property {Scouting.MatchScoutingExtendedArr[]} teams - Array of team scouting data.
+	 * @property {WritableBase<number>} staticY - Writable for Y axis max.
+	 * @property {'max' | 'average'} type - Contribution aggregation type.
+	 */
 	interface Props {
 		event: TBAEvent;
 		teams: Scouting.MatchScoutingExtendedArr[];
@@ -31,6 +51,10 @@ future chart should visualize once implemented.
 
 	const { event, teams, staticY, type }: Props = $props();
 
+	/**
+	 * Render the chart for the given teams and event.
+	 * Destroys previous chart instance and updates staticY if needed.
+	 */
 	const render = () => {
 		if (chart) chart.destroy();
 
