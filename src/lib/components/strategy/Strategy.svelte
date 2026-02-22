@@ -215,46 +215,46 @@
 	</div>
 {/snippet}
 
-	<div class="container-fluid layer-1">
-		<div class="row mb-3">
-			<div class="container">
-				<div class="row mb-3">
-					<div class="col-12 mb-3">
-						<!-- svelte-ignore a11y_label_has_associated_control -->
-						<label class="form-label">Strategy Name</label>
-						<input
-							type="text"
-							class="form-control mb-2"
-							value={$name}
-							onchange={(e) => {
-								strategy.data.strategy.update((s) => ({
-									...s,
-									name: e.currentTarget.value
-								}));
-							}}
-						/>
-					</div>
+<div class="container-fluid layer-1">
+	<div class="row mb-3">
+		<div class="container">
+			<div class="row mb-3">
+				<div class="col-12 mb-3">
+					<!-- svelte-ignore a11y_label_has_associated_control -->
+					<label class="form-label">Strategy Name</label>
+					<input
+						type="text"
+						class="form-control mb-2"
+						value={$name}
+						onchange={(e) => {
+							strategy.data.strategy.update((s) => ({
+								...s,
+								name: e.currentTarget.value
+							}));
+						}}
+					/>
 				</div>
-				<div class="row mb-3">
-					<div class="col-12 mb-3">
-						<!-- svelte-ignore a11y_label_has_associated_control -->
-						<label class="form-label">Notes</label>
-						<textarea
-							class="form-control mb-2"
-							rows={4}
-							placeholder="Notes"
-							value={$notes}
-							onchange={(e) => {
-								strategy.data.strategy.update((s) => ({
-									...s,
-									notes: e.currentTarget.value
-								}));
-							}}
-						></textarea>
-					</div>
+			</div>
+			<div class="row mb-3">
+				<div class="col-12 mb-3">
+					<!-- svelte-ignore a11y_label_has_associated_control -->
+					<label class="form-label">Notes</label>
+					<textarea
+						class="form-control mb-2"
+						rows={4}
+						placeholder="Notes"
+						value={$notes}
+						onchange={(e) => {
+							strategy.data.strategy.update((s) => ({
+								...s,
+								notes: e.currentTarget.value
+							}));
+						}}
+					></textarea>
 				</div>
-				<div class="row mb-3">
-                {#key render}
+			</div>
+			<div class="row mb-3">
+				{#key render}
 					<div class="col-md-6 col-sm-12 mb-3">
 						<h5>Partners</h5>
 						{@render partner($strategy.partner1, 'red')}
@@ -267,11 +267,11 @@
 						{@render opponent($strategy.opponent2, 'blue')}
 						{@render opponent($strategy.opponent3, 'blue')}
 					</div>
-                {/key}
-				</div>
+				{/key}
 			</div>
 		</div>
-		<div class="row mb-3">
-			<Whiteboard board={strategy.board} />
-		</div>
 	</div>
+	<div class="row mb-3">
+		<Whiteboard board={strategy.board} />
+	</div>
+</div>

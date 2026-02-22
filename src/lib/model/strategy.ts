@@ -106,7 +106,7 @@ export namespace Strategy {
 			strategy: StrategyData,
 			partners: [PartnerData, PartnerData, PartnerData],
 			opponents: [OpponentData, OpponentData, OpponentData],
-			match?: TBAMatch,
+			match?: TBAMatch
 		) {
 			return attempt(() => {
 				const whiteboard = Board.from(String(strategy.data.board), match).unwrap();
@@ -245,7 +245,7 @@ export namespace Strategy {
 				strategy,
 				partners as [PartnerData, PartnerData, PartnerData],
 				opponents as [OpponentData, OpponentData, OpponentData],
-				match,
+				match
 			).unwrap();
 		});
 	};

@@ -42,13 +42,16 @@ Falls back to a no-scout view when a scouting record is missing.
 	});
 
 	afterNavigate(() => {
-		strategies = Strategy.Strategy.get({
-			eventKey: event.tba.key,
-			compLevel: match.tba.comp_level,
-			matchNumber: match.tba.match_number
-		}, {
-			type: 'all',
-		});
+		strategies = Strategy.Strategy.get(
+			{
+				eventKey: event.tba.key,
+				compLevel: match.tba.comp_level,
+				matchNumber: match.tba.match_number
+			},
+			{
+				type: 'all'
+			}
+		);
 
 		if (scouting) {
 			const res = Scouting.MatchScoutingExtended.from(scouting);
@@ -102,16 +105,9 @@ Falls back to a no-scout view when a scouting record is missing.
 	<div class="row">
 		{#key scoutingData}
 			{#if scoutingData}
-				<MatchDisplay
-					scouting={scoutingData}
-					{team}
-					{event}
-					{match}
-					strategies={strategies}
-					scout={account}
-				/>
+				<MatchDisplay scouting={scoutingData} {team} {event} {match} {strategies} scout={account} />
 			{:else}
-				<MatchDisplayNoScout {match} {team} {event} strategies={strategies} />
+				<MatchDisplayNoScout {match} {team} {event} {strategies} />
 			{/if}
 		{/key}
 	</div>

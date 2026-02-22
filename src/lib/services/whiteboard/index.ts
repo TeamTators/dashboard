@@ -17,17 +17,9 @@ type BoardConfig = {
 
 const driveTeamPositions: {
 	[year: number]: {
-		red: [
-			Point2D,
-			Point2D,
-			Point2D,
-		];
-		blue: [
-			Point2D,
-			Point2D,
-			Point2D,
-		];
-	}
+		red: [Point2D, Point2D, Point2D];
+		blue: [Point2D, Point2D, Point2D];
+	};
 } = {
 	2026: {
 		red: [
@@ -39,7 +31,7 @@ const driveTeamPositions: {
 			[0.95, 0.3],
 			[0.95, 0.6],
 			[0.95, 0.75]
-		],
+		]
 	},
 	2025: {
 		red: [
@@ -51,7 +43,7 @@ const driveTeamPositions: {
 			[0.95, 0.3],
 			[0.95, 0.5],
 			[0.95, 0.7]
-		],
+		]
 	}
 };
 
@@ -492,7 +484,7 @@ export class Board {
 			this.on('incomming', () => {
 				cleanup();
 				this.render(target, stack);
-			}),
+			})
 		);
 
 		const cleanup = () => {

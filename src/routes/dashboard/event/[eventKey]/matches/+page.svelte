@@ -146,8 +146,9 @@
 			<br />
 			Highlight teams in all of their matches from a specific match by selecting the checkbox next to
 			it.
-			<br>
-			You can create strategies for a specific match by clicking the button on the right. Matches with existing strategies will have a red badge indicating the number of strategies for that match.
+			<br />
+			You can create strategies for a specific match by clicking the button on the right. Matches with
+			existing strategies will have a red badge indicating the number of strategies for that match.
 		</p>
 	</div>
 	<div class="row">
@@ -155,7 +156,11 @@
 			<table class="table table-striped">
 				<tbody>
 					{#each matches as match}
-						{@const matchStrategies = $strategies.filter(s => s.data.matchNumber === match.tba.match_number && s.data.compLevel === match.tba.comp_level)}
+						{@const matchStrategies = $strategies.filter(
+							(s) =>
+								s.data.matchNumber === match.tba.match_number &&
+								s.data.compLevel === match.tba.comp_level
+						)}
 						<tr class:has-2122={has2122(match)}>
 							<td>
 								<input
@@ -201,16 +206,20 @@
 							{@render teamLink(match.tba.alliances.blue.team_keys[1], 'blue', match)}
 							{@render teamLink(match.tba.alliances.blue.team_keys[2], 'blue', match)}
 							<td>
-								<button type="button" class="btn btn-sm btm-primary position-relative" onclick={() => showStrategies(matchStrategies, match)}>
-									<i class="material-icons">
-										analytics
-									</i>
+								<button
+									type="button"
+									class="btn btn-sm btm-primary position-relative"
+									onclick={() => showStrategies(matchStrategies, match)}
+								>
+									<i class="material-icons"> analytics </i>
 									{#if matchStrategies.length > 0}
-									<span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
-										<span class="visually-hidden">
-											{matchStrategies.length} strategies
+										<span
+											class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"
+										>
+											<span class="visually-hidden">
+												{matchStrategies.length} strategies
+											</span>
 										</span>
-									</span>
 									{/if}
 								</button>
 								{#if matchStrategies.length}
@@ -224,6 +233,40 @@
 		</div>
 	</div>
 </div>
+
+<Modal bind:this={strategyModal} title="Match Strategies" size="lg">
+	{#snippet body()}
+		{#if selectedMatch}
+			<h5>{event.tba.name} - {selectedMatch.tba.comp_level}{selectedMatch.tba.match_number}</h5>
+		{/if}
+		<button
+			type="button"
+			class="btn btn-primary"
+			onclick={async () => {
+				if (!selectedMatch) return;
+				const name = await prompt('Enter a name for the new strategy:');
+				if (!name) return;
+				const newStrategy = await Strategy.create({
+					match: selectedMatch,
+					alliance: selectedMatch.tba.alliances.red.team_keys.includes('frc2122') ? 'red' : 'blue',
+					name
+				});
+
+				if (newStrategy.isOk()) {
+					window.location.href = `/dashboard/event/${event.tba.key}/strategy/${newStrategy.value.data.id}`;
+				} else {
+					console.error('Failed to create strategy:', newStrategy.error);
+					alert('Failed to create strategy. Please try again later.');
+				}
+			}}
+		>
+			<i class="material-icons">add</i> Create Strategy
+		</button>
+		{#key shownStrategies}
+			<StrategyGrid strategies={shownStrategies} />
+		{/key}
+	{/snippet}
+</Modal>
 
 <style>
 	.highlight {
@@ -244,39 +287,3 @@
 		border: 2px solid purple;
 	}
 </style>
-
-<Modal 
-	bind:this={strategyModal}
-	title="Match Strategies"
-	size="lg"
->
-	{#snippet body()}
-		{#if selectedMatch}
-			<h5>{event.tba.name} - {selectedMatch.tba.comp_level}{selectedMatch.tba.match_number}</h5>
-		{/if}
-		<button type="button" class="btn btn-primary" onclick={async () => {
-			if (!selectedMatch) return;
-			const name = await prompt('Enter a name for the new strategy:');
-			if (!name) return;
-			const newStrategy = await Strategy.create({
-				match: selectedMatch,
-				alliance: selectedMatch.tba.alliances.red.team_keys.includes('frc2122') ? 'red' : 'blue',
-				name,
-			});
-
-			if (newStrategy.isOk()) {
-				window.location.href = `/dashboard/event/${event.tba.key}/strategy/${newStrategy.value.data.id}`;
-			} else {
-				console.error('Failed to create strategy:', newStrategy.error);
-				alert('Failed to create strategy. Please try again later.');
-			}
-		}}>
-			<i class="material-icons">add</i> Create Strategy
-		</button>
-		{#key shownStrategies}
-			<StrategyGrid 
-				strategies={shownStrategies}
-			/>
-		{/key}
-	{/snippet}
-</Modal>

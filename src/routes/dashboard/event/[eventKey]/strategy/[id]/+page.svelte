@@ -26,7 +26,9 @@
 				const strategyRes = await Strategy.fromId(String(page.params.id), matches.value);
 				if (strategyRes.isErr()) {
 					console.error(strategyRes.error);
-					alert('Error loading strategy: Could not load the strategy data. Please try again later.');
+					alert(
+						'Error loading strategy: Could not load the strategy data. Please try again later.'
+					);
 					return;
 				}
 				strategy = strategyRes.value;
@@ -36,8 +38,6 @@
 				alert('Error loading strategy: Could not load the event data. Please try again later.');
 			}
 		});
-
-		
 	});
 </script>
 
