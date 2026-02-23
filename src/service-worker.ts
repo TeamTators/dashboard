@@ -39,6 +39,18 @@ self.addEventListener('activate', (event) => {
 				Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
 			)
 			.then(() => self.clients.claim())
+			.then(async () => {
+				// Notify all open tabs that a new version has activated so they reload
+				// and pick up the freshly-built assets instead of stale in-memory content.
+				try {
+					const clients = await self.clients.matchAll({ type: 'window' });
+					for (const client of clients) {
+						client.postMessage({ type: 'SW_UPDATED' });
+					}
+				} catch (err) {
+					console.error('[SW] Failed to notify clients of update:', err);
+				}
+			})
 	);
 });
 
