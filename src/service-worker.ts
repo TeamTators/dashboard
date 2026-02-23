@@ -20,7 +20,14 @@ const CACHE_NAME = `app-cache-${version}`;
 const STATIC_ASSETS = [...build, ...files];
 
 // URL path prefixes that should never be cached.
-const NEVER_CACHE = ['/api/sse', '/api/analytics', '/api/oauth', '/api/struct'];
+// - /api/sse       – long-lived SSE streams; must always be live
+// - /api/analytics – write-only telemetry; must always reach the server
+// - /api/oauth     – authentication flows; must always reach the server
+// - /remote/       – SvelteKit remote functions (command/query from $app/server);
+//                    their responses are permission-filtered and user-specific so
+//                    the SW must not cache or serve stale versions.  The struct
+//                    system manages its own application-level cache via IndexedDB.
+const NEVER_CACHE = ['/api/sse', '/api/analytics', '/api/oauth', '/remote/'];
 
 self.addEventListener('install', (event) => {
 	event.waitUntil(
