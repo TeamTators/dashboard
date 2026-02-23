@@ -71,12 +71,34 @@ older versions.
 		<div class="row mb-3">
 			<div class="col">
 				{#if scout}
-					<h4>Scouted by: {scout}</h4>
+					<h4>Scouted by: <span class="text-primary">{scout}</span></h4>
 				{:else}
-					<h4>Scouted by: {scouting.scouting.data.scoutUsername}</h4>
+					<h4>Scouted by: <span class="text-primary">{scouting.scouting.data.scoutUsername}</span></h4>
 				{/if}
 			</div>
 		</div>
+		{#if scouting.scouting.data.flagForReview}
+			<div class="row mb-3">
+			<div class="alert alert-warning">
+			<div class="d-flex align-items-center mb-2">
+
+				<i class="material-icons text-warning" style="font-size: 36px; margin-right: 10px;">
+					flag
+				</i>
+				<p>
+					<strong>Flagged for review:</strong> {scouting.scouting.data.flagReason}
+					<br>
+					<i class="text-muted text-small">
+						This match has been flagged for review. Please investigate the reason and make any necessary corrections.
+					</i>
+				</p>
+			</div>
+				<button type="button" class="btn btn-outline-success" onclick={async () => {await scouting.scouting.update((d) => ({ ...d, flagForReview: false, })); location.reload();}}>
+					<i class="material-icons">check</i> Mark as Reviewed
+				</button>
+			</div>
+			</div>
+		{/if}
 		<div class="row mb-3">
 			{#each match.tba.videos || [] as video}
 				<div class="col-md-6">
@@ -101,7 +123,6 @@ older versions.
 			{/each}
 		</div>
 		<div class="row mb-3">
-			<div class="col-md-6 h-100">
 				<div class="card layer-1 h-100">
 					<div class="card-body h-100">
 						<MatchContribution {match} {scouting} {team} {event} style="height: 321px" />
@@ -113,14 +134,13 @@ older versions.
 						<h6>Average Velocity: {avgvelocity()} ft/sec</h6>
 					</div>
 				</div>
-			</div>
-			<div class="col-md-6 h-100">
+		</div>
+		<div class="row mb-3">
 				<div class="card layer-1 h-100">
 					<div class="card-body h-100">
 						<MatchComments {scouting} />
 					</div>
 				</div>
-			</div>
 		</div>
 		<div class="row mb-3">
 			<div class="col-md-3 col-sm-6">
@@ -154,10 +174,10 @@ older versions.
 			<TraceHTML {scouting} />
 		</div>
 		<div class="row mb-3">
-			<div class="col-12">
+			<div class="d-flex justify-content-end">
 				<div class="btn-group" role="group">
 					<button
-						class="btn btn-warning"
+						class="btn btn-warning me-2"
 						type="button"
 						onclick={async () => {
 							if (
@@ -172,6 +192,15 @@ older versions.
 						<i class="material-icons"> archive </i> Archive Scouting Data
 					</button>
 				</div>
+				{#if scouting.scouting.data.flagForReview}
+					<button type="button" class="btn btn-outline-success" onclick={async () => {await scouting.scouting.update((d) => ({ ...d, flagForReview: false, })); location.reload();}}>
+						<i class="material-icons">check</i> Mark as Reviewed
+					</button>
+				{:else}
+					<button type="button" class="btn btn-outline-warning" onclick={async () => {await scouting.scouting.update((d) => ({ ...d, flagForReview: true, })); location.reload();}}>
+						<i class="material-icons">flag</i> Flag for Review
+					</button>
+				{/if}
 			</div>
 		</div>
 		<div class="row mb-3">

@@ -59,7 +59,11 @@ export const POST = async (event) => {
 					text: z.string(),
 					color: z.string()
 				})
-			)
+			),
+			flagForReview: z.object({
+				flagged: z.boolean(),
+				reason: z.string(),
+			}),
 		})
 		.safeParse(body);
 
@@ -81,6 +85,7 @@ export const POST = async (event) => {
 		scout,
 		prescouting,
 		// practice,
+		flagForReview,
 		alliance,
 		group,
 		remote,
@@ -165,7 +170,10 @@ export const POST = async (event) => {
 			scoutUsername: scout,
 			alliance: alliance ? alliance : 'unknown',
 			year,
-			sliders: JSON.stringify(sliders)
+			sliders: JSON.stringify(sliders),
+			flagForReview: flagForReview.flagged,
+			flagReason: flagForReview.reason,
+			trustScore: 0,
 		});
 		if (create.isErr()) {
 			terminal.error('Error creating match scouting', create.error);
