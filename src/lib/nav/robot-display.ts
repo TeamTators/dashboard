@@ -120,19 +120,11 @@ export default (event: TBAEvent) => {
 				external: true
 			},
 			{
-				name: 'Qualifications Strategy',
-				href: 'https://padlet.com/tatorscout/bordie-strategy-sheet-xvmkd3uf631sg64s',
+				name: 'Strategy',
+				href: `/dashboard/event/${event.key}/strategy`,
 				icon: {
 					type: 'material-icons',
 					name: 'assessment'
-				}
-			},
-			{
-				name: 'Playoff Strategy',
-				href: 'https://padlet.com/tatorscout/eliminations-bordie-26u9obktpg4da31v',
-				icon: {
-					type: 'material-icons',
-					name: 'insights'
 				}
 			},
 			{

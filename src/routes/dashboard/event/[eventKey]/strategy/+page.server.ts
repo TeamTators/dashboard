@@ -1,34 +1,20 @@
-/**
- * @fileoverview Server loader for the event strategy list page.
- * @description
- * Loads teams, matches, and existing strategy records for the event.
- */
-
+import { error, redirect } from '@sveltejs/kit';
 import { Strategy } from '$lib/server/structs/strategy.js';
 import { Event } from '$lib/server/utils/tba.js';
 
-/**
- * Loads strategy data for the event.
- * @param event - SvelteKit request event.
- * @returns Page data containing event info, teams, matches, and strategies.
- */
-export const load = async (event) => {
-	const e = await Event.getEvent(event.params.eventKey).unwrap();
+export const load = async ({ params, locals }) => {
+	if (!locals.account) throw redirect(307, '/account/sign-in');
+	if (!locals.account.data.verified) throw error(403, 'Account not verified');
 
-	const teams = await e.getTeams().unwrap();
-	const matches = await e.getMatches().unwrap();
-
-	const strategies = await Strategy.Strategy.get(
-		{ eventKey: event.params.eventKey },
-		{
-			type: 'stream'
-		}
-	)
-		.await()
-		.unwrap();
+	const event = await Event.getEvent(params.eventKey).unwrap();
+	const [teams, matches, strategies] = await Promise.all([
+		event.getTeams().unwrap(),
+		event.getMatches().unwrap(),
+		Strategy.Strategy.get({ eventKey: params.eventKey }, { type: 'all' }).unwrap()
+	]);
 
 	return {
-		event: e.tba,
+		event: event.tba,
 		teams: teams.map((t) => t.tba),
 		matches: matches.map((m) => m.tba),
 		strategies: strategies.map((s) => s.safe())

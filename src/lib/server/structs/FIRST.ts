@@ -17,15 +17,18 @@ import { Scouting } from './scouting';
 import { Trace } from 'tatorscout/trace';
 import { DataAction, PropertyAction } from '../../types/struct';
 import structRegistry from '../services/struct-registry';
+import { hash } from 'crypto';
 
 export namespace FIRST {
 	export const EventSummary = new Struct({
 		name: 'event_summary',
 		structure: {
 			/** TBA event key. */
-			eventKey: text('event_key').notNull(),
+			eventKey: text('event_key').notNull().unique(),
 			/** Serialized summary payload. */
-			summary: text('summary').notNull()
+			summary: text('summary').notNull(),
+			/** Hash of the summary for cache invalidation. */
+			summaryHash: text('summary_hash').notNull().default('') // to ensure we can invalidate the cache when the summary generation logic changes
 		}
 	});
 
@@ -50,7 +53,7 @@ export namespace FIRST {
 			const teams = await event.getTeams(true).unwrap();
 			const matches = await event.getMatches(true).unwrap();
 			const scouting = await Scouting.MatchScouting.get(
-				{ eventKey: eventKey },
+				{ eventKey },
 				{
 					type: 'all'
 				}
@@ -88,6 +91,34 @@ export namespace FIRST {
 		});
 	};
 
+	export const hashSummary = (summary: {
+		[key: string]: {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			[key: string]: (data: any) => number;
+		};
+	}) => {
+		const normalizeFunction = (fn: (data: unknown) => number) => {
+			return fn.toString().replace(/\s+/g, ' ').trim();
+		};
+		const canonical = Object.keys(summary)
+			.sort()
+			.map((outerKey) => {
+				const inner = summary[outerKey];
+				const innerCanonical = Object.keys(inner)
+					.sort()
+					.map((innerKey) => {
+						const fn = inner[innerKey];
+						return `${innerKey}:${normalizeFunction(fn)}`;
+					})
+					.join('|');
+
+				return `${outerKey}:{${innerCanonical}}`;
+			})
+			.join('||');
+
+		return hash('sha256', canonical);
+	};
+
 	export const getSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
 			const res = await EventSummary.get(
@@ -98,18 +129,24 @@ export namespace FIRST {
 			).unwrap();
 			if (res) {
 				if (year === 2024) {
-					return Summary2024.deserialize(res.data.summary).unwrap();
+					const hash = hashSummary(Summary2024.schema);
+					if (res.data.summaryHash === hash) {
+						return Summary2024.deserialize(res.data.summary).unwrap();
+					}
 				} else {
-					return Summary2025.deserialize(res.data.summary).unwrap();
+					const hash = hashSummary(Summary2025.schema);
+					if (res.data.summaryHash === hash) {
+						return Summary2025.deserialize(res.data.summary).unwrap();
+					}
 				}
-			} else {
-				const summary = await generateSummary(eventKey, year).unwrap();
-				await EventSummary.new({
-					eventKey,
-					summary: summary.serialize()
-				});
-				return summary;
 			}
+			const summary = await generateSummary(eventKey, year).unwrap();
+			await EventSummary.new({
+				eventKey,
+				summary: summary.serialize(),
+				summaryHash: hashSummary(summary.parser.schema)
+			});
+			return summary;
 		});
 	};
 
@@ -127,6 +164,8 @@ export namespace FIRST {
 		}
 	});
 
+	structRegistry.register(TeamPictures);
+
 	// TeamPictures.on('delete', (pic) => {});
 
 	export const Matches = new Struct({
@@ -140,6 +179,8 @@ export namespace FIRST {
 			compLevel: text('comp_level').notNull()
 		}
 	});
+
+	structRegistry.register(Matches);
 
 	export const CustomMatches = new Struct({
 		name: 'custom_matches',
@@ -170,6 +211,8 @@ export namespace FIRST {
 			blue4: integer('blue4').notNull()
 		}
 	});
+
+	structRegistry.register(CustomMatches);
 
 	Permissions.createEntitlement({
 		name: 'view-tba-info',

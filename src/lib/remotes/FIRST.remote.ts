@@ -38,7 +38,7 @@ export const getSummary = query(
 
 		let yearFound: number | null = null;
 		for (const y of allowedYears) {
-			if (eventKey.endsWith(`${y}`)) {
+			if (eventKey.startsWith(`${y}`)) {
 				yearFound = y;
 				break;
 			}

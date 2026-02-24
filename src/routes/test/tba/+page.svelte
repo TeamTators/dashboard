@@ -13,7 +13,7 @@ Fetches event data, teams, and matches to validate TBA connectivity.
 	let teams: TBA.TBATeam[] = $state([]);
 
 	let status = $state('Pending');
-	let complete = $state(false);
+	let complete = $derived(status !== 'Pending');
 
 	const getEvent = async () => {
 		eventKey = eventKey.trim().toLowerCase();
@@ -32,10 +32,6 @@ Fetches event data, teams, and matches to validate TBA connectivity.
 
 		status = 'Success';
 	};
-
-	$effect(() => {
-		complete = status !== 'Pending';
-	});
 </script>
 
 <div class="container">
