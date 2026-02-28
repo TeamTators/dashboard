@@ -104,7 +104,7 @@
 			offArchive();
 			offRestore();
 			tt();
-			destoryTooltips();
+			destroyTooltips();
 		};
 	});
 
@@ -121,7 +121,7 @@
 	const tooltips: Tooltip[] = [];
 
 	const renderTooltips = debounce(async () => {
-		destoryTooltips();
+		destroyTooltips();
 		return import('bootstrap').then(({ Tooltip }) => {
 			const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
 			tooltips.push(
@@ -130,7 +130,7 @@
 		});
 	}, 100);
 
-	const destoryTooltips = () => {
+	const destroyTooltips = () => {
 		for (const tooltip of tooltips) {
 			tooltip.dispose();
 		}
