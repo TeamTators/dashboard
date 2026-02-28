@@ -39,7 +39,9 @@ export const load = async (event) => {
 			matchNumber: s.data.matchNumber,
 			compLevel: s.data.compLevel,
 			team: s.data.team,
-			eventKey: s.data.eventKey
+			eventKey: s.data.eventKey,
+			flagForReview: s.data.flagForReview,
+			flagReason: s.data.flagReason
 		}))
 	};
 };

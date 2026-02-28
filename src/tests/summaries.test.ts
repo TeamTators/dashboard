@@ -198,7 +198,10 @@ describe('Year-Specific Trace Summaries', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: '{}'
+				sliders: '{}',
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Generate summary
@@ -248,7 +251,10 @@ describe('Year-Specific Trace Summaries', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2024,
-				sliders: '{}'
+				sliders: '{}',
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Generate summary
@@ -298,7 +304,10 @@ describe('Year-Specific Trace Summaries', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: '{}'
+				sliders: '{}',
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Get summary - should generate
@@ -345,7 +354,10 @@ describe('Year-Specific Trace Summaries', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: '{}'
+				sliders: '{}',
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Generate summary

@@ -70,7 +70,13 @@ export namespace Scouting {
 			/** Competition year. */
 			year: 'number',
 			/** Serialized sliders payload. */
-			sliders: 'string'
+			sliders: 'string',
+			/** If the scout wants to flag this record for review. */
+			flagForReview: 'boolean',
+			/** Reason for flagging the record. */
+			flagReason: 'string',
+			/** Score from 0-1 how much we trust this submission (judged as an alliance) */
+			trustScore: 'number'
 		},
 		socket: sse,
 		browser
