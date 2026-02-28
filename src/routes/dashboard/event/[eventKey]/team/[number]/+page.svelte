@@ -37,7 +37,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	const teams = $derived(data.teams.map((t) => new TBATeam(t, event)));
 	const team = $derived(new TBATeam(data.team, event));
 	const scouting = $derived(data.scouting);
-	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
+	let scoutingArr = $derived(new Scouting.MatchScoutingExtendedArr([], team.tba.team_number));
 	const comments = $derived(data.comments);
 	const answers = $derived(data.answers);
 	const questions = $derived(data.questions);
@@ -77,7 +77,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
 		);
 
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, team.tba.team_number);
 		if (res.isErr()) {
 			console.error('Failed to create extended scouting array:', res.error);
 		} else {
@@ -609,7 +609,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			);
 		}
 
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, team.tba.team_number);
 		if (res.isErr()) {
 			console.error('Failed to create extended scouting array:', res.error);
 		} else {

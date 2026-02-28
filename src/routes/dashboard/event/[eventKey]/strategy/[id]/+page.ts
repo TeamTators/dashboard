@@ -1,56 +1,35 @@
-/**
- * @fileoverview Client load mapper for the strategy detail page.
- * @description
- * Wraps server payloads into model instances and scouting data arrays.
- */
+import { Strategy } from '$lib/model/strategy.js';
+import { TBAEvent, TBATeam, TBAMatch } from '$lib/utils/tba.js';
+import { error } from '@sveltejs/kit';
 
-import { Scouting } from '$lib/model/scouting.js';
-import { Strategy } from '$lib/model/strategy';
-import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba.js';
-import { DataArr } from '$lib/services/struct/data-arr';
-
-/**
- * Maps server data into client-side models for a strategy detail view.
- * @param event - SvelteKit load event with server data.
- * @returns Page data containing strategy, teams, matches, and scouting arrays.
- */
-export const load = (event) => {
-	const e = new TBAEvent(event.data.event);
-	const teams = event.data.teams.map((t) => new TBATeam(t, e));
-	const matches = event.data.matches.map((m) => new TBAMatch(m, e));
-
+export const load = async ({ data }) => {
+	const event = new TBAEvent(data.event);
+	const matches = data.matches.map((m) => new TBAMatch(m, event));
+	const match = matches.find(
+		(m) =>
+			m.tba.comp_level === data.strategy.strategy.compLevel &&
+			m.tba.match_number === data.strategy.strategy.matchNumber
+	);
+	const strategy = Strategy.StrategyExtended.from(
+		Strategy.Strategy.Generator(data.strategy.strategy),
+		data.strategy.partners.map((p) => Strategy.Partners.Generator(p)) as [
+			Strategy.PartnerData,
+			Strategy.PartnerData,
+			Strategy.PartnerData
+		],
+		data.strategy.opponents.map((o) => Strategy.Opponents.Generator(o)) as [
+			Strategy.OpponentData,
+			Strategy.OpponentData,
+			Strategy.OpponentData
+		],
+		match
+	);
+	if (strategy.isErr()) {
+		throw error(500, 'Failed to parse strategy data');
+	}
 	return {
-		event: e,
-		teams: teams,
-		matches: matches,
-		strategy: Strategy.Strategy.Generator(event.data.strategy),
-		partners: event.data.partners.map((p) => Strategy.Partners.Generator(p)),
-		opponents: event.data.opponents.map((o) => Strategy.Opponents.Generator(o)),
-		scouting: {
-			partner1: new DataArr(
-				Scouting.MatchScouting,
-				event.data.scouting.partner1.map((s) => Scouting.MatchScouting.Generator(s))
-			),
-			partner2: new DataArr(
-				Scouting.MatchScouting,
-				event.data.scouting.partner2.map((s) => Scouting.MatchScouting.Generator(s))
-			),
-			partner3: new DataArr(
-				Scouting.MatchScouting,
-				event.data.scouting.partner3.map((s) => Scouting.MatchScouting.Generator(s))
-			),
-			opponent1: new DataArr(
-				Scouting.MatchScouting,
-				event.data.scouting.opponent1.map((s) => Scouting.MatchScouting.Generator(s))
-			),
-			opponent2: new DataArr(
-				Scouting.MatchScouting,
-				event.data.scouting.opponent2.map((s) => Scouting.MatchScouting.Generator(s))
-			),
-			opponent3: new DataArr(
-				Scouting.MatchScouting,
-				event.data.scouting.opponent3.map((s) => Scouting.MatchScouting.Generator(s))
-			)
-		}
+		event,
+		teams: data.teams.map((t) => new TBATeam(t, event)),
+		strategy: strategy.value
 	};
 };

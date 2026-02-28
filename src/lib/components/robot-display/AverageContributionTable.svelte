@@ -8,7 +8,7 @@
 
 	const { scouting, year }: Props = $props();
 
-	const data = $derived(scouting.averageContribution(year, true));
+	const data = $derived(scouting.contribution(year, true, 'average'));
 </script>
 
 <table class="table table-striped">

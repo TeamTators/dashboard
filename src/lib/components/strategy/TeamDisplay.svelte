@@ -8,7 +8,7 @@ Renders team event stats and progress charts side-by-side for the selected team 
 
 @example
 ```svelte
-<TeamDisplay {teams} teamNumber={1234} {event} {matches} {scouting} />
+<TeamDisplay teams={teams} teamNumber={1234} event={event} matches={matches} scouting={scouting} />
 ```
 -->
 <script lang="ts">
@@ -17,6 +17,15 @@ Renders team event stats and progress charts side-by-side for the selected team 
 	import { Scouting } from '$lib/model/scouting';
 	import { TBATeam, TBAEvent, TBAMatch } from '$lib/utils/tba';
 
+	/**
+	 * @typedef Props
+	 * @property {TBATeam[]} teams - All teams available for lookup.
+	 * @property {number} teamNumber - Selected team number.
+	 * @property {TBAEvent} event - Event context for charts.
+	 * @property {number} [staticY] - Optional fixed Y range shared between charts.
+	 * @property {TBAMatch[]} matches - Match list for event context.
+	 * @property {Scouting.MatchScoutingExtendedArr} scouting - Scouting data for the event.
+	 */
 	interface Props {
 		/** All teams available for lookup. */
 		teams: TBATeam[];
