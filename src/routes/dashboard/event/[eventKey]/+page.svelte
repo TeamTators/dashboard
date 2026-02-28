@@ -48,7 +48,7 @@ Displays team links, summary charts, and admin actions for the event.
 				cacheExpires: after(10 * 60 * 1000)
 			}).then((res) => {
 				if (res.isOk()) {
-					summary = res.value.pivot().teamsRanked();
+					summary = res.value.allSorted('average', true);
 				} else {
 					console.error('Error fetching event summary:', res.error);
 				}

@@ -267,8 +267,8 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
       tatorscout:
-        specifier: github:TeamTators/tatorscout-utils#2026-02-10-TK-2026YearINfo
-        version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
+        specifier: github:TeamTators/tatorscout-utils#2026-02-16-2026-TK-RestructureSummaries
+        version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/040c67035e7c83e9d27ea1c81e523a5ada193b32(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
       ts-utils:
         specifier: github:tsaxking/global-ts-utilities#v1.0.10
         version: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
@@ -440,7 +440,7 @@ importers:
         version: 5.4.21(@types/node@22.19.9)(sass-embedded@1.97.3)(sass@1.97.3)
       vitepress:
         specifier: ^1.6.3
-        version: 1.6.4(@algolia/client-search@5.48.0)(@types/node@22.19.9)(@types/react@18.3.28)(axios@1.13.4)(postcss@8.5.6)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3)(search-insights@2.17.3)(typescript@5.9.3)
+        version: 1.6.4(@algolia/client-search@5.48.0)(@types/node@22.19.9)(@types/react@18.3.28)(axios@1.13.6)(postcss@8.5.6)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3)(search-insights@2.17.3)(typescript@5.9.3)
       vitest:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
@@ -2517,6 +2517,9 @@ packages:
 
   axios@1.13.4:
     resolution: {integrity: sha512-1wVkUaAO6WyaYtCkcYCOx12ZgpGf9Zif+qXa4n+oYzK558YryKqiL6UWwd5DqiH3VRW0GYhTZQ/vlgJrCoNQlg==}
+
+  axios@1.13.6:
+    resolution: {integrity: sha512-ChTCHMouEe2kn713WHbQGcuYrr6fXTBiu460OTwWrWob16g1bXn4vtz07Ope7ewMozJAnEquLk5lWQWtBig9DQ==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -4651,6 +4654,10 @@ packages:
     resolution: {integrity: sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ==}
     engines: {node: '>=0.6'}
 
+  qs@6.14.2:
+    resolution: {integrity: sha512-V/yCWTTF7VJ9hIh18Ugr2zhJMP01MY7c5kh4J870L7imm6/DIzBsNLTXzMwUA3yZ5b/KBqLx8Kp3uRvd7xSe3Q==}
+    engines: {node: '>=0.6'}
+
   random-bytes@1.0.0:
     resolution: {integrity: sha512-iv7LhNVO047HzYR3InF6pUcUsPQiHTM1Qal51DcGSuZFBil1aBBWG5eHPNek7bvILMaYJ/8RU1e8w1AMdHmLQQ==}
     engines: {node: '>= 0.8'}
@@ -5220,8 +5227,8 @@ packages:
   tabbable@6.4.0:
     resolution: {integrity: sha512-05PUHKSNE8ou2dwIxTngl4EzcnsCDZGJ/iCLtDflR/SHB/ny14rXc+qU5P4mG9JkusiV7EivzY9Mhm55AzAvCg==}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9:
-    resolution: {tarball: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9}
+  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/040c67035e7c83e9d27ea1c81e523a5ada193b32:
+    resolution: {tarball: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/040c67035e7c83e9d27ea1c81e523a5ada193b32}
     version: 1.0.0
 
   text-table@0.2.0:
@@ -7828,13 +7835,13 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@vueuse/integrations@12.8.2(axios@1.13.4)(focus-trap@7.8.0)(typescript@5.9.3)':
+  '@vueuse/integrations@12.8.2(axios@1.13.6)(focus-trap@7.8.0)(typescript@5.9.3)':
     dependencies:
       '@vueuse/core': 12.8.2(typescript@5.9.3)
       '@vueuse/shared': 12.8.2(typescript@5.9.3)
       vue: 3.5.27(typescript@5.9.3)
     optionalDependencies:
-      axios: 1.13.4
+      axios: 1.13.6
       focus-trap: 7.8.0
     transitivePeerDependencies:
       - typescript
@@ -7958,6 +7965,14 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  axios@1.13.6:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.5
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   axobject-query@4.1.0: {}
 
   balanced-match@1.0.2: {}
@@ -7990,7 +8005,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.4.24
       on-finished: 2.4.1
-      qs: 6.14.1
+      qs: 6.14.2
       raw-body: 2.5.3
       type-is: 1.6.18
       unpipe: 1.0.0
@@ -8462,7 +8477,7 @@ snapshots:
       '@eslint/compat': 1.4.1(eslint@9.39.2)
       '@msgpack/msgpack': 3.0.0-beta3
       '@types/proper-lockfile': 4.1.4
-      axios: 1.13.4
+      axios: 1.13.6
       chalk: 5.6.2
       dotenv: 16.6.1
       drizzle-orm: 0.38.4(@types/pg@8.16.0)(@types/react@18.3.28)(pg@8.18.0)(postgres@3.4.8)(react@19.2.4)
@@ -8890,7 +8905,7 @@ snapshots:
       parseurl: 1.3.3
       path-to-regexp: 0.1.12
       proxy-addr: 2.0.7
-      qs: 6.14.1
+      qs: 6.14.2
       range-parser: 1.2.1
       safe-buffer: 5.2.1
       send: 0.19.2
@@ -10434,6 +10449,10 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
+  qs@6.14.2:
+    dependencies:
+      side-channel: 1.1.0
+
   random-bytes@1.0.0: {}
 
   range-parser@1.2.1: {}
@@ -11087,7 +11106,7 @@ snapshots:
 
   tabbable@6.4.0: {}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
+  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/040c67035e7c83e9d27ea1c81e523a5ada193b32(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
     dependencies:
       '@eslint/compat': 1.4.1(eslint@9.39.2)
       eslint: 9.39.2
@@ -11465,7 +11484,7 @@ snapshots:
     optionalDependencies:
       vite: 5.4.21(@types/node@22.19.9)(sass-embedded@1.97.3)(sass@1.97.3)
 
-  vitepress@1.6.4(@algolia/client-search@5.48.0)(@types/node@22.19.9)(@types/react@18.3.28)(axios@1.13.4)(postcss@8.5.6)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3)(search-insights@2.17.3)(typescript@5.9.3):
+  vitepress@1.6.4(@algolia/client-search@5.48.0)(@types/node@22.19.9)(@types/react@18.3.28)(axios@1.13.6)(postcss@8.5.6)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3)(search-insights@2.17.3)(typescript@5.9.3):
     dependencies:
       '@docsearch/css': 3.8.2
       '@docsearch/js': 3.8.2(@algolia/client-search@5.48.0)(@types/react@18.3.28)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(search-insights@2.17.3)
@@ -11478,7 +11497,7 @@ snapshots:
       '@vue/devtools-api': 7.7.9
       '@vue/shared': 3.5.27
       '@vueuse/core': 12.8.2(typescript@5.9.3)
-      '@vueuse/integrations': 12.8.2(axios@1.13.4)(focus-trap@7.8.0)(typescript@5.9.3)
+      '@vueuse/integrations': 12.8.2(axios@1.13.6)(focus-trap@7.8.0)(typescript@5.9.3)
       focus-trap: 7.8.0
       mark.js: 8.11.1
       minisearch: 7.2.0

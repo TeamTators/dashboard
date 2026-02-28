@@ -12,7 +12,6 @@ import { FIRST } from '$lib/server/structs/FIRST';
 import { Scouting } from '$lib/server/structs/scouting';
 import { TBA as TBAStructs } from '$lib/server/structs/TBA';
 import { Trace } from 'tatorscout/trace';
-import { Aggregators } from 'tatorscout/summary';
 import { validTrace2025, validTrace2024 } from './fixtures/trace-data';
 import {
 	mockEvent2024,
@@ -74,58 +73,6 @@ describe('Year-Specific Trace Summaries', async () => {
 
 	// Clean up test data after each test
 	afterEach(clearAll);
-
-	describe('Aggregators', () => {
-		test('average() should calculate mean', () => {
-			const result = Aggregators.average([1, 2, 3, 4, 5]);
-			expect(result).toBe(3);
-		});
-
-		test('average() should handle empty array', () => {
-			const result = Aggregators.average([]);
-			expect(result).toBe(0); // or NaN depending on implementation
-		});
-
-		test('average() should handle single value', () => {
-			const result = Aggregators.average([10]);
-			expect(result).toBe(10);
-		});
-
-		test('average() should handle decimals correctly', () => {
-			const result = Aggregators.average([1.5, 2.5, 3.5]);
-			expect(result).toBeCloseTo(2.5, 2);
-		});
-
-		test('max() should return maximum value', () => {
-			const result = Aggregators.max([1, 5, 3, 9, 2]);
-			expect(result).toBe(9);
-		});
-
-		test('max() should handle negative numbers', () => {
-			const result = Aggregators.max([-5, -2, -10, -1]);
-			expect(result).toBe(-1);
-		});
-
-		test('min() should return minimum value', () => {
-			const result = Aggregators.min([10, 5, 3, 9, 2]);
-			expect(result).toBe(2);
-		});
-
-		test('min() should handle negative numbers', () => {
-			const result = Aggregators.min([-5, -2, -10, -1]);
-			expect(result).toBe(-10);
-		});
-
-		test('sum() should return total', () => {
-			const result = Aggregators.sum([1, 2, 3, 4, 5]);
-			expect(result).toBe(15);
-		});
-
-		test('sum() should handle empty array', () => {
-			const result = Aggregators.sum([]);
-			expect(result).toBe(0);
-		});
-	});
 
 	describe('Trace Parsing', () => {
 		test('should parse valid 2025 trace', () => {
@@ -371,6 +318,7 @@ describe('Year-Specific Trace Summaries', async () => {
 			// Deserialize
 			const Summary2025 = (await import('$lib/utils/trace/summaries/2025')).default;
 			const deserialized = Summary2025.deserialize(serialized);
+			console.log(deserialized);
 			expect(deserialized.isOk()).toBe(true);
 		});
 	});

@@ -37,7 +37,7 @@ Fetches event summary data and renders the team's ranking positions by group and
 			cacheExpires: after(10 * 60 * 1000) // 10 minutes
 		}).then((res) => {
 			if (res.isOk()) {
-				const data = res.value.getRanking(team);
+				const data = res.value.teamRanking(team, 'average');
 				if (data) ranking = data;
 			}
 		});

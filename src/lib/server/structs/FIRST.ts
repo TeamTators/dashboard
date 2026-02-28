@@ -94,10 +94,10 @@ export namespace FIRST {
 	export const hashSummary = (summary: {
 		[key: string]: {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			[key: string]: (data: any) => number;
+			[key: string]: (data: any) => number[];
 		};
 	}) => {
-		const normalizeFunction = (fn: (data: unknown) => number) => {
+		const normalizeFunction = (fn: (data: unknown) => number[]) => {
 			return fn.toString().replace(/\s+/g, ' ').trim();
 		};
 		const canonical = Object.keys(summary)
@@ -144,7 +144,7 @@ export namespace FIRST {
 			await EventSummary.new({
 				eventKey,
 				summary: summary.serialize(),
-				summaryHash: hashSummary(summary.parser.schema)
+				summaryHash: hashSummary(summary.parser)
 			});
 			return summary;
 		});
