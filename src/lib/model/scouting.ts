@@ -593,7 +593,7 @@ export namespace Scouting {
 			};
 
 			if (reactive) {
-				return this.derive(get);
+				return this.derived(get);
 			} else {
 				return attempt(() => get(this.data));
 			}
