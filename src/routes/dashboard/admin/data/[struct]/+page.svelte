@@ -641,8 +641,16 @@ Admin struct data page at `/dashboard/admin/data/[struct]`.
 						{:else if value === 'boolean'}
 							<div class="form-label mb-2">{capitalize(fromCamelCase(key))}</div>
 							<div class="btn-group" role="group" aria-label="Boolean toggle">
-								<input type="checkbox" name="btnradio-{key}" id="btnradio-{key}-checkbox" class="btn-check" bind:checked={$editStage[key] as boolean}>
-								<label class="btn btn-outline-primary" for="btnradio-{key}-checkbox">Toggle ({$editStage[key] ? 'True' : 'False'})</label>
+								<input
+									type="checkbox"
+									name="btnradio-{key}"
+									id="btnradio-{key}-checkbox"
+									class="btn-check"
+									bind:checked={$editStage[key] as boolean}
+								/>
+								<label class="btn btn-outline-primary" for="btnradio-{key}-checkbox"
+									>Toggle ({$editStage[key] ? 'True' : 'False'})</label
+								>
 							</div>
 						{:else}
 							<div>Unsupported field type: {value}</div>

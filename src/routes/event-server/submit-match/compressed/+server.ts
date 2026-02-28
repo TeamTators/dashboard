@@ -61,7 +61,11 @@ export const POST = async (event: RequestEvent) => {
 					text: z.string(),
 					color: z.string()
 				})
-			)
+			),
+			flagForReview: z.object({
+				flagged: z.boolean(),
+				reason: z.string()
+			})
 		})
 		.safeParse(decompress(Buffer.from(body)).unwrap());
 
@@ -86,7 +90,8 @@ export const POST = async (event: RequestEvent) => {
 		alliance,
 		group,
 		remote,
-		sliders
+		sliders,
+		flagForReview
 	} = parsed.data;
 
 	const year = Number(/(\d+)/.exec(eventKey)?.[1]);
@@ -138,7 +143,9 @@ export const POST = async (event: RequestEvent) => {
 			checks: JSON.stringify(checks),
 			alliance: alliance ? alliance : 'unknown',
 			year,
-			sliders: JSON.stringify(sliders)
+			sliders: JSON.stringify(sliders),
+			flagForReview: flagForReview.flagged,
+			flagReason: flagForReview.reason
 		});
 		if (update.isErr()) {
 			terminal.error('Error updating match scouting', update.error);
@@ -167,7 +174,10 @@ export const POST = async (event: RequestEvent) => {
 			scoutUsername: scout,
 			alliance: alliance ? alliance : 'unknown',
 			year,
-			sliders: JSON.stringify(sliders)
+			sliders: JSON.stringify(sliders),
+			flagForReview: flagForReview.flagged,
+			flagReason: flagForReview.reason,
+			trustScore: 1
 		});
 		if (create.isErr()) {
 			terminal.error('Error creating match scouting', create.error);

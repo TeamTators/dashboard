@@ -29,7 +29,7 @@ export const load = async (event) => {
 	const scouting = await Scouting.MatchScouting.get(
 		{ eventKey: event.params.eventKey },
 		{
-			type: 'all',
+			type: 'all'
 		}
 	).unwrap();
 

@@ -135,7 +135,7 @@
 			tooltip.dispose();
 		}
 		tooltips.length = 0;
-	}
+	};
 </script>
 
 {#snippet teamLink(teamKey: string, color: 'red' | 'blue', match: TBAMatch)}
@@ -150,17 +150,13 @@
 			href="/dashboard/event/{data.event.key}/team/{foundTeam}/match/{match.tba.comp_level}/{match
 				.tba.match_number}"
 			style="text-decoration: none;"
-			data-bs-toggle="{found?.data.flagForReview ? 'tooltip' : ''}"
-			data-bs-title={found?.data.flagForReview ? "Review Requested: " + found?.data.flagReason : ''}
+			data-bs-toggle={found?.data.flagForReview ? 'tooltip' : ''}
+			data-bs-title={found?.data.flagForReview ? 'Review Requested: ' + found?.data.flagReason : ''}
 		>
 			<span class="badge" class:bg-danger={!found} class:bg-success={!!found}>
 				{foundTeam}
 				{#if found?.data.flagForReview}
-					<i 
-						class="material-icons text-warning text-small" 
-					>
-						flag
-					</i>
+					<i class="material-icons text-warning text-small"> flag </i>
 				{/if}
 			</span>
 		</a>
@@ -180,8 +176,8 @@
 					<span class="fw-semibold" style="color: purple;">purple</span>.
 				</li>
 				<li>
-					Click a <span class="fw-semibold text-body">team number</span> to open that team’s match
-					scouting page.
+					Click a <span class="fw-semibold text-body">team number</span> to open that team’s match scouting
+					page.
 				</li>
 				<li>
 					Team bubbles show scouting status:
@@ -197,8 +193,8 @@
 					<span class="fw-semibold text-danger">red badge</span> shows how many strategies already exist.
 				</li>
 				<li>
-					Flagged records show a <i class="material-icons text-warning">flag</i> next to the
-					team number; hover to see the flag reason.
+					Flagged records show a <i class="material-icons text-warning">flag</i> next to the team number;
+					hover to see the flag reason.
 				</li>
 			</ul>
 		</div>

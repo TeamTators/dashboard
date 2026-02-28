@@ -54,7 +54,8 @@ and quick links to match detail pages.
 	const generateFlagTitle = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'No Scouting data';
 		// TODO: Parse checks
-		if (match.data.scouting.data.flagForReview) return match.data.scouting.data.flagReason || 'Flagged for review';
+		if (match.data.scouting.data.flagForReview)
+			return match.data.scouting.data.flagReason || 'Flagged for review';
 		return 'Scouting data available';
 	};
 

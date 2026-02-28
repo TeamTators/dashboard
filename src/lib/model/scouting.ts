@@ -76,7 +76,7 @@ export namespace Scouting {
 			/** Reason for flagging the record. */
 			flagReason: 'string',
 			/** Score from 0-1 how much we trust this submission (judged as an alliance) */
-			trustScore: 'number',
+			trustScore: 'number'
 		},
 		socket: sse,
 		browser

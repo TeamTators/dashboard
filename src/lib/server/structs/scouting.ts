@@ -59,7 +59,7 @@ export namespace Scouting {
 			/** Reason for flagging the record. */
 			flagReason: text('flag_reason').notNull().default(''),
 			/** Score from 0-1 how much we trust this submission (judged as an alliance) */
-			trustScore: real('trust_score').notNull().default(1),
+			trustScore: real('trust_score').notNull().default(1)
 		},
 		versionHistory: {
 			type: 'versions',
