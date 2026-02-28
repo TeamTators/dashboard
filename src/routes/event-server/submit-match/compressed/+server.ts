@@ -15,6 +15,7 @@ import { Logs } from '$lib/server/structs/log.js';
 import { str } from '$lib/server/utils/env.js';
 import { decompress } from '$lib/server/utils/compression';
 import type { RequestEvent } from './$types';
+import { Ok } from 'ts-utils';
 
 /**
  * Handles compressed match submissions from the event server.
@@ -197,7 +198,9 @@ export const POST = async (event: RequestEvent) => {
 	const commentRes = resolveAll(
 		await Promise.all(
 			Object.entries(comments).map(([key, value]) =>
-				Scouting.TeamComments.new({
+			{
+				if (value.trim() === '') return Promise.resolve(new Ok('Empty comment'));
+				return Scouting.TeamComments.new({
 					accountId,
 					team,
 					comment: value,
@@ -219,6 +222,7 @@ export const POST = async (event: RequestEvent) => {
 						return new Err(res.error);
 					}
 				})
+			}
 			)
 		)
 	);
