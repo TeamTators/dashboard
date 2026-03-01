@@ -163,6 +163,7 @@ Includes quick navigation across teams and links back to the robot display.
 									href="/dashboard/event/{event.tba.key}/team/{team.tba
 										.team_number}/match/{s.compLevel}/{s.matchNumber}"
 									target="_blank"
+									rel="noopener noreferrer"
 								>
 									<i class="material-icons"> open_in_new </i>
 								</a>
