@@ -164,8 +164,9 @@ Includes quick navigation across teams and links back to the robot display.
 										.team_number}/match/{s.compLevel}/{s.matchNumber}"
 									target="_blank"
 									rel="noopener noreferrer"
+									aria-label={`Open trace for match ${s.compLevel}${s.matchNumber} at event ${s.eventKey} in a new tab`}
 								>
-									<i class="material-icons"> open_in_new </i>
+									<i class="material-icons" aria-hidden="true"> open_in_new </i>
 								</a>
 
 								<Trace scouting={s} {focus} />
