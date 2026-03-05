@@ -31,6 +31,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
+	import { array } from 'zod';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -50,7 +51,23 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	const checksSum = $derived(data.checksSum);
 
 	let contributions = $state(Scouting.averageContributions([]));
+	
+	 let doFilter = false;
 
+	 const matchFilter = (lastNums: number) => {
+		if(doFilter) {
+			scoutingArr.filter((_, index, array) =>
+		{
+			const length = array.length;
+			const distanceFromEnd = length - index;
+			return distanceFromEnd <= lastNums;
+		});
+			scoutingArr.filter((_, i , a) => a.length - i <= lastNums); 
+		} else {
+			scoutingArr.filter(n => true);
+		}
+		doFilter = !doFilter;
+	 };
 	$effect(() => nav(event.tba));
 
 	const summary = new Dashboard.Card({
@@ -682,6 +699,13 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				</a>
 				<a
 					href="/dashboard/event/{event.tba.key}/team/{team.tba.team_number}/traces"
+					type="button"
+					class="btn btn-primary ms-2"
+				>
+					View All Traces
+				</a>
+					<a
+					onclick= matchFilter
 					type="button"
 					class="btn btn-primary ms-2"
 				>
