@@ -509,7 +509,7 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 * @private
 	 * @type {(item: T, index: number, array: T[]) => boolean}
 	 */
-	_filter = (_item: T, index: number, array: T[]): boolean => true;
+	_filter = (_item: T, _index: number, _array: T[]): boolean => true;
 
 	/**
 	 * Internal reverse flag
