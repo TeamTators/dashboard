@@ -156,8 +156,8 @@ importers:
         specifier: ^0.38.4
         version: 0.38.4(@types/pg@8.16.0)(@types/react@18.3.28)(pg@8.18.0)(postgres@3.4.8)(react@19.2.4)
       drizzle-struct:
-        specifier: github:tsaxking/drizzle-struct#v2.1.2
-        version: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d9b72a27577ec28f29595433fcdc968ed64a49aa(@types/node@22.19.9)(@types/pg@8.16.0)(@types/react@18.3.28)(jsdom@28.0.0)(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3)
+        specifier: github:tsaxking/drizzle-struct#v3.0.0
+        version: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/8d7113f74632dc3f19bd56b3b85b7cdd3b003e1f(@types/node@22.19.9)(@types/pg@8.16.0)(@types/react@18.3.28)(jsdom@28.0.0)(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3)
       drizzle-zod:
         specifier: ^0.6.1
         version: 0.6.1(drizzle-orm@0.38.4(@types/pg@8.16.0)(@types/react@18.3.28)(pg@8.18.0)(postgres@3.4.8)(react@19.2.4))(zod@3.25.76)
@@ -258,8 +258,8 @@ importers:
         specifier: ^5.7.0
         version: 5.10.0
       redis-utils:
-        specifier: github:tsaxking/redis#v2.0.7
-        version: redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/d3b228def595096d6252e89ee9fb1c10f583eadf(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
+        specifier: github:tsaxking/redis#v3.0.0
+        version: redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/51166d1f64926a3c5a96e593ded35ac49768c25c(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
       svelte-filepond:
         specifier: ^0.2.2
         version: 0.2.2(filepond@4.32.11)
@@ -267,8 +267,8 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
       tatorscout:
-        specifier: github:TeamTators/tatorscout-utils#2026-02-10-TK-2026YearINfo
-        version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
+        specifier: github:TeamTators/tatorscout-utils#main
+        version: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/10f88f0cf38286def184a1d0d6188802a84c61b8(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
       ts-utils:
         specifier: github:tsaxking/global-ts-utilities#v1.0.10
         version: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
@@ -1171,24 +1171,28 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@node-rs/argon2-linux-arm64-musl@1.8.3':
     resolution: {integrity: sha512-7O6kQdSKzB4Tjx/EBa8zKIxnmLkQE8VdJgPm6Ksrpn+ueo0mx2xf76fIDnbbTCtm3UbB+y+FkTo2wLA7tOqIKg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@node-rs/argon2-linux-x64-gnu@1.8.3':
     resolution: {integrity: sha512-OBH+EFG7BGjFyldaao2H2gSCLmjtrrwf420B1L+lFn7JLW9UAjsIPFKAcWsYwPa/PwYzIge9Y7SGcpqlsSEX0w==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@node-rs/argon2-linux-x64-musl@1.8.3':
     resolution: {integrity: sha512-bDbMuyekIxZaN7NaX+gHVkOyABB8bcMEJYeRPW1vCXKHj3brJns1wiUFSxqeUXreupifNVJlQfPt1Y5B/vFXgQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@node-rs/argon2-wasm32-wasi@1.8.3':
     resolution: {integrity: sha512-NBf2cMCDbNKMzp13Pog8ZPmI0M9U4Ak5b95EUjkp17kdKZFds12dwW67EMnj7Zy+pRqby2QLECaWebDYfNENTg==}
@@ -1261,36 +1265,42 @@ packages:
     engines: {node: '>= 10.0.0'}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@parcel/watcher-linux-arm-musl@2.5.6':
     resolution: {integrity: sha512-Ve3gUCG57nuUUSyjBq/MAM0CzArtuIOxsBdQ+ftz6ho8n7s1i9E1Nmk/xmP323r2YL0SONs1EuwqBp2u1k5fxg==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@parcel/watcher-linux-arm64-glibc@2.5.6':
     resolution: {integrity: sha512-f2g/DT3NhGPdBmMWYoxixqYr3v/UXcmLOYy16Bx0TM20Tchduwr4EaCbmxh1321TABqPGDpS8D/ggOTaljijOA==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@parcel/watcher-linux-arm64-musl@2.5.6':
     resolution: {integrity: sha512-qb6naMDGlbCwdhLj6hgoVKJl2odL34z2sqkC7Z6kzir8b5W65WYDpLB6R06KabvZdgoHI/zxke4b3zR0wAbDTA==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@parcel/watcher-linux-x64-glibc@2.5.6':
     resolution: {integrity: sha512-kbT5wvNQlx7NaGjzPFu8nVIW1rWqV780O7ZtkjuWaPUgpv2NMFpjYERVi0UYj1msZNyCzGlaCWEtzc+exjMGbQ==}
     engines: {node: '>= 10.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@parcel/watcher-linux-x64-musl@2.5.6':
     resolution: {integrity: sha512-1JRFeC+h7RdXwldHzTsmdtYR/Ku8SylLgTU/reMuqdVD7CtLwf0VR1FqeprZ0eHQkO0vqsbvFLXUmYm/uNKJBg==}
     engines: {node: '>= 10.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@parcel/watcher-win32-arm64@2.5.6':
     resolution: {integrity: sha512-3ukyebjc6eGlw9yRt678DxVF7rjXatWiHvTXqphZLvo7aC5NdEgFufVwjFfY51ijYEWpXbqF5jtrK275z52D4Q==}
@@ -1434,66 +1444,79 @@ packages:
     resolution: {integrity: sha512-F8sWbhZ7tyuEfsmOxwc2giKDQzN3+kuBLPwwZGyVkLlKGdV1nvnNwYD0fKQ8+XS6hp9nY7B+ZeK01EBUE7aHaw==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.57.1':
     resolution: {integrity: sha512-rGfNUfn0GIeXtBP1wL5MnzSj98+PZe/AXaGBCRmT0ts80lU5CATYGxXukeTX39XBKsxzFpEeK+Mrp9faXOlmrw==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.57.1':
     resolution: {integrity: sha512-MMtej3YHWeg/0klK2Qodf3yrNzz6CGjo2UntLvk2RSPlhzgLvYEB3frRvbEF2wRKh1Z2fDIg9KRPe1fawv7C+g==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.57.1':
     resolution: {integrity: sha512-1a/qhaaOXhqXGpMFMET9VqwZakkljWHLmZOX48R0I/YLbhdxr1m4gtG1Hq7++VhVUmf+L3sTAf9op4JlhQ5u1Q==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loong64-gnu@4.57.1':
     resolution: {integrity: sha512-QWO6RQTZ/cqYtJMtxhkRkidoNGXc7ERPbZN7dVW5SdURuLeVU7lwKMpo18XdcmpWYd0qsP1bwKPf7DNSUinhvA==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-musl@4.57.1':
     resolution: {integrity: sha512-xpObYIf+8gprgWaPP32xiN5RVTi/s5FCR+XMXSKmhfoJjrpRAjCuuqQXyxUa/eJTdAE6eJ+KDKaoEqjZQxh3Gw==}
     cpu: [loong64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-gnu@4.57.1':
     resolution: {integrity: sha512-4BrCgrpZo4hvzMDKRqEaW1zeecScDCR+2nZ86ATLhAoJ5FQ+lbHVD3ttKe74/c7tNT9c6F2viwB3ufwp01Oh2w==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-musl@4.57.1':
     resolution: {integrity: sha512-NOlUuzesGauESAyEYFSe3QTUguL+lvrN1HtwEEsU2rOwdUDeTMJdO5dUYl/2hKf9jWydJrO9OL/XSSf65R5+Xw==}
     cpu: [ppc64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-gnu@4.57.1':
     resolution: {integrity: sha512-ptA88htVp0AwUUqhVghwDIKlvJMD/fmL/wrQj99PRHFRAG6Z5nbWoWG4o81Nt9FT+IuqUQi+L31ZKAFeJ5Is+A==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.57.1':
     resolution: {integrity: sha512-S51t7aMMTNdmAMPpBg7OOsTdn4tySRQvklmL3RpDRyknk87+Sp3xaumlatU+ppQ+5raY7sSTcC2beGgvhENfuw==}
     cpu: [riscv64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.57.1':
     resolution: {integrity: sha512-Bl00OFnVFkL82FHbEqy3k5CUCKH6OEJL54KCyx2oqsmZnFTR8IoNqBF+mjQVcRCT5sB6yOvK8A37LNm/kPJiZg==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.57.1':
     resolution: {integrity: sha512-ABca4ceT4N+Tv/GtotnWAeXZUZuM/9AQyCyKYyKnpk4yoA7QIAuBt6Hkgpw8kActYlew2mvckXkvx0FfoInnLg==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.57.1':
     resolution: {integrity: sha512-HFps0JeGtuOR2convgRRkHCekD7j+gdAuXM+/i6kGzQtFhlCtQkpwtNzkNj6QhCDp7DRJ7+qC/1Vg2jt5iSOFw==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-openbsd-x64@4.57.1':
     resolution: {integrity: sha512-H+hXEv9gdVQuDTgnqD+SQffoWoc0Of59AStSzTEj/feWTBAnSfSD3+Dql1ZruJQxmykT/JVY0dE8Ka7z0DH1hw==}
@@ -3098,9 +3121,10 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d9b72a27577ec28f29595433fcdc968ed64a49aa:
-    resolution: {tarball: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d9b72a27577ec28f29595433fcdc968ed64a49aa}
+  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/8d7113f74632dc3f19bd56b3b85b7cdd3b003e1f:
+    resolution: {tarball: https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/8d7113f74632dc3f19bd56b3b85b7cdd3b003e1f}
     version: 1.0.0
+    engines: {node: '>=v24'}
 
   drizzle-zod@0.6.1:
     resolution: {integrity: sha512-huEbUgnsuR8tupnmLiyB2F1I2H9dswI3GfM36IbIqx9i0YUeYjRsDpJVyFVeziUvI1ogT9JHRL2Q03cC4QmvxA==}
@@ -4701,15 +4725,10 @@ packages:
     resolution: {integrity: sha512-6tDA8g98We0zd0GvVeMT9arEOnTw9qM03L9cJXaCjrip1OO764RDBLBfrB4cwzNGDj5OA5ioymC9GkizgWJDUg==}
     engines: {node: '>=8'}
 
-  redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/1e612b476d486f0e002b6e4fd92b379a81102416:
-    resolution: {tarball: https://codeload.github.com/tsaxking/redis/tar.gz/1e612b476d486f0e002b6e4fd92b379a81102416}
+  redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/51166d1f64926a3c5a96e593ded35ac49768c25c:
+    resolution: {tarball: https://codeload.github.com/tsaxking/redis/tar.gz/51166d1f64926a3c5a96e593ded35ac49768c25c}
     version: 1.0.0
-    engines: {node: v22.12.0}
-
-  redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/d3b228def595096d6252e89ee9fb1c10f583eadf:
-    resolution: {tarball: https://codeload.github.com/tsaxking/redis/tar.gz/d3b228def595096d6252e89ee9fb1c10f583eadf}
-    version: 1.0.0
-    engines: {node: v22.12.0}
+    engines: {node: '>=v24'}
 
   redis@5.10.0:
     resolution: {integrity: sha512-0/Y+7IEiTgVGPrLFKy8oAEArSyEJkU0zvgV5xyi9NzNQ+SLZmyFbUsWIbgPcd4UdUh00opXGKlXJwMmsis5Byw==}
@@ -4852,48 +4871,56 @@ packages:
     engines: {node: '>=14.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: glibc
 
   sass-embedded-linux-arm@1.97.3:
     resolution: {integrity: sha512-2lPQ7HQQg4CKsH18FTsj2hbw5GJa6sBQgDsls+cV7buXlHjqF8iTKhAQViT6nrpLK/e8nFCoaRgSqEC8xMnXuA==}
     engines: {node: '>=14.0.0'}
     cpu: [arm]
     os: [linux]
+    libc: glibc
 
   sass-embedded-linux-musl-arm64@1.97.3:
     resolution: {integrity: sha512-Lij0SdZCsr+mNRSyDZ7XtJpXEITrYsaGbOTz5e6uFLJ9bmzUbV7M8BXz2/cA7bhfpRPT7/lwRKPdV4+aR9Ozcw==}
     engines: {node: '>=14.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: musl
 
   sass-embedded-linux-musl-arm@1.97.3:
     resolution: {integrity: sha512-cBTMU68X2opBpoYsSZnI321gnoaiMBEtc+60CKCclN6PCL3W3uXm8g4TLoil1hDD6mqU9YYNlVG6sJ+ZNef6Lg==}
     engines: {node: '>=14.0.0'}
     cpu: [arm]
     os: [linux]
+    libc: musl
 
   sass-embedded-linux-musl-riscv64@1.97.3:
     resolution: {integrity: sha512-sBeLFIzMGshR4WmHAD4oIM7WJVkSoCIEwutzptFtGlSlwfNiijULp+J5hA2KteGvI6Gji35apR5aWj66wEn/iA==}
     engines: {node: '>=14.0.0'}
     cpu: [riscv64]
     os: [linux]
+    libc: musl
 
   sass-embedded-linux-musl-x64@1.97.3:
     resolution: {integrity: sha512-/oWJ+OVrDg7ADDQxRLC/4g1+Nsz1g4mkYS2t6XmyMJKFTFK50FVI2t5sOdFH+zmMp+nXHKM036W94y9m4jjEcw==}
     engines: {node: '>=14.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: musl
 
   sass-embedded-linux-riscv64@1.97.3:
     resolution: {integrity: sha512-l3IfySApLVYdNx0Kjm7Zehte1CDPZVcldma3dZt+TfzvlAEerM6YDgsk5XEj3L8eHBCgHgF4A0MJspHEo2WNfA==}
     engines: {node: '>=14.0.0'}
     cpu: [riscv64]
     os: [linux]
+    libc: glibc
 
   sass-embedded-linux-x64@1.97.3:
     resolution: {integrity: sha512-Kwqwc/jSSlcpRjULAOVbndqEy2GBzo6OBmmuBVINWUaJLJ8Kczz3vIsDUWLfWz/kTEw9FHBSiL0WCtYLVAXSLg==}
     engines: {node: '>=14.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: glibc
 
   sass-embedded-unknown-all@1.97.3:
     resolution: {integrity: sha512-/GHajyYJmvb0IABUQHbVHf1nuHPtIDo/ClMZ81IDr59wT5CNcMe7/dMNujXwWugtQVGI5UGmqXWZQCeoGnct8Q==}
@@ -5220,8 +5247,8 @@ packages:
   tabbable@6.4.0:
     resolution: {integrity: sha512-05PUHKSNE8ou2dwIxTngl4EzcnsCDZGJ/iCLtDflR/SHB/ny14rXc+qU5P4mG9JkusiV7EivzY9Mhm55AzAvCg==}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9:
-    resolution: {tarball: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9}
+  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/10f88f0cf38286def184a1d0d6188802a84c61b8:
+    resolution: {tarball: https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/10f88f0cf38286def184a1d0d6188802a84c61b8}
     version: 1.0.0
 
   text-table@0.2.0:
@@ -8457,7 +8484,7 @@ snapshots:
       postgres: 3.4.8
       react: 19.2.4
 
-  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/d9b72a27577ec28f29595433fcdc968ed64a49aa(@types/node@22.19.9)(@types/pg@8.16.0)(@types/react@18.3.28)(jsdom@28.0.0)(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3):
+  drizzle-struct@https://codeload.github.com/tsaxking/drizzle-struct/tar.gz/8d7113f74632dc3f19bd56b3b85b7cdd3b003e1f(@types/node@22.19.9)(@types/pg@8.16.0)(@types/react@18.3.28)(jsdom@28.0.0)(react@19.2.4)(sass-embedded@1.97.3)(sass@1.97.3):
     dependencies:
       '@eslint/compat': 1.4.1(eslint@9.39.2)
       '@msgpack/msgpack': 3.0.0-beta3
@@ -8479,7 +8506,7 @@ snapshots:
       prettier-plugin-svelte: 3.4.1(prettier@3.8.1)(svelte@5.50.0)
       proper-lockfile: 4.1.2
       redis: 5.10.0
-      redis-utils: redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/1e612b476d486f0e002b6e4fd92b379a81102416(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
+      redis-utils: redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/51166d1f64926a3c5a96e593ded35ac49768c25c(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
       svelte: 5.50.0
       ts-node: 10.9.2(@types/node@22.19.9)(typescript@5.9.3)
       ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/41d2ddec9d5552a057d4272e57805283a2e580b4(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
@@ -10485,32 +10512,7 @@ snapshots:
       indent-string: 4.0.0
       strip-indent: 3.0.0
 
-  redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/1e612b476d486f0e002b6e4fd92b379a81102416(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
-    dependencies:
-      redis: 5.10.0
-      ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
-      uuid: 11.1.0
-      vitest: 3.2.4(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
-      zod: 3.25.76
-    transitivePeerDependencies:
-      - '@edge-runtime/vm'
-      - '@types/debug'
-      - '@types/node'
-      - '@vitest/browser'
-      - '@vitest/ui'
-      - happy-dom
-      - jsdom
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
-  redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/d3b228def595096d6252e89ee9fb1c10f583eadf(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
+  redis-service@https://codeload.github.com/tsaxking/redis/tar.gz/51166d1f64926a3c5a96e593ded35ac49768c25c(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
     dependencies:
       redis: 5.10.0
       ts-utils: https://codeload.github.com/tsaxking/global-ts-utilities/tar.gz/7f4bdafefe7da988f7a7e055e412131062d7ba11(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3)
@@ -11087,7 +11089,7 @@ snapshots:
 
   tabbable@6.4.0: {}
 
-  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/a8d74bfb988665d91488a895672466eb89e2ebc9(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
+  tatorscout@https://codeload.github.com/TeamTators/tatorscout-utils/tar.gz/10f88f0cf38286def184a1d0d6188802a84c61b8(@types/node@22.19.9)(jsdom@28.0.0)(sass-embedded@1.97.3)(sass@1.97.3):
     dependencies:
       '@eslint/compat': 1.4.1(eslint@9.39.2)
       eslint: 9.39.2

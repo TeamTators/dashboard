@@ -118,7 +118,7 @@ export namespace Strategy {
 		 * @returns Derived writable for name.
 		 */
 		get name() {
-			return this.data.strategy.derive((s) => s.name);
+			return this.data.strategy.derived((s) => s.name);
 		}
 
 		/**
@@ -126,7 +126,7 @@ export namespace Strategy {
 		 * @returns Derived writable for notes.
 		 */
 		get notes() {
-			return this.data.strategy.derive((s) => s.notes);
+			return this.data.strategy.derived((s) => s.notes);
 		}
 
 		/**
