@@ -507,9 +507,9 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 * Internal filter function (passes all by default)
 	 *
 	 * @private
-	 * @type {(item: T) => boolean}
+	 * @type {(item: T, index: number, array: T[]) => boolean}
 	 */
-	_filter = (_item: T): boolean => true;
+	_filter = (_item: T, index: number, array: T[]): boolean => true;
 
 	/**
 	 * Internal reverse flag
@@ -550,7 +550,7 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	/**
 	 * Sets the filter function for the array display
 	 *
-	 * @param {(item: T) => boolean} fn - Predicate function for filtering
+	 * @param {(item: T, index: number, array: T[]) => boolean} fn - Predicate function for filtering
 	 * @returns {void}
 	 * @example
 	 * ```typescript
@@ -558,7 +558,7 @@ export class WritableArray<T> extends WritableBase<T[]> {
 	 * store.filter(n => n % 2 === 0);
 	 * ```
 	 */
-	filter(fn: (item: T) => boolean) {
+	filter(fn: (item: T, index: number, array: T[]) => boolean) {
 		this._filter = fn;
 		this.inform();
 		return this;
