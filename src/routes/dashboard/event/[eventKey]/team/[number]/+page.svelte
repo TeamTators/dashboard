@@ -48,6 +48,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 
+	 let doFilter = $state(false);
 	onMount(() => {
 		const offScouting = listen(
 			scouting,
@@ -94,6 +95,20 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		};
 	});
 
+	 const matchFilter = (lastNums: number) => {
+		if(doFilter) {
+			scoutingArr.filter((_, index, array) =>
+		{
+			const length = array.length;
+			const distanceFromEnd = length - index;
+			return distanceFromEnd <= lastNums;
+		});
+			scoutingArr.filter((_, i , a) => a.length - i <= lastNums); 
+		} else {
+			scoutingArr.filter(_n => true);
+		}
+		doFilter = !doFilter;
+	 };
 	$effect(() => nav(event.tba));
 
 	const summary = new Dashboard.Card({
@@ -671,6 +686,19 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				>
 					View All Traces
 				</a>
+				<button
+					onclick={() => matchFilter(3)}
+					type="button"
+					class="btn ms-2"
+					class:btn-primary={doFilter}
+					class:btn-outline-primary={!doFilter}
+				>
+					{#if doFilter}
+						Show All Matches
+					{:else}
+						Show Last 3 Matches
+					{/if}
+				</button>
 			</div>
 
 			<!-- <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
