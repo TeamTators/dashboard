@@ -114,9 +114,27 @@ const summary2025 = YearInfo2025.summary({
 	},
 	Stats: {
 		'Average Total Points': ({ scoring }) => Aggregators.average(scoring.map((d) => d.total)),
-		'Average Velocity': ({ traces }) => Aggregators.average(traces.map((t) => t.averageVelocity())),
+		'Average Velocity': ({ traces }) =>
+			Aggregators.average(
+				traces.map((t) =>
+					t.averageVelocity({
+						maxVel: 20,
+						rolloff: true,
+						rolloffVel: 25
+					})
+				)
+			),
 		'Average Seconds Not Moving': ({ traces }) =>
-			Aggregators.average(traces.map((t) => t.secondsNotMoving()))
+			Aggregators.average(
+				traces.map((t) =>
+					t.secondsNotMoving({
+						maxVel: 20,
+						rolloff: true,
+						rolloffVel: 25,
+						threshold: 2
+					})
+				)
+			)
 	}
 });
 
