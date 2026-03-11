@@ -10,7 +10,7 @@ import terminal from '$lib/server/utils/terminal';
 import { Trace } from 'tatorscout/trace';
 import { ServerCode } from 'ts-utils/status';
 import { Account } from '$lib/server/structs/account';
-import { Err, resolveAll } from 'ts-utils/check';
+import { Err, resolveAll, Ok } from 'ts-utils/check';
 import { Logs } from '$lib/server/structs/log.js';
 import { str } from '$lib/server/utils/env.js';
 import { decompress } from '$lib/server/utils/compression';
@@ -196,8 +196,9 @@ export const POST = async (event: RequestEvent) => {
 
 	const commentRes = resolveAll(
 		await Promise.all(
-			Object.entries(comments).map(([key, value]) =>
-				Scouting.TeamComments.new({
+			Object.entries(comments).map(([key, value]) => {
+				if (value.trim() === '') return Promise.resolve(new Ok('Empty comment'));
+				return Scouting.TeamComments.new({
 					accountId,
 					team,
 					comment: value,
@@ -218,8 +219,8 @@ export const POST = async (event: RequestEvent) => {
 						terminal.error('Error creating comments', res.error);
 						return new Err(res.error);
 					}
-				})
-			)
+				});
+			})
 		)
 	);
 
