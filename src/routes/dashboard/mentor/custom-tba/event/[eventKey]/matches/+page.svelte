@@ -1,3 +1,9 @@
+<!--
+@component
+Custom event match editor.
+
+Edits match schedules, alliances, and times for a custom event.
+-->
 <script lang="ts">
 	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba.js';
 	import Grid from '$lib/components/general/Grid.svelte';

@@ -1,3 +1,9 @@
+<!--
+@component
+Custom TBA overview page for mentors.
+
+Lists custom events and provides a shortcut to create new ones.
+-->
 <script lang="ts">
 	import { date } from 'ts-utils/clock';
 

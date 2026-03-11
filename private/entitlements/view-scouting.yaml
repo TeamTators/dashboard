@@ -1,9 +1,0 @@
-name: view-scouting
-structs:
-  - match_scouting
-  - team_comments
-permissions:
-  - match_scouting:read:*
-  - team_comments:read:*
-pages: []
-group: Scouting

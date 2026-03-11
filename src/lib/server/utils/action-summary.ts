@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Utility to build an action summary table for an event.
+ *
+ * @description
+ * Builds a table that aggregates action counts per team and match for the provided actions.
+ */
 // take in an array of actions
 // return a table showing the totals of all actions summed
 // columns are the matches
@@ -10,6 +16,11 @@ import { Scouting } from '../structs/scouting';
 import { attemptAsync } from 'ts-utils/check';
 import { Table } from './google-summary';
 
+/**
+ * Build an action summary table for the given event and actions.
+ *
+ * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the table.
+ */
 export const actionSummary = (eventKey: string, actions: Action[]) => {
 	return attemptAsync(async () => {
 		const cache = new Map<number, { trace: Trace; match: Scouting.MatchScoutingData }[]>();

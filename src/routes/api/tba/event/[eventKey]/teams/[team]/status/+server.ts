@@ -1,8 +1,19 @@
+/**
+ * @fileoverview API endpoint for team status at an event.
+ * @description
+ * Resolves the requested team and returns its TBA event status.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { fail } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Returns status info for a team at an event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with team status data.
+ */
 export const GET = async (event) => {
 	const e = await TBA.Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {

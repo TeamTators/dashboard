@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Trace summary definitions for the 2024 season.
+ * @description
+ * Exports a preconfigured summary builder used by trace visualizations.
+ */
+
 import YearInfo2024 from 'tatorscout/years/2024.js';
 import { Aggregators } from 'tatorscout/summary';
 
-export default YearInfo2024.summary({
+/**
+ * Summary configuration for 2024 trace data.
+ * @example
+ * import summary2024 from '$lib/utils/trace/summaries/2024';
+ */
+const summary2024 = YearInfo2024.summary({
 	'Auto Points': {
 		Speaker: ({ scoring }) => Aggregators.sum(scoring.map((d) => d.auto.spk)),
 		Amp: ({ scoring }) => Aggregators.sum(scoring.map((d) => d.auto.amp)),
@@ -26,3 +37,5 @@ export default YearInfo2024.summary({
 			Aggregators.average(traces.map((t) => t.secondsNotMoving()))
 	}
 });
+
+export default summary2024;

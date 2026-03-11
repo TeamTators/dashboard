@@ -1,8 +1,19 @@
+/**
+ * @fileoverview API endpoint for team media at an event.
+ * @description
+ * Resolves the requested team and returns TBA media entries.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { fail } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Returns media entries for a team at an event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with media data.
+ */
 export const GET = async (event) => {
 	const e = await TBA.Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {

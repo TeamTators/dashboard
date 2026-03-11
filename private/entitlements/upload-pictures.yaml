@@ -1,7 +1,0 @@
-name: upload-pictures
-structs:
-  - team_pictures
-permissions:
-  - team_pictures:create
-pages: []
-group: FIRST

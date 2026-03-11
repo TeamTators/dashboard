@@ -1,9 +1,20 @@
+/**
+ * @fileoverview Remote procedures for potato actions.
+ *
+ * @description
+ * Exposes commands for giving levels, renaming a potato, and changing icons.
+ */
 import { command } from '$app/server';
 import { z } from 'zod';
 import { getAccount } from './index.remote';
 import { error } from '@sveltejs/kit';
 import { Potato } from '../server/structs/potato';
 
+/**
+ * Grant levels to a specific account's potato.
+ *
+ * @returns {ReturnType<typeof command>} Remote command handler.
+ */
 export const giveLevels = command(
 	z.object({
 		accountId: z.string(),
@@ -31,6 +42,11 @@ export const giveLevels = command(
 	}
 );
 
+/**
+ * Rename the current user's potato (requires level gate).
+ *
+ * @returns {ReturnType<typeof command>} Remote command handler.
+ */
 export const rename = command(
 	z.object({
 		name: z.string()
@@ -59,6 +75,11 @@ export const rename = command(
 	}
 );
 
+/**
+ * Change the current user's potato icon (requires level gate).
+ *
+ * @returns {ReturnType<typeof command>} Remote command handler.
+ */
 export const changeIcon = command(
 	z.object({
 		icon: z.string()

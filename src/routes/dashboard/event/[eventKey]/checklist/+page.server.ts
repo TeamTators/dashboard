@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Server loader for the event checklist page.
+ * @description
+ * Aggregates pit scouting answers and picture counts for all teams.
+ */
+
 import { FIRST } from '$lib/server/structs/FIRST.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Event } from '$lib/server/utils/tba.js';
@@ -5,6 +11,11 @@ import terminal from '$lib/server/utils/terminal.js';
 import { fail } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Loads checklist data for the event (pit scouting and pictures).
+ * @param event - SvelteKit request event.
+ * @returns Page data with event metadata and checklist rows.
+ */
 export const load = async (event) => {
 	const e = await Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {

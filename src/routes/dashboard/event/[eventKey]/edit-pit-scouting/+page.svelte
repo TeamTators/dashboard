@@ -1,3 +1,9 @@
+<!--
+@component
+Pit scouting section editor for an event.
+
+Manages sections, templates, and copy actions for pit scouting forms.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import { Scouting } from '$lib/model/scouting';

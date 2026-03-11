@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Integration test for scout group generation.
+ * @description
+ * Builds TBA structs and validates generated assignments for a sample event.
+ */
+
 import { describe, expect, test } from 'vitest';
 import * as TBA from '$lib/server/utils/tba';
 import { DB } from '$lib/server/db';

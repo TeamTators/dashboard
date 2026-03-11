@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Webhook endpoint for team comments export.
+ * @description
+ * Returns comment rows for the event, including match context when available.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting';
 import { Event } from '$lib/server/utils/tba.js';
 import { dateTime } from 'ts-utils/clock';
 
+/**
+ * Returns comment export data for the event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response containing comment rows.
+ */
 export const GET = async (event) => {
 	// auth(event);
 	const comments = await Scouting.TeamComments.get(

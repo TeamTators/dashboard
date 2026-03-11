@@ -1,3 +1,17 @@
+<!--
+@fileoverview Match list table with scouting status indicators.
+
+@component MatchTable
+
+@description
+Fetches match list data for a team at an event and renders a table with time, status,
+and quick links to match detail pages.
+
+@example
+```svelte
+<MatchTable {event} {team} {scouting} />
+```
+-->
 <script lang="ts">
 	import { dateTime } from 'ts-utils/clock';
 	import { Scouting } from '$lib/model/scouting';
@@ -6,8 +20,11 @@
 	import { SvelteDate } from 'svelte/reactivity';
 
 	interface Props {
+		/** Event context for match list and links. */
 		event: TBAEvent;
+		/** Team context for match lookup. */
 		team: TBATeam;
+		/** Scouting data used to determine availability/flags. */
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
@@ -30,12 +47,15 @@
 	const generateFlagColor = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'danger';
 		// TODO: Implement flag color
+		if (match.data.scouting.data.flagForReview) return 'warning';
 		return 'success';
 	};
 
 	const generateFlagTitle = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'No Scouting data';
 		// TODO: Parse checks
+		if (match.data.scouting.data.flagForReview)
+			return match.data.scouting.data.flagReason || 'Flagged for review';
 		return 'Scouting data available';
 	};
 

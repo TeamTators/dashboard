@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Remote procedures for scouting administration.
+ *
+ * @description
+ * Exposes admin-only commands and queries for pit-scouting templates and practice archiving.
+ */
 import { command, query } from '$app/server';
 import z from 'zod';
 import { getAccount } from './index.remote';
@@ -6,6 +12,11 @@ import { Scouting } from '$lib/server/structs/scouting';
 import { error } from '@sveltejs/kit';
 import terminal from '$lib/server/utils/terminal';
 
+/**
+ * Archive or unarchive practice matches for an event.
+ *
+ * @returns {ReturnType<typeof command>} Remote command handler.
+ */
 export const setPracticeArchive = command(
 	z.object({
 		eventKey: z.string(),
@@ -33,6 +44,11 @@ export const setPracticeArchive = command(
 	}
 );
 
+/**
+ * Fetch pit-scouting answers for a group filtered by question ids.
+ *
+ * @returns {ReturnType<typeof query>} Remote query handler.
+ */
 export const pitAnswersFromGroup = query(
 	z.object({
 		questions: z.array(z.string()),
@@ -54,6 +70,11 @@ export const pitAnswersFromGroup = query(
 	}
 );
 
+/**
+ * Generate a pit-scouting template for the given event.
+ *
+ * @returns {ReturnType<typeof command>} Remote command handler.
+ */
 export const generateEventPitscoutingTemplate = command(
 	z.object({
 		eventKey: z.string()
@@ -80,6 +101,11 @@ export const generateEventPitscoutingTemplate = command(
 	}
 );
 
+/**
+ * Copy pit-scouting templates from one event to another.
+ *
+ * @returns {ReturnType<typeof command>} Remote command handler.
+ */
 export const copyPitScoutingFromEvent = command(
 	z.object({
 		from: z.string(),

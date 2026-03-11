@@ -1,3 +1,9 @@
+<!--
+@component
+Custom TBA event editor page.
+
+Allows editing event metadata and navigating to teams/matches management.
+-->
 <script lang="ts">
 	import DatePicker from '$lib/components/general/DatePicker.svelte';
 	import { TBAEvent, TBAMatch, TBATeam } from '$lib/utils/tba';

@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Server loader for a specific custom TBA event.
+ * @description
+ * Validates mentor access and returns event, match, and team data.
+ */
+
 import { Event } from '$lib/server/utils/tba.js';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Loads event metadata, matches, and teams for a custom event.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing event, matches, and teams.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 

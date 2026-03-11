@@ -1,5 +1,22 @@
+/**
+ * @fileoverview Admin navigation section registration.
+ *
+ * @description
+ * Adds the Admin section and its links to the global navbar.
+ */
 import { Navbar } from '$lib/model/navbar';
 
+/**
+ * Register the Admin navigation section.
+ *
+ * @returns {void} No return value.
+ *
+ * @example
+ * ```ts
+ * import registerAdminNav from '$lib/nav/admin';
+ * registerAdminNav();
+ * ```
+ */
 export default () => {
 	Navbar.addSection({
 		name: 'Admin',
