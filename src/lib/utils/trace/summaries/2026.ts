@@ -3,6 +3,8 @@ import { Aggregators } from 'tatorscout/summary';
 import { Match2026Schema, type TBAMatch, type TBAMatch2025, type TBAMatch2026 } from 'tatorscout/tba';
 import type z from 'zod';
 import type { Trace } from 'tatorscout/trace';
+import { dataActions } from '../../../../../cli/struct';
+import { Scouting } from '$lib/model/scouting';
 
 /**
  * Helper function to calculate summaries based on TBA match data. It parses the matches using the provided schema, determines the alliance and position of the team, and applies the provided function to the score breakdown for that alliance.
@@ -31,14 +33,14 @@ const summariesViaTBA = <Match extends TBAMatch2025 | TBAMatch2026>(
 	});
 };
 
-const exapleSummary = summariesViaTBA(2122, [], Match2026Schema, (match, position) => {
-	const autoClimb = [
-		match.autoTowerRobot1,
-		match.autoTowerRobot2,
-		match.autoTowerRobot3
-	][position];
-	return 0;
-});
+// const exapleSummary = summariesViaTBA(2122, [], Match2026Schema, (match, position) => {
+// 	const autoClimb = [
+// 		match.autoTowerRobot1,
+// 		match.autoTowerRobot2,
+// 		match.autoTowerRobot3
+// 	][position];
+// 	return 0;
+// });
 
 
 export default YearInfo2026.summary({
@@ -46,7 +48,7 @@ export default YearInfo2026.summary({
 		'Average Hub Scored': (data) => {
 			return Aggregators.average(data.scoring.map((d) => d.auto.hub1 + d.auto.hub5 + d.auto.hub10));
 		},
-		'Average Climb': (data) => {
+		// 'Average Climb': (data) => {
 			// const climbData = data.matches.map((m) => {
 			// 	const parsed = YearInfo2026.parseMatch(m).unwrap();
 			// 	const redPosition = m.alliances.red.team_keys.indexOf('frc' + data.team);
@@ -79,33 +81,44 @@ export default YearInfo2026.summary({
 			// 	}
 			// 	return 0;
 			// });
-			const autoClimbData = summariesViaTBA(data.team, data.matches, Match2026Schema, (allianceData, position) => {
-				const autoClimb = [
-					allianceData.autoTowerRobot1,
-					allianceData.autoTowerRobot2,
-					allianceData.autoTowerRobot3,
-				][position];
-				if (autoClimb && autoClimb !== 'None') return 15;
-				return 0;
-			});
-			return Aggregators.average(autoClimbData);
-		},
-		'Average Total': (data) => 0
+			// const autoClimbData = summariesViaTBA(data.team, data.matches, Match2026Schema, (allianceData, position) => {
+			// 	const autoClimb = [
+			// 		allianceData.autoTowerRobot1,
+			// 		allianceData.autoTowerRobot2,
+			// 		allianceData.autoTowerRobot3,
+			// 	][position];
+			// 	if (autoClimb && autoClimb !== 'None') return 15;
+			// 	return 0;
+			// });
+			// return Aggregators.average(autoClimbData);
+		// },
+		// 'Average Total': (data) => 0,
 	},
 	'Teleop Points': {
-		'Average Hub Scored': () => 0,
-		'Average Lob': (data) => Aggregators.average(data.traces.map(t => t.filterAction('lob1').length + t.filterAction('lob5').length + t.filterAction('lob10').length)),
+		'Average Hub Scored': (data) => {
+			return Aggregators.average(data.scoring.map((d) => d.teleop.hub1 + d.teleop.hub5 + d.teleop.hub10));
+		},
 	},
 	'Endgame Points': {
-		'Average Climb': () => 0,
-		'Average Hub': () => 0,
-		'Average Total': () => 0
+		// 'Average Climb': () => 0,
+		'Average Hub': (data) => {
+			return Aggregators.average(data.scoring.map((d) => d.endgame.hub1 + d.endgame.hub5 + d.endgame.hub10));
+		},
+		// 'Average Total': (data) => 0,
 	},
 	Stats: {
-		Lobs: () => 0,
-		'Average Velocity': (data) => Aggregators.average(data.traces.map((t) => t.averageVelocity())),
+		'Average Lob': (data) => Aggregators.average(data.traces.map(t => t.filterAction('lob1').length + t.filterAction('lob5').length * 5 + t.filterAction('lob10').length * 10)),
+		'Average Velocity': (data) => Aggregators.average(data.traces.map((t) => t.averageVelocity({
+			'maxVel': 20,
+			'rolloff': true,
+			'rolloffVel': 25
+		}))),
 		'Average Seconds Not Moving': (data) =>
-			Aggregators.average(data.traces.map((t) => t.secondsNotMoving())),
-		Total: () => 0
+			Aggregators.average(data.traces.map((t) => t.secondsNotMoving({
+			'maxVel': 20,
+			'rolloff': true,
+			'rolloffVel': 25,
+			'threshold': 2 // TODO: ensure these are correct
+		})))
 	}
 });
