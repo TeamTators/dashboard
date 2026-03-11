@@ -29,18 +29,14 @@ then renders a summary table.
 		matches: TBAMatch[];
 	}
 
-	const { team, event, scouting, matches }: Props = $props();
+	const { team, event, scouting }: Props = $props();
 
 	let rank = $state(0);
 	let record = $state('');
 	let played = $state(0);
-	let auto = $state(0);
-	let teleop = $state(0);
-	let endgame = $state(0);
-	// let drivebase = $state('');
-	// let weight = $state(0);
-	// let averageVelocity = $state(0);
-	let averageSecondsNotMoving = $state(0);
+	const breakdown = $derived(scouting.breakdown(event.tba.year, true));
+	const averageVelocity = $derived(scouting.averageVelocity(true));
+	const averageSecondsNotMoving = $derived(scouting.averageSecondsNotMoving(true));
 
 	onMount(() => {
 		const d = new SvelteDate();
@@ -55,18 +51,6 @@ then renders a summary table.
 			};
 			record = `${wins}-${losses}-${ties}`;
 			played = wins + losses + ties;
-		});
-
-		return scouting.subscribe((s) => {
-			const autoRes = Scouting.averageAutoScore(s, event.tba.year);
-			const teleRes = Scouting.averageTeleopScore(s, event.tba.year);
-			const _endRes = Scouting.averageEndgameScore(matches, team.tba.team_number, event.tba.year);
-			const secondsRes = Scouting.averageSecondsNotMoving(s);
-
-			auto = autoRes.isErr() ? 0 : autoRes.value;
-			teleop = teleRes.isErr() ? 0 : teleRes.value;
-			// endgame = endRes.isErr() ? 0 : endRes.value;
-			averageSecondsNotMoving = secondsRes.isErr() ? 0 : secondsRes.value;
 		});
 	});
 </script>
@@ -88,38 +72,28 @@ then renders a summary table.
 			</tr>
 			<tr>
 				<td>Average Velocity:</td>
-				<td class="ws-nowrap">
-					{#if $scouting.length}
-						{Scouting.getAverageVelocity($scouting).toFixed(2)} ft/s
-					{:else}
-						No data
-					{/if}
-				</td>
+				<td class="ws-nowrap">{$averageVelocity.toFixed(2)} ft/s</td>
 			</tr>
 			<tr>
 				<td>Average Auto Score:</td>
-				<td>{auto.toFixed(2)}</td>
+				<td>{$breakdown.auto.total.toFixed(2)}</td>
 			</tr>
 			<tr>
 				<td>Average Teleop Score:</td>
-				<td>{teleop.toFixed(2)}</td>
+				<td>{$breakdown.teleop.total.toFixed(2)}</td>
 			</tr>
 			<tr>
 				<td>Average Endgame Score:</td>
-				<td>{endgame.toFixed(2)}</td>
+				<td>{$breakdown.teleop.total.toFixed(2)}</td>
+			</tr>
+			<tr>
+				<td>Average Total Score:</td>
+				<td>{$breakdown.total.toFixed(2)}</td>
 			</tr>
 			<tr>
 				<td>Average Seconds Not Moving:</td>
-				<td>{averageSecondsNotMoving.toFixed(2)}s</td>
+				<td>{$averageSecondsNotMoving.toFixed(2)}s</td>
 			</tr>
-			<!-- <tr>
-			<td>Drivebase:</td>
-			<td>{drivebase}</td>
-		</tr>
-		<tr>
-			<td>Weight:</td>
-			<td>{weight}</td>
-		</tr> -->
 		</tbody>
 	</table>
 </div>

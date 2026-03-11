@@ -47,12 +47,15 @@ and quick links to match detail pages.
 	const generateFlagColor = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'danger';
 		// TODO: Implement flag color
+		if (match.data.scouting.data.flagForReview) return 'warning';
 		return 'success';
 	};
 
 	const generateFlagTitle = (match?: Scouting.MatchScoutingExtended) => {
 		if (!match) return 'No Scouting data';
 		// TODO: Parse checks
+		if (match.data.scouting.data.flagForReview)
+			return match.data.scouting.data.flagReason || 'Flagged for review';
 		return 'Scouting data available';
 	};
 
