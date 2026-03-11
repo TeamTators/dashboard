@@ -85,7 +85,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: validSliders
+				sliders: validSliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			expect(created.isOk()).toBe(true);
@@ -120,7 +123,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			expect(created.isOk()).toBe(false);
@@ -141,7 +147,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			expect(created.isOk()).toBe(false);
@@ -164,7 +173,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			const scouting = created.unwrap();
@@ -190,7 +202,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			const scouting = created.unwrap();
@@ -216,7 +231,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: validSliders
+				sliders: validSliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			const scouting = created.unwrap();
@@ -246,7 +264,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			const scouting = created.unwrap();
@@ -275,7 +296,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'blue',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Retrieve it
@@ -321,7 +345,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			const scouting = created.unwrap();
@@ -357,7 +384,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			await Scouting.MatchScouting.new({
@@ -374,7 +404,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'blue',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Retrieve all for team
@@ -408,7 +441,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Create and archive another
@@ -426,7 +462,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'blue',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 			await archived.unwrap().setArchive(true);
 
@@ -457,7 +496,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Create non-prescouting record (should be excluded)
@@ -475,7 +517,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'blue',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			const result = await Scouting.getTeamPrescouting(254, 2025, true);
@@ -503,7 +548,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2024,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Create 2025 prescouting
@@ -521,7 +569,10 @@ describe('Scouting Data Models & Trace Parsing', async () => {
 				scoutUsername: 'TestScout',
 				alliance: 'red',
 				year: 2025,
-				sliders: emptySliders
+				sliders: emptySliders,
+				trustScore: 1,
+				flagForReview: false,
+				flagReason: ''
 			});
 
 			// Get 2024 only

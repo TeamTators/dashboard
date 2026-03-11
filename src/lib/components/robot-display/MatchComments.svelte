@@ -20,7 +20,11 @@ adding new comments via a prompt.
 	import { prompt } from '$lib/utils/prompts';
 	import { Account } from '$lib/model/account';
 	import { tomorrow } from 'ts-utils';
-	// import { TextFilterModule } from 'ag-grid-community';
+	import { TextFilterModule } from 'ag-grid-community';
+	import { registerables } from 'chart.js';
+	import { Chart } from 'chart.js';
+
+	Chart.register(...registerables);
 
 	interface Props {
 		/** Match scouting record whose comments are displayed. */
@@ -110,6 +114,7 @@ adding new comments via a prompt.
 			}}
 			data={comments}
 			height={400}
+			modules={[TextFilterModule]}
 		/>
 	{/key}
 </div>

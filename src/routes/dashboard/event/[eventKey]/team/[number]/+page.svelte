@@ -20,25 +20,24 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	import MatchTable from '$lib/components/robot-display/MatchTable.svelte';
 	import Progress from '$lib/components/charts/Progress.svelte';
 	import TeamEventStats from '$lib/components/charts/TeamEventStats.svelte';
-	import AverageContributions from '$lib/components/robot-display/AverageContributions.svelte';
 	import AverageContributionsPie from '$lib/components/charts/AverageContributionsPie.svelte';
+	import AverageContributionsTable from '$lib/components/robot-display/AverageContributionTable.svelte';
 	import { onMount } from 'svelte';
 	import { listen } from '$lib/utils/struct-listener';
 	import ScoutSummary from '$lib/components/robot-display/ScoutSummary.svelte';
 	import ChecksSummary from '$lib/components/robot-display/ChecksSummary.svelte';
-	import RadarChart from '$lib/components/charts/RadarChart.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
-	import { array } from 'zod';
+	import RadarCapabilityChart from '$lib/components/charts/RadarCapabilityChart.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
 	const teams = $derived(data.teams.map((t) => new TBATeam(t, event)));
 	const team = $derived(new TBATeam(data.team, event));
 	const scouting = $derived(data.scouting);
-	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
+	let scoutingArr = $derived(new Scouting.MatchScoutingExtendedArr([], team.tba.team_number));
 	const comments = $derived(data.comments);
 	const answers = $derived(data.answers);
 	const questions = $derived(data.questions);
@@ -48,11 +47,53 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	const answerAccounts = $derived(data.answerAccounts);
 	const matches = $derived(data.matches.map((m) => new TBAMatch(m, event)));
 	const scoutingAccounts = $derived(data.scoutingAccounts);
-	const checksSum = $derived(data.checksSum);
 
-	let contributions = $state(Scouting.averageContributions([]));
-	
-	 let doFilter = false;
+	 let doFilter = $state(false);
+	onMount(() => {
+		const offScouting = listen(
+			scouting,
+			(d) => d.data.eventKey === event.tba.key && d.data.team === team.tba.team_number
+		);
+		const offComments = listen(
+			comments,
+			(d) => d.data.team === team.tba.team_number && d.data.eventKey === event.tba.key
+		);
+		const offAnswers = listen(
+			answers,
+			(d) =>
+				d.data.team === team.tba.team_number &&
+				!!questions.data.find((q) => q.data.id === d.data.questionId)
+		);
+		const offQuestions = listen(
+			questions,
+			(d) => !!groups.data.find((s) => s.data.id === d.data.groupId)
+		);
+		const offGroups = listen(
+			groups,
+			(d) => !!sections.data.find((s) => s.data.id === d.data.sectionId)
+		);
+		const offSections = listen(sections, (d) => d.data.eventKey === event.tba.key);
+		const offPictures = listen(
+			pictures,
+			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
+		);
+
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, team.tba.team_number);
+		if (res.isErr()) {
+			console.error('Failed to create extended scouting array:', res.error);
+		} else {
+			scoutingArr.set(res.value.data);
+		}
+		return () => {
+			offScouting();
+			offComments();
+			offAnswers();
+			offQuestions();
+			offGroups();
+			offSections();
+			offPictures();
+		};
+	});
 
 	 const matchFilter = (lastNums: number) => {
 		if(doFilter) {
@@ -64,7 +105,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		});
 			scoutingArr.filter((_, i , a) => a.length - i <= lastNums); 
 		} else {
-			scoutingArr.filter(n => true);
+			scoutingArr.filter(_n => true);
 		}
 		doFilter = !doFilter;
 	 };
@@ -567,12 +608,9 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			],
 			id: 'robot-display'
 		});
-
-		contributions = Scouting.averageContributions(scoutingArr.data);
 	});
 
 	let scroller: HTMLDivElement;
-	let contributionSub = () => {};
 
 	afterNavigate(() => {
 		const btn = scroller.querySelector(`[data-team="${team.tba.team_number}"]`);
@@ -586,75 +624,19 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			);
 		}
 
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, team.tba.team_number);
 		if (res.isErr()) {
 			console.error('Failed to create extended scouting array:', res.error);
 		} else {
 			scoutingArr = res.value;
 			scoutingArr.inform();
 		}
-		contributionSub();
-		contributionSub = scoutingArr.subscribe(() => {
-			contributions = Scouting.averageContributions(scoutingArr.data);
-		});
-	});
-
-	onMount(() => {
-		const offScouting = listen(
-			scouting,
-			(d) => d.data.eventKey === event.tba.key && d.data.team === team.tba.team_number
-		);
-		const offComments = listen(
-			comments,
-			(d) => d.data.team === team.tba.team_number && d.data.eventKey === event.tba.key
-		);
-		const offAnswers = listen(
-			answers,
-			(d) =>
-				d.data.team === team.tba.team_number &&
-				!!questions.data.find((q) => q.data.id === d.data.questionId)
-		);
-		const offQuestions = listen(
-			questions,
-			(d) => !!groups.data.find((s) => s.data.id === d.data.groupId)
-		);
-		const offGroups = listen(
-			groups,
-			(d) => !!sections.data.find((s) => s.data.id === d.data.sectionId)
-		);
-		const offSections = listen(sections, (d) => d.data.eventKey === event.tba.key);
-		const offPictures = listen(
-			pictures,
-			(d) => d.data.eventKey === event.tba.key && d.data.team == team.tba.team_number
-		);
-
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
-		if (res.isErr()) {
-			console.error('Failed to create extended scouting array:', res.error);
-		} else {
-			scoutingArr.set(res.value.data);
-		}
-		contributionSub();
-		contributionSub = scoutingArr.subscribe(() => {
-			contributions = Scouting.averageContributions(scoutingArr.data);
-		});
-
-		return () => {
-			offScouting();
-			offComments();
-			offAnswers();
-			offQuestions();
-			offGroups();
-			offSections();
-			offPictures();
-			contributionSub();
-		};
 	});
 
 	let progressChart: Progress | undefined = $state(undefined);
 	let teamEventStatsChart: TeamEventStats | undefined = $state(undefined);
 	let averageContributionsPieChart: AverageContributionsPie | undefined = $state(undefined);
-	let radarChartComp: RadarChart<{ [key: string]: number }> | undefined = $state(undefined);
+	let radarChartComp: RadarCapabilityChart | undefined = $state(undefined);
 </script>
 
 <DB {dashboard}>
@@ -704,13 +686,19 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				>
 					View All Traces
 				</a>
-					<a
-					onclick= matchFilter
+				<button
+					onclick={() => matchFilter(3)}
 					type="button"
-					class="btn btn-primary ms-2"
+					class="btn ms-2"
+					class:btn-primary={doFilter}
+					class:btn-outline-primary={!doFilter}
 				>
-					View All Traces
-				</a>
+					{#if doFilter}
+						Show All Matches
+					{:else}
+						Show Last 3 Matches
+					{/if}
+				</button>
 			</div>
 
 			<!-- <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
@@ -746,33 +734,21 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		{#key team}
 			<Card card={radarChart}>
 				{#snippet body()}
-					{#key contributions}
-						<button
-							type="button"
-							class="btn btn-secondary copy-btn"
-							onclick={() => {
-								radarChartComp?.copy(true);
-							}}
-						>
-							<i class="material-icons">copy_all</i>
-						</button>
-						<RadarChart
-							bind:this={radarChartComp}
-							{team}
-							data={{
-								'Level 1': contributions.cl1,
-								'Level 2': contributions.cl2,
-								'Level 3': contributions.cl3,
-								'Level 4': contributions.cl4,
-								Barge: contributions.brg,
-								Processor: contributions.prc
-							}}
-							opts={{
-								max: 10,
-								min: 0
-							}}
-						/>
-					{/key}
+					<button
+						type="button"
+						class="btn btn-secondary copy-btn"
+						onclick={() => {
+							radarChartComp?.copy(true);
+						}}
+					>
+						<i class="material-icons">copy_all</i>
+					</button>
+					<RadarCapabilityChart
+						bind:this={radarChartComp}
+						{team}
+						year={event.tba.year}
+						scouting={scoutingArr}
+					/>
 				{/snippet}
 			</Card>
 			<Card card={picturesCard}>
@@ -782,7 +758,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			</Card>
 			<Card card={checksSummary}>
 				{#snippet body()}
-					<ChecksSummary checks={checksSum} />
+					<ChecksSummary scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 			<Card card={summary}>
@@ -866,7 +842,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			</Card>
 			<Card card={averageContributionsTable}>
 				{#snippet body()}
-					<AverageContributions {team} {event} scouting={scoutingArr} {matches} />
+					<AverageContributionsTable year={event.tba.year} scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 			<Card card={averageContributionsPie}>
@@ -901,7 +877,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			</Card>
 			<Card card={actionHeatmap}>
 				{#snippet body()}
-					<ActionHeatmap scouting={scoutingArr} year={event.tba.year} />
+					<ActionHeatmap scouting={scoutingArr} year={event.tba.year} doButtons={true} />
 				{/snippet}
 			</Card>
 		{/key}

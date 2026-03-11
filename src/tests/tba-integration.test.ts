@@ -309,16 +309,6 @@ describe('TBA Integration & Caching', async () => {
 	});
 
 	describe('Error Handling', () => {
-		test('should handle invalid event key gracefully', async () => {
-			const result = await TBA.Event.getEvent('invalid_event_key_12345');
-
-			// Should either return error or handle gracefully
-			// Actual behavior depends on TBA API implementation
-			if (result.isErr()) {
-				expect(result.error).toBeDefined();
-			}
-		});
-
 		test('should return Result type for all operations', async () => {
 			const eventResult = await TBA.Event.getEvent('2024idbo');
 

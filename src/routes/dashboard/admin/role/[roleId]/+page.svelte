@@ -11,6 +11,7 @@ Admin role detail page at `/dashboard/admin/role/[roleId]`.
 	import { Account } from '$lib/model/account.js';
 	import { contextmenu } from '$lib/utils/contextmenu.js';
 	import { alert } from '$lib/utils/prompts.js';
+	import { goto } from '$app/navigation';
 
 	nav();
 
@@ -82,7 +83,7 @@ Admin role detail page at `/dashboard/admin/role/[roleId]`.
 					type="button"
 					class="btn btn-primary"
 					onclick={() => {
-						window.location.href = `/dashboard/admin/role/${$role.parent}`;
+						goto(`/dashboard/admin/role/${$role.parent}`);
 					}}
 				>
 					<i class="material-icons"> person </i>
@@ -133,7 +134,7 @@ Admin role detail page at `/dashboard/admin/role/[roleId]`.
 						}
 					],
 					onRowDoubleClicked: (params) => {
-						window.location.href = `/dashboard/admin/role/${params.data?.data.id}`;
+						goto(`/dashboard/admin/role/${params.data?.data.id}`);
 					}
 				}}
 			/>
