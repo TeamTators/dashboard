@@ -31,6 +31,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
 	import RadarCapabilityChart from '$lib/components/charts/RadarCapabilityChart.svelte';
+	import RankingRadarChart from '$lib/components/charts/RankingRadarChart.svelte';
 
 	const { data } = $props();
 	const event = $derived(new TBAEvent(data.event));
@@ -554,6 +555,40 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			}
 		}
 	});
+
+	const radarRankingChart = new Dashboard.Card({
+		name: 'Radar Ranking Chart',
+		icon: {
+			type: 'material-icons',
+			name: 'hexagon'
+		},
+		id: 'radar_ranking_chart',
+		size: {
+			width: 2,
+			height: 1,
+			xl: {
+				width: 3,
+				height: 1
+			},
+			lg: {
+				width: 3,
+				height: 1
+			},
+			md: {
+				width: 6,
+				height: 1
+			},
+			sm: {
+				width: 12,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
 	let dashboard = $derived(
 		new Dashboard.Dashboard({
 			name: `Robot Display: ${data.team.team_number} - ${data.team.nickname}`,
@@ -569,7 +604,11 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				scoutSummary,
 				checksSummary,
 				radarChart,
-				startLocation
+				startLocation,
+				ranking,
+				averageContributionsTable,
+				averageContributionsPie,
+				radarRankingChart,
 			],
 			id: 'robot-display'
 		})
@@ -850,6 +889,11 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			<Card card={actionHeatmap}>
 				{#snippet body()}
 					<ActionHeatmap scouting={scoutingArr} year={event.tba.year} doButtons={true} />
+				{/snippet}
+			</Card>
+			<Card card={radarRankingChart}>
+				{#snippet body()}
+					<RankingRadarChart {team} {event} />
 				{/snippet}
 			</Card>
 		{/key}
