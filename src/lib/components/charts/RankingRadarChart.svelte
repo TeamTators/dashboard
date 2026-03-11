@@ -1,11 +1,11 @@
 <script lang="ts">
-	import RadarChart from "./RadarChart.svelte";
+	import RadarChart from './RadarChart.svelte';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba';
-	import { onMount } from "svelte";
-	import { FIRST } from "$lib/model/FIRST";
-	import { tomorrow } from "ts-utils";
-	import { writable } from "svelte/store";
-	import z from "zod";
+	import { onMount } from 'svelte';
+	import { FIRST } from '$lib/model/FIRST';
+	import { tomorrow } from 'ts-utils';
+	import { writable } from 'svelte/store';
+	import z from 'zod';
 
 	interface Props {
 		team: TBATeam;
@@ -18,7 +18,7 @@
 
 	onMount(() => {
 		FIRST.getSummary(event.tba.key, event.tba.year as 2025 | 2026, {
-			cacheExpires: tomorrow(),
+			cacheExpires: tomorrow()
 		}).then(async (res) => {
 			const teams = await event.getTeams(false, tomorrow());
 			if (teams.isErr()) return console.error(teams.error);
@@ -47,11 +47,11 @@
 	});
 </script>
 
-<RadarChart 
+<RadarChart
 	{team}
 	{data}
 	opts={{
 		max,
-		min: 0,
+		min: 0
 	}}
 />

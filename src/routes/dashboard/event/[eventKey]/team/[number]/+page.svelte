@@ -608,7 +608,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				ranking,
 				averageContributionsTable,
 				averageContributionsPie,
-				radarRankingChart,
+				radarRankingChart
 			],
 			id: 'robot-display'
 		})

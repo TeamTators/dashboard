@@ -49,7 +49,11 @@ export namespace FIRST {
 		return attemptAsync<
 			ReturnType<
 				ReturnType<
-					(Year extends 2024 ? typeof Summary2024 : Year extends 2025 ? typeof Summary2025 : typeof Summary2026)['deserialize']
+					(Year extends 2024
+						? typeof Summary2024
+						: Year extends 2025
+							? typeof Summary2025
+							: typeof Summary2026)['deserialize']
 				>['unwrap']
 			>
 		>(async () => {
