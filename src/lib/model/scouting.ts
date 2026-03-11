@@ -32,6 +32,11 @@ import type { TBAEvent } from '$lib/utils/tba';
  * const avg = Scouting.getAverageVelocity(extended.data);
  */
 export namespace Scouting {
+	export const VELOCITY_CONFIG = {
+		maxVel: 20,
+		rolloff: true,
+		rolloffVel: 25
+	};
 	/**
 	 * Client Struct for match scouting entries.
 	 *
@@ -234,7 +239,7 @@ export namespace Scouting {
 		 * const avg = ext.averageVelocity;
 		 */
 		get averageVelocity() {
-			return this.data.trace.averageVelocity();
+			return this.data.trace.averageVelocity(VELOCITY_CONFIG);
 		}
 
 		/**
@@ -244,7 +249,10 @@ export namespace Scouting {
 		 * const idleSeconds = ext.secondsNotMoving;
 		 */
 		get secondsNotMoving() {
-			return this.data.trace.secondsNotMoving();
+			return this.data.trace.secondsNotMoving({
+				...VELOCITY_CONFIG,
+				threshold: 2
+			});
 		}
 
 		/**
