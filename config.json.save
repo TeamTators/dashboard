@@ -1,0 +1,79 @@
+{
+	"environment": "dev",
+	"app_name": "Dashboard",
+	"network": {
+		"host": "localhost",
+		"port": 2122,
+		"protocol": "http"
+	},
+	"database": {
+		"port": 5432,
+		"host": "localhost",
+		"user": "anvitak",
+		"pass": "1234",
+		"name": "tators_dashboard"
+	},
+	"sessions": {
+		"auto_sign_in": "anvitak392",
+		"duration": 604800000,
+		"password_request_lifetime": 3600000,
+		"fingerprint_secret": "your_fingerprint_secret"
+	},
+	"redis": {
+		"url": "redis://localhost:6379",
+		"name": "your_redis_name"
+	},
+	"logs": {
+		"enabled": true,
+		"outdir": "logs",
+		"level": ["info", "error", "warn"]
+	},
+	"admin": {
+		"user": "admin_username",
+		"pass": "admin_password",
+		"email": "admin_email@example.com",
+		"first_name": "Admin",
+		"last_name": "User"
+	},
+	"email": {
+		"queue_name": "email_queue",
+		"max_size": 100,
+		"support_email": "someemail@email.com"
+	},
+	"ntp": {
+		"server": "ntp_server_name"
+	},
+	"limiting": {
+		"enabled": true,
+		"requests": 100,
+		"window": 600
+	},
+	"struct_batching": {
+		"enabled": true,
+		"interval": 100,
+		"timeout": 10000,
+		"limit": 100,
+		"batch_size": 10,
+		"debug": true
+	},
+	"struct_cache": {
+		"enabled": true,
+		"debug": false
+	},
+	"indexed_db": {
+		"enabled": true,
+		"db_name": "app_indexed_db",
+		"version": 1,
+		"debug": true,
+		"debounce_interval_ms": 16
+	},
+	"tba_webhook": {
+		"path": "../tba-webhooks",
+		"port": 3000,
+		"redis_name": "tba-webhooks",
+		"secret": "your_webhook_secret"
+	},
+	"potato": {
+		"enabled": true
+	}
+}
