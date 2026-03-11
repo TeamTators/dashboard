@@ -1,44 +1,14 @@
 import { attemptAsync } from 'ts-utils/check';
-import { Event, Team } from './tba';
+import { Event, Team } from '../tba';
 import { z } from 'zod';
-import { Scouting } from '../structs/scouting';
-import terminal from './terminal';
-import { DB } from '../db';
+import { Scouting } from '../../structs/scouting';
+import terminal from '../terminal';
+import { DB } from '../../db';
 import { and, eq } from 'drizzle-orm';
 import { type RequestEvent } from '@sveltejs/kit';
 import { teamsFromMatch } from 'tatorscout/tba';
 import YearInfo2025 from 'tatorscout/years/2025.js';
-
-/**
- * Memoization utility for caching expensive function results
- *
- * This utility enables significant performance optimizations by:
- * - Caching database query results (pit scouting, team scouting)
- * - Caching complex score calculations that are reused across multiple columns
- * - Caching trace processing and analysis results
- * - Reducing redundant API calls (team status, rankings)
- *
- * The cache is maintained per function call with intelligent key generation
- * to ensure correct cache hits while avoiding memory leaks.
- */
-function memoize<TArgs extends unknown[], TReturn>(
-	fn: (...args: TArgs) => TReturn,
-	keyGenerator?: (...args: TArgs) => string
-): (...args: TArgs) => TReturn {
-	const cache = new Map<string, TReturn>();
-
-	return (...args: TArgs): TReturn => {
-		const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
-
-		if (cache.has(key)) {
-			return cache.get(key)!;
-		}
-
-		const result = fn(...args);
-		cache.set(key, result);
-		return result;
-	};
-}
+import { Table, memoize } from '.';
 
 export const auth = (_event: RequestEvent) => {
 	// const key = event.request.headers.get('X-Auth-Key');
@@ -50,13 +20,10 @@ export const auth = (_event: RequestEvent) => {
 	// }
 };
 
-type ColType = number | string | undefined | void;
 export const summarize = async (eventKey: string) => {
 	return attemptAsync(async () => {
 		const event = (await Event.getEvent(eventKey)).unwrap();
 		const matches = (await event.getMatches()).unwrap();
-
-		if (event.tba.year !== 2025) throw new Error('Only 2025 events are currently supported');
 
 		const cache = new Map<number, Scouting.MatchScoutingExtended[]>();
 
@@ -643,59 +610,3 @@ export const summarize = async (eventKey: string) => {
 		return t;
 	});
 };
-
-export class Table {
-	public readonly columns: Column<ColType>[] = [];
-
-	constructor(public readonly eventKey: string) {}
-
-	public column<T extends ColType>(name: string, fn: (team: Team) => T | Promise<T>): Column<T> {
-		if (this.columns.find((c) => c.name === name))
-			throw new Error(`Column ${name} already exists in table ${this.eventKey}`);
-		const c = new Column<T>(this, name, this.columns.length, fn);
-		this.columns.push(c);
-		return c;
-	}
-
-	serialize() {
-		// TODO: Use multi-threading instead of Promise.all
-		// Note: The memoization optimizations in column functions will automatically
-		// reduce redundant calls when this method processes teams in parallel
-		return attemptAsync(async () => {
-			const event = (await Event.getEvent(this.eventKey)).unwrap();
-			const teams = (await event.getTeams()).unwrap();
-			return [
-				this.columns.map((c) => c.name),
-				...(await Promise.all(
-					teams.map(async (t) => {
-						return Promise.all(
-							this.columns.map(async (c) => {
-								try {
-									const res = await c.fn(t);
-									if (typeof res === 'number') return res.toFixed(2);
-									if (typeof res === 'string' && !isNaN(Number(res))) return Number(res).toFixed(2);
-									return res;
-								} catch (error) {
-									terminal.error(
-										'Error serializing column',
-										JSON.stringify({ column: c.name, error })
-									);
-									return 'Error';
-								}
-							})
-						);
-					})
-				))
-			];
-		});
-	}
-}
-
-class Column<T extends ColType> {
-	constructor(
-		public readonly table: Table,
-		public readonly name: string,
-		public readonly index: number,
-		public readonly fn: (team: Team) => T | Promise<T>
-	) {}
-}

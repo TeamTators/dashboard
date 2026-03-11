@@ -12,6 +12,7 @@ Displays team links, summary charts, and admin actions for the event.
 	import { tomorrow, after } from 'ts-utils/clock';
 	import EventSummary from '$lib/components/charts/EventSummary.svelte';
 	import { Scouting } from '$lib/model/scouting.js';
+	import { confirm } from '$lib/utils/prompts.js';
 	const { data = $bindable() } = $props();
 	const event = $derived(new TBAEvent(data.event));
 

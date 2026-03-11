@@ -12,6 +12,7 @@ import { Permissions } from './permissions';
 import { attemptAsync } from 'ts-utils/check';
 import Summary2024 from '../../utils/trace/summaries/2024';
 import Summary2025 from '../../utils/trace/summaries/2025';
+import Summary2026 from '../../utils/trace/summaries/2026';
 import { Event } from '../utils/tba';
 import { Scouting } from './scouting';
 import { Trace } from 'tatorscout/trace';
@@ -47,7 +48,10 @@ export namespace FIRST {
 		.block(PropertyAction.ReadVersionHistory)
 		.block(PropertyAction.SetAttributes);
 
-	export const generateSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
+	export const generateSummary = <Year extends 2024 | 2025 | 2026>(
+		eventKey: string,
+		year: Year
+	) => {
 		return attemptAsync(async () => {
 			const event = await Event.getEvent(eventKey, true).unwrap();
 			const teams = await event.getTeams(true).unwrap();
@@ -85,6 +89,11 @@ export namespace FIRST {
 					obj,
 					matches.map((m) => m.tba)
 				);
+			} else if (year === 2026) {
+				return Summary2026.computeAll(
+					obj,
+					matches.map((m) => m.tba)
+				);
 			}
 
 			throw new Error('Invalid year');
@@ -119,7 +128,7 @@ export namespace FIRST {
 		return hash('sha256', canonical);
 	};
 
-	export const getSummary = <Year extends 2024 | 2025>(eventKey: string, year: Year) => {
+	export const getSummary = <Year extends 2024 | 2025 | 2026>(eventKey: string, year: Year) => {
 		return attemptAsync(async () => {
 			const res = await EventSummary.get(
 				{ eventKey: eventKey },
@@ -133,11 +142,17 @@ export namespace FIRST {
 					if (res.data.summaryHash === hash) {
 						return Summary2024.deserialize(res.data.summary).unwrap();
 					}
-				} else {
+				} else if (year === 2025) {
 					const hash = hashSummary(Summary2025.schema);
 					if (res.data.summaryHash === hash) {
 						return Summary2025.deserialize(res.data.summary).unwrap();
 					}
+				} else if (year === 2026) {
+					throw new Error('2026 summary caching not yet implemented');
+					// const hash = hashSummary(Summary2026);
+					// if (res.data.summaryHash === hash) {
+					// 	return Summary2026.deserialize(res.data.summary).unwrap();
+					// }
 				}
 			}
 			const summary = await generateSummary(eventKey, year).unwrap();
