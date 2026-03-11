@@ -727,6 +727,7 @@ export namespace Scouting {
 
 				const res = resolveAll(
 					await Promise.all([
+					
 						Questions.new({
 							question: 'What do you do in endgame?',
 							groupId: overview.id,
@@ -758,7 +759,7 @@ export namespace Scouting {
 								order: 1
 							},
 							{
-								static: true
+								
 							}
 						),
 						Questions.new(
@@ -772,7 +773,7 @@ export namespace Scouting {
 								order: 2
 							},
 							{
-								static: true
+								
 							}
 						),
 						Questions.new(
@@ -786,7 +787,7 @@ export namespace Scouting {
 								order: 3
 							},
 							{
-								static: true
+								
 							}
 						),
 						Questions.new(
@@ -800,7 +801,7 @@ export namespace Scouting {
 								order: 4
 							},
 							{
-								static: true
+								
 							}
 						),
 						Questions.new(
@@ -814,7 +815,7 @@ export namespace Scouting {
 								order: 5
 							},
 							{
-								static: true
+								
 							}
 						),
 						Questions.new({
@@ -867,11 +868,11 @@ export namespace Scouting {
 							order: 1
 						}),
 						Questions.new({
-							question: 'What are your endgame capabilities?',
+							question: 'What do you do in endgame?',
 							groupId: gameplay.id,
 							key: 'endgame',
 							description:
-								'How fast they can complete the endgame tasks, and how consistently they can do so.',
+								'Where and on what level does your robot climb? What do you do before climbing?',
 							type: 'textarea',
 							options: '[]',
 							order: 2
