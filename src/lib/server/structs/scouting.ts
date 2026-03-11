@@ -22,6 +22,11 @@ import { FIRST } from './FIRST';
 import structRegistry from '../services/struct-registry';
 
 export namespace Scouting {
+	const VELOCITY_CONFIG = {
+		maxVel: 20,
+		rolloff: true,
+		rolloffVel: 25
+	};
 	export const MatchScouting = new Struct({
 		name: 'match_scouting',
 		structure: {
@@ -126,11 +131,14 @@ export namespace Scouting {
 		}
 
 		get averageVelocity() {
-			return this.data.trace.averageVelocity();
+			return this.data.trace.averageVelocity(VELOCITY_CONFIG);
 		}
 
 		get secondsNotMoving() {
-			return this.data.trace.secondsNotMoving();
+			return this.data.trace.secondsNotMoving({
+				...VELOCITY_CONFIG,
+				threshold: 2
+			});
 		}
 
 		get id() {
