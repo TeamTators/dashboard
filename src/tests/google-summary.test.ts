@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Integration test for google summary generation.
+ * @description
+ * Ensures the summary pipeline produces a serializable result.
+ */
+
 import { expect, test, describe } from 'vitest';
 import { summarize } from '$lib/server/utils/google-summary';
 import { DB } from '$lib/server/db';

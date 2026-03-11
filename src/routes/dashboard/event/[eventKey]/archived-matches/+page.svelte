@@ -1,5 +1,11 @@
+<!--
+@component
+Archived matches view for a specific event.
+
+Lists archived scouting matches and related comments by team.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import ArchivedMatches from '$lib/components/robot-display/ArchivedMatches.svelte';
 	import ArchivedComments from '$lib/components/robot-display/ArchivedComments.svelte';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba';
@@ -12,12 +18,12 @@
 	const scouting = $derived(
 		Scouting.MatchScouting.arr(data.scouting.map((c) => Scouting.MatchScouting.Generator(c)))
 	);
-	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
+	let scoutingArr = $derived(new Scouting.MatchScoutingExtendedArr([], -1));
 
 	$effect(() => nav(event.tba));
 
 	onMount(() => {
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, -1);
 		if (res.isOk()) {
 			scoutingArr = res.value;
 		} else {

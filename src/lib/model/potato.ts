@@ -1,26 +1,47 @@
+/**
+ * @fileoverview Potato Struct models and helper utilities.
+ *
+ * @description
+ * Defines the potato friend Struct, level thresholds, and helpers for phase lookup and
+ * server-side actions such as renaming or changing icons.
+ */
 import { type DataArr } from '$lib/services/struct/data-arr';
 import { Struct } from '$lib/services/struct';
 import { StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
+import * as remote from '$lib/remotes/potato.remote';
+import { attemptAsync } from 'ts-utils';
 
 export namespace Potato {
 	export const Friend = new Struct({
 		name: 'potato_friend',
 		structure: {
+			/** Account id that owns the potato. */
 			account: 'string',
+			/** Current potato level. */
 			level: 'number',
+			/** Custom potato name. */
 			name: 'string',
+			/** ISO timestamp for last click. */
 			lastClicked: 'string',
 
+			/** Custom icon identifier. */
 			icon: 'string',
+			/** Primary color name or hex. */
 			color: 'string',
+			/** Background color name or hex. */
 			background: 'string',
 
+			/** Attack stat value. */
 			attack: 'number',
+			/** Defense stat value. */
 			defense: 'number',
+			/** Speed stat value. */
 			speed: 'number',
+			/** Health stat value. */
 			health: 'number',
+			/** Mana stat value. */
 			mana: 'number'
 		},
 		socket: sse,
@@ -56,6 +77,16 @@ export namespace Potato {
 		timeTraveler: 2_250
 	};
 
+	/**
+	 * Return the next phase key based on the current level.
+	 *
+	 * @returns {keyof typeof Levels} Next phase key.
+	 *
+	 * @example
+	 * ```ts
+	 * const next = Potato.getNextPhase(500);
+	 * ```
+	 */
 	export const getNextPhase = (level: number): keyof typeof Levels => {
 		switch (true) {
 			case level < Levels.sprout:
@@ -75,6 +106,16 @@ export namespace Potato {
 		}
 	};
 
+	/**
+	 * Return the current phase key based on the current level.
+	 *
+	 * @returns {string} Current phase key.
+	 *
+	 * @example
+	 * ```ts
+	 * const phase = Potato.getPhase(750);
+	 * ```
+	 */
 	export const getPhase = (level: number) => {
 		switch (true) {
 			// case level < Levels.sprout:
@@ -116,15 +157,51 @@ export namespace Potato {
 		}
 	};
 
+	/**
+	 * Grant levels to a potato account.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the command.
+	 *
+	 * @example
+	 * ```ts
+	 * await Potato.giveLevels('account-id', 10);
+	 * ```
+	 */
 	export const giveLevels = (accountId: string, levels: number) => {
-		return Friend.call('give-levels', { accountId, levels });
+		return attemptAsync(async () => {
+			return remote.giveLevels({ accountId, levels });
+		});
 	};
 
+	/**
+	 * Rename the current user's potato.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the command.
+	 *
+	 * @example
+	 * ```ts
+	 * await Potato.renameYourPotato('Spuddy');
+	 * ```
+	 */
 	export const renameYourPotato = (name: string) => {
-		return Friend.call('rename', { name });
+		return attemptAsync(async () => {
+			return remote.rename({ name });
+		});
 	};
 
+	/**
+	 * Change the current user's potato icon.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the command.
+	 *
+	 * @example
+	 * ```ts
+	 * await Potato.chooseYourIcon('wizard');
+	 * ```
+	 */
 	export const chooseYourIcon = (icon: string) => {
-		return Friend.call('change-icon', { icon });
+		return attemptAsync(async () => {
+			return remote.changeIcon({ icon });
+		});
 	};
 }

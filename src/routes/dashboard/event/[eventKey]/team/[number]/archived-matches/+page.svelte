@@ -1,5 +1,11 @@
+<!--
+@component
+Archived matches view for a single team at an event.
+
+Renders the archived matches list for the selected team and ties into robot-display navigation.
+-->
 <script lang="ts">
-	import nav from '$lib/imports/robot-display.js';
+	import nav from '$lib/nav/robot-display.js';
 	import { TBAEvent, TBATeam } from '$lib/utils/tba.js';
 	import ArchivedMatches from '$lib/components/robot-display/ArchivedMatches.svelte';
 

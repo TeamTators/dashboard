@@ -1,3 +1,9 @@
+<!--
+@component
+Mentor potato leaderboard with admin controls.
+
+Shows rankings and allows mentors to adjust potato scores.
+-->
 <script lang="ts">
 	import { Potato } from '$lib/model/potato';
 	import { capitalize } from 'ts-utils/text';

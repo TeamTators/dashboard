@@ -1,3 +1,10 @@
+<!--
+@component
+Root home page route for `/`.
+
+Displays the landing card and bootstraps global client styles via `$lib/index`.
+Uses the page title from the global `__APP_ENV__` config to keep branding consistent.
+-->
 <script lang="ts">
 	import '$lib/index';
 </script>

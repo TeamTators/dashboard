@@ -16,7 +16,7 @@ import '$lib/server/structs/TBA';
 import { type Handle } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 import terminal from '$lib/server/utils/terminal';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '$lib/server/db/';
 import '$lib/server/utils/files';
 import '$lib/server/index';
@@ -55,7 +55,6 @@ sessionIgnore.add(`
 /api/oauth
 /email
 /api/analytics
-/api/fp
 `);
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -115,9 +114,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const autoSignIn = config.sessions.auto_sign_in;
+	const disableAutoSignIn =
+		event.request.headers.get('x-no-auto-sign-in') === 'true' ||
+		event.cookies.get('no_auto_sign_in') === 'true';
 
-	if (autoSignIn && config.environment !== 'prod') {
-		const a = await Account.Account.fromProperty('username', autoSignIn, { type: 'single' });
+	if (autoSignIn && config.environment !== 'prod' && !disableAutoSignIn) {
+		const a = await Account.Account.get({ username: autoSignIn }, { type: 'single' });
 		if (a.isOk() && a.value) {
 			event.locals.account = a.value;
 			Object.assign(event.locals.session.data, {

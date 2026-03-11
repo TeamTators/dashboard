@@ -1,3 +1,9 @@
+<!--
+@component
+Mentor accounts management table.
+
+Displays users, verification status, and action controls for account updates.
+-->
 <script lang="ts">
 	import { confirm, alert } from '$lib/utils/prompts.js';
 	import { capitalize, fromSnakeCase } from 'ts-utils/text';

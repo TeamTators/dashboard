@@ -1,3 +1,15 @@
+<!--
+@component
+Notifications offcanvas panel with unread count binding.
+
+**Props**
+- `notifs`: `number` — Unread notifications count (bindable).
+
+**Example**
+```svelte
+<Notifications bind:notifs />
+```
+-->
 <script lang="ts">
 	import { Account } from '$lib/model/account';
 	import { mount, onMount } from 'svelte';
@@ -50,7 +62,7 @@
 
 	// const test = () => {
 	// 	Account.AccountNotification.new({
-	// 		accountId: Account.self.get().data.id || 'guest',
+	// 		accountId: Account.self.data.data.id || 'guest',
 	// 		title: 'Test Notification',
 	// 		icon: 'info',
 	// 		message: 'This is a test notification.',

@@ -1,8 +1,23 @@
+<!--
+@fileoverview Aggregated potato stat list for a friend.
+
+@component Stats
+
+@description
+Computes the current and next phase information for a potato and renders multiple `Stat`
+components (health, attack, defense, speed, mana, and next-phase progress).
+
+@example
+```svelte
+<Stats {potato} />
+```
+-->
 <script lang="ts">
 	import Stats from './Stat.svelte';
 	import { Potato } from '$lib/model/potato';
 
 	interface Props {
+		/** Potato friend data source. */
 		potato: Potato.FriendData;
 	}
 

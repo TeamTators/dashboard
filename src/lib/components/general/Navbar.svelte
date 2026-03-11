@@ -1,3 +1,15 @@
+<!--
+@component
+Top navigation bar with stack controls, theme toggle, account menu, and notifications.
+
+**Props**
+- `title`: `string` — Brand/title text.
+
+**Example**
+```svelte
+<Navbar title="Dashboard" />
+```
+-->
 <script lang="ts">
 	import SideNav from './SideNav.svelte';
 	import Notifications from './Notifications.svelte';
@@ -78,7 +90,9 @@
 			>
 				<i class="material-icons"> notifications </i>
 				{#if notifs}
-					<span class="position-absolute badge rounded-pill bg-danger">
+					<span
+						class="position-absolute badge rounded-pill bg-danger animate__animated animate__bounce animate__delay-2s animate__repeat-2"
+					>
 						{notifs}
 						<span class="visually-hidden">unread messages</span>
 					</span>

@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Webhook endpoint for pit scouting export.
+ * @description
+ * Returns pit scouting answers with question metadata and scout usernames.
+ */
+
 import { Account } from '$lib/server/structs/account.js';
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { Event } from '$lib/server/utils/tba.js';
 import { z } from 'zod';
 
+/**
+ * Returns pit scouting export data for the event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response containing pit scouting rows.
+ */
 export const GET = async (event) => {
 	// auth(event);
 	const data = await Scouting.PIT.getQuestionsFromEvent(event.params.eventKey).unwrap();

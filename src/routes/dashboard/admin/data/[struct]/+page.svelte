@@ -1,3 +1,7 @@
+<!--
+@component
+Admin struct data page at `/dashboard/admin/data/[struct]`.
+-->
 <script lang="ts">
 	/* eslint-disable @typescript-eslint/no-explicit-any */
 	import Grid from '$lib/components/general/Grid.svelte';
@@ -9,12 +13,8 @@
 		NumberEditorModule,
 		TextEditorModule,
 		TooltipModule,
-		type ValueGetterParams,
-		type EditableCallbackParams,
-		type ValueSetterParams,
 		type ICellRendererParams
 	} from 'ag-grid-community';
-	import { dateTime } from 'ts-utils/clock';
 	import { contextmenu } from '$lib/utils/contextmenu.js';
 	import { copy } from '$lib/utils/clipboard.js';
 	import { useCommandStack } from '$lib/services/event-stack.js';
@@ -24,7 +24,7 @@
 	import Modal from '$lib/components/bootstrap/Modal.svelte';
 	import { match } from 'ts-utils/match';
 	import Flatpickr from '$lib/components/forms/Flatpickr.svelte';
-	import nav from '$lib/imports/admin';
+	import nav from '$lib/nav/admin.js';
 	import { v4 as uuid } from 'uuid';
 	import { StructDataStage } from '$lib/services/struct';
 
@@ -315,63 +315,63 @@
 						.map(([key, _value]) => ({
 							field: ('data.' + key) as any,
 							headerName: capitalize(fromCamelCase(key)),
-							valueGetter: ['created', 'updated'].includes(key)
-								? (params: ValueGetterParams<StructData<Blank>>) =>
-										dateTime(new Date(String(params.data?.data[key])))
-								: key === 'attributes'
-									? (params: ValueGetterParams<StructData<Blank>>) =>
-											(JSON.parse(params.data?.data.attributes || '[]') as string[]).join(', ')
-									: undefined,
-							editable: (params: EditableCallbackParams<StructData<Blank>>) => {
-								const isStatic = ['id', 'created', 'updated', 'canUpdate'].includes(key);
-								if (isStatic) return false;
-								if (key === 'canUpdate') return true;
-								if (!params.data?.data.canUpdate) return false;
-								return true;
-							},
-							valueSetter: (params: ValueSetterParams<StructData<Blank>>) => {
-								const isStatic = ['id', 'created', 'updated'].includes(key);
-								if (isStatic) return false;
+							// valueGetter: ['created', 'updated'].includes(key)
+							// 	? (params: ValueGetterParams<StructData<Blank>>) =>
+							// 			dateTime(new Date(String(params.data?.data[key])))
+							// 	: key === 'attributes'
+							// 		? (params: ValueGetterParams<StructData<Blank>>) =>
+							// 				(JSON.parse(params.data?.data.attributes || '[]') as string[]).join(', ')
+							// 		: undefined,
+							// editable: (params: EditableCallbackParams<StructData<Blank>>) => {
+							// 	const isStatic = ['id', 'created', 'updated', 'canUpdate'].includes(key);
+							// 	if (isStatic) return false;
+							// 	if (key === 'canUpdate') return true;
+							// 	if (!params.data?.data.canUpdate) return false;
+							// 	return true;
+							// },
+							// valueSetter: (params: ValueSetterParams<StructData<Blank>>) => {
+							// 	const isStatic = ['id', 'created', 'updated'].includes(key);
+							// 	if (isStatic) return false;
 
-								if (key === 'canUpdate') {
-									// Cannot update static fields
-									return false;
-								}
+							// 	if (key === 'canUpdate') {
+							// 		// Cannot update static fields
+							// 		return false;
+							// 	}
 
-								cs.execute({
-									label: 'Update ' + params.data.data.id + ' ' + key,
-									do: () => {
-										if (key === 'attributes') {
-											params.data.setAttributes(
-												String(params.newValue)
-													.split(',')
-													.map((a) => a.trim())
-											);
-											return;
-										}
-										params.data.update((d) => ({
-											...d,
-											[key]: params.newValue
-										}));
-									},
-									undo: () => {
-										if (key === 'attributes') {
-											params.data.setAttributes(
-												String(params.oldValue)
-													.split(',')
-													.map((a) => a.trim())
-											);
-											return;
-										}
-										params.data.update((d) => ({
-											...d,
-											[key]: params.oldValue
-										}));
-									}
-								});
+							// 	cs.execute({
+							// 		label: 'Update ' + params.data.data.id + ' ' + key,
+							// 		do: () => {
+							// 			if (key === 'attributes') {
+							// 				params.data.setAttributes(
+							// 					String(params.newValue)
+							// 						.split(',')
+							// 						.map((a) => a.trim())
+							// 				);
+							// 				return;
+							// 			}
+							// 			params.data.update((d) => ({
+							// 				...d,
+							// 				[key]: params.newValue
+							// 			}));
+							// 		},
+							// 		undo: () => {
+							// 			if (key === 'attributes') {
+							// 				params.data.setAttributes(
+							// 					String(params.oldValue)
+							// 						.split(',')
+							// 						.map((a) => a.trim())
+							// 				);
+							// 				return;
+							// 			}
+							// 			params.data.update((d) => ({
+							// 				...d,
+							// 				[key]: params.oldValue
+							// 			}));
+							// 		}
+							// 	});
 
-								return true;
-							},
+							// 	return true;
+							// },
 							// tooltipValueGetter: (params: any) => {
 							//     if (key === 'attributes') {
 							//         return JSON.stringify(JSON.parse(params.data.data.attributes), null, 2);
@@ -587,7 +587,7 @@
 									class="form-control"
 									id="create-{key}"
 									placeholder="Placeholder"
-									bind:value={editStage.data[key]}
+									bind:value={$editStage[key]}
 								/>
 								<label for="create-{key}" class="ms-3">
 									{capitalize(fromCamelCase(key))}
@@ -596,7 +596,7 @@
 						{:else if value === 'date'}
 							<div class="form-floating">
 								<Flatpickr
-									value={editStage.data[key] as Date}
+									value={$editStage[key] as Date}
 									onChange={(date) => {
 										(editStage.data as any)[key] = date;
 									}}
@@ -606,14 +606,33 @@
 								/>
 								<label for="create-{key}" class="ms-3">{capitalize(fromCamelCase(key))}</label>
 							</div>
-						{:else if value === 'number'}
+						{:else if value === 'real'}
 							<div class="form-floating">
 								<input
 									type="number"
 									class="form-control"
 									id="create-{key}"
 									placeholder="Placeholder"
-									bind:value={editStage.data[key]}
+									bind:value={$editStage[key]}
+								/>
+								<label for="create-{key}" class="ms-3">
+									{capitalize(fromCamelCase(key))}
+								</label>
+							</div>
+						{:else if value === 'integer'}
+							<div class="form-floating">
+								<input
+									type="number"
+									class="form-control"
+									id="create-{key}"
+									placeholder="Placeholder"
+									bind:value={$editStage[key]}
+									oninput={(e) => {
+										const val = parseInt((e.target as HTMLInputElement).value, 10);
+										if (!isNaN(val)) {
+											(editStage.data as any)[key] = val;
+										}
+									}}
 								/>
 								<label for="create-{key}" class="ms-3">
 									{capitalize(fromCamelCase(key))}
@@ -623,27 +642,18 @@
 							<div class="form-label mb-2">{capitalize(fromCamelCase(key))}</div>
 							<div class="btn-group" role="group" aria-label="Boolean toggle">
 								<input
-									type="radio"
-									class="btn-check"
+									type="checkbox"
 									name="btnradio-{key}"
-									id="btnradio-{key}-true"
-									autocomplete="off"
-									checked={(editStage.data as any)[key] === true}
-									onchange={() => ((editStage.data as any)[key] = true)}
-								/>
-								<label class="btn btn-outline-primary" for="btnradio-{key}-true">True</label>
-
-								<input
-									type="radio"
+									id="btnradio-{key}-checkbox"
 									class="btn-check"
-									name="btnradio-{key}"
-									id="btnradio-{key}-false"
-									autocomplete="off"
-									checked={(editStage.data as any)[key] === false}
-									onchange={() => ((editStage.data as any)[key] = false)}
+									bind:checked={$editStage[key] as boolean}
 								/>
-								<label class="btn btn-outline-primary" for="btnradio-{key}-false">False</label>
+								<label class="btn btn-outline-primary" for="btnradio-{key}-checkbox"
+									>Toggle ({$editStage[key] ? 'True' : 'False'})</label
+								>
 							</div>
+						{:else}
+							<div>Unsupported field type: {value}</div>
 						{/if}
 					</div>
 				{/each}

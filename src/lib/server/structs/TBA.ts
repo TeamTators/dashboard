@@ -1,6 +1,12 @@
+/**
+ * @fileoverview Server-side TBA cache structs and fetch helpers.
+ *
+ * @description
+ * Defines Drizzle-backed Structs for TBA caching and a helper to fetch/update cached data.
+ */
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { attemptAsync, resolveAll, type Result } from 'ts-utils/check';
 import { Permissions } from './permissions';
 import { str } from '../utils/env';
@@ -13,7 +19,9 @@ export namespace TBA {
 	export const Requests = new Struct({
 		name: 'tba_requests',
 		structure: {
+			/** Request URL used as a cache key. */
 			url: text('url').notNull().unique(),
+			/** Cached response payload. */
 			response: text('response').notNull()
 		}
 	});
@@ -21,16 +29,19 @@ export namespace TBA {
 	export const Events = new Struct({
 		name: 'tba_custom_events',
 		structure: {
+			/** Competition year. */
 			year: integer('year').notNull(),
+			/** Event key. */
 			eventKey: text('event_key').notNull(),
+			/** Serialized event object. */
 			data: text('data').notNull() // JSON Event Object
 		}
 	});
 
 	Events.on('delete', async (e) => {
 		const [teams, matches] = await Promise.all([
-			Teams.fromProperty('eventKey', e.data.eventKey, { type: 'array', limit: 1000, offset: 0 }),
-			Matches.fromProperty('eventKey', e.data.eventKey, { type: 'array', limit: 1000, offset: 0 })
+			Teams.get({ eventKey: e.data.eventKey }, { type: 'array', limit: 1000, offset: 0 }),
+			Matches.get({ eventKey: e.data.eventKey }, { type: 'array', limit: 1000, offset: 0 })
 		]);
 
 		const res = resolveAll(
@@ -45,8 +56,11 @@ export namespace TBA {
 	export const Teams = new Struct({
 		name: 'tba_custom_teams',
 		structure: {
+			/** Event key to scope the team. */
 			eventKey: text('event_key').notNull(),
+			/** Team key (frcXXXX). */
 			teamKey: text('team_key').notNull(), // frcXXXX
+			/** Serialized team object. */
 			data: text('data').notNull() // JSON Team Object
 		}
 	});
@@ -54,8 +68,11 @@ export namespace TBA {
 	export const Matches = new Struct({
 		name: 'tba_custom_matches',
 		structure: {
+			/** Event key to scope the match. */
 			eventKey: text('event_key').notNull(),
+			/** Match key (e.g., 2020casj_qf1m1). */
 			matchKey: text('match_key').notNull(), // 2020casj_qf1m1
+			/** Serialized match object. */
 			data: text('data').notNull() // JSON Match Object
 		}
 	});
@@ -66,13 +83,21 @@ export namespace TBA {
 		force?: boolean;
 	};
 
+	/**
+	 * Fetch from TBA or cached responses based on update thresholds.
+	 *
+	 * @returns {Promise<Result<T>>} Result wrapper containing the parsed response.
+	 */
 	export const get = <T>(path: string, config: RequestConfig): Promise<Result<T>> => {
 		return attemptAsync(async () => {
 			if (!path.startsWith('/')) path = '/' + path;
 
-			const exists = await Requests.fromProperty('url', path, {
-				type: 'single'
-			});
+			const exists = await Requests.get(
+				{ url: path },
+				{
+					type: 'single'
+				}
+			);
 
 			if (exists.isOk() && exists.value && !config.force) {
 				const between = Date.now() - exists.value.updated.getTime();

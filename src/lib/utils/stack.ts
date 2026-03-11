@@ -1,6 +1,14 @@
+/**
+ * @fileoverview Global undo/redo stack with keyboard shortcuts.
+ *
+ * @example
+ * import { Stack } from '$lib/utils/stack';
+ * const stack = new Stack({ name: 'editor' });
+ * Stack.use(stack);
+ */
 import { browser } from '$app/environment';
 import { writable } from 'svelte/store';
-import { Keyboard } from './keybinds';
+import { Keyboard } from '../services/keybinds';
 import { EventEmitter } from 'ts-utils/event-emitter';
 
 /**
@@ -62,6 +70,8 @@ export class Stack {
 		push: State;
 		/** Fired when any stack is cleared */
 		clear: undefined;
+		/** Fired when the current state changes */
+		change: State;
 	}>();
 
 	/** Internal method to emit events - do not use directly */
@@ -146,6 +156,25 @@ export class Stack {
 		}
 	}
 
+	private readonly em = new EventEmitter<{
+		/** Fired when a state is undone (includes the undone state) */
+		undo: State;
+		/** Fired when a state is redone (includes the redone state) */
+		redo: State;
+		/** Fired when an error occurs during stack operations */
+		error: Error;
+		/** Fired when a new state is pushed to this stack (includes the new state) */
+		push: State;
+		/** Fired when this stack is cleared */
+		clear: undefined;
+		/** Fired when the current state changes */
+		change: State;
+	}>();
+
+	public readonly on = this.em.on.bind(this.em);
+	public readonly off = this.em.off.bind(this.em);
+	public readonly once = this.em.once.bind(this.em);
+
 	/**
 	 * Creates a new Stack instance
 	 * @param config - Configuration object
@@ -196,6 +225,8 @@ export class Stack {
 
 		Stack.setState();
 		Stack.emit('push', state);
+		this.em.emit('push', state);
+		this.em.emit('change', state);
 	}
 
 	/**
@@ -209,6 +240,8 @@ export class Stack {
 			this.index--;
 			Stack.setState();
 			Stack.emit('undo', this.items[this.index + 1]);
+			this.em.emit('undo', this.items[this.index + 1]);
+			this.em.emit('change', this.items[this.index + 1]);
 		}
 	}
 
@@ -225,6 +258,8 @@ export class Stack {
 			else item.redo();
 			Stack.setState();
 			Stack.emit('redo', item);
+			this.em.emit('redo', item);
+			this.em.emit('change', item);
 		}
 	}
 
@@ -237,6 +272,7 @@ export class Stack {
 		this.index = -1;
 		Stack.setState();
 		Stack.emit('clear', undefined);
+		this.em.emit('clear', undefined);
 	}
 
 	/**

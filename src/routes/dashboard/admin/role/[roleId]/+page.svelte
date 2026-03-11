@@ -1,12 +1,17 @@
+<!--
+@component
+Admin role detail page at `/dashboard/admin/role/[roleId]`.
+-->
 <script lang="ts">
 	/* eslint-disable @typescript-eslint/no-explicit-any */
-	import nav from '$lib/imports/admin.js';
+	import nav from '$lib/nav/admin.js';
 	import Grid from '$lib/components/general/Grid.svelte';
 	import RoleEditor from '$lib/components/roles/RoleRulesetEditor.svelte';
 	import { Permissions } from '$lib/model/permissions';
 	import { Account } from '$lib/model/account.js';
 	import { contextmenu } from '$lib/utils/contextmenu.js';
 	import { alert } from '$lib/utils/prompts.js';
+	import { goto } from '$app/navigation';
 
 	nav();
 
@@ -78,7 +83,7 @@
 					type="button"
 					class="btn btn-primary"
 					onclick={() => {
-						window.location.href = `/dashboard/admin/role/${$role.parent}`;
+						goto(`/dashboard/admin/role/${$role.parent}`);
 					}}
 				>
 					<i class="material-icons"> person </i>
@@ -129,7 +134,7 @@
 						}
 					],
 					onRowDoubleClicked: (params) => {
-						window.location.href = `/dashboard/admin/role/${params.data?.data.id}`;
+						goto(`/dashboard/admin/role/${params.data?.data.id}`);
 					}
 				}}
 			/>

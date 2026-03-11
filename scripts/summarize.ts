@@ -1,6 +1,6 @@
 import { summarize } from '../src/lib/server/utils/google-summary';
 import { openStructs } from '../cli/struct';
-import { Struct } from 'drizzle-struct/back-end';
+import { Struct } from 'drizzle-struct';
 import { DB } from '../src/lib/server/db';
 
 export default async (eventKey: string) => {

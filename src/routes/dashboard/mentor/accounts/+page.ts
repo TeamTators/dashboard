@@ -1,6 +1,17 @@
+/**
+ * @fileoverview Client load mapper for mentor account management.
+ * @description
+ * Wraps account and role payloads into client-side model instances.
+ */
+
 import { Account } from '$lib/model/account.js';
 import { Permissions } from '$lib/model/permissions.js';
 
+/**
+ * Maps server data into client-side account models.
+ * @param event - SvelteKit load event with server data.
+ * @returns Page data containing account and role models.
+ */
 export const load = (event) => {
 	return {
 		accounts: event.data.accounts.map((d) => ({

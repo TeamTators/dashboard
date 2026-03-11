@@ -1,8 +1,19 @@
+/**
+ * @fileoverview Server loader for custom event team management.
+ * @description
+ * Ensures mentor access and loads event and team lists for editing.
+ */
+
 import { Event } from '$lib/server/utils/tba.js';
 import { error } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Loads team data for a custom event.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing event metadata and teams.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	if (!event.locals.account.data.verified) throw error(ServerCode.unauthorized);

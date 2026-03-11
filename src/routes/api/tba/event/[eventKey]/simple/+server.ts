@@ -1,9 +1,20 @@
+/**
+ * @fileoverview API endpoint for reading and updating event metadata.
+ * @description
+ * GET returns event data, POST updates custom events only.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { fail, json } from '@sveltejs/kit';
 import { EventSchema } from 'tatorscout/tba';
 import { ServerCode } from 'ts-utils/status';
 
+/**
+ * Returns event metadata.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with event data.
+ */
 export const GET = async (event) => {
 	const e = await TBA.Event.getEvent(event.params.eventKey);
 	if (e.isErr()) {
@@ -19,6 +30,11 @@ export const GET = async (event) => {
 	});
 };
 
+/**
+ * Updates metadata for a custom event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response indicating success or failure.
+ */
 export const POST = async (event) => {
 	if (!event.locals.account) {
 		return json(

@@ -1,3 +1,9 @@
+/**
+ * @fileoverview API endpoint for reading and updating event matches.
+ * @description
+ * Supports GET for TBA match list and POST for custom match updates.
+ */
+
 import * as TBA from '$lib/server/utils/tba';
 import terminal from '$lib/server/utils/terminal.js';
 import { fail, json } from '@sveltejs/kit';
@@ -5,6 +11,11 @@ import { ServerCode } from 'ts-utils/status';
 import { z } from 'zod';
 import { type TBAMatch } from 'tatorscout/tba';
 
+/**
+ * Returns the simplified match list for an event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with match data.
+ */
 export const GET = async (event) => {
 	const force = event.url.searchParams.get('force') === 'true';
 	const e = await TBA.Event.getEvent(event.params.eventKey);
@@ -27,6 +38,11 @@ export const GET = async (event) => {
 	});
 };
 
+/**
+ * Replaces the match list for a custom event.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response indicating success or failure.
+ */
 export const POST = async (event) => {
 	if (!event.locals.account) {
 		return json(

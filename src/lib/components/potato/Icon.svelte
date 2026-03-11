@@ -1,3 +1,18 @@
+<!--
+@fileoverview Potato icon widget with modal details and icon selection.
+
+@component Icon
+
+@description
+Shows a small potato icon with the player's level. Clicking opens a modal that displays
+stats and allows renaming or icon changes when eligible. The component updates the browser
+favicon to match the current potato phase.
+
+@example
+```svelte
+<Icon />
+```
+-->
 <script lang="ts">
 	import { Potato } from '$lib/model/potato';
 	import { Account } from '$lib/model/account';
@@ -16,11 +31,14 @@
 	onMount(() => {
 		let unsub = () => {};
 		const u = self.subscribe(async () => {
-			const [p] = (
-				await Potato.Friend.fromProperty('account', String(self.get().data.id), {
-					type: 'stream'
-				}).await()
-			).unwrap();
+			const [p] = await Potato.Friend.get(
+				{ account: String(self.data.data.id) },
+				{
+					type: 'all'
+				}
+			)
+				.await()
+				.unwrap();
 			if (!p) return;
 			potato = p;
 			unsub = p.subscribe((data) => {
@@ -94,11 +112,7 @@
 								const name = await prompt('Enter a new name for your potato');
 								if (!name) return;
 								const res = await Potato.renameYourPotato(name);
-								if (res.isOk()) {
-									if (!res.value.success) {
-										alert(`Your potato could not be renamed: ${res.value.message}`);
-									}
-								} else {
+								if (res.isErr()) {
 									console.error(res.error);
 								}
 							}}

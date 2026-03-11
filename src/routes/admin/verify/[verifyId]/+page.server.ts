@@ -18,9 +18,12 @@ export const load = async (event) => {
 		throw redirect(ServerCode.permanentRedirect, '/status/403?url=' + event.url.href);
 	}
 
-	const verifyAccount = await Account.Account.fromProperty('verification', event.params.verifyId, {
-		type: 'single'
-	});
+	const verifyAccount = await Account.Account.get(
+		{ verification: event.params.verifyId },
+		{
+			type: 'single'
+		}
+	);
 
 	if (verifyAccount.isErr()) {
 		terminal.error(verifyAccount.error);
@@ -52,9 +55,8 @@ export const actions = {
 			throw redirect(ServerCode.permanentRedirect, '/status/403');
 		}
 
-		const verifyAccount = await Account.Account.fromProperty(
-			'verification',
-			event.params.verifyId,
+		const verifyAccount = await Account.Account.get(
+			{ verification: event.params.verifyId },
 			{
 				type: 'single'
 			}

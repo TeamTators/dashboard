@@ -1,3 +1,17 @@
+<!--
+@fileoverview Match trace playback rendered with HTML and a range slider.
+
+@component TraceHTML
+
+@description
+Initializes a `MatchHTML` renderer for a scouting trace and attaches a range slider that
+can be driven by an optional phase focus store.
+
+@example
+```svelte
+<TraceHTML {scouting} />
+```
+-->
 <script lang="ts">
 	import { MatchHTML } from '$lib/model/match-html';
 	import type { Scouting } from '$lib/model/scouting';
@@ -6,7 +20,9 @@
 	import { RangeSlider } from '$lib/utils/form';
 
 	interface Props {
+		/** Match scouting record to render. */
 		scouting: Scouting.MatchScoutingExtended;
+		/** Optional phase focus store to constrain the slider. */
 		focus?: Readable<'auto' | 'teleop' | 'endgame' | 'all'>;
 	}
 

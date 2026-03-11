@@ -1,8 +1,14 @@
+/**
+ * @fileoverview Reactive struct data arrays and pagination helpers.
+ *
+ * @example
+ * import { DataArr } from '$lib/services/struct/data-arr';
+ * const arr = new DataArr(struct, []);
+ */
 import { Struct, type Blank } from './index';
-import { get, writable, type Writable } from 'svelte/store';
 import { StructData } from './struct-data';
 import { EventEmitter } from 'ts-utils/event-emitter';
-import { WritableArray } from '$lib/utils/writables';
+import { WritableArray, WritableBase } from '$lib/services/writables';
 import { debounce } from 'ts-utils';
 
 /**
@@ -56,6 +62,7 @@ export class DataArr<T extends Blank> extends WritableArray<StructData<T>> {
 	 * @param {StructData<T>[]} value
 	 */
 	private apply(value: StructData<T>[]): void {
+		value = value.filter((v, i, a) => a.indexOf(v) === i); // Remove duplicates
 		this.data = value.sort(this._sort).filter(this._filter);
 		if (this._reverse) {
 			this.data.reverse();
@@ -191,7 +198,7 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 	 * @readonly
 	 * @type {Writable<{page: number, pageSize: number}>}
 	 */
-	public readonly info: Writable<{
+	public readonly info: WritableBase<{
 		page: number;
 		pageSize: number;
 	}>;
@@ -201,9 +208,9 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 	 *
 	 * @public
 	 * @readonly
-	 * @type {Writable<number>}
+	 * @type {WritableBase<number>}
 	 */
-	public readonly total = writable(0);
+	public readonly total = new WritableBase(0);
 
 	/**
 	 * Creates an instance of PaginationDataArr.
@@ -224,10 +231,12 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 		getTotal: () => Promise<number> | number
 	) {
 		super(struct, []);
-		this.info = writable({
+		this.info = new WritableBase({
 			page,
 			pageSize
 		});
+
+		this.info.addValidator((info) => info.page >= 1 && info.pageSize > 0);
 
 		const bouncedGetter = async (info: { page: number; pageSize: number }) => {
 			const data = await getter(info.page, info.pageSize);
@@ -246,7 +255,7 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 		 * @param {number} num - Number to add to total count (+1 for add, -1 for remove)
 		 */
 		const onChange = async (num: number) => {
-			const current = get(this.info);
+			const current = this.info.data;
 			const newData = await getter(current.page, current.pageSize);
 			this.data = newData;
 			this.total.update((t) => t + num);
@@ -288,7 +297,7 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 	 * @returns {number} Current page size
 	 */
 	get pageSize() {
-		return get(this.info).pageSize;
+		return this.info.data.pageSize;
 	}
 
 	/**
@@ -309,7 +318,7 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 	 * @returns {number} Current page number
 	 */
 	get page() {
-		return get(this.info).page;
+		return this.info.data.page;
 	}
 
 	/**
@@ -338,8 +347,8 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 	 * ```
 	 */
 	next() {
-		const current = get(this.info);
-		if ((current.page + 1) * current.pageSize >= get(this.total)) return;
+		const current = this.info.data;
+		if ((current.page + 1) * current.pageSize >= this.total.data) return;
 		this.info.update((i) => ({
 			...i,
 			page: i.page + 1
@@ -359,7 +368,7 @@ export class PaginationDataArr<T extends Blank> extends DataArr<T> {
 	 * ```
 	 */
 	prev() {
-		const current = get(this.info);
+		const current = this.info.data;
 		if (current.page === 0) return;
 		this.info.update((i) => ({
 			...i,

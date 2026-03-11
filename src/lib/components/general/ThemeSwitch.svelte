@@ -1,3 +1,12 @@
+<!--
+@component
+Theme toggle button (light/dark).
+
+**Example**
+```svelte
+<ThemeSwitch />
+```
+-->
 <script lang="ts">
 	import { setTheme, theme } from '$lib/utils/theme';
 
