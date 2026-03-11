@@ -113,8 +113,10 @@ Displays team links, summary charts, and admin actions for the event.
 		</div>
 	</div>
 	{#if message}
-		<div class="alert alert-danger" role="alert">
-			{message}
+		<div class="row mb-3">
+			<div class="alert alert-danger" role="alert">
+				{message}
+			</div>
 		</div>
 	{/if}
 
