@@ -30,23 +30,17 @@ Displays team links, summary charts, and admin actions for the event.
 
 	let teams: TBATeam[] = $state([]);
 
-
 	$effect(() => nav(event.tba));
 
 	onMount(() => {
-		event
-			.getTeams(
-				false,
-				tomorrow()
-			)
-			.then((res) => {
-				if (res.isOk()) {
-					teams = res.value;
-				} else {
-					message = `Teams failed to load`;
-					console.error(res.error);
-				}
-			});
+		event.getTeams(false, tomorrow()).then((res) => {
+			if (res.isOk()) {
+				teams = res.value;
+			} else {
+				message = `Teams failed to load`;
+				console.error(res.error);
+			}
+		});
 		setTimeout(() => {
 			FIRST.getSummary(event.tba.key, event.tba.year as 2024 | 2025, {
 				cacheExpires: after(10 * 60 * 1000)
@@ -118,11 +112,11 @@ Displays team links, summary charts, and admin actions for the event.
 			</div>
 		</div>
 	</div>
-{#if message}	
-	<div class="alert alert-danger" role="alert">
-  {message}
-</div>
-{/if}
+	{#if message}
+		<div class="alert alert-danger" role="alert">
+			{message}
+		</div>
+	{/if}
 
 	{#if summary}
 		{#each Object.entries(summary) as [group, items]}
