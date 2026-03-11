@@ -20,6 +20,7 @@ import { Trace } from 'tatorscout/trace';
 import { debounce } from 'ts-utils';
 import { FIRST } from './FIRST';
 import structRegistry from '../services/struct-registry';
+import { Scouting as s } from '$lib/model/scouting.ts';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -126,11 +127,14 @@ export namespace Scouting {
 		}
 
 		get averageVelocity() {
-			return this.data.trace.averageVelocity();
+			return this.data.trace.averageVelocity(s.VELOCITY_CONFIG);
 		}
 
 		get secondsNotMoving() {
-			return this.data.trace.secondsNotMoving();
+			return this.data.trace.secondsNotMoving({
+				...s.VELOCITY_CONFIG,
+				threshold: 1
+			});
 		}
 
 		get id() {
