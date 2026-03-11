@@ -14,6 +14,7 @@ import { Table } from '$lib/services/db/table';
 import { attemptAsync } from 'ts-utils';
 import Summary2025 from '../utils/trace/summaries/2025';
 import Summary2024 from '../utils/trace/summaries/2024';
+import Summary2026 from '../utils/trace/summaries/2026';
 import * as remote from '$lib/remotes/FIRST.remote';
 
 export namespace FIRST {
@@ -38,7 +39,7 @@ export namespace FIRST {
 		summary: 'string'
 	});
 
-	export const getSummary = <Year extends 2024 | 2025>(
+	export const getSummary = <Year extends 2024 | 2025 | 2026>(
 		eventKey: string,
 		year: Year,
 		config: {
@@ -48,7 +49,11 @@ export namespace FIRST {
 		return attemptAsync<
 			ReturnType<
 				ReturnType<
-					(Year extends 2024 ? typeof Summary2024 : typeof Summary2025)['deserialize']
+					(Year extends 2024
+						? typeof Summary2024
+						: Year extends 2025
+							? typeof Summary2025
+							: typeof Summary2026)['deserialize']
 				>['unwrap']
 			>
 		>(async () => {
@@ -65,6 +70,9 @@ export namespace FIRST {
 				}
 				if (year === 2025) {
 					return Summary2025.deserialize(data).unwrap();
+				}
+				if (year === 2026) {
+					return Summary2026.deserialize(data).unwrap();
 				}
 				throw new Error('Invalid year');
 			};

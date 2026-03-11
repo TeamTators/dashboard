@@ -33,20 +33,23 @@ const summary2024 = YearInfo2024.summary({
 		'Total Points': ({ scoring }) => Aggregators.sum(scoring.map((d) => d.total)),
 		Lobs: ({ scoring }) => Aggregators.sum(scoring.map((d) => d.teleop.lob)),
 		'Average Velocity': ({ traces }) =>
-			Aggregators.average(traces.map((t) => t.averageVelocity({
-		maxVel: 20,
-		rolloff: true,
-		rolloffVel: 25
-	}))),
+			Aggregators.average(
+				traces.map((t) =>
+					t.averageVelocity({
+						maxVel: 20,
+						rolloff: true,
+						rolloffVel: 25
+					})
+				)
+			),
 		'Average Seconds Not Moving': ({ traces }) =>
 			Aggregators.average(
 				traces.map((t) =>
-					t.secondsNotMoving(
-						{
-		maxVel: 20,
-		rolloff: true,
-		rolloffVel: 25,
-		threshold: 2
+					t.secondsNotMoving({
+						maxVel: 20,
+						rolloff: true,
+						rolloffVel: 25,
+						threshold: 2
 					})
 				)
 			)
