@@ -32,7 +32,7 @@ describe('Multi Year Google Summary', async () => {
 		expect(res.isOk()).toBe(true);
 	}, 60_000);
 	test('Summary for 2026idbo', async () => {
-		const res  = await (await summarize2026('2026idbo')).unwrap().serialize();
+		const res = await (await summarize2026('2026idbo')).unwrap().serialize();
 		expect(res.isOk()).toBe(true);
 	});
 });

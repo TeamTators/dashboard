@@ -37,7 +37,7 @@ export const GET = async (event) => {
 			});
 
 		return json({
-			summary: res.value,
+			summary: res.value
 		});
 	}
 
@@ -56,7 +56,7 @@ export const GET = async (event) => {
 			});
 
 		return json({
-			summary: res.value,
+			summary: res.value
 		});
 	}
 
