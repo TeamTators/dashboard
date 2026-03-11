@@ -94,7 +94,7 @@ export default YearInfo2026.summary({
 	},
 	'Teleop Points': {
 		'Average Hub Scored': () => 0,
-		'Average Lob': () => 0
+		'Average Lob': (data) => Aggregators.average(data.traces.map(t => t.filterAction('lob1').length + t.filterAction('lob5').length + t.filterAction('lob10').length)),
 	},
 	'Endgame Points': {
 		'Average Climb': () => 0,
