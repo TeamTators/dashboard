@@ -564,14 +564,14 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 		},
 		id: 'velocity_histogram',
 		size: {
-			width: 2,
+			width: 4,
 			height: 1,
 			lg: {
-				width: 4,
+				width: 8,
 				height: 1
 			},
 			md: {
-				width: 4,
+				width: 8,
 				height: 1
 			},
 			sm: {
