@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Server loader for a specific team match view.
+ * @description
+ * Resolves the requested match, scouting record, and scout account info.
+ * Validates that the team participates in the requested match before returning data.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting.js';
 import * as TBA from '$lib/server/utils/tba';
 import { fail, redirect } from '@sveltejs/kit';
@@ -5,6 +12,11 @@ import { ServerCode } from 'ts-utils/status';
 import { Account } from '$lib/server/structs/account.js';
 import terminal from '$lib/server/utils/terminal.js';
 
+/**
+ * Loads match data and scouting context for a specific team.
+ * @param event - SvelteKit request event.
+ * @returns Page data containing match details, scouting payload, and scout username.
+ */
 export const load = async (event) => {
 	if (!event.locals.account) throw redirect(ServerCode.temporaryRedirect, '/account/sign-in');
 	const eventKey = event.params.eventKey;

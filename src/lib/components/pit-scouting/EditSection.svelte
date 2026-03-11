@@ -1,3 +1,17 @@
+<!--
+@fileoverview Admin editor for a pit-scouting section and its groups.
+
+@component EditSection
+
+@description
+Displays all groups under a section, allows renaming the section, and supports adding new groups
+at the end of the list.
+
+@example
+```svelte
+<EditSection {section} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { DataArr } from '$lib/services/struct/data-arr';
@@ -6,6 +20,7 @@
 	import { prompt } from '$lib/utils/prompts';
 
 	interface Props {
+		/** Section record being edited. */
 		section: Scouting.PIT.SectionData;
 	}
 

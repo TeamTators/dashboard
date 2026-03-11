@@ -1,3 +1,10 @@
+<!--
+@component
+Trace viewer for a single team at an event.
+
+Lists match traces, supports phase filtering, and opens detailed trace modals.
+Includes quick navigation across teams and links back to the robot display.
+-->
 <script lang="ts">
 	import nav from '$lib/nav/robot-display.js';
 	import Trace from '$lib/components/robot-display/TraceHTML.svelte';
@@ -9,14 +16,13 @@
 	import type { TBAMatch } from '$lib/utils/tba.js';
 	import MatchDisplay from '$lib/components/robot-display/MatchDisplay.svelte';
 	import MatchDisplayNoScout from '$lib/components/robot-display/MatchDisplayNoScout.svelte';
-	import { onMount } from 'svelte';
 
 	const { data } = $props();
 	const teams = $derived(data.teams);
 	const event = $derived(data.event);
 	const team = $derived(data.team);
 	const scouting = $derived(data.scouting);
-	let scoutingArr = $state(new Scouting.MatchScoutingExtendedArr([]));
+	let scoutingArr = $derived(new Scouting.MatchScoutingExtendedArr([], team.tba.team_number));
 	const matches = $derived(data.matches);
 	const scoutingAccounts = $derived(data.scoutingAccounts);
 
@@ -48,7 +54,7 @@
 				})
 			);
 		}
-		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting);
+		const res = Scouting.MatchScoutingExtendedArr.fromArr(scouting, team.tba.team_number);
 		if (res.isOk()) {
 			scoutingArr = res.value;
 		} else {

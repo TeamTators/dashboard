@@ -1,8 +1,23 @@
+<!--
+@fileoverview Editor for a single pit-scouting question definition.
+
+@component EditQuestion
+
+@description
+Allows editing the question text, key, type, description, and options. Options can be added,
+removed, or reordered for select/radio/checkbox question types.
+
+@example
+```svelte
+<EditQuestion {question} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { prompt } from '$lib/utils/prompts';
 
 	interface Props {
+		/** Question record being edited. */
 		question: Scouting.PIT.QuestionData;
 	}
 
@@ -26,6 +41,14 @@
 	// options
 	// order
 
+	/**
+	 * Persist the current question edits back to the struct.
+	 *
+	 * @example
+	 * ```ts
+	 * save();
+	 * ```
+	 */
 	export const save = () => {
 		question.update((data) => ({
 			...data,

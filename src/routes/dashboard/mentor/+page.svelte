@@ -1,3 +1,9 @@
+<!--
+@component
+Mentor dashboard landing page.
+
+Links to account management, custom TBA tools, and the potato leaderboard.
+-->
 <div class="container">
 	<div class="row mb-3">
 		<div class="col-md-6">

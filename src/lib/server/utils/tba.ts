@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Server-side TBA utilities and wrappers.
+ *
+ * @description
+ * Provides classes to fetch and manage TBA events, matches, and teams, with optional
+ * support for custom cached data.
+ */
 import {
 	EventSchema,
 	MatchSchema,
@@ -18,6 +25,11 @@ import { StructData } from 'drizzle-struct';
 import { z } from 'zod';
 
 export class Event {
+	/**
+	 * Fetch events for the given year.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing events.
+	 */
 	public static getEvents(year: number, force = false) {
 		return attemptAsync<Event[]>(async () => {
 			const custom = await TBA.Events.get(
@@ -41,6 +53,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Fetch a single event by key.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the event.
+	 */
 	public static getEvent(eventKey: string, force = false) {
 		return attemptAsync(async () => {
 			const custom = (
@@ -63,6 +80,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Fetch events for a team in the given year.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing events.
+	 */
 	public static getTeamEvents(year: number, team: number, force = false) {
 		return attemptAsync(async () => {
 			const custom = await TBA.Events.get(
@@ -86,6 +108,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Create a custom event and persist it to the cache.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the created record.
+	 */
 	public static createEvent(event: {
 		key: string;
 		name: string;
@@ -118,6 +145,11 @@ export class Event {
 		public readonly data?: StructData<typeof TBA.Events.data.structure>
 	) {}
 
+	/**
+	 * Fetch teams for this event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing teams.
+	 */
 	public getTeams(force = false) {
 		return attemptAsync(async () => {
 			if (this.custom) {
@@ -147,6 +179,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Fetch matches for this event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing matches.
+	 */
 	public getMatches(force = false) {
 		return attemptAsync(async () => {
 			if (this.custom) {
@@ -185,6 +222,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Fetch matches and validate them against a schema.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing matches.
+	 */
 	public getMatchesFromSchema(matchSchema: z.ZodSchema, force = false) {
 		return attemptAsync(async () => {
 			if (this.custom) {
@@ -223,6 +265,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Delete a custom event and its cached data.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the deletion.
+	 */
 	delete() {
 		return attemptAsync(async () => {
 			if (this.data) {
@@ -236,6 +283,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Update a custom event definition.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the update.
+	 */
 	update(data: { name: string; startDate: Date; endDate: Date; year: number }) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot update a non-custom event');
@@ -259,6 +311,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Replace the teams list for a custom event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the update.
+	 */
 	setTeams(teams: z.infer<typeof TeamSchema>[]) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set teams for a non-custom event');
@@ -288,6 +345,11 @@ export class Event {
 		});
 	}
 
+	/**
+	 * Replace the matches list for a custom event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper for the update.
+	 */
 	setMatches(matches: TBAMatch[]) {
 		return attemptAsync(async () => {
 			if (!this.custom) throw new Error('Cannot set matches for a non-custom event');
@@ -327,6 +389,11 @@ export class Match {
 		return this.event.custom;
 	}
 
+	/**
+	 * Fetch teams participating in this match.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing teams.
+	 */
 	public getTeams() {
 		return attemptAsync(async () => {
 			const teams = teamsFromMatch(this.tba);
@@ -360,6 +427,11 @@ export class Match {
 	//     });
 	// }
 
+	/**
+	 * Parse this match using a year-specific schema.
+	 *
+	 * @returns {ReturnType<typeof attempt>} Result wrapper containing the parsed match.
+	 */
 	asYear<Y extends 2025>(year: Y): Result<Y extends 2025 ? TBAMatch2025 : never> {
 		return attempt(() => {
 			if (year === 2025) {
@@ -368,9 +440,25 @@ export class Match {
 			} else throw new Error('Invalid year');
 		});
 	}
+
+	toString() {
+		const compLevelMap: Record<string, string> = {
+			qm: 'Qualifications',
+			qf: 'Quarterfinals',
+			sf: 'Semifinals',
+			f: 'Finals'
+		};
+		const compLevel = compLevelMap[this.tba.comp_level] || this.tba.comp_level;
+		return `${compLevel} Match ${this.tba.match_number}`;
+	}
 }
 
 export class Team {
+	/**
+	 * Fetch a team directly from TBA.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing the team.
+	 */
 	public static getTeam(number: number, force = false) {
 		return attemptAsync(async () => {
 			const tba = (
@@ -393,6 +481,11 @@ export class Team {
 		return this.event.custom;
 	}
 
+	/**
+	 * Fetch matches for this team within the event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing matches.
+	 */
 	public getMatches() {
 		return attemptAsync(async () => {
 			return (await this.event.getMatches())
@@ -401,6 +494,11 @@ export class Team {
 		});
 	}
 
+	/**
+	 * Fetch media items for this team at the event.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing media items.
+	 */
 	public getMedia() {
 		return attemptAsync(async () => {
 			if (this.custom) return [];
@@ -413,6 +511,11 @@ export class Team {
 		});
 	}
 
+	/**
+	 * Fetch the event status for this team.
+	 *
+	 * @returns {ReturnType<typeof attemptAsync>} Result wrapper containing status.
+	 */
 	public getStatus() {
 		return attemptAsync(async () => {
 			if (this.custom) return null;

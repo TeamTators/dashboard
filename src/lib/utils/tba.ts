@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Client-side helpers for TBA requests, caching, and model wrappers.
+ * @description
+ * Provides cached fetch helpers and lightweight model classes for events, matches, and teams.
+ */
+
 import { attempt, attemptAsync, type Result } from 'ts-utils/check';
 import { Requests } from './requests';
 import {
@@ -36,6 +42,14 @@ if (browser) {
 	}, 1000 * 60).start(); // Clean up expired cache entries every minute
 }
 
+/**
+ * Fetches data from the TBA proxy endpoint with optional caching.
+ * @param url - API endpoint path to request.
+ * @param force - Whether to bypass cache lookups.
+ * @param parser - Zod parser for response validation.
+ * @param expires - Cache expiration timestamp to store on success.
+ * @returns A Result that resolves to parsed data or an error.
+ */
 export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expires: Date) => {
 	return attemptAsync<T>(async () => {
 		let cached: T | null = null;
@@ -90,6 +104,13 @@ export const get = <T>(url: string, force: boolean, parser: z.ZodType<T>, expire
 	});
 };
 
+/**
+ * Sends data to the TBA proxy endpoint.
+ * @param url - API endpoint path to post to.
+ * @param data - Payload to send.
+ * @param parser - Zod parser for response validation.
+ * @returns A Result containing the parsed response.
+ */
 const post = <T>(url: string, data: unknown, parser: z.ZodType<T>) => {
 	return Requests.post(url, {
 		cache: false,
@@ -99,8 +120,19 @@ const post = <T>(url: string, data: unknown, parser: z.ZodType<T>) => {
 	});
 };
 
+/**
+ * Wrapper for TBA event data with cached match and team collections.
+ */
 export class TBAEvent {
 	private static _events = new Map<string, TBAEvent>();
+
+	/**
+	 * Retrieves and caches events for a season.
+	 * @param year - Season year to fetch.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result with the season events.
+	 */
 	public static getEvents(year: number, force: boolean, expires: Date) {
 		return attemptAsync(async () => {
 			if (TBAEvent._events.size) return Array.from(TBAEvent._events.values());
@@ -113,6 +145,13 @@ export class TBAEvent {
 		});
 	}
 
+	/**
+	 * Fetches a single event by key, using cached events when available.
+	 * @param eventKey - Event key to fetch.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result with the requested event.
+	 */
 	public static getEvent(eventKey: string, force: boolean, expires: Date) {
 		return attemptAsync(async () => {
 			const has = TBAEvent._events.get(eventKey);
@@ -124,6 +163,11 @@ export class TBAEvent {
 		});
 	}
 
+	/**
+	 * Persists a custom event record through the proxy API.
+	 * @param data - Event data to create.
+	 * @returns A Result indicating success or failure.
+	 */
 	public static createEvent(data: z.infer<typeof EventSchema>) {
 		return post(
 			'/api/tba/event',
@@ -135,10 +179,20 @@ export class TBAEvent {
 		);
 	}
 
+	/**
+	 * Creates a wrapper around raw TBA event data.
+	 * @param tba - Raw event payload from the TBA API.
+	 */
 	constructor(public readonly tba: E) {}
 
 	private _matches: TBAMatch[] | null = null;
 
+	/**
+	 * Loads and caches match data for the event.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result with event matches.
+	 */
 	getMatches(force: boolean, expires: Date) {
 		return attemptAsync(async () => {
 			if (this._matches) return this._matches;
@@ -158,6 +212,12 @@ export class TBAEvent {
 
 	private _teams: TBATeam[] | null = null;
 
+	/**
+	 * Loads and caches team data for the event.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result with event teams.
+	 */
 	getTeams(force: boolean, expires: Date) {
 		return attemptAsync(async () => {
 			if (this._teams) return this._teams;
@@ -175,6 +235,11 @@ export class TBAEvent {
 		});
 	}
 
+	/**
+	 * Updates this event's basic metadata.
+	 * @param data - Updated event data payload.
+	 * @returns A Result indicating success or failure.
+	 */
 	update(data: z.infer<typeof EventSchema>) {
 		return post(
 			'/api/tba/event/' + this.tba.key + '/simple',
@@ -186,6 +251,11 @@ export class TBAEvent {
 		);
 	}
 
+	/**
+	 * Replaces the event's team list.
+	 * @param teams - Teams to set for this event.
+	 * @returns A Result indicating success or failure.
+	 */
 	setTeams(teams: z.infer<typeof TeamSchema>[]) {
 		return post(
 			'/api/tba/event/' + this.tba.key + '/teams/simple',
@@ -197,6 +267,11 @@ export class TBAEvent {
 		);
 	}
 
+	/**
+	 * Replaces the event's match list.
+	 * @param matches - Simplified match payloads to store.
+	 * @returns A Result indicating success or failure.
+	 */
 	setMatches(
 		matches: {
 			number: number;
@@ -218,6 +293,11 @@ export class TBAEvent {
 }
 
 export class TBAMatch {
+	/**
+	 * Creates a wrapper around a raw TBA match.
+	 * @param tba - Raw match payload.
+	 * @param event - Parent event wrapper.
+	 */
 	constructor(
 		public readonly tba: M,
 		public readonly event: TBAEvent
@@ -225,6 +305,12 @@ export class TBAMatch {
 
 	private _teams: [TBATeam, TBATeam, TBATeam, TBATeam, TBATeam, TBATeam] | null = null;
 
+	/**
+	 * Resolves the match teams as `TBATeam` wrappers.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result containing the six teams in match order.
+	 */
 	getTeams(force: boolean, expires: Date) {
 		return attemptAsync<[TBATeam, TBATeam, TBATeam, TBATeam, TBATeam, TBATeam]>(async () => {
 			if (this._teams) return this._teams;
@@ -240,6 +326,11 @@ export class TBAMatch {
 		});
 	}
 
+	/**
+	 * Parses this match into a year-specific schema.
+	 * @param year - Year schema to parse against.
+	 * @returns A Result containing the typed match data.
+	 */
 	asYear<Y extends 2025>(year: Y): Result<Y extends 2025 ? TBAMatch2025 : never> {
 		return attempt(() => {
 			if (year === 2025) {
@@ -249,6 +340,10 @@ export class TBAMatch {
 		});
 	}
 
+	/**
+	 * Formats the match into a human-readable label.
+	 * @returns A display string for this match.
+	 */
 	toString() {
 		switch (this.tba.comp_level) {
 			case 'qm':
@@ -268,6 +363,11 @@ export class TBAMatch {
 }
 
 export class TBATeam {
+	/**
+	 * Creates a wrapper around a raw TBA team.
+	 * @param tba - Raw team payload.
+	 * @param event - Parent event wrapper.
+	 */
 	constructor(
 		public readonly tba: T,
 		public readonly event: TBAEvent
@@ -275,6 +375,12 @@ export class TBATeam {
 
 	private _matches: TBAMatch[] | null = null;
 
+	/**
+	 * Loads and caches matches involving this team.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result with the team's matches for the event.
+	 */
 	getMatches(force: boolean, expires: Date) {
 		return attemptAsync(async () => {
 			if (this._matches) return this._matches;
@@ -288,6 +394,12 @@ export class TBATeam {
 
 	private _media: TBAMedia[] | null = null;
 
+	/**
+	 * Loads and caches media entries for this team at the event.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result containing the team's media list.
+	 */
 	getMedia(force: boolean, expires: Date) {
 		return attemptAsync(async () => {
 			if (this._media) return this._media;
@@ -304,6 +416,12 @@ export class TBATeam {
 
 	private _status: TBATeamEventStatus | null = null;
 
+	/**
+	 * Loads and caches event status for this team.
+	 * @param force - Whether to bypass cache lookups.
+	 * @param expires - Cache expiration timestamp to store on success.
+	 * @returns A Result containing the team's event status.
+	 */
 	getStatus(force: boolean, expires: Date) {
 		return attemptAsync(async () => {
 			if (this._status) return this._status;

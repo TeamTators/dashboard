@@ -1,12 +1,42 @@
+<!--
+@fileoverview Radar chart visualization for a team's keyed numeric metrics.
+
+@component RadarChart
+
+@description
+Renders a Chart.js radar plot where each axis corresponds to a metric name and the value is the
+numeric score for the current team. Optional min/max bounds can be provided for consistent scaling.
+
+@example
+```svelte
+<script lang="ts">
+  import RadarChart from '$lib/components/charts/RadarChart.svelte';
+  import type { TBATeam } from '$lib/utils/tba';
+
+  let team: TBATeam;
+  const data = { speed: 4, defense: 2, shooting: 5 };
+
+  let chartRef: RadarChart<typeof data> | undefined;
+  const copyChart = () => chartRef?.copy(true);
+</script>
+
+<RadarChart bind:this={chartRef} {team} {data} opts={{ min: 0, max: 6 }} />
+```
+-->
 <script lang="ts" generics="T extends Record<string, number>">
 	import { onMount } from 'svelte';
 	import { TBATeam } from '$lib/utils/tba';
 	import Chart from 'chart.js/auto';
 	import { copyCanvas } from '$lib/utils/clipboard';
+	import { type Readable, get } from 'svelte/store';
 
+	/** Component props for `RadarChart`. */
 	interface Props {
+		/** Team whose metrics are displayed. */
 		team: TBATeam;
-		data: T;
+		/** Metric values keyed by display label. */
+		data: Readable<T>;
+		/** Optional min/max for the radial scale. */
 		opts?: {
 			max?: number;
 			min?: number;
@@ -17,12 +47,25 @@
 	let chartCanvas: HTMLCanvasElement;
 	let chartInstance: Chart;
 
-	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
+	// for ([keys, str] in Object.entries(YearInfo2025.actions)) {
+	// }
 
-	const render = () => {
+	/**
+	 * Copy the chart canvas to the clipboard.
+	 *
+	 * @example
+	 * ```ts
+	 * chartRef.copy(true);
+	 * ```
+	 */
+	export const copy = (notify: boolean) => copyCanvas(chartCanvas, notify);
+	const destroy = () => {
 		if (chartInstance) {
 			chartInstance.destroy();
 		}
+	};
+	const render = (data: T) => {
+		destroy();
 
 		chartInstance = new Chart(chartCanvas, {
 			type: 'radar',
@@ -53,18 +96,17 @@
 							backdropColor: 'rgba(0, 0, 0, 0)'
 						}
 					}
-				}
+				},
+				responsive: true
 			}
 		});
 	};
 
 	onMount(() => {
-		render();
-		return () => {
-			if (chartInstance) {
-				chartInstance.destroy();
-			}
-		};
+		setTimeout(() => {
+			render(get(data));
+		});
+		return data.subscribe(render);
 	});
 </script>
 

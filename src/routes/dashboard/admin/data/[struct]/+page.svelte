@@ -587,7 +587,7 @@ Admin struct data page at `/dashboard/admin/data/[struct]`.
 									class="form-control"
 									id="create-{key}"
 									placeholder="Placeholder"
-									bind:value={editStage.data[key]}
+									bind:value={$editStage[key]}
 								/>
 								<label for="create-{key}" class="ms-3">
 									{capitalize(fromCamelCase(key))}
@@ -596,7 +596,7 @@ Admin struct data page at `/dashboard/admin/data/[struct]`.
 						{:else if value === 'date'}
 							<div class="form-floating">
 								<Flatpickr
-									value={editStage.data[key] as Date}
+									value={$editStage[key] as Date}
 									onChange={(date) => {
 										(editStage.data as any)[key] = date;
 									}}
@@ -606,14 +606,33 @@ Admin struct data page at `/dashboard/admin/data/[struct]`.
 								/>
 								<label for="create-{key}" class="ms-3">{capitalize(fromCamelCase(key))}</label>
 							</div>
-						{:else if value === 'number'}
+						{:else if value === 'real'}
 							<div class="form-floating">
 								<input
 									type="number"
 									class="form-control"
 									id="create-{key}"
 									placeholder="Placeholder"
-									bind:value={editStage.data[key]}
+									bind:value={$editStage[key]}
+								/>
+								<label for="create-{key}" class="ms-3">
+									{capitalize(fromCamelCase(key))}
+								</label>
+							</div>
+						{:else if value === 'integer'}
+							<div class="form-floating">
+								<input
+									type="number"
+									class="form-control"
+									id="create-{key}"
+									placeholder="Placeholder"
+									bind:value={$editStage[key]}
+									oninput={(e) => {
+										const val = parseInt((e.target as HTMLInputElement).value, 10);
+										if (!isNaN(val)) {
+											(editStage.data as any)[key] = val;
+										}
+									}}
 								/>
 								<label for="create-{key}" class="ms-3">
 									{capitalize(fromCamelCase(key))}
@@ -623,27 +642,18 @@ Admin struct data page at `/dashboard/admin/data/[struct]`.
 							<div class="form-label mb-2">{capitalize(fromCamelCase(key))}</div>
 							<div class="btn-group" role="group" aria-label="Boolean toggle">
 								<input
-									type="radio"
-									class="btn-check"
+									type="checkbox"
 									name="btnradio-{key}"
-									id="btnradio-{key}-true"
-									autocomplete="off"
-									checked={(editStage.data as any)[key] === true}
-									onchange={() => ((editStage.data as any)[key] = true)}
-								/>
-								<label class="btn btn-outline-primary" for="btnradio-{key}-true">True</label>
-
-								<input
-									type="radio"
+									id="btnradio-{key}-checkbox"
 									class="btn-check"
-									name="btnradio-{key}"
-									id="btnradio-{key}-false"
-									autocomplete="off"
-									checked={(editStage.data as any)[key] === false}
-									onchange={() => ((editStage.data as any)[key] = false)}
+									bind:checked={$editStage[key] as boolean}
 								/>
-								<label class="btn btn-outline-primary" for="btnradio-{key}-false">False</label>
+								<label class="btn btn-outline-primary" for="btnradio-{key}-checkbox"
+									>Toggle ({$editStage[key] ? 'True' : 'False'})</label
+								>
 							</div>
+						{:else}
+							<div>Unsupported field type: {value}</div>
 						{/if}
 					</div>
 				{/each}

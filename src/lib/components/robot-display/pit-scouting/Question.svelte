@@ -1,3 +1,17 @@
+<!--
+@fileoverview Read-only pit-scouting question display with answer attribution.
+
+@component PitScoutingQuestion
+
+@description
+Shows the question key and answer value, with a tooltip indicating which account provided
+the answer.
+
+@example
+```svelte
+<Question {question} {answer} {answerAccounts} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
@@ -5,8 +19,11 @@
 	import { Account } from '$lib/model/account';
 
 	interface Props {
+		/** Question definition being rendered. */
 		question: Scouting.PIT.QuestionData;
+		/** Answer record for the question (if any). */
 		answer: Scouting.PIT.AnswerData | undefined;
+		/** Accounts that may have submitted the answer. */
 		answerAccounts: Account.AccountData[];
 	}
 

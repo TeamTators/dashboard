@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Event server endpoint for compressed match submissions.
+ * @description
+ * Decompresses payloads and upserts match scouting, traces, and comments.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { z } from 'zod';
 import terminal from '$lib/server/utils/terminal';
@@ -10,6 +16,11 @@ import { str } from '$lib/server/utils/env.js';
 import { decompress } from '$lib/server/utils/compression';
 import type { RequestEvent } from './$types';
 
+/**
+ * Handles compressed match submissions from the event server.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with success status and message.
+ */
 export const POST = async (event: RequestEvent) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');
@@ -50,7 +61,11 @@ export const POST = async (event: RequestEvent) => {
 					text: z.string(),
 					color: z.string()
 				})
-			)
+			),
+			flagForReview: z.object({
+				flagged: z.boolean(),
+				reason: z.string()
+			})
 		})
 		.safeParse(decompress(Buffer.from(body)).unwrap());
 
@@ -75,7 +90,8 @@ export const POST = async (event: RequestEvent) => {
 		alliance,
 		group,
 		remote,
-		sliders
+		sliders,
+		flagForReview
 	} = parsed.data;
 
 	const year = Number(/(\d+)/.exec(eventKey)?.[1]);
@@ -127,7 +143,9 @@ export const POST = async (event: RequestEvent) => {
 			checks: JSON.stringify(checks),
 			alliance: alliance ? alliance : 'unknown',
 			year,
-			sliders: JSON.stringify(sliders)
+			sliders: JSON.stringify(sliders),
+			flagForReview: flagForReview.flagged,
+			flagReason: flagForReview.reason
 		});
 		if (update.isErr()) {
 			terminal.error('Error updating match scouting', update.error);
@@ -156,7 +174,10 @@ export const POST = async (event: RequestEvent) => {
 			scoutUsername: scout,
 			alliance: alliance ? alliance : 'unknown',
 			year,
-			sliders: JSON.stringify(sliders)
+			sliders: JSON.stringify(sliders),
+			flagForReview: flagForReview.flagged,
+			flagReason: flagForReview.reason,
+			trustScore: 1
 		});
 		if (create.isErr()) {
 			terminal.error('Error creating match scouting', create.error);

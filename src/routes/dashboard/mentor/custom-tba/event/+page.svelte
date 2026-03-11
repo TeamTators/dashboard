@@ -1,3 +1,9 @@
+<!--
+@component
+Custom TBA event creation form.
+
+Validates event keys and dates, and creates a new custom event.
+-->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { TBAEvent } from '$lib/utils/tba';

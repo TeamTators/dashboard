@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Event server endpoint for submitting a single match record.
+ * @description
+ * Validates payloads and upserts match scouting, traces, and comments.
+ */
+
 import { Scouting } from '$lib/server/structs/scouting.js';
 import { z } from 'zod';
 import terminal from '$lib/server/utils/terminal';
@@ -8,6 +14,11 @@ import { Err, resolveAll } from 'ts-utils/check';
 import { Logs } from '$lib/server/structs/log.js';
 import { str } from '$lib/server/utils/env.js';
 
+/**
+ * Handles a single match submission from the event server.
+ * @param event - SvelteKit request event.
+ * @returns A JSON response with success status and message.
+ */
 export const POST = async (event) => {
 	terminal.log('Event server request', event.request.url);
 	const header = event.request.headers.get('X-API-KEY');
@@ -48,7 +59,11 @@ export const POST = async (event) => {
 					text: z.string(),
 					color: z.string()
 				})
-			)
+			),
+			flagForReview: z.object({
+				flagged: z.boolean(),
+				reason: z.string()
+			})
 		})
 		.safeParse(body);
 
@@ -70,6 +85,7 @@ export const POST = async (event) => {
 		scout,
 		prescouting,
 		// practice,
+		flagForReview,
 		alliance,
 		group,
 		remote,
@@ -154,7 +170,10 @@ export const POST = async (event) => {
 			scoutUsername: scout,
 			alliance: alliance ? alliance : 'unknown',
 			year,
-			sliders: JSON.stringify(sliders)
+			sliders: JSON.stringify(sliders),
+			flagForReview: flagForReview.flagged,
+			flagReason: flagForReview.reason,
+			trustScore: 0
 		});
 		if (create.isErr()) {
 			terminal.error('Error creating match scouting', create.error);

@@ -1,3 +1,18 @@
+<!--
+@fileoverview Full match scouting display with media, charts, and actions.
+
+@component MatchDisplay
+
+@description
+Renders a comprehensive view of a match: videos, contribution chart, comments, checks,
+actions, endgame, trace replay, and administrative actions like archiving or restoring
+older versions.
+
+@example
+```svelte
+<MatchDisplay {match} {team} {event} {scouting} strategies={[]} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import { onMount } from 'svelte';
@@ -9,20 +24,26 @@
 	import { dateTime } from 'ts-utils/clock';
 	import MatchActions from './MatchActions.svelte';
 	import MatchEndgame from './MatchEndgame.svelte';
-	import { confirm, select } from '$lib/utils/prompts';
+	import { confirm } from '$lib/utils/prompts';
 	import MatchContribution from '../charts/MatchContribution.svelte';
 	import type { Strategy } from '$lib/model/strategy';
-	import { goto } from '$app/navigation';
 	import Slider from './Slider.svelte';
 	import TraceHTML from './TraceHTML.svelte';
+	import StrategyGrid from '../strategy/StrategyGrid.svelte';
 
 	interface Props {
+		/** TBA match for display and media. */
 		match: TBAMatch;
+		/** Optional scouting record (may be undefined). */
 		scouting?: Scouting.MatchScoutingExtended;
+		/** Team being displayed. */
 		team: TBATeam;
 		// focus: Focus;
+		/** Event context for navigation and scoring. */
 		event: TBAEvent;
-		strategies?: Strategy.StrategyData[];
+		/** Optional strategies for quick navigation. */
+		strategies?: Strategy.StrategyArr;
+		/** Optional scout username override. */
 		scout?: string;
 	}
 
@@ -50,12 +71,44 @@
 		<div class="row mb-3">
 			<div class="col">
 				{#if scout}
-					<h4>Scouted by: {scout}</h4>
+					<h4>Scouted by: <span class="text-primary">{scout}</span></h4>
 				{:else}
-					<h4>Scouted by: {scouting.scouting.data.scoutUsername}</h4>
+					<h4>
+						Scouted by: <span class="text-primary">{scouting.scouting.data.scoutUsername}</span>
+					</h4>
 				{/if}
 			</div>
 		</div>
+		{#if scouting.scouting.data.flagForReview}
+			<div class="row mb-3">
+				<div class="alert alert-warning">
+					<div class="d-flex align-items-center mb-2">
+						<i class="material-icons text-warning" style="font-size: 36px; margin-right: 10px;">
+							flag
+						</i>
+						<p>
+							<strong>Flagged for review:</strong>
+							{scouting.scouting.data.flagReason}
+							<br />
+							<i class="text-muted text-small">
+								This match has been flagged for review. Please investigate the reason and make any
+								necessary corrections.
+							</i>
+						</p>
+					</div>
+					<button
+						type="button"
+						class="btn btn-outline-success"
+						onclick={async () => {
+							await scouting.scouting.update((d) => ({ ...d, flagForReview: false }));
+							location.reload();
+						}}
+					>
+						<i class="material-icons">check</i> Mark as Reviewed
+					</button>
+				</div>
+			</div>
+		{/if}
 		<div class="row mb-3">
 			{#each match.tba.videos || [] as video}
 				<div class="col-md-6">
@@ -80,24 +133,22 @@
 			{/each}
 		</div>
 		<div class="row mb-3">
-			<div class="col-md-6 h-100">
-				<div class="card layer-1 h-100">
-					<div class="card-body h-100">
-						<MatchContribution {match} {scouting} {team} {event} style="height: 321px" />
-					</div>
-				</div>
-				<div class="card h-100">
-					<div class="card-body">
-						<h5 class="text-center">Stats</h5>
-						<h6>Average Velocity: {avgvelocity()} ft/sec</h6>
-					</div>
+			<div class="card layer-1 h-100">
+				<div class="card-body h-100">
+					<MatchContribution {match} {scouting} {team} {event} style="height: 321px" />
 				</div>
 			</div>
-			<div class="col-md-6 h-100">
-				<div class="card layer-1 h-100">
-					<div class="card-body h-100">
-						<MatchComments {scouting} />
-					</div>
+			<div class="card h-100">
+				<div class="card-body">
+					<h5 class="text-center">Stats</h5>
+					<h6>Average Velocity: {avgvelocity()} ft/sec</h6>
+				</div>
+			</div>
+		</div>
+		<div class="row mb-3">
+			<div class="card layer-1 h-100">
+				<div class="card-body h-100">
+					<MatchComments {scouting} />
 				</div>
 			</div>
 		</div>
@@ -133,10 +184,10 @@
 			<TraceHTML {scouting} />
 		</div>
 		<div class="row mb-3">
-			<div class="col-12">
+			<div class="d-flex justify-content-end">
 				<div class="btn-group" role="group">
 					<button
-						class="btn btn-warning"
+						class="btn btn-warning me-2"
 						type="button"
 						onclick={async () => {
 							if (
@@ -150,25 +201,37 @@
 					>
 						<i class="material-icons"> archive </i> Archive Scouting Data
 					</button>
-					{#if strategies && strategies.length}
-						<button
-							type="button"
-							class="btn btn-primary"
-							onclick={async () => {
-								if (!strategies) return;
-								const s = await select('Select a strategy to view', strategies, {
-									render: (s) => String(s.data.name),
-									title: 'Select a strategy'
-								});
-								if (!s) return;
-								goto(`/dashboard/event/${event.tba.key}/strategy/${s.data.id}`);
-							}}
-						>
-							<i class="material-icons"> auto_graph </i>
-							Open Strategy ({strategies.length})
-						</button>
-					{/if}
 				</div>
+				{#if scouting.scouting.data.flagForReview}
+					<button
+						type="button"
+						class="btn btn-outline-success"
+						onclick={async () => {
+							await scouting.scouting.update((d) => ({ ...d, flagForReview: false }));
+							location.reload();
+						}}
+					>
+						<i class="material-icons">check</i> Mark as Reviewed
+					</button>
+				{:else}
+					<button
+						type="button"
+						class="btn btn-outline-warning"
+						onclick={async () => {
+							await scouting.scouting.update((d) => ({ ...d, flagForReview: true }));
+							location.reload();
+						}}
+					>
+						<i class="material-icons">flag</i> Flag for Review
+					</button>
+				{/if}
+			</div>
+		</div>
+		<div class="row mb-3">
+			<div class="col-12">
+				{#if strategies}
+					<StrategyGrid {strategies} />
+				{/if}
 			</div>
 		</div>
 		{#if $versions.length}

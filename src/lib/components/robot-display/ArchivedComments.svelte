@@ -1,3 +1,16 @@
+<!--
+@fileoverview Table view of archived team comments with restore actions.
+
+@component ArchivedComments
+
+@description
+Renders a grid of archived comments and allows restoring a comment via a context menu action.
+
+@example
+```svelte
+<ArchivedComments {team} {event} {comments} {scouting} />
+```
+-->
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
 	import Grid from '../general/Grid.svelte';
@@ -7,9 +20,13 @@
 	import { NumberFilterModule, TextFilterModule } from 'ag-grid-community';
 
 	interface Props {
+		/** Team number for context. */
 		team: number;
+		/** Event key for context. */
 		event: string;
+		/** Archived comments to display. */
 		comments: Scouting.TeamCommentsData[];
+		/** Scouting data used to resolve match numbers. */
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
