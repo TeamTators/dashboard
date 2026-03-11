@@ -1,7 +1,0 @@
-name: edit-potato-level
-structs:
-  - potato_friend
-permissions:
-  - potato_friend:update:level
-pages: []
-group: Potatoes

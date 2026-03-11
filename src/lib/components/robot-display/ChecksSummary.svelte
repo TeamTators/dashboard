@@ -11,7 +11,7 @@ Aggregates a map of check arrays into a frequency table and renders each check w
 <ChecksSummary checks={{ alice: ['autoMobility'], bob: ['autoMobility', 'parked'] }} />
 ```
 -->
-<script lang="ts">
+<!-- <script lang="ts">
 	interface Props {
 		/** Map of check lists keyed by user or source. */
 		checks: {
@@ -36,13 +36,25 @@ Aggregates a map of check arrays into a frequency table and renders each check w
 				{} as { [key: string]: number }
 			)
 	);
+</script> -->
+
+<script lang="ts">
+	import { Scouting } from '$lib/model/scouting';
+
+	interface Props {
+		scouting: Scouting.MatchScoutingExtendedArr;
+	}
+
+	const { scouting }: Props = $props();
+
+	const checks = $derived(scouting.checksSummary(true));
 </script>
 
 <ul class="list">
-	{#each Object.entries(data) as [user, count]}
+	{#each Object.entries($checks) as [check, count]}
 		<li class="list-item">
 			<div class="d-flex justify-content-between">
-				<span class="list-item-title">{user}</span>
+				<span class="list-item-title">{check}</span>
 				<span class="list-item-count">{count}</span>
 			</div>
 		</li>

@@ -5,7 +5,7 @@
  * Defines Drizzle-backed Structs for match scouting, team comments, and pit scouting,
  * plus helpers for retrieval and summary generation.
  */
-import { boolean } from 'drizzle-orm/pg-core';
+import { boolean, real } from 'drizzle-orm/pg-core';
 import { integer } from 'drizzle-orm/pg-core';
 import { text } from 'drizzle-orm/pg-core';
 import { Struct } from 'drizzle-struct';
@@ -19,6 +19,7 @@ import { Account } from './account';
 import { Trace } from 'tatorscout/trace';
 import { debounce } from 'ts-utils';
 import { FIRST } from './FIRST';
+import structRegistry from '../services/struct-registry';
 
 export namespace Scouting {
 	export const MatchScouting = new Struct({
@@ -52,7 +53,13 @@ export namespace Scouting {
 			/** Competition year. */
 			year: integer('year').notNull().default(0),
 			/** Serialized sliders payload. */
-			sliders: text('sliders').notNull().default('{}')
+			sliders: text('sliders').notNull().default('{}'),
+			/** If the scout wants to flag this record for review. */
+			flagForReview: boolean('flag_for_review').notNull().default(false),
+			/** Reason for flagging the record. */
+			flagReason: text('flag_reason').notNull().default(''),
+			/** Score from 0-1 how much we trust this submission (judged as an alliance) */
+			trustScore: real('trust_score').notNull().default(1)
 		},
 		versionHistory: {
 			type: 'versions',
@@ -65,6 +72,8 @@ export namespace Scouting {
 			}
 		}
 	});
+
+	structRegistry.register(MatchScouting);
 
 	export type MatchScoutingData = typeof MatchScouting.sample;
 
@@ -175,7 +184,7 @@ export namespace Scouting {
 	const genDebounce = debounce(
 		(...args: unknown[]) => {
 			const [match] = args as [MatchScoutingData];
-			if (![2024, 2025].includes(match.data.year)) return;
+			if (![2024, 2025].includes(match.data?.year)) return;
 			FIRST.generateSummary(match.data.eventKey, match.data.year as 2024 | 2025);
 		},
 		1 * 1000 * 60
@@ -325,6 +334,8 @@ export namespace Scouting {
 		}
 	});
 
+	structRegistry.register(TeamComments);
+
 	/**
 	 * Fetch archived comments for a specific event.
 	 *
@@ -377,6 +388,8 @@ export namespace Scouting {
 		});
 		export type SectionData = typeof Sections.sample;
 
+		structRegistry.register(Sections);
+
 		Sections.on('delete', async (data) => {
 			Groups.get(
 				{ sectionId: data.id },
@@ -401,6 +414,8 @@ export namespace Scouting {
 				amount: 3
 			}
 		});
+
+		structRegistry.register(Groups);
 
 		export type GroupData = typeof Groups.sample;
 
@@ -447,6 +462,8 @@ export namespace Scouting {
 			}
 		});
 
+		structRegistry.register(Questions);
+
 		export type QuestionData = typeof Questions.sample;
 
 		Questions.on('delete', async (data) => {
@@ -481,6 +498,8 @@ export namespace Scouting {
 				}
 			}
 		});
+
+		structRegistry.register(Answers);
 
 		export type AnswerData = typeof Answers.sample;
 

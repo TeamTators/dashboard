@@ -36,7 +36,9 @@ export const GET = async (event) => {
 				error: res.error.message
 			});
 
-		return json(res.value);
+		return json({
+			summary: res.value,
+		});
 	}
 
 	if (year === 2026) {
@@ -53,7 +55,9 @@ export const GET = async (event) => {
 				error: res.error.message
 			});
 
-		return json(res.value);
+		return json({
+			summary: res.value,
+		});
 	}
 
 	throw fail(ServerCode.badRequest, {
