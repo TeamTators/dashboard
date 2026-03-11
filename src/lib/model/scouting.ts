@@ -274,7 +274,7 @@ export namespace Scouting {
 		getChecks(reactive: true): WritableBase<string[]>;
 		getChecks(reactive: boolean): Result<string[]> | WritableBase<string[]> {
 			if (reactive) {
-				return this.derive((data) => {
+				return this.derived((data) => {
 					const res = z.array(z.string()).safeParse(JSON.parse(data.scouting.data.checks || '[]'));
 					if (res.success) {
 						return res.data;
@@ -324,7 +324,7 @@ export namespace Scouting {
 			| Result<Record<string, { value: number; text: string; color: string }>>
 			| WritableBase<Record<string, { value: number; text: string; color: string }>> {
 			if (reactive) {
-				return this.derive((data) => {
+				return this.derived((data) => {
 					const res = z
 						.record(
 							z.string(),
@@ -416,7 +416,7 @@ export namespace Scouting {
 				return labels;
 			};
 			if (reactive) {
-				return this.derive(get);
+				return this.derived(get);
 			} else {
 				return attempt(() => {
 					return get(this.data);
@@ -515,7 +515,7 @@ export namespace Scouting {
 		checksSummary(reactive: true): WritableBase<Record<string, number>>;
 		checksSummary(reactive: boolean) {
 			if (reactive) {
-				return this.derive((data) => {
+				return this.derived((data) => {
 					const result: Record<string, number> = {};
 					for (const ms of data) {
 						const checks = ms.getChecks(false);
@@ -593,7 +593,7 @@ export namespace Scouting {
 			};
 
 			if (reactive) {
-				return this.derive(get);
+				return this.derived(get);
 			} else {
 				return attempt(() => get(this.data));
 			}
@@ -666,7 +666,7 @@ export namespace Scouting {
 			};
 
 			if (reactive) {
-				return this.derive(get);
+				return this.derived(get);
 			} else {
 				return attempt(() => {
 					return get(this.data);
@@ -694,7 +694,7 @@ export namespace Scouting {
 				);
 			};
 
-			if (reactive) return this.derive(get);
+			if (reactive) return this.derived(get);
 			else return attempt(() => get(this.data));
 		}
 
@@ -718,7 +718,7 @@ export namespace Scouting {
 				);
 			};
 
-			if (reactive) return this.derive(get);
+			if (reactive) return this.derived(get);
 			else return attempt(() => get(this.data));
 		}
 

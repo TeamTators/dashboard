@@ -73,7 +73,7 @@ whenever the scouting store updates, ensuring the visual stays in sync with inco
 	export const copy = (notify: boolean) => copyCanvas(canvas, notify);
 
 	const frequencyDataset = $derived(
-		scouting.derive((matches) => {
+		scouting.derived((matches) => {
 			const yearInfo = Scouting.getYearInfo(event.tba.year);
 			if (yearInfo.isErr()) {
 				console.error(`Failed to get year info for ${event.tba.year}: ${yearInfo.error}`);
@@ -101,7 +101,7 @@ whenever the scouting store updates, ensuring the visual stays in sync with inco
 		})
 	);
 	const pointDataset = $derived(
-		scouting.derive((matches) => {
+		scouting.derived((matches) => {
 			const yearInfo = Scouting.getYearInfo(event.tba.year);
 			if (yearInfo.isErr()) {
 				console.error(`Failed to get year info for ${event.tba.year}: ${yearInfo.error}`);
