@@ -6,6 +6,7 @@
 
 import YearInfo2025 from 'tatorscout/years/2025.js';
 import { Aggregators } from 'tatorscout/summary';
+import { Scouting } from '$lib/model/scouting.ts';
 
 /**
  * Summary configuration for 2025 trace data.
@@ -114,9 +115,17 @@ const summary2025 = YearInfo2025.summary({
 	},
 	Stats: {
 		'Average Total Points': ({ scoring }) => Aggregators.average(scoring.map((d) => d.total)),
-		'Average Velocity': ({ traces }) => Aggregators.average(traces.map((t) => t.averageVelocity())),
+		'Average Velocity': ({ traces }) =>
+			Aggregators.average(traces.map((t) => t.averageVelocity(Scouting.VELOCITY_CONFIG))),
 		'Average Seconds Not Moving': ({ traces }) =>
-			Aggregators.average(traces.map((t) => t.secondsNotMoving()))
+			Aggregators.average(
+				traces.map((t) =>
+					t.secondsNotMoving({
+						...Scouting.VELOCITY_CONFIG,
+						threshold: 1
+					})
+				)
+			)
 	}
 });
 

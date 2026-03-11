@@ -22,6 +22,7 @@ import YearInfo2026 from 'tatorscout/years/2026.js';
 import * as remote from '$lib/remotes/scouting.remote';
 import type { ParsedBreakdown } from 'tatorscout/years';
 import type { TBAEvent } from '$lib/utils/tba';
+import { $Math } from 'ts-utils';
 
 /**
  * Client-side scouting models, helpers, and batch utilities.
@@ -32,6 +33,12 @@ import type { TBAEvent } from '$lib/utils/tba';
  * const avg = Scouting.getAverageVelocity(extended.data);
  */
 export namespace Scouting {
+	export const VELOCITY_CONFIG = {
+		maxVel: 20,
+		rolloff: true,
+		rolloffVel: 25
+	} as const;
+
 	/**
 	 * Client Struct for match scouting entries.
 	 *
@@ -153,8 +160,7 @@ export namespace Scouting {
 				trace
 			});
 
-			// pipe all events into this class
-			this.onAllUnsubscribe(scouting.subscribe(() => this.inform()));
+			this.pipe(scouting);
 		}
 
 		/**
@@ -234,7 +240,7 @@ export namespace Scouting {
 		 * const avg = ext.averageVelocity;
 		 */
 		get averageVelocity() {
-			return this.data.trace.averageVelocity();
+			return this.data.trace.averageVelocity(VELOCITY_CONFIG);
 		}
 
 		/**
@@ -244,7 +250,10 @@ export namespace Scouting {
 		 * const idleSeconds = ext.secondsNotMoving;
 		 */
 		get secondsNotMoving() {
-			return this.data.trace.secondsNotMoving();
+			return this.data.trace.secondsNotMoving({
+				...VELOCITY_CONFIG,
+				threshold: 1
+			});
 		}
 
 		/**
@@ -257,6 +266,9 @@ export namespace Scouting {
 			return String(this.data.scouting.data.id);
 		}
 
+		velocityHistogram() {
+			return this.trace.velocityHistogram(VELOCITY_CONFIG);
+		}
 		/**
 		 * Parse the checks array from the record.
 		 *
@@ -737,8 +749,50 @@ export namespace Scouting {
 				return teams.find((t) => t.tba.team_number === this.team);
 			});
 		}
+
+		velocityHistogram(bins: number) {
+			const histogramWritable = new WritableBase<{
+				labels: number[]; // X axis lables
+				bins: number[]; // X axis containers for Y axis values
+			}>({
+				// initial values
+				labels: [],
+				bins: []
+			});
+			histogramWritable.onAllUnsubscribe(
+				this.subscribe((matches) => {
+					// rerender the histogram whenever the match array has changed
+					let labels: number[] = []; // X axis labels
+					const histogram: number[] = new Array<number>(bins).fill(0); // start at 0 for each bin
+					for (const match of matches) {
+						const matchHistogram = match.velocityHistogram();
+
+						if (
+							// force max velocity to be the highest value from all matches
+							matchHistogram.labels[matchHistogram.labels.length - 1] >
+							(labels[labels.length - 1] || 0)
+						) {
+							labels = matchHistogram.labels;
+						}
+
+						for (let i = 0; i < matchHistogram.bins.length; i++) {
+							histogram[i] += matchHistogram.bins[i]; // sum up the bins from each match
+						}
+					}
+
+					histogramWritable.set({
+						bins: histogram, // Y axis values
+						labels: labels.map((l) => Math.ceil(l))
+					});
+				})
+			);
+			return histogramWritable; //returns the number array in histogram and the labels
+		}
 	}
 
+	export const getAverageVelocity = (data: MatchScoutingExtended[]) => {
+		return $Math.average(data.map((d) => d.data.trace.averageVelocity(VELOCITY_CONFIG)));
+	};
 	/**
 	 * Compute the average velocity across a set of scouting traces.
 	 *

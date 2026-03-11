@@ -29,6 +29,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 	import { Scouting } from '$lib/model/scouting.js';
 	import StartLocationHeatmap from '$lib/components/robot-display/StartLocationHeatmap.svelte';
 	import Ranking from '$lib/components/robot-display/Ranking.svelte';
+	import VelocityHistogram from '$lib/components/charts/VelocityHistogram.svelte';
 	import ActionHeatmap from '$lib/components/robot-display/ActionHeatmap.svelte';
 	import RadarCapabilityChart from '$lib/components/charts/RadarCapabilityChart.svelte';
 
@@ -554,6 +555,46 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			}
 		}
 	});
+
+	const velocityHistogram = new Dashboard.Card({
+		name: 'Velocity Histogram',
+		icon: {
+			type: 'material-icons',
+			name: 'speed'
+		},
+		id: 'velocity_histogram',
+		size: {
+			width: 4,
+			height: 1,
+			lg: {
+				width: 8,
+				height: 1
+			},
+			md: {
+				width: 8,
+				height: 1
+			},
+			sm: {
+				width: 12,
+				height: 1
+			},
+			xs: {
+				width: 12,
+				height: 1
+			}
+		}
+	});
+
+	// const actionHeatmap = new Dashboard.Card({
+	// 	name: 'Action Heatmap',
+	// 	iconType: 'material-icons',
+	// 	icon: 'layers',
+	// 	id: 'heatmap',
+	// 	size: {
+	// 		width: 1,
+	// 		height: 1,
+	// 	}
+	// });
 	let dashboard = $derived(
 		new Dashboard.Dashboard({
 			name: `Robot Display: ${data.team.team_number} - ${data.team.nickname}`,
@@ -561,7 +602,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				summary,
 				picturesCard,
 				commentsCard,
-				actionHeatmap,
+				// actionHeatmap,
 				pitScouting,
 				matchViewer,
 				progress,
@@ -569,7 +610,8 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				scoutSummary,
 				checksSummary,
 				radarChart,
-				startLocation
+				startLocation,
+				velocityHistogram
 			],
 			id: 'robot-display'
 		})
@@ -582,14 +624,15 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 				summary,
 				picturesCard,
 				commentsCard,
-				actionHeatmap,
+				// actionHeatmap,
 				pitScouting,
 				matchViewer,
 				progress,
 				eventStats,
 				checksSummary,
 				radarChart,
-				startLocation
+				startLocation,
+				velocityHistogram
 			],
 			id: 'robot-display'
 		});
@@ -850,6 +893,11 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			<Card card={actionHeatmap}>
 				{#snippet body()}
 					<ActionHeatmap scouting={scoutingArr} year={event.tba.year} doButtons={true} />
+				{/snippet}
+			</Card>
+			<Card card={velocityHistogram}>
+				{#snippet body()}
+					<VelocityHistogram scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 		{/key}
