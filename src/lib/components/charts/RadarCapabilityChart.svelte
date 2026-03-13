@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Scouting } from '$lib/model/scouting';
 	import type { TBATeam } from '$lib/utils/tba';
+	import { writable } from 'svelte/store';
 	import RadarChart from './RadarChart.svelte';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		scouting: Scouting.MatchScoutingExtendedArr;
@@ -22,7 +24,7 @@
 
 	let min = $derived(yearOpts[team.event.tba.year][0] ?? 0);
 	let max = $derived(yearOpts[team.event.tba.year][1] ?? 10);
-	const data = $derived(scouting.contribution(year, true, 'average'));
+	let data = $state(writable({}));
 
 	/**
 	 * Copy the chart to the clipboard.
@@ -37,6 +39,12 @@
 	};
 
 	let chart: RadarChart<Record<string, number>> | undefined = $state(undefined);
+
+	onMount(() => {
+		scouting.contribution(year, true, 'average').then((res) => {
+			if (res.isOk()) data = res.value;
+		});
+	});
 </script>
 
 {#key data}

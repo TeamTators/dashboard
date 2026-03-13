@@ -42,7 +42,7 @@ future chart should visualize once implemented.
 	 * Render the chart for the given teams and event.
 	 * Destroys previous chart instance and updates staticY if needed.
 	 */
-	const render = () => {
+	const render = async () => {
 		if (chart) chart.destroy();
 
 		const yearInfo = Scouting.getYearInfo(event.tba.year);
@@ -58,24 +58,26 @@ future chart should visualize once implemented.
 			type: 'bar',
 			data: {
 				labels: Object.values(actions),
-				datasets: teams.map((team) => {
-					return {
-						data: Object.values(actions).map((key) => {
-							const contribution = team.contribution(event.tba.year, false, type);
-							if (contribution.isErr()) {
-								console.error(
-									`Error calculating contribution for team ${team.team}:`,
-									contribution.error
-								);
-								return 0;
-							}
-							const val = contribution.value[key] || 0;
-							maxValue[key] += val;
-							return val;
-						}),
-						label: `Team ${team.team} (${type})`
-					};
-				})
+				datasets: await Promise.all(
+					teams.map(async (team) => {
+						const contribution = await team.contribution(event.tba.year, false, type);
+						return {
+							data: Object.values(actions).map((key) => {
+								if (contribution.isErr()) {
+									console.error(
+										`Error calculating contribution for team ${team.team}:`,
+										contribution.error
+									);
+									return 0;
+								}
+								const val = contribution.value[key] || 0;
+								maxValue[key] += val;
+								return val;
+							}),
+							label: `Team ${team.team} (${type})`
+						};
+					})
+				)
 			},
 			options: {
 				scales: {

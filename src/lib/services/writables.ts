@@ -259,10 +259,10 @@ export class WritableBase<T> implements Writable<T> {
 	 * source.set(42); // target will update to "Number is: 42"
 	 * ```
 	 */
-	pipeData<Target>(target: Writable<Target>, transform: (data: Target) => T): void {
+	pipeData<Target>(target: Writable<Target>, transform: (data: Target) => T | Promise<T>): void {
 		this.onAllUnsubscribe(
-			target.subscribe((data) => {
-				this.data = transform(data);
+			target.subscribe(async(data) => {
+				this.data = await transform(data);
 			})
 		);
 	}
@@ -385,6 +385,18 @@ export class WritableBase<T> implements Writable<T> {
 		const derived = new WritableBase<U>(transform(this.data), config);
 		derived.pipeData(this, transform);
 		return derived;
+	}
+
+	derivedAsync<U>(
+		transform: (data: T) => Promise<U>,
+		config?: { debounceMs?: number; debug?: boolean; informType?: 'immediate' | 'debounced' }
+	) {
+		return attemptAsync(async () => {
+			const initial = await transform(this.data);
+			const derived = new WritableBase<U>(initial, config);
+			derived.pipeData(this, transform);
+			return derived;
+		});
 	}
 
 	/**

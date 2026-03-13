@@ -10,7 +10,7 @@ import { Struct } from '$lib/services/struct';
 import { type StructDataVersion, type StructData } from '$lib/services/struct';
 import { sse } from '../services/sse';
 import { browser } from '$app/environment';
-import { attempt, attemptAsync, resolveAll, type Result } from 'ts-utils/check';
+import { attempt, attemptAsync, resolveAll, ResultPromise, type Result } from 'ts-utils/check';
 import { z } from 'zod';
 import { Account } from './account';
 import { Trace } from 'tatorscout/trace';
@@ -21,7 +21,9 @@ import YearInfo2025 from 'tatorscout/years/2025.js';
 import YearInfo2026 from 'tatorscout/years/2026.js';
 import * as remote from '$lib/remotes/scouting.remote';
 import type { ParsedBreakdown } from 'tatorscout/years';
-import type { TBAEvent } from '$lib/utils/tba';
+import { TBAEvent } from '$lib/utils/tba';
+import { after, tomorrow } from 'ts-utils';
+import { teamsFromMatch } from 'tatorscout/tba';
 
 /**
  * Client-side scouting models, helpers, and batch utilities.
@@ -306,6 +308,22 @@ export namespace Scouting {
 			}
 		}
 
+		getMatch() {
+			return attemptAsync(async () => {
+				const event = await TBAEvent.getEvent(
+					String(this.data.scouting.data.eventKey),
+					false,
+					tomorrow()
+				).unwrap();
+				const matches = await event.getMatches(false, after(1000 * 60 * 5)).unwrap();
+				return matches.find(
+					(m) =>
+						m.tba.match_number === this.data.scouting.data.matchNumber &&
+						m.tba.comp_level === this.data.scouting.data.compLevel
+				);
+			});
+		}
+
 		/**
 		 * Parse the sliders map from the record.
 		 *
@@ -569,15 +587,16 @@ export namespace Scouting {
 			year: number,
 			reactive: false,
 			type: 'average' | 'max'
-		): Result<Record<string, number>>;
+		): ResultPromise<Record<string, number>>;
 		contribution(
 			year: number,
 			reactive: true,
 			type: 'average' | 'max'
-		): WritableBase<Record<string, number>>;
+		): ResultPromise<WritableBase<Record<string, number>>>;
 		contribution(year: number, reactive: boolean, type: 'average' | 'max') {
-			const get = (data: MatchScoutingExtended[]) => {
+			const get = async (data: MatchScoutingExtended[]) => {
 				const totals: Record<string, number[]> = {};
+				const event = await TBAEvent.getEvent(String(data[0].eventKey), false, tomorrow()).unwrap();
 				for (const ms of data) {
 					const contrib = ms.getContribution(year, false);
 					if (contrib.isErr()) continue;
@@ -586,6 +605,60 @@ export namespace Scouting {
 							totals[key] = [];
 						}
 						totals[key].push(value);
+					});
+
+					await ms.getMatch().then((res) => {
+						if (res.isOk() && res.value) {
+							switch (event.tba.year) {
+								case 2024:
+									break;
+								case 2025:
+									break;
+								case 2026: {
+									// eslint-disable-next-line @typescript-eslint/no-explicit-any
+									const match = YearInfo2026.parseMatch(res.value.tba as any);
+									if (match.isOk()) {
+										const teams = teamsFromMatch(match.value);
+										const red = teams.slice(0, 2);
+										const blue = teams.slice(3, 5);
+										const alliance = red.includes(ms.team)
+											? 'red'
+											: blue.includes(ms.team)
+												? 'blue'
+												: null;
+										const redPos = red.indexOf(ms.team);
+										const bluePos = blue.indexOf(ms.team);
+										const pos = redPos !== -1 ? redPos : bluePos !== -1 ? bluePos : null;
+										if (alliance && pos !== null) {
+											const climbLevel =
+												match.value.score_breakdown[alliance][
+													('endgameTowerRobot' + (pos + 1)) as
+														| 'endgameTowerRobot1'
+														| 'endgameTowerRobot2'
+														| 'endgameTowerRobot3'
+												];
+											if (climbLevel) {
+												if (!totals.climb) totals.climb = [];
+												switch (climbLevel) {
+													case 'Level1':
+														totals.climb.push(10);
+														break;
+													case 'Level2':
+														totals.climb.push(20);
+														break;
+													case 'Level3':
+														totals.climb.push(30);
+														break;
+												}
+											}
+										}
+									}
+									break;
+								}
+								default:
+									throw new Error('Unsupported year for contribution mapping');
+							}
+						}
 					});
 				}
 
@@ -597,13 +670,14 @@ export namespace Scouting {
 						result[key] = Math.max(...values);
 					}
 				});
+
 				return result;
 			};
 
 			if (reactive) {
-				return this.derived(get);
+				return this.derivedAsync(get);
 			} else {
-				return attempt(() => get(this.data));
+				return attemptAsync(() => get(this.data));
 			}
 		}
 

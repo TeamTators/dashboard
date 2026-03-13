@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Scouting } from '$lib/model/scouting';
+	import { writable } from 'svelte/store';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		year: number;
@@ -8,7 +10,13 @@
 
 	const { scouting, year }: Props = $props();
 
-	const data = $derived(scouting.contribution(year, true, 'average'));
+	let data = $state(writable<Record<string, number>>({}));
+
+	onMount(() => {
+		scouting.contribution(year, true, 'average').then((res) => {
+			if (res.isOk()) data = res.value;
+		});
+	});
 </script>
 
 <table class="table table-striped">
