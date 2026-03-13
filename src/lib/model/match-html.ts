@@ -359,6 +359,9 @@ export class StartLocation {
 				case 2025:
 					yearInfo = YearInfo2025;
 					break;
+				case 2026:
+					yearInfo = YearInfo2026;
+					break;
 				default:
 					throw new Error(`YearInfo for year ${this.year} is not implemented`);
 			}
