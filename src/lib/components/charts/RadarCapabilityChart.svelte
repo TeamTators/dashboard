@@ -41,8 +41,9 @@
 	let chart: RadarChart<Record<string, number>> | undefined = $state(undefined);
 
 	onMount(() => {
-		scouting.contribution(year, true, 'average').then((res) => {
+		scouting.contribution(team.event.tba.key, true, 'average').then((res) => {
 			if (res.isOk()) data = res.value;
+			else console.error(res.error);
 		});
 	});
 </script>

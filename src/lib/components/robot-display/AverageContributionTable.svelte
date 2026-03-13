@@ -4,17 +4,18 @@
 	import { onMount } from 'svelte';
 
 	interface Props {
-		year: number;
+		eventKey: string;
 		scouting: Scouting.MatchScoutingExtendedArr;
 	}
 
-	const { scouting, year }: Props = $props();
+	const { scouting, eventKey }: Props = $props();
 
 	let data = $state(writable<Record<string, number>>({}));
 
 	onMount(() => {
-		scouting.contribution(year, true, 'average').then((res) => {
+		scouting.contribution(eventKey, true, 'average').then((res) => {
 			if (res.isOk()) data = res.value;
+			else console.error(res.error);
 		});
 	});
 </script>

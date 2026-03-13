@@ -853,7 +853,7 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 			</Card>
 			<Card card={averageContributionsTable}>
 				{#snippet body()}
-					<AverageContributionsTable year={event.tba.year} scouting={scoutingArr} />
+					<AverageContributionsTable eventKey={event.tba.key} scouting={scoutingArr} />
 				{/snippet}
 			</Card>
 			<Card card={averageContributionsPie}>
