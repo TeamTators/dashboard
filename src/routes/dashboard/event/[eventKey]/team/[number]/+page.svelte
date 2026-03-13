@@ -754,12 +754,14 @@ Includes summary cards, match tables, and heatmaps for quick performance review.
 					>
 						<i class="material-icons">copy_all</i>
 					</button>
-					<RadarCapabilityChart
-						bind:this={radarChartComp}
-						{team}
-						year={event.tba.year}
-						scouting={scoutingArr}
-					/>
+					{#key scouting}
+						<RadarCapabilityChart
+							bind:this={radarChartComp}
+							{team}
+							year={event.tba.year}
+							scouting={scoutingArr}
+						/>
+					{/key}
 				{/snippet}
 			</Card>
 			<Card card={picturesCard}>
