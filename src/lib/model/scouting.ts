@@ -598,7 +598,7 @@ export namespace Scouting {
 				const year = Number(eventKey.slice(0, 4));
 				const totals: Record<string, number[]> = {};
 				if (year === 2026) {
-					totals.climb = [];
+					totals.Climb = [];
 				}
 				const event = await TBAEvent.getEvent(eventKey, false, tomorrow()).unwrap();
 				for (const ms of data) {
