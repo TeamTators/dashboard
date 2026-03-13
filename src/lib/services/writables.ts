@@ -261,7 +261,7 @@ export class WritableBase<T> implements Writable<T> {
 	 */
 	pipeData<Target>(target: Writable<Target>, transform: (data: Target) => T | Promise<T>): void {
 		this.onAllUnsubscribe(
-			target.subscribe(async(data) => {
+			target.subscribe(async (data) => {
 				this.data = await transform(data);
 			})
 		);

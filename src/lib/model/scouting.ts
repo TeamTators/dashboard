@@ -584,19 +584,20 @@ export namespace Scouting {
 		 * avgStore.subscribe((value) => console.log(value));
 		 */
 		contribution(
-			year: number,
+			event: string,
 			reactive: false,
 			type: 'average' | 'max'
 		): ResultPromise<Record<string, number>>;
 		contribution(
-			year: number,
+			event: string,
 			reactive: true,
 			type: 'average' | 'max'
 		): ResultPromise<WritableBase<Record<string, number>>>;
-		contribution(year: number, reactive: boolean, type: 'average' | 'max') {
+		contribution(eventKey: string, reactive: boolean, type: 'average' | 'max') {
 			const get = async (data: MatchScoutingExtended[]) => {
+				const year = Number(eventKey.slice(0, 4));
 				const totals: Record<string, number[]> = {};
-				const event = await TBAEvent.getEvent(String(data[0].eventKey), false, tomorrow()).unwrap();
+				const event = await TBAEvent.getEvent(eventKey, false, tomorrow()).unwrap();
 				for (const ms of data) {
 					const contrib = ms.getContribution(year, false);
 					if (contrib.isErr()) continue;

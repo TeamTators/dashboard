@@ -60,7 +60,7 @@ future chart should visualize once implemented.
 				labels: Object.values(actions),
 				datasets: await Promise.all(
 					teams.map(async (team) => {
-						const contribution = await team.contribution(event.tba.year, false, type);
+						const contribution = await team.contribution(event.tba.key, false, type);
 						return {
 							data: Object.values(actions).map((key) => {
 								if (contribution.isErr()) {

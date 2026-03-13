@@ -99,9 +99,11 @@ chart shows average counts for each scoring action (levels 1-4, barge, processor
 
 		let unsub = () => {};
 
-		scouting.contribution(event.tba.year, true, 'average').then((res) => {
+		scouting.contribution(event.tba.key, true, 'average').then((res) => {
 			if (res.isOk()) {
 				unsub = res.value.subscribe(render);
+			} else {
+				console.error(res.error);
 			}
 		});
 
