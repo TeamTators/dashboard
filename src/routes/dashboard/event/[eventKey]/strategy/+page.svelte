@@ -4,10 +4,14 @@
 	import StrategyGrid from '$lib/components/strategy/StrategyGrid.svelte';
 	import { alert, prompt, select } from '$lib/utils/prompts';
 	import { teamsFromMatch } from 'tatorscout/tba';
-	import { goto } from '$app/navigation';
+	import { goto } from '$app/navigation';	
+	import nav from '$lib/nav/robot-display.js';
 	const { data } = $props();
 	const strategies = $derived(data.strategies);
 	const matches = $derived(data.matches);
+	const event = $derived(data.event);
+
+	$effect(() => nav(event.tba));
 </script>
 
 <div class="container">
