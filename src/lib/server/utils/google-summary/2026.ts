@@ -92,7 +92,7 @@ export const summarize = (eventKey: string) => {
 		);
 
 		// Memoized version of getScoresWithoutDefense to cache results per team
-		const getScoresWithoutDefense = memoize(
+		const _getScoresWithoutDefense = memoize(
 			async (team: Team) => {
 				try {
 					const traces = await getAllScouting(team);
@@ -190,7 +190,7 @@ export const summarize = (eventKey: string) => {
 			(team: Team) => `checks_${team.tba.team_number}`
 		);
 
-		const getSecondsNotMoving = memoize(
+		const _getSecondsNotMoving = memoize(
 			async (team: Team) => {
 				const matchScouting = await getTeamScouting(team.tba.team_number, eventKey);
 				return average(matchScouting.map((s) => s.secondsNotMoving));
@@ -201,7 +201,7 @@ export const summarize = (eventKey: string) => {
 		// Memoize team status calls to reduce API calls
 		const getTeamStatus = memoize(
 			async (team: Team) => {
-				return (await team.getStatus()).unwrap()?.qual?.ranking.rank;
+				return (await team.getStatus()).unwrap()?.qual?.ranking.rank || 0;
 			},
 			(team: Team) => `teamStatus_${team.tba.team_number}`
 		);

@@ -11,7 +11,7 @@
 		year: number;
 	}
 
-	const { scouting, team, year }: Props = $props();
+	const { scouting, team }: Props = $props();
 
 	// min/max
 	const yearOpts: {

@@ -210,7 +210,7 @@ export const summarize = async (eventKey: string) => {
 		// Memoize team status calls to reduce API calls
 		const getTeamStatus = memoize(
 			async (team: Team) => {
-				return (await team.getStatus()).unwrap()?.qual?.ranking.rank;
+				return (await team.getStatus()).unwrap()?.qual?.ranking.rank || 0;
 			},
 			(team: Team) => `teamStatus_${team.tba.team_number}`
 		);

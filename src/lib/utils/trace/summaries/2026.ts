@@ -1,6 +1,11 @@
 import YearInfo2026 from 'tatorscout/years/2026.js';
 import { Aggregators } from 'tatorscout/summary';
-import { type TBAMatch, type TBAMatch2025, type TBAMatch2026, Match2026Schema } from 'tatorscout/tba';
+import {
+	type TBAMatch,
+	type TBAMatch2025,
+	type TBAMatch2026,
+	Match2026Schema
+} from 'tatorscout/tba';
 import type z from 'zod';
 import { resolveAll } from 'ts-utils';
 
@@ -21,7 +26,10 @@ const summariesViaTBA = <Match extends TBAMatch2025 | TBAMatch2026>(
 	return matches.map((m) => {
 		const parsed = matchSchema.safeParse(m);
 		if (!parsed.success) {
-			console.error('Failed to parse match data for summariesViaTBA', { match: m, error: parsed.error });
+			console.error('Failed to parse match data for summariesViaTBA', {
+				match: m,
+				error: parsed.error
+			});
 			return 0;
 		}
 		const redPosition = m.alliances.red.team_keys.indexOf('frc' + team);
@@ -47,24 +55,19 @@ const summariesViaTBA = <Match extends TBAMatch2025 | TBAMatch2026>(
 export default YearInfo2026.summary({
 	'Auto Points': {
 		'Climb Points': (data) => {
-			return Aggregators.average(summariesViaTBA(
-				data.team,
-				data.matches,
-				Match2026Schema,
-				(match, position) => {
-					const autoClimb = [
-						match.autoTowerRobot1,
-						match.autoTowerRobot2,
-						match.autoTowerRobot3
-					][position];
+			return Aggregators.average(
+				summariesViaTBA(data.team, data.matches, Match2026Schema, (match, position) => {
+					const autoClimb = [match.autoTowerRobot1, match.autoTowerRobot2, match.autoTowerRobot3][
+						position
+					];
 					switch (autoClimb) {
 						case 'Level1':
 							return 15;
 						default:
 							return 0;
 					}
-				}
-			))
+				})
+			);
 		},
 		'Average Hub Scored': (data) => {
 			return Aggregators.average(data.scoring.map((d) => d.auto.hub1 + d.auto.hub5 + d.auto.hub10));
@@ -79,11 +82,8 @@ export default YearInfo2026.summary({
 	},
 	'Endgame Points': {
 		'Climb Points': (data) => {
-			return Aggregators.average(summariesViaTBA(
-				data.team,
-				data.matches,
-				Match2026Schema,
-				(match, position) => {
+			return Aggregators.average(
+				summariesViaTBA(data.team, data.matches, Match2026Schema, (match, position) => {
 					const autoClimb = [
 						match.endgameTowerRobot1,
 						match.endgameTowerRobot2,
@@ -99,8 +99,8 @@ export default YearInfo2026.summary({
 						default:
 							return 0;
 					}
-				}
-			))
+				})
+			);
 		},
 		'Average Hub': (data) => {
 			return Aggregators.average(
@@ -116,11 +116,9 @@ export default YearInfo2026.summary({
 				data.matches,
 				Match2026Schema,
 				(match, position) => {
-					const autoClimb = [
-						match.autoTowerRobot1,
-						match.autoTowerRobot2,
-						match.autoTowerRobot3
-					][position];
+					const autoClimb = [match.autoTowerRobot1, match.autoTowerRobot2, match.autoTowerRobot3][
+						position
+					];
 					switch (autoClimb) {
 						case 'Level1':
 							return 15;
@@ -149,14 +147,16 @@ export default YearInfo2026.summary({
 							break;
 						case 'Level3':
 							endgameClimbPoints = 30;
-							break;	
+							break;
 					}
 					return endgameClimbPoints;
 				}
 			);
 
-			const totals = data.scoring.map(d => d.total);
-			const combined = totals.map((total, index) => total + (autoPoints[index] || 0) + (endgamePoints[index] || 0));
+			const totals = data.scoring.map((d) => d.total);
+			const combined = totals.map(
+				(total, index) => total + (autoPoints[index] || 0) + (endgamePoints[index] || 0)
+			);
 			return Aggregators.average(combined);
 		},
 		'Average Lob': (data) =>
@@ -189,44 +189,46 @@ export default YearInfo2026.summary({
 					})
 				)
 			),
-		'Average Cycle Time (Lower is better)': (data) => 
-		{
-			const cycleTimes = resolveAll(data.traces.map(t => YearInfo2026.cycleInfo(t)));
+		'Average Cycle Time (Lower is better)': (data) => {
+			const cycleTimes = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
 			if (cycleTimes.isErr()) {
 				console.error('Error calculating cycle times for team', data.team, cycleTimes.error);
 				return 0;
 			}
 
-			return Aggregators.average(cycleTimes.value.map(c => c.cycleTimes).flat()) / 1000;
+			return Aggregators.average(cycleTimes.value.map((c) => c.cycleTimes).flat()) / 1000;
 		},
 		'Average Hopper Depletion Time (Lower is better)': (data) => {
-			const depletionTimes = resolveAll(data.traces.map(t => YearInfo2026.cycleInfo(t)));
+			const depletionTimes = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
 			if (depletionTimes.isErr()) {
-				console.error('Error calculating depletion times for team', data.team, depletionTimes.error);
+				console.error(
+					'Error calculating depletion times for team',
+					data.team,
+					depletionTimes.error
+				);
 				return 0;
 			}
 
-			return Aggregators.average(depletionTimes.value.map(c => c.depletionTimes).flat()) / 1000;
+			return Aggregators.average(depletionTimes.value.map((c) => c.depletionTimes).flat()) / 1000;
 		},
 		'Average Cycles Per Match': (data) => {
-			
-			const cycleTimes = resolveAll(data.traces.map(t => YearInfo2026.cycleInfo(t)));
+			const cycleTimes = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
 			if (cycleTimes.isErr()) {
 				console.error('Error calculating cycle times for team', data.team, cycleTimes.error);
 				return 0;
 			}
 
-			return Aggregators.average(cycleTimes.value.map(c => c.cycleTimes.length));
+			return Aggregators.average(cycleTimes.value.map((c) => c.cycleTimes.length));
 		},
 		'Average Balls Per Cycle': (data) => {
-			const cycleInfos = resolveAll(data.traces.map(t => YearInfo2026.cycleInfo(t)));
+			const cycleInfos = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
 			if (cycleInfos.isErr()) {
 				console.error('Error calculating cycle infos for team', data.team, cycleInfos.error);
 				return 0;
 			}
 
-			const ballsPerCycle = cycleInfos.value.map(c => c.scoredPerCycle).flat();
+			const ballsPerCycle = cycleInfos.value.map((c) => c.scoredPerCycle).flat();
 			return Aggregators.average(ballsPerCycle);
-		},
+		}
 	}
 });
