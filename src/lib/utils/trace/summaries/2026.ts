@@ -189,6 +189,11 @@ export default YearInfo2026.summary({
 					})
 				)
 			),
+			'Average Seconds Idle': (data) => Aggregators.average(data.traces.map(t => t.secondsIdle({
+				timeThresholdMs: 1000,
+				allowedActions: [],
+				speedThreshold: 2,
+			}))),
 		'Average Cycle Time (Lower is better)': (data) => {
 			const cycleTimes = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
 			if (cycleTimes.isErr()) {
