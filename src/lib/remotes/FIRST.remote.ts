@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { getAccount } from './index.remote';
 import { error } from '@sveltejs/kit';
 import { FIRST } from '$lib/server/structs/FIRST';
+import terminal from '$lib/server/utils/terminal';
 
 /**
  * Fetch or generate a serialized FIRST event summary.
@@ -34,7 +35,7 @@ export const getSummary = query(
 			return error(403, 'Forbidden');
 		}
 
-		const allowedYears = [2024, 2025];
+		const allowedYears = [2024, 2025, 2026];
 
 		let yearFound: number | null = null;
 		for (const y of allowedYears) {
@@ -48,7 +49,7 @@ export const getSummary = query(
 			return error(400, 'No summary available for this event');
 		}
 
-		const exists = await FIRST.getSummary(eventKey, yearFound as 2024 | 2025);
+		const exists = await FIRST.getSummary(eventKey, yearFound as 2024 | 2025 | 2026);
 
 		if (exists.isOk() && exists.value) {
 			return {
@@ -59,6 +60,7 @@ export const getSummary = query(
 
 		const res = await FIRST.generateSummary(eventKey, yearFound as 2024 | 2025);
 		if (res.isErr()) {
+			terminal.error(res.error);
 			return error(500, 'Failed to generate summary');
 		}
 

@@ -148,11 +148,11 @@ export namespace FIRST {
 						return Summary2025.deserialize(res.data.summary).unwrap();
 					}
 				} else if (year === 2026) {
-					throw new Error('2026 summary caching not yet implemented');
-					// const hash = hashSummary(Summary2026);
-					// if (res.data.summaryHash === hash) {
-					// 	return Summary2026.deserialize(res.data.summary).unwrap();
-					// }
+					// throw new Error('2026 summary caching not yet implemented');
+					const hash = hashSummary(Summary2026.schema);
+					if (res.data.summaryHash === hash) {
+						return Summary2026.deserialize(res.data.summary).unwrap();
+					}
 				}
 			}
 			const summary = await generateSummary(eventKey, year).unwrap();
