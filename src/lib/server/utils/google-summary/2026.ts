@@ -355,18 +355,10 @@ export const summarize = (eventKey: string) => {
 		const summary = await FIRST.getSummary(event.tba.key, 2026);
 
 		if (summary.isOk()) {
-			for (const [section, group] of Object.entries(summary.value.summary)) {
-				for (const question of Object.keys(group)) {
-					t.column(`${section} - ${question}`, async (t) => {
-						const data = summary.value.getTeam(t.tba.team_number);
-						if (section in data) {
-							const s = data[section as keyof typeof data];
-							if (s && question in s) {
-								return s[question as keyof typeof s];
-							}
-						}
-						return 'unknown';
-					});
+			const pivoted = summary.value.pivot().pivotedData;
+			for (const [groupname, group] of Object.entries(pivoted)) {
+				for (const [item, teams] of Object.entries(group)) {
+					t.column(`${groupname} - ${item}`, (t) => teams[t.tba.team_number] ?? 'unknown');
 				}
 			}
 		}
