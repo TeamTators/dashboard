@@ -211,6 +211,19 @@ export default YearInfo2026.summary({
 
 			return Aggregators.average(depletionTimes.value.map((c) => c.depletionTimes).flat()) / 1000;
 		},
+		'Weighted Average Hopper Depletion Time (time / fuel scored) (Lower is better)': (data) => {
+			const depletionTimes = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
+			if (depletionTimes.isErr()) {
+				console.error(
+					'Error calculating depletion times for team',
+					data.team,
+					depletionTimes.error
+				);
+				return 0;
+			}
+
+			return Aggregators.average(depletionTimes.value.map((c) => c.weightedDepletionTimes).flat()) / 1000;
+		},
 		'Average Cycles Per Match': (data) => {
 			const cycleTimes = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
 			if (cycleTimes.isErr()) {
@@ -220,6 +233,15 @@ export default YearInfo2026.summary({
 
 			return Aggregators.average(cycleTimes.value.map((c) => c.cycleTimes.length));
 		},
+		// 'Weighted Average Cycles Per Match (cycles / fuel scored)': (data) => {
+		// 	const cycleTimes = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
+		// 	if (cycleTimes.isErr()) {
+		// 		console.error('Error calculating cycle times for team', data.team, cycleTimes.error);
+		// 		return 0;
+		// 	}
+
+		// 	return Aggregators.average(cycleTimes.value.map((c) => c.weightedCycleTimes.length));
+		// },
 		'Average Balls Per Cycle': (data) => {
 			const cycleInfos = resolveAll(data.traces.map((t) => YearInfo2026.cycleInfo(t)));
 			if (cycleInfos.isErr()) {
